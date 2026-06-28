@@ -3,18 +3,16 @@ import { unstable_cache } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { ResultTabs } from '@/components/ResultTabs'
 import { InvoerToggle } from './InvoerToggle'
+import { StatusToggle } from './StatusToggle'
+import { formatDatum } from '@/lib/utils'
 import type { ContentOutput, PropertyInput } from '@/lib/schemas'
-
-export async function generateMetadata({ params }: { params: { id: string } }) {
-  return { title: 'Object bekijken — VestaAI' }
-}
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, address, input_json, outputs_json, created_at')
+      .select('id, address, status, input_json, outputs_json, created_at')
       .eq('id', objectId)
       .single()
     return data
@@ -22,6 +20,15 @@ const getCachedObject = unstable_cache(
   ['object-detail'],
   { revalidate: 86400 },
 )
+
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const object = await getCachedObject(params.id)
+  if (!object) return { title: 'Object niet gevonden — VestaAI' }
+  return {
+    title: `${object.address} — VestaAI`,
+    description: `Content-suite voor ${object.address}`,
+  }
+}
 
 export default async function ObjectDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient()
@@ -32,13 +39,13 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
 
   if (!object) notFound()
 
-  const formatDatum = (iso: string) =>
-    new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
-
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-6">
-        <p className="text-xs text-gray-400 mb-1">{formatDatum(object.created_at)}</p>
+        <div className="flex items-center gap-3 mb-1">
+          <p className="text-xs text-gray-400">{formatDatum(object.created_at)}</p>
+          <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published'} />
+        </div>
         <h1 className="text-xl font-bold text-gray-900">{object.address}</h1>
       </div>
 

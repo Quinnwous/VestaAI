@@ -3,6 +3,7 @@
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
+import { relatieveDatum } from '@/lib/utils'
 import type { ObjectRow } from '@/lib/supabase'
 
 interface Props {
@@ -47,8 +48,11 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
     updateUrl({ search: zoekterm, page: '1' })
   }
 
+  const [now, setNow] = useState<number | null>(null)
+  useEffect(() => { setNow(Date.now()) }, [])
+
   const formatDatum = (iso: string) =>
-    new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
+    now !== null ? relatieveDatum(iso) : new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })
 
   return (
     <div>

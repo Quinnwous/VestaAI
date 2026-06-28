@@ -7,6 +7,18 @@ import type { HuisstijlConfig } from '@/lib/schemas'
 
 export const maxDuration = 120
 
+// In-memory rate limit: 1 generate per 90 seconden per user
+const rateLimitMap = new Map<string, number>()
+const RATE_LIMIT_MS = 90_000
+
+function checkRateLimit(userId: string): boolean {
+  const last = rateLimitMap.get(userId) ?? 0
+  const now = Date.now()
+  if (now - last < RATE_LIMIT_MS) return false
+  rateLimitMap.set(userId, now)
+  return true
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -21,6 +33,13 @@ export async function POST(req: NextRequest) {
 
       if (!user) {
         return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
+      }
+
+      if (!checkRateLimit(user.id)) {
+        return NextResponse.json(
+          { error: 'Nog bezig met vorige generatie. Wacht even en probeer opnieuw.' },
+          { status: 429 },
+        )
       }
 
       const { data: makelaar } = await supabase

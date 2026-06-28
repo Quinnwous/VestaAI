@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ContentOutput } from '@/lib/schemas'
 import { TabContent } from './TabContent'
@@ -16,6 +16,14 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'buurt', label: 'Buurt' },
 ]
 
+const VALID_TABS = new Set<Tab>(TABS.map(t => t.id))
+
+function tabFromHash(): Tab {
+  if (typeof window === 'undefined') return 'funda'
+  const hash = window.location.hash.slice(1) as Tab
+  return VALID_TABS.has(hash) ? hash : 'funda'
+}
+
 interface ResultTabsProps {
   data: ContentOutput
   objectId?: string | null
@@ -26,8 +34,19 @@ interface ResultTabsProps {
 
 export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsProps) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<Tab>('funda')
+  const [activeTab, setActiveTab] = useState<Tab>(() => tabFromHash())
   const [brochureVariant, setBrochureVariant] = useState<'kort' | 'lang'>('lang')
+
+  useEffect(() => {
+    const onHashChange = () => setActiveTab(tabFromHash())
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab)
+    window.history.replaceState(null, '', `#${tab}`)
+  }
   const [downloadingPdf, setDownloadingPdf] = useState(false)
   const [copiedAll, setCopiedAll] = useState(false)
 
@@ -115,7 +134,7 @@ export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsP
         {TABS.map(tab => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => handleTabChange(tab.id)}
             className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? 'border-b-2 border-blue-600 text-blue-600'
