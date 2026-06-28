@@ -55,8 +55,11 @@ VestaAI is de AI-assistent voor het makelaarskantoor — niet alleen content, ma
 
 ### Nog te bouwen (code)
 
-- Trial-waarschuwingsmail 3 dagen voor afloop (vereist Supabase Edge Function of cron-job)
-- Sentry integreren voor error tracking
+- Sentry DSN instellen op sentry.io → `NEXT_PUBLIC_SENTRY_DSN` invullen in `.env.local`
+
+### Wacht op Quinn (deployment)
+
+- Supabase Edge Function deployen: `supabase functions deploy trial-warning-email` → in Supabase Dashboard een dagelijks schedule instellen (cron: `0 8 * * *`)
 
 ---
 
