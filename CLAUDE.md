@@ -82,6 +82,10 @@ VestaAI/
 └── VestaAI.html           # businessplan (leidend)
 ```
 
+## Roadmap-conventie
+
+`docs/roadmap.md` is het enige stappenplan. Na het afronden van een stap: **verwijder die stap uit het bestand**. Geen vinkjes, geen archief — gewoon weg. Zo blijft de lijst altijd de actuele to-do.
+
 ## Conventies
 
 - TypeScript strict mode — geen `any`.
