@@ -82,3 +82,17 @@ create policy "makelaar mag object aanmaken"
 create policy "makelaar mag eigen object wijzigen"
   on objecten for update
   using (makelaar_id = auth.uid());
+
+-- NPS-responses (anoniem opgeslagen, geen RLS-beperking nodig)
+create table nps_responses (
+  id         uuid primary key default uuid_generate_v4(),
+  score      smallint not null check (score >= 0 and score <= 10),
+  feedback   text,
+  created_at timestamptz not null default now()
+);
+
+alter table nps_responses enable row level security;
+
+create policy "service role mag nps opslaan"
+  on nps_responses for insert
+  with check (true);

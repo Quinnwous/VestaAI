@@ -1,14 +1,16 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/auth/confirm', '/api/webhooks']
+const PUBLIC_EXACT = new Set(['/', '/login', '/prijzen'])
+const PUBLIC_PREFIX = ['/auth/confirm', '/api/webhooks']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Publieke routes en statische assets overslaan
   if (
-    PUBLIC_PATHS.some(p => pathname.startsWith(p)) ||
+    PUBLIC_EXACT.has(pathname) ||
+    PUBLIC_PREFIX.some(p => pathname.startsWith(p)) ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/favicon')
   ) {

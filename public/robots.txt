@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /prijzen
+
+Disallow: /dashboard
+Disallow: /object/
+Disallow: /settings/
+Disallow: /api/
+Disallow: /auth/
+
+Sitemap: https://vestaai.nl/sitemap.xml

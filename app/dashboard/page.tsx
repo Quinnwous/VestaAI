@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { DashboardClient } from './DashboardClient'
+import { WelkomBanner } from '@/components/WelkomBanner'
 import type { ObjectRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Overzicht — VestaAI' }
@@ -61,6 +62,8 @@ export default async function DashboardPage({
           + Nieuw object
         </Link>
       </div>
+
+      {(count ?? 0) === 0 && !search && <WelkomBanner />}
 
       <DashboardClient
         objecten={(objecten ?? []) as Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]}

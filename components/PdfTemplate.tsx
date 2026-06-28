@@ -9,129 +9,206 @@ import {
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
 
-const styles = StyleSheet.create({
-  page: {
-    fontFamily: 'Helvetica',
-    fontSize: 10,
-    color: '#1a1a1a',
-    padding: 48,
-    backgroundColor: '#ffffff',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 32,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-  },
-  logo: {
-    height: 28,
-    objectFit: 'contain',
-  },
-  brandName: {
-    fontSize: 16,
-    fontFamily: 'Helvetica-Bold',
-    color: '#1d4ed8',
-  },
-  addressBlock: {
-    marginBottom: 4,
-    fontSize: 11,
-    fontFamily: 'Helvetica-Bold',
-  },
-  dateLine: {
-    fontSize: 9,
-    color: '#6b7280',
-    marginBottom: 32,
-  },
-  section: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 9,
-    fontFamily: 'Helvetica-Bold',
-    color: '#6b7280',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 6,
-  },
-  sectionBody: {
-    fontSize: 10,
-    lineHeight: 1.6,
-    color: '#1a1a1a',
-  },
-  divider: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#f3f4f6',
-    marginBottom: 24,
-  },
-  pageNumber: {
-    position: 'absolute',
-    bottom: 24,
-    right: 48,
-    fontSize: 8,
-    color: '#9ca3af',
-  },
-})
-
 interface PdfTemplateProps {
   address: string
   output: ContentOutput
   kantoor: Pick<Kantoor, 'name' | 'logo_url' | 'huisstijl_json'>
 }
 
+const PAGE_PADDING = 48
+
+function makeStyles(kleur: string) {
+  return StyleSheet.create({
+    page: {
+      fontFamily: 'Helvetica',
+      fontSize: 10,
+      color: '#111827',
+      backgroundColor: '#ffffff',
+    },
+    cover: {
+      flex: 1,
+      backgroundColor: kleur,
+      padding: PAGE_PADDING,
+      flexDirection: 'column',
+    },
+    coverLogoImg: {
+      height: 32,
+      objectFit: 'contain',
+    },
+    coverBrandName: {
+      fontSize: 20,
+      fontFamily: 'Helvetica-Bold',
+      color: '#ffffff',
+    },
+    coverSpacer: {
+      flex: 1,
+    },
+    coverTitle: {
+      fontSize: 28,
+      fontFamily: 'Helvetica-Bold',
+      color: '#ffffff',
+      lineHeight: 1.3,
+      marginTop: 60,
+    },
+    coverSubtitle: {
+      fontSize: 11,
+      color: 'rgba(255,255,255,0.7)',
+      marginTop: 10,
+    },
+    coverFooter: {
+      marginTop: 40,
+      paddingTop: 20,
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(255,255,255,0.2)',
+    },
+    coverFooterText: {
+      fontSize: 8,
+      color: 'rgba(255,255,255,0.6)',
+    },
+    contentPage: {
+      padding: PAGE_PADDING,
+    },
+    pageHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 28,
+      paddingBottom: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: '#e5e7eb',
+    },
+    pageHeaderLogoImg: {
+      height: 20,
+      objectFit: 'contain',
+    },
+    pageHeaderBrand: {
+      fontSize: 11,
+      fontFamily: 'Helvetica-Bold',
+      color: kleur,
+    },
+    pageHeaderAddress: {
+      fontSize: 8,
+      color: '#9ca3af',
+    },
+    sectionBadge: {
+      backgroundColor: kleur,
+      borderRadius: 4,
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      alignSelf: 'flex-start',
+      marginBottom: 12,
+    },
+    sectionBadgeText: {
+      fontSize: 8,
+      fontFamily: 'Helvetica-Bold',
+      color: '#ffffff',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    sectionTitle: {
+      fontSize: 15,
+      fontFamily: 'Helvetica-Bold',
+      color: '#111827',
+      marginBottom: 16,
+    },
+    sectionBody: {
+      fontSize: 10,
+      lineHeight: 1.7,
+      color: '#374151',
+    },
+    pageFooterFixed: {
+      position: 'absolute',
+      bottom: 24,
+      left: PAGE_PADDING,
+      right: PAGE_PADDING,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    pageFooterText: {
+      fontSize: 7,
+      color: '#9ca3af',
+    },
+  })
+}
+
+const SECTIES: { badge: string; titel: string; key: keyof ContentOutput }[] = [
+  { badge: 'Funda', titel: 'Funda-tekst', key: 'funda_tekst' },
+  { badge: 'Brochure', titel: 'Brochure (lang)', key: 'brochure_lang' },
+  { badge: 'Brochure', titel: 'Brochure (kort)', key: 'brochure_kort' },
+  { badge: 'Instagram', titel: 'Instagram — Emotioneel', key: 'instagram_emotioneel' },
+  { badge: 'Instagram', titel: 'Instagram — Informatief', key: 'instagram_informatief' },
+  { badge: 'Instagram', titel: 'Instagram — Actie', key: 'instagram_actie' },
+  { badge: 'LinkedIn', titel: 'LinkedIn — Kantoor', key: 'linkedin_kantoor' },
+  { badge: 'LinkedIn', titel: 'LinkedIn — Makelaar', key: 'linkedin_makelaar' },
+  { badge: 'E-mail', titel: 'Koper-e-mail', key: 'koper_email' },
+  { badge: 'Buurt', titel: 'Buurtomschrijving', key: 'buurtomschrijving' },
+]
+
 export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
   const kleur = kantoor.huisstijl_json?.primaire_kleur ?? '#1d4ed8'
+  const s = makeStyles(kleur)
   const datum = new Date().toLocaleDateString('nl-NL', {
     day: 'numeric', month: 'long', year: 'numeric',
   })
 
-  const SECTIES = [
-    { titel: 'Funda-tekst', inhoud: output.funda_tekst },
-    { titel: 'Brochure (lang)', inhoud: output.brochure_lang },
-    { titel: 'Brochure (kort)', inhoud: output.brochure_kort },
-    { titel: 'Instagram — Emotioneel', inhoud: output.instagram_emotioneel },
-    { titel: 'Instagram — Informatief', inhoud: output.instagram_informatief },
-    { titel: 'Instagram — Actie', inhoud: output.instagram_actie },
-    { titel: 'LinkedIn — Kantoor', inhoud: output.linkedin_kantoor },
-    { titel: 'LinkedIn — Makelaar', inhoud: output.linkedin_makelaar },
-    { titel: 'E-mail aan koper', inhoud: output.koper_email },
-    { titel: 'Buurtomschrijving', inhoud: output.buurtomschrijving },
-  ]
-
   return (
-    <Document title={`${address} — VestaAI`} author="VestaAI">
-      <Page size="A4" style={styles.page}>
-        {/* Header */}
-        <View style={styles.header}>
+    <Document title={`${address} — VestaAI`} author="VestaAI" creator="VestaAI">
+
+      {/* Cover */}
+      <Page size="A4" style={s.page}>
+        <View style={s.cover}>
           {kantoor.logo_url ? (
-            <Image src={kantoor.logo_url} style={styles.logo} />
+            <Image src={kantoor.logo_url} style={s.coverLogoImg} />
           ) : (
-            <Text style={{ ...styles.brandName, color: kleur }}>{kantoor.name}</Text>
+            <Text style={s.coverBrandName}>{kantoor.name}</Text>
           )}
-          <Text style={{ fontSize: 8, color: '#9ca3af' }}>Gegenereerd met VestaAI</Text>
-        </View>
 
-        {/* Adres + datum */}
-        <Text style={styles.addressBlock}>{address}</Text>
-        <Text style={styles.dateLine}>{datum}</Text>
+          <View style={s.coverSpacer} />
 
-        {/* Content secties */}
-        {SECTIES.map(({ titel, inhoud }) => (
-          <View key={titel} style={styles.section} wrap={false}>
-            <Text style={{ ...styles.sectionTitle, color: kleur }}>{titel}</Text>
-            <View style={styles.divider} />
-            <Text style={styles.sectionBody}>{inhoud}</Text>
+          <Text style={s.coverTitle}>{address}</Text>
+          <Text style={s.coverSubtitle}>Content-suite · {datum}</Text>
+
+          <View style={s.coverFooter}>
+            <Text style={s.coverFooterText}>Gegenereerd met VestaAI · vestaai.nl</Text>
           </View>
-        ))}
-
-        <Text
-          style={styles.pageNumber}
-          render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
-          fixed
-        />
+        </View>
       </Page>
+
+      {/* Eén pagina per content-sectie */}
+      {SECTIES.map(({ badge, titel, key }) => (
+        <Page key={key} size="A4" style={s.contentPage}>
+          {/* Pagina-header */}
+          <View style={s.pageHeader}>
+            {kantoor.logo_url ? (
+              <Image src={kantoor.logo_url} style={s.pageHeaderLogoImg} />
+            ) : (
+              <Text style={s.pageHeaderBrand}>{kantoor.name}</Text>
+            )}
+            <Text style={s.pageHeaderAddress}>{address}</Text>
+          </View>
+
+          {/* Badge */}
+          <View style={s.sectionBadge}>
+            <Text style={s.sectionBadgeText}>{badge}</Text>
+          </View>
+
+          {/* Titel */}
+          <Text style={s.sectionTitle}>{titel}</Text>
+
+          {/* Body */}
+          <Text style={s.sectionBody}>{output[key]}</Text>
+
+          {/* Vaste footer */}
+          <View style={s.pageFooterFixed} fixed>
+            <Text style={s.pageFooterText}>VestaAI · {datum}</Text>
+            <Text
+              style={s.pageFooterText}
+              render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+            />
+          </View>
+        </Page>
+      ))}
     </Document>
   )
 }

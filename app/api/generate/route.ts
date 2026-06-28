@@ -25,14 +25,35 @@ export async function POST(req: NextRequest) {
 
       const { data: makelaar } = await supabase
         .from('makelaars')
-        .select('id, kantoor_id, kantoren(huisstijl_json)')
+        .select('id, kantoor_id, kantoren(huisstijl_json, plan, trial_ends_at)')
         .eq('id', user.id)
         .single()
 
       if (makelaar) {
-        const kantoorData = makelaar.kantoren as unknown as { huisstijl_json: HuisstijlConfig | null } | null
+        const kantoorData = makelaar.kantoren as unknown as {
+          huisstijl_json: HuisstijlConfig | null
+          plan: string | null
+          trial_ends_at: string | null
+        } | null
+
         if (kantoorData?.huisstijl_json) {
           huisstijl = kantoorData.huisstijl_json
+        }
+
+        // Beta-limiet: max 15 objecten wanneer er geen betaald abonnement actief is
+        if (!kantoorData?.plan) {
+          const { count } = await supabase
+            .from('objecten')
+            .select('id', { count: 'exact', head: true })
+            .eq('kantoor_id', makelaar.kantoor_id)
+
+          const BETA_LIMIET = 15
+          if ((count ?? 0) >= BETA_LIMIET) {
+            return NextResponse.json(
+              { error: `Limiet bereikt: je kunt maximaal ${BETA_LIMIET} objecten genereren tijdens de proefperiode. Kies een abonnement om door te gaan.` },
+              { status: 402 },
+            )
+          }
         }
 
         const output = await generateContent(input, huisstijl)

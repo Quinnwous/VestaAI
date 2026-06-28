@@ -1,6 +1,6 @@
 'use client'
 
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
 
@@ -17,13 +17,15 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<PropertyInput>({
     resolver: zodResolver(PropertyInputSchema),
   })
 
-  const doelgroepValue = watch('doelgroep')
+  const doelgroepValue = useWatch({ control, name: 'doelgroep' })
+  const uspsValue = useWatch({ control, name: 'usps' }) ?? ''
+  const MAX_USPS = 500
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -141,15 +143,21 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
 
       {/* USP's */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          USP&apos;s <span className="text-red-500">*</span>
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-gray-700">
+            USP&apos;s <span className="text-red-500">*</span>
+          </label>
+          <span className={`text-xs tabular-nums ${uspsValue.length > MAX_USPS * 0.9 ? 'text-orange-500' : 'text-gray-400'}`}>
+            {uspsValue.length}/{MAX_USPS}
+          </span>
+        </div>
         <textarea
           {...register('usps')}
           disabled={disabled}
           rows={3}
+          maxLength={MAX_USPS}
           placeholder="Bijv: gerenoveerde keuken, zonnig terras, vrij uitzicht, rustige straat, recent dak"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none"
         />
         {errors.usps && <p className="mt-1 text-xs text-red-600">{errors.usps.message}</p>}
       </div>
