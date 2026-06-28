@@ -1,5 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { unstable_cache } from 'next/cache'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { ResultTabs } from '@/components/ResultTabs'
 import type { ContentOutput } from '@/lib/schemas'
 
@@ -7,16 +8,26 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   return { title: 'Object bekijken — VestaAI' }
 }
 
+const getCachedObject = unstable_cache(
+  async (objectId: string) => {
+    const serviceClient = createServiceSupabaseClient()
+    const { data } = await serviceClient
+      .from('objecten')
+      .select('id, address, outputs_json, created_at')
+      .eq('id', objectId)
+      .single()
+    return data
+  },
+  ['object-detail'],
+  { revalidate: 86400 }, // 24 uur cache
+)
+
 export default async function ObjectDetailPage({ params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: object } = await supabase
-    .from('objecten')
-    .select('id, address, outputs_json, created_at')
-    .eq('id', params.id)
-    .single()
+  const object = await getCachedObject(params.id)
 
   if (!object) notFound()
 

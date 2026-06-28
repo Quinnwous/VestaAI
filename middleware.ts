@@ -15,6 +15,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Zonder Supabase (bijv. alleen API-key testen): auth overslaan
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return NextResponse.next()
+  }
+
   let response = NextResponse.next({ request })
 
   const supabase = createServerClient(

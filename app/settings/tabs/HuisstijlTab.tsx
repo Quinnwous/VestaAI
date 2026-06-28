@@ -4,6 +4,7 @@ import { useState } from 'react'
 import type { Kantoor } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { slaHuisstijlOp } from '../actions'
+import { LogoUpload } from './LogoUpload'
 
 interface Props {
   kantoor: Kantoor
@@ -52,6 +53,9 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
+      {/* Logo */}
+      <LogoUpload kantoorId={kantoor.id} huidigUrl={kantoor.logo_url} />
+
       {/* Schrijftoon */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">Schrijftoon</label>

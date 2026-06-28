@@ -7,6 +7,12 @@ vi.mock('@/lib/claude', () => ({
   generateContent: vi.fn(),
 }))
 
+vi.mock('@/lib/supabase', () => ({
+  isSupabaseConfigured: vi.fn(() => false),
+  createServerSupabaseClient: vi.fn(),
+  createServiceSupabaseClient: vi.fn(),
+}))
+
 import { POST } from './route'
 import * as claudeModule from '@/lib/claude'
 import { ZodError } from 'zod'
@@ -53,7 +59,8 @@ describe('POST /api/generate', () => {
     const data = await res.json()
 
     expect(res.status).toBe(200)
-    expect(data.funda_tekst).toBe('tekst')
+    expect(data.output.funda_tekst).toBe('tekst')
+    expect(data.object_id).toBeNull()
   })
 
   it('returns 400 on Zod validation error', async () => {

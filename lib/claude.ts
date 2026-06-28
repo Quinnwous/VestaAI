@@ -70,10 +70,13 @@ export async function generateContent(
   let huisstijl: HuisstijlConfig | undefined
   let client: Anthropic
 
-  if (huisstijlOrClient instanceof Anthropic) {
-    client = huisstijlOrClient
+  const isHuisstijl = (x: unknown): x is HuisstijlConfig =>
+    !!x && typeof x === 'object' && 'schrijftoon' in x
+
+  if (!isHuisstijl(huisstijlOrClient) && huisstijlOrClient) {
+    client = huisstijlOrClient as unknown as Anthropic
   } else {
-    huisstijl = huisstijlOrClient
+    huisstijl = huisstijlOrClient as HuisstijlConfig | undefined
     client = clientArg ?? new Anthropic()
   }
   const systemPrompt = buildSystemPrompt(huisstijl)

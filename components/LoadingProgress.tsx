@@ -3,13 +3,33 @@
 import { useEffect, useState } from 'react'
 
 const STEPS = [
-  { label: 'Funda-tekst schrijven', delay: 25000 },
-  { label: 'Brochures opstellen', delay: 40000 },
-  { label: 'Instagram-varianten maken', delay: 55000 },
-  { label: 'LinkedIn-posts schrijven', delay: 65000 },
-  { label: 'Koper-e-mail personaliseren', delay: 75000 },
-  { label: 'Buurtomschrijving toevoegen', delay: 85000 },
+  { label: 'Funda-tekst schrijven', delay: 20000 },
+  { label: 'Brochures opstellen', delay: 38000 },
+  { label: 'Instagram-varianten maken', delay: 52000 },
+  { label: 'LinkedIn-posts schrijven', delay: 63000 },
+  { label: 'Koper-e-mail personaliseren', delay: 73000 },
+  { label: 'Buurtomschrijving toevoegen', delay: 82000 },
 ]
+
+function CheckIcon() {
+  return (
+    <svg className="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+function SpinnerIcon() {
+  return (
+    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+  )
+}
+
+function WaitIcon() {
+  return (
+    <div className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
+  )
+}
 
 export function LoadingProgress() {
   const [completed, setCompleted] = useState<Set<number>>(new Set())
@@ -24,31 +44,29 @@ export function LoadingProgress() {
   }, [])
 
   return (
-    <div className="flex flex-col items-center justify-center py-16">
+    <div className="flex flex-col items-center justify-center py-12">
       <div className="mb-8 text-center">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">Content wordt gegenereerd</h2>
-        <p className="text-sm text-gray-500">Gemiddeld 60–90 seconden</p>
+        <h2 className="text-lg font-semibold text-gray-900 mb-1">Content wordt gegenereerd</h2>
+        <p className="text-sm text-gray-400">Gemiddeld 60–90 seconden</p>
       </div>
 
-      <div className="w-full max-w-sm space-y-3">
+      <div className="w-full max-w-xs space-y-2.5">
         {STEPS.map((step, index) => {
           const done = completed.has(index)
           const active = !done && (index === 0 || completed.has(index - 1))
           return (
             <div
               key={step.label}
-              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm transition-all ${
+              className={`flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-all duration-300 ${
                 done
                   ? 'bg-green-50 text-green-800'
                   : active
                   ? 'bg-blue-50 text-blue-800'
-                  : 'bg-gray-50 text-gray-400'
+                  : 'text-gray-400'
               }`}
             >
-              <span className="text-base">
-                {done ? '✅' : active ? '⏳' : '○'}
-              </span>
-              <span className={done ? 'line-through opacity-70' : ''}>{step.label}</span>
+              {done ? <CheckIcon /> : active ? <SpinnerIcon /> : <WaitIcon />}
+              <span className={done ? 'line-through opacity-60' : ''}>{step.label}</span>
             </div>
           )
         })}
