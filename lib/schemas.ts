@@ -1,5 +1,14 @@
 import { z } from 'zod'
 
+export const HuisstijlSchema = z.object({
+  schrijftoon: z.enum(['formeel', 'informeel', 'enthousiast']),
+  slogan: z.string().max(100),
+  primaire_kleur: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  voorbeelden: z.array(z.string().max(2000)).max(3),
+})
+
+export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>
+
 export const PropertyInputSchema = z.object({
   adres: z.string().min(5),
   woningtype: z.enum([

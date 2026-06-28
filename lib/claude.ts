@@ -4,11 +4,12 @@ import {
   ContentOutputSchema,
   type PropertyInput,
   type ContentOutput,
+  type HuisstijlConfig,
 } from './schemas'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
-const SYSTEM_PROMPT = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in Funda-advertenties.
+const BASE_SYSTEM_PROMPT = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in Funda-advertenties.
 
 Funda-regels:
 - Max 800 woorden hoofdtekst
@@ -22,6 +23,25 @@ Output: geldig JSON-object met precies deze sleutels:
   "linkedin_makelaar", "koper_email", "buurtomschrijving" }
 
 Geen tekst buiten het JSON-object.`
+
+function buildSystemPrompt(huisstijl?: HuisstijlConfig): string {
+  if (!huisstijl) return BASE_SYSTEM_PROMPT
+
+  const schrijftoonLabel = {
+    formeel: 'Formeel en professioneel',
+    informeel: 'Informeel en toegankelijk',
+    enthousiast: 'Enthousiast en uitnodigend',
+  }[huisstijl.schrijftoon]
+
+  let extra = `\n\nHuisstijl van het makelaarskantoor:\n- Schrijftoon: ${schrijftoonLabel}`
+  if (huisstijl.slogan) extra += `\n- Slogan: "${huisstijl.slogan}"`
+  if (huisstijl.voorbeelden.length > 0) {
+    extra += `\n\nVoorbeeldteksten (gebruik als stijlreferentie):\n`
+    huisstijl.voorbeelden.forEach((v, i) => { extra += `\n--- Voorbeeld ${i + 1} ---\n${v}\n` })
+  }
+
+  return BASE_SYSTEM_PROMPT + extra
+}
 
 function buildUserMessage(input: PropertyInput): string {
   return `Woning: ${input.adres}
@@ -43,8 +63,21 @@ function parseClaudeResponse(text: string): ContentOutput {
 
 export async function generateContent(
   input: PropertyInput,
-  client: Anthropic = new Anthropic(),
+  huisstijlOrClient?: HuisstijlConfig | Anthropic,
+  clientArg?: Anthropic,
 ): Promise<ContentOutput> {
+  // Ondersteunt zowel generateContent(input, huisstijl, client) als generateContent(input, client) (legacy tests)
+  let huisstijl: HuisstijlConfig | undefined
+  let client: Anthropic
+
+  if (huisstijlOrClient instanceof Anthropic) {
+    client = huisstijlOrClient
+  } else {
+    huisstijl = huisstijlOrClient
+    client = clientArg ?? new Anthropic()
+  }
+  const systemPrompt = buildSystemPrompt(huisstijl)
+
   for (let attempt = 0; attempt < 2; attempt++) {
     const extra = attempt > 0
       ? '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.'
@@ -53,7 +86,7 @@ export async function generateContent(
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: [{ role: 'user', content: buildUserMessage(input) + extra }],
     })
 

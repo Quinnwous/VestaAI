@@ -1,88 +1,197 @@
-# VestaAI — Stappenplan
+# VestaAI — Roadmap
 
 Bij twijfel over product of prioriteiten: `VestaAI.html` raadplegen.
-Klaar? Stap verwijderen uit dit bestand.
+Tactische taken: verwijder ze zodra ze klaar zijn. De strategische secties bovenaan blijven staan — die zijn het kompas.
 
 ---
 
-## Fase 1 — MVP (nu bezig)
+## Visie
 
-- [ ] `ANTHROPIC_API_KEY` invullen in `.env.local` en happy-path testen op `localhost:3000`
-- [ ] Supabase-project aanmaken op supabase.com
-- [ ] SQL-migraties uitvoeren: tabellen `kantoren`, `makelaars`, `objecten`
-- [ ] `.env.local` aanvullen met Supabase-keys (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`)
-- [ ] `lib/supabase.ts` schrijven: server-client helper + browser-client helper
-- [ ] `/login` pagina: e-mailinvoerveld + "Stuur magic link"-knop
-- [ ] `supabase.auth.signInWithOtp({ email })` aanroepen
-- [ ] `/auth/confirm` route: PKCE-callback afhandelen, sessie bevestigen, doorsturen naar `/object/new`
-- [ ] Test: magic link ontvangen in echte mailbox, sessie bewaard na refresh
-- [ ] `middleware.ts`: niet-ingelogde gebruikers → `/login`
-- [ ] Na succesvolle generate: object opslaan in `objecten`-tabel (`input_json` + `outputs_json`)
-- [ ] Stripe-dashboard: Solo (€79/mo) en Kantoor (€149/mo) producten aanmaken
-- [ ] `lib/stripe.ts` schrijven: Stripe-client helper
-- [ ] `/api/stripe/checkout` route: checkout-sessie aanmaken met `customer_email`
-- [ ] Betaalmuur-component: tonen als trial verlopen is
-- [ ] Succespagina na afgeronde betaling (`/betaling-gelukt`)
-- [ ] `/api/webhooks/stripe` route: `checkout.session.completed` + `customer.subscription.deleted` afhandelen
-- [ ] `kantoren.plan` en `trial_ends_at` bijwerken op subscription-events
-- [ ] Middleware uitbreiden: trial-check (>14 dagen zonder betaling → betaalmuur)
-- [ ] Lokaal testen met `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+VestaAI is de AI-assistent voor het makelaarskantoor — niet alleen content, maar het hele plaatje. Content-generatie is het instapproduct omdat het direct waarde levert en makkelijk te verkopen is. Maar VestaAI groeit naar een volledig platform: marktonderzoek, Kadaster-data, meerdere databronnen, en een document-chatbot waarmee makelaars vragen kunnen stellen over VVE-notulen, leveringsaktes en koopaktes. Uiteindelijk is VestaAI de AI-laag achter een makelaarskantoor.
+
+**Exitstrategie:** acquisitie in ~5 jaar (2031), realistisch €1–20M. Potentiële kopers: Funda, Realworks, NVM-gelieerde SaaS, PropTech PE-funds, grote makelaarsketens. Wat ons aantrekkelijk maakt: gebruikersbasis NL/BE + begin Europa, stabiele MRR, data-assets, en een AI-platform dat moeilijk zelf te bouwen is.
 
 ---
 
-## Fase 2 — Kantoorinstellingen + Huisstijl
+## Groeifases (overzicht)
 
-- [ ] Navigatie-header toevoegen (logo, "Nieuw object", "Instellingen", uitlog)
-- [ ] `/settings` pagina met tabs: Account · Huisstijl · Team
-- [ ] Supabase Storage-bucket aanmaken (`kantoor-assets`, publiek leesbaar)
-- [ ] Logo-uploadformulier → opslaan in bucket, `kantoren.logo_url` bijwerken, logo in header tonen
-- [ ] Huisstijl-formulier: schrijftoon (formeel · informeel · enthousiast), slogan (max 100 tekens), primaire kleur (hex)
-- [ ] Opslaan als `kantoren.huisstijl_json`
-- [ ] `lib/claude.ts` uitbreiden: `huisstijl_json` dynamisch in system prompt injecteren
-- [ ] Textarea voor max 3 voorbeeldteksten van het kantoor → opslaan in `huisstijl_json.voorbeelden`
-- [ ] Voorbeeldteksten als few-shot-voorbeelden meegeven in de user message aan Claude
-- [ ] Testen: zelfde object met en zonder huisstijl → zichtbaar verschil in output
+| Fase | Periode | Kern |
+|------|---------|------|
+| 0 — Fundament | nu → Q3 2026 | MVP bouwen + UX professioneel |
+| 1 — Gratis beta | Q3/Q4 2026 | 10–20 makelaars testen, feedback verzamelen |
+| 2 — Eerste betalende klanten | Q4 2026 – Q1 2027 | €1.000–3.000 MRR, product-market fit bewijzen |
+| 3 — Groei NL/BE | 2027 | 100+ klanten, €10K MRR, dominantie NL/BE |
+| 4 — Full-stack + Europa | 2028 | Document-chatbot, Kadaster, Europa-pilot |
+| 5 — Schaling & exit-ready | 2029–2031 | 500–1.500 klanten, M&A-gesprekken |
 
 ---
 
-## Fase 3 — PDF-export
+## Constante aandachtsgebieden
 
-- [ ] `@react-pdf/renderer` installeren
-- [ ] `/api/pdf/generate` route: PDF aanmaken op basis van `object_id`
-- [ ] Basistemplate: logo, kantoorkleur, typografie, paginanummering
-- [ ] Alle 7 content-types als secties in de PDF
-- [ ] Brochure: lange variant standaard, korte variant als bijlage
-- [ ] Instagram-varianten naast elkaar op één pagina
-- [ ] Huisstijl-kleuren en logo vanuit `huisstijl_json` toepassen
-- [ ] "Exporteer PDF"-knop in `ResultTabs`
-- [ ] Loading-state tijdens PDF-render + automatisch downloaden als `[adres]-VestaAI.pdf`
+**UX/UI:** Vóór elke fase-overgang een designreview. Na iedere 25 nieuwe klanten: gebruiksdata analyseren en pijn-punten verhelpen. Standaard: professioneel, minimalistisch, geen template-gevoel.
+
+**Marketing:** Fase 1–2: 2× per week op LinkedIn (AI + makelaars, concrete resultaten). Fase 3+: contentkalender, casestudies met klanttoestemming, thought leadership.
+
+**Financieel dashboard (bijhouden vanaf dag 1):** MRR · churn · CAC (kosten per nieuwe klant) · LTV · API-kosten per gegenereerd object → margin per plan bewaken.
+
+**Tech-debt:** Na iedere commerciële groeifase een tech-debt sprint. Geen rotzooi meenemen naar Europa.
 
 ---
 
-## Fase 4 — Dashboard + Multi-user
+## Fase 0 — Fundament ← nu bezig
 
-- [ ] `/dashboard` met kaartjes per gegenereerd object (adres, datum)
-- [ ] Klikken op kaartje → resultaten herbekijken zonder nieuwe API-call
-- [ ] Zoeken op adres + filteren op datum + paginering (20 per pagina)
-- [ ] Kantoor-admin kan collega's uitnodigen via e-mail
-- [ ] Rollen: `admin` (instellingen + teambeheer) en `makelaar` (alleen objecten)
-- [ ] Gebruikersoverzicht in `/settings/team`
-- [ ] `lib/email.ts` schrijven: Resend-client helper
-- [ ] Welkomstmail bij registratie
-- [ ] Trial-waarschuwing 3 dagen voor afloop
-- [ ] Factuurbevestiging na betaling (via Stripe webhook)
-- [ ] Sentry integreren voor error tracking
-- [ ] Response-caching: gegenereerde content 24u cachen
+**Klaar als:** MVP draait end-to-end, UX voelt professioneel, geen fatale bugs.
+
+### Wacht op Quinn (externe setup)
+
+- `ANTHROPIC_API_KEY` invullen in `.env.local` en happy-path testen op `localhost:3000`
+- Supabase-project aanmaken op supabase.com → SQL uit `supabase/migrations/001_initial.sql` uitvoeren
+- `.env.local` aanvullen met alle keys (zie `.env.example`)
+- Test: magic link ontvangen in echte mailbox, sessie bewaard na refresh
+- Stripe-dashboard: Solo (€79/mo) en Kantoor (€149/mo) producten aanmaken → prijs-IDs invullen in `.env.local`
+- Lokaal testen met `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
+- Supabase Storage-bucket aanmaken (`kantoor-assets`, publiek leesbaar)
+- Testen: zelfde object met en zonder huisstijl → zichtbaar verschil
+
+### Nog te bouwen (code)
+
+- Logo-uploadformulier in `/settings` → opslaan in Supabase Storage-bucket, `kantoren.logo_url` bijwerken
+- Trial-waarschuwingsmail 3 dagen voor afloop (vereist cron of Supabase Edge Function)
+- Sentry integreren voor error tracking
+- Response-caching: gegenereerde content 24u cachen (Next.js `unstable_cache` of Redis)
+- UX/UI designreview: onboarding-flow testen, mobile-responsiveness, lege states nalopen
 
 ---
 
-## Fase 5 — Marktdata (op basis van gebruikersfeedback)
+## Fase 1 — Gratis beta
 
-API-referenties staan in `docs/fase2/`.
+**Klaar als:** ≥5 makelaars gebruiken het actief, NPS ≥30, top-3 verbeterpunten zijn helder.
 
-- [ ] BAG-koppeling: bouwjaar + m² automatisch ophalen (`docs/fase2/bag-data.md`)
-- [ ] WOZ-vergelijking (`docs/fase2/woz-vergelijking.md`)
-- [ ] CBS-buurtstatistieken (`docs/fase2/buurtanalyse-cbs.md`)
-- [ ] Voorzieningen in de buurt via OpenStreetMap (`docs/fase2/overpass-voorzieningen.md`)
-- [ ] Historische waardeontwikkeling (`docs/fase2/historisch-waarde.md`)
-- [ ] Marktdynamiek per object (`docs/fase2/marktdynamiek.md`)
+### Acquisitie
+
+- Lijst maken: welke makelaars ken ik persoonlijk of via via?
+- Ieder persoonlijk benaderen: "Ik bouw een tool, wil je gratis testen en eerlijke feedback geven?"
+- Drempel nul: geen credit card, gewoon toegang — maximaal 15 gratis objecten per beta-gebruiker (API-kosten begrenzen)
+
+### Feedback-structuur
+
+- In-app survey na 1e gebruik: NPS (0–10) + één open vraag ("Wat mis je het meest?")
+- Na 2 weken: 30 min videocall met 3–5 actieve gebruikers
+- Bijhouden: welke content-types worden meest gebruikt, waar haken mensen af, wat missen ze
+
+### UX/UI
+
+- Beta-gebruikers observeren zonder uitleg — kijken waar ze vastlopen
+- Pijn-punten direct oplossen vóór betalende fase
+
+---
+
+## Fase 2 — Eerste betalende klanten
+
+**Klaar als:** ≥15 betalende klanten, churn <10%/maand, MRR ≥€1.500.
+
+### Acquisitie & conversie
+
+- Beta-gebruikers persoonlijk bellen: "Ik ga het betaald maken — wil jij als eerste instappen?"
+- Warme referrals vragen bij tevreden beta-klanten
+- LinkedIn-posts starten: 2× per week, AI + makelaars, concrete voorbeelden en resultaten
+
+### Pricing-validatie
+
+- Luisteren naar bezwaren op €79/€149 — aanpassen als er een patroon is
+- Jaarbetaling aanbieden met ~15% korting → betere cashflow en lagere churn
+
+### Technisch
+
+- Sentry error tracking live
+- Response-caching actief (API-kosten drukken)
+- Multi-user invite flow stabiel voor Kantoor-plan
+
+### Financieel checkpoint
+
+- Break-even op API-kosten: ~10–15 Solo-klanten
+- Doel: positieve cashflow voor einde Q1 2027
+
+---
+
+## Fase 3 — Groei NL/BE (2027)
+
+**Klaar als:** 100+ actieve klanten, churn <5%/maand, MRR ≥€10K, duidelijke differentiatie t.o.v. concurrenten.
+
+### Acquisitie
+
+- Referral-mechanisme in product: uitnodigen = maand gratis
+- Kantoor-deals actief pushen: één kantoor = €149/mo, betere unit economics
+- Franchise-plan activeren voor grotere netwerken
+- Content marketing op volle kracht: LinkedIn + eventueel Instagram (makelaars zitten daar ook)
+
+### Product
+
+- BAG-koppeling: bouwjaar + m² automatisch ophalen (`docs/fase2/bag-data.md`)
+- WOZ-vergelijking (`docs/fase2/woz-vergelijking.md`)
+- CBS-buurtstatistieken (`docs/fase2/buurtanalyse-cbs.md`)
+- Voorzieningen via OpenStreetMap (`docs/fase2/overpass-voorzieningen.md`)
+- Historische waardeontwikkeling (`docs/fase2/historisch-waarde.md`)
+- Marktdynamiek per object (`docs/fase2/marktdynamiek.md`)
+- Few-shot learning via klant-voorbeeldteksten (uitbreiden)
+
+### UX/UI
+
+- Na 50 klanten: serieuze UX-audit op basis van gebruiksdata (Hotjar of vergelijkbaar)
+- Onboarding-flow meten en aanscherpen: sign-up → eerste gegenereerde tekst <5 minuten
+
+### Partnerships verkennen
+
+- NVM/VBO: gesprek of officiële partner-status of aanmelding mogelijk is
+- Makelaarskantoren met meerdere vestigingen: enterprise deal structureren
+
+---
+
+## Fase 4 — Full-stack + Europese voorbereiding (2028)
+
+**Klaar als:** Stabiel platform, Europa-pilot live met ≥10 betalende klanten, duidelijke roadmap naar €100K ARR.
+
+### Product — volledige AI-assistent
+
+- **Document-chatbot:** makelaar uploadt VVE-notulen, leveringsakte of koopakte → kan vragen stellen via chat ("Zijn er achterstallige bijdragen?", "Wat is de ontbindingstermijn?")
+- **Marktonderzoek per object:** vergelijkbare transacties, prijstrends, buurtanalyse automatisch gegenereerd
+- **Kadaster-integratie:** eigendomshistorie, hypotheken, erfpacht automatisch ophalen
+- **CRM-light:** objectbeheer + klantcontact vanuit VestaAI
+- **Exportintegraties:** Funda XML, Realworks
+
+### Europese voorbereiding
+
+- i18n-framework in codebase inbouwen
+- Marktonderzoek: Duitsland (groot, gefragmenteerd) vs. Spanje (hoog transactievolume)?
+- Pilot 1 extra markt: eigen taal, lokale content-normen, lokale databronaansluiting
+- Gesprekken met lokale brancheorganisaties of resellers
+
+### Financieel checkpoint
+
+- MRR-doel: €25–50K (NL/BE + Europa-begin)
+- Overweeg eerste medewerker of vaste freelance developer
+
+---
+
+## Fase 5 — Schaling & exit-ready (2029–2031)
+
+**Klaar als:** Term sheet van serieuze partij ontvangen, of bewuste beslissing om door te groeien.
+
+### Schaling
+
+- 500–1.500 klanten in NL/BE + 1–2 Europese markten
+- MRR €50–150K
+- Klein maar slagvaardig team (2–5 mensen)
+
+### Exit-voorbereiding
+
+- Financiën: clean P&L, geen spaghetti-contracten, GAAP-vriendelijke rapportage
+- IP: domeinen, merknaam, codebase volledig gedocumenteerd
+- Data-assets: geanonimiseerde gebruiksdata en benchmarks (dit is waarde voor een koper)
+- Geen sleutelpersoon-risico: kennis van het platform moet overdraagbaar zijn
+
+### Actief contact
+
+- Netwerk opbouwen met potentiële kopers en PropTech PE-funds — niet wachten tot iemand aanklopt
+- Zichtbaar zijn op de juiste plekken (PropTech-conferenties, branche-events)
+- Bij serieuze gesprekken: M&A-adviseur inschakelen
