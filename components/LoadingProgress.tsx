@@ -17,7 +17,7 @@ export function LoadingProgress() {
   useEffect(() => {
     const timers = STEPS.map((step, index) =>
       setTimeout(() => {
-        setCompleted(prev => new Set([...prev, index]))
+        setCompleted(prev => new Set(Array.from(prev).concat(index)))
       }, step.delay),
     )
     return () => timers.forEach(clearTimeout)
