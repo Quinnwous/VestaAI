@@ -69,10 +69,16 @@ VestaAI/
 │   ├── supabase.ts        # (Week 2)
 │   └── stripe.ts          # (Week 2)
 ├── docs/
-│   ├── roadmap.md         # ← volgende stappen
-│   ├── plans/             # implementatieplannen per sprint
-│   └── specs/             # architectuurontwerpen per sprint
-├── archive/skills/        # Phase 2 referentie: CBS, WOZ, Overpass, BAG
+│   ├── roadmap.md         # ← volgende stappen (dag-voor-dag)
+│   ├── specs/             # architectuurontwerpen per sprint
+│   │   └── day1-form-api.md
+│   └── fase2/             # API-referenties voor Fase 2 (Maand 4+)
+│       ├── bag-data.md
+│       ├── buurtanalyse-cbs.md
+│       ├── historisch-waarde.md
+│       ├── marktdynamiek.md
+│       ├── overpass-voorzieningen.md
+│       └── woz-vergelijking.md
 └── VestaAI.html           # businessplan (leidend)
 ```
 
@@ -91,8 +97,3 @@ VestaAI/
 - `npm run test` — unit tests (Vitest)
 - `npm run typecheck` — TypeScript check
 - `npm run build` — productie-build
-
-## Phase 2 referentie
-
-`archive/skills/` bevat 6 SKILL.md-bestanden voor toekomstige marktdata-features:
-`buurtanalyse-cbs` · `overpass-voorzieningen` · `woz-vergelijking` · `historisch-waarde` · `marktdynamiek` · `bag-data`
