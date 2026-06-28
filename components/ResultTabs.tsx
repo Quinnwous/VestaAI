@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { ContentOutput } from '@/lib/claude'
+import type { ContentOutput } from '@/lib/schemas'
 import { TabContent } from './TabContent'
 
 type Tab = 'funda' | 'brochure' | 'instagram' | 'linkedin' | 'email' | 'buurt'

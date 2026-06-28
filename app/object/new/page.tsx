@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { PropertyInput, ContentOutput } from '@/lib/claude'
+import type { PropertyInput, ContentOutput } from '@/lib/schemas'
 import { PropertyForm } from '@/components/PropertyForm'
 import { LoadingProgress } from '@/components/LoadingProgress'
 import { ResultTabs } from '@/components/ResultTabs'
