@@ -55,11 +55,8 @@ VestaAI is de AI-assistent voor het makelaarskantoor — niet alleen content, ma
 
 ### Nog te bouwen (code)
 
-- Logo-uploadformulier in `/settings` → opslaan in Supabase Storage-bucket, `kantoren.logo_url` bijwerken
-- Trial-waarschuwingsmail 3 dagen voor afloop (vereist cron of Supabase Edge Function)
+- Trial-waarschuwingsmail 3 dagen voor afloop (vereist Supabase Edge Function of cron-job)
 - Sentry integreren voor error tracking
-- Response-caching: gegenereerde content 24u cachen (Next.js `unstable_cache` of Redis)
-- UX/UI designreview: onboarding-flow testen, mobile-responsiveness, lege states nalopen
 
 ---
 
