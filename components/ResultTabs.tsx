@@ -29,6 +29,25 @@ export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsP
   const [activeTab, setActiveTab] = useState<Tab>('funda')
   const [brochureVariant, setBrochureVariant] = useState<'kort' | 'lang'>('lang')
   const [downloadingPdf, setDownloadingPdf] = useState(false)
+  const [copiedAll, setCopiedAll] = useState(false)
+
+  const handleCopyAll = async () => {
+    const alles = [
+      `=== FUNDA-TEKST ===\n${data.funda_tekst}`,
+      `=== BROCHURE (LANG) ===\n${data.brochure_lang}`,
+      `=== BROCHURE (KORT) ===\n${data.brochure_kort}`,
+      `=== INSTAGRAM — EMOTIONEEL ===\n${data.instagram_emotioneel}`,
+      `=== INSTAGRAM — INFORMATIEF ===\n${data.instagram_informatief}`,
+      `=== INSTAGRAM — ACTIE ===\n${data.instagram_actie}`,
+      `=== LINKEDIN — KANTOOR ===\n${data.linkedin_kantoor}`,
+      `=== LINKEDIN — MAKELAAR ===\n${data.linkedin_makelaar}`,
+      `=== E-MAIL AAN KOPER ===\n${data.koper_email}`,
+      `=== BUURTOMSCHRIJVING ===\n${data.buurtomschrijving}`,
+    ].join('\n\n')
+    await navigator.clipboard.writeText(alles)
+    setCopiedAll(true)
+    setTimeout(() => setCopiedAll(false), 2500)
+  }
 
   const handleReset = () => {
     if (onReset) onReset()
@@ -58,6 +77,17 @@ export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsP
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-gray-900">Gegenereerde content</h2>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleCopyAll}
+            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 border border-gray-300 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            {copiedAll ? '✓ Alles gekopieerd' : 'Kopieer alles'}
+          </button>
+
           {objectId && (
             <button
               onClick={handlePdfDownload}
@@ -128,17 +158,23 @@ export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsP
         )}
 
         {activeTab === 'instagram' && (
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <TabContent label="Emotioneel" content={data.instagram_emotioneel} />
-            <TabContent label="Informatief" content={data.instagram_informatief} />
-            <TabContent label="Actie" content={data.instagram_actie} />
+          <div>
+            <p className="text-xs text-gray-400 mb-4">Instagram-limiet: 2.200 tekens per post</p>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <TabContent label="Emotioneel" content={data.instagram_emotioneel} charLimit={2200} />
+              <TabContent label="Informatief" content={data.instagram_informatief} charLimit={2200} />
+              <TabContent label="Actie" content={data.instagram_actie} charLimit={2200} />
+            </div>
           </div>
         )}
 
         {activeTab === 'linkedin' && (
-          <div className="space-y-4">
-            <TabContent label="Kantoor-variant" content={data.linkedin_kantoor} />
-            <TabContent label="Makelaar-variant" content={data.linkedin_makelaar} />
+          <div>
+            <p className="text-xs text-gray-400 mb-4">LinkedIn-limiet: 3.000 tekens per post</p>
+            <div className="space-y-4">
+              <TabContent label="Kantoor-variant" content={data.linkedin_kantoor} charLimit={3000} />
+              <TabContent label="Makelaar-variant" content={data.linkedin_makelaar} charLimit={3000} />
+            </div>
           </div>
         )}
 

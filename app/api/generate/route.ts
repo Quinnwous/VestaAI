@@ -40,13 +40,15 @@ export async function POST(req: NextRequest) {
           huisstijl = kantoorData.huisstijl_json
         }
 
-        // Beta-limiet: max 15 objecten wanneer er geen betaald abonnement actief is
-        if (!kantoorData?.plan) {
+        // Limieten controleren
+        const plan = kantoorData?.plan
+
+        if (!plan) {
+          // Proefperiode: max 15 objecten totaal
           const { count } = await supabase
             .from('objecten')
             .select('id', { count: 'exact', head: true })
             .eq('kantoor_id', makelaar.kantoor_id)
-
           const BETA_LIMIET = 15
           if ((count ?? 0) >= BETA_LIMIET) {
             return NextResponse.json(
@@ -54,7 +56,25 @@ export async function POST(req: NextRequest) {
               { status: 402 },
             )
           }
+        } else if (plan === 'solo') {
+          // Solo: max 30 objecten per kalendermaand
+          const startOfMonth = new Date()
+          startOfMonth.setDate(1)
+          startOfMonth.setHours(0, 0, 0, 0)
+          const { count } = await supabase
+            .from('objecten')
+            .select('id', { count: 'exact', head: true })
+            .eq('kantoor_id', makelaar.kantoor_id)
+            .gte('created_at', startOfMonth.toISOString())
+          const SOLO_LIMIET = 30
+          if ((count ?? 0) >= SOLO_LIMIET) {
+            return NextResponse.json(
+              { error: `Maandlimiet bereikt: het Solo-plan staat ${SOLO_LIMIET} objecten per maand toe. Upgrade naar Kantoor voor onbeperkte toegang.` },
+              { status: 402 },
+            )
+          }
         }
+        // Kantoor en franchise: geen limiet
 
         const output = await generateContent(input, huisstijl)
 

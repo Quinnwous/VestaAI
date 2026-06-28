@@ -21,3 +21,50 @@
   ::-webkit-scrollbar-thumb { @apply bg-gray-300 rounded-full; }
   ::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
 }
+
+/* Print styles — Ctrl/Cmd+P vanuit de result-pagina */
+@media print {
+  /* Verberg navigatie en knoppen */
+  header, nav, button, form[action="/api/auth/logout"] {
+    display: none !important;
+  }
+
+  /* Tabs: toon alle content achter elkaar */
+  [role="tabpanel"] { display: block !important; }
+  .border-b.border-gray-200.mb-6 { display: none !important; }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 11pt;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  /* Sectie-containers */
+  .rounded-2xl, .rounded-xl, .rounded-lg {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  /* Tekst-blokken leesbaar houden */
+  .whitespace-pre-wrap {
+    white-space: pre-wrap;
+    font-size: 10pt;
+    line-height: 1.6;
+  }
+
+  /* Pagina-einden */
+  .space-y-4 > div, .space-y-6 > div {
+    page-break-inside: avoid;
+  }
+
+  /* Links niet onderstrepen in print */
+  a { text-decoration: none !important; color: inherit !important; }
+}

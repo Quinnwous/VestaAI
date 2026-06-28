@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import type { ObjectRow } from '@/lib/supabase'
 
@@ -18,6 +18,7 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [zoekterm, setZoekterm] = useState(search)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const updateUrl = useCallback((params: Record<string, string>) => {
     const current = new URLSearchParams(searchParams.toString())
@@ -28,8 +29,21 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
     router.push(`${pathname}?${current.toString()}`)
   }, [router, pathname, searchParams])
 
+  const handleZoekChange = (value: string) => {
+    setZoekterm(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      updateUrl({ search: value, page: '1' })
+    }, 300)
+  }
+
+  useEffect(() => () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+  }, [])
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     updateUrl({ search: zoekterm, page: '1' })
   }
 
@@ -43,7 +57,7 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
         <input
           type="text"
           value={zoekterm}
-          onChange={e => setZoekterm(e.target.value)}
+          onChange={e => handleZoekChange(e.target.value)}
           placeholder="Zoek op adres..."
           className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />

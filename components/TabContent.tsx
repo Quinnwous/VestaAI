@@ -6,9 +6,10 @@ interface TabContentProps {
   label?: string
   content: string
   wordCount?: boolean
+  charLimit?: number
 }
 
-export function TabContent({ label, content, wordCount }: TabContentProps) {
+export function TabContent({ label, content, wordCount, charLimit }: TabContentProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -18,14 +19,27 @@ export function TabContent({ label, content, wordCount }: TabContentProps) {
   }
 
   const words = content.trim().split(/\s+/).length
+  const chars = content.length
+  const overLimit = charLimit ? chars > charLimit : false
+  const nearLimit = charLimit ? chars > charLimit * 0.9 : false
 
   return (
     <div className="relative">
-      <div className="flex items-center justify-between mb-2">
-        {label && <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>}
-        <div className="flex items-center gap-3 ml-auto">
+      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+        {label && (
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+        )}
+        <div className="flex items-center gap-3 ml-auto flex-wrap">
           {wordCount && (
             <span className="text-xs text-gray-400">{words} woorden</span>
+          )}
+          {charLimit && (
+            <span className={`text-xs tabular-nums font-medium ${
+              overLimit ? 'text-red-600' : nearLimit ? 'text-orange-500' : 'text-gray-400'
+            }`}>
+              {chars.toLocaleString('nl-NL')}/{charLimit.toLocaleString('nl-NL')} tekens
+              {overLimit && ' — te lang!'}
+            </span>
           )}
           <button
             onClick={handleCopy}
@@ -35,7 +49,9 @@ export function TabContent({ label, content, wordCount }: TabContentProps) {
           </button>
         </div>
       </div>
-      <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+      <div className={`rounded-lg border bg-gray-50 p-4 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed ${
+        overLimit ? 'border-red-200' : 'border-gray-100'
+      }`}>
         {content}
       </div>
     </div>
