@@ -7,16 +7,16 @@ SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Clau
 **Input (8 velden):**
 adres · woningtype + kamers · m² · bouwjaar · energielabel · vraagprijs · USP's (vrij tekstveld) · doelgroep
 
-**Output (7 content-types):**
-1. Funda-tekst (600–800 woorden, Funda-regelset ingebakken)
-2. Brochure kort (200 woorden)
-3. Brochure lang (500+ woorden)
-4. Instagram (3 varianten: emotioneel / informatief / actie)
-5. LinkedIn (kantoor-variant + individuele makelaar)
-6. Koper-e-mail (toon past op prijs + doelgroep)
-7. Buurtomschrijving
+**Output (10 JSON-sleutels, 7 content-types):**
+1. `funda_tekst` — 600–800 woorden, Funda-regelset ingebakken
+2. `brochure_kort` — ~200 woorden
+3. `brochure_lang` — 500+ woorden
+4. `instagram_emotioneel` / `instagram_informatief` / `instagram_actie` — 3 losse varianten
+5. `linkedin_kantoor` / `linkedin_makelaar` — 2 varianten
+6. `koper_email`
+7. `buurtomschrijving`
 
-**UI-flow:** formulier → loading (90s) → 6 tabbladen met gegenereerde teksten → kopieer of exporteer PDF.
+**UI-flow:** formulier → loading (90s) → 6 tabbladen → kopieer of exporteer PDF.
 
 ## Stack
 
@@ -50,75 +50,49 @@ objecten:  id, kantoor_id, makelaar_id, address, input_json, outputs_json, creat
 
 14 dagen gratis proefperiode → automatische facturering via Stripe.
 
-## Buildvolgorde (MVP)
-
-- **Day 1:** formulier (8 velden) → Claude API call → JSON → 6-tab weergave (geen auth)
-- **Week 2:** Supabase auth (magic links) + Stripe
-- **Week 3:** kantoorinstellingen (logo upload + huisstijlprofiel)
-- **Week 4:** PDF-export met kantoorbranding (react-pdf)
-- **Maand 2:** multi-user, objecthistorie, dashboard
-
-## Mappenstructuur (Next.js App Router)
+## Mappenstructuur
 
 ```
 VestaAI/
 ├── app/
-│   ├── (auth)/            # login / magic-link confirm
-│   ├── dashboard/         # objectenoverzicht
-│   ├── object/new/        # 8-velden formulier
-│   └── api/
-│       ├── generate/      # POST: Claude API call → JSON
-│       └── webhooks/      # Stripe webhook handler
-├── components/            # herbruikbare UI-componenten
+│   ├── object/new/        # 8-velden formulier + state machine
+│   ├── api/generate/      # POST: Claude API call → JSON
+│   └── page.tsx           # redirect → /object/new
+├── components/
+│   ├── PropertyForm.tsx   # formulier (react-hook-form + zod)
+│   ├── LoadingProgress.tsx
+│   ├── ResultTabs.tsx     # 6-tab weergave
+│   └── TabContent.tsx     # content + kopieerknop
 ├── lib/
-│   ├── claude.ts          # Claude API wrapper + system prompt
-│   ├── supabase.ts        # Supabase server/client helpers
-│   └── stripe.ts          # Stripe helpers
-├── archive/skills/        # Phase 2 referentie: CBS, WOZ, Overpass, BAG, …
-└── VestaAI.html           # Businessplan (leidend)
-```
-
-## Claude system prompt (structuur)
-
-```
-Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in Funda-advertenties.
-
-Funda-regels:
-- Max 800 woorden hoofdtekst
-- Geen superlatieven zonder bewijs
-- Geen discriminerende buurtomschrijvingen
-- Unieke openingszin verplicht
-
-Kantoorcontext (dynamisch per account):
-- Huisstijl: {huisstijl_json}
-- Voorbeeldteksten: {voorbeeld_array}
-
-Output: JSON-object met exacte sleutels:
-{ funda_tekst, brochure_kort, brochure_lang, instagram_3x, linkedin_post, koper_email, buurtomschrijving }
+│   ├── schemas.ts         # Zod-schemas + TypeScript types (client-safe)
+│   ├── claude.ts          # Claude API wrapper, system prompt, retry
+│   ├── supabase.ts        # (Week 2)
+│   └── stripe.ts          # (Week 2)
+├── docs/
+│   ├── roadmap.md         # ← volgende stappen
+│   ├── plans/             # implementatieplannen per sprint
+│   └── specs/             # architectuurontwerpen per sprint
+├── archive/skills/        # Phase 2 referentie: CBS, WOZ, Overpass, BAG
+└── VestaAI.html           # businessplan (leidend)
 ```
 
 ## Conventies
 
 - TypeScript strict mode — geen `any`.
-- Server components als default; client components alleen als interactiviteit vereist.
-- API-calls naar Claude altijd via `lib/claude.ts` (nooit direct in een component).
+- Server Components als default; `'use client'` alleen waar interactiviteit nodig.
+- API-calls naar Claude altijd via `lib/claude.ts`, nooit direct in een component.
+- Zod-schemas en TypeScript-types in `lib/schemas.ts` — importeer die in client components (niet `lib/claude.ts`, want die bundelt de Anthropic SDK).
 - `.env.local` nooit committen; zie `.env.example` voor vereiste variabelen.
-- Kosten Claude API: ~€0,08 per content-set (Sonnet 4.6). Ruim bijhouden bij prompting.
+- Kosten Claude API: ~€0,08 per content-set (Sonnet 4.6).
 
 ## Commands
 
 - `npm run dev` — start lokale server
+- `npm run test` — unit tests (Vitest)
 - `npm run typecheck` — TypeScript check
 - `npm run build` — productie-build
 
 ## Phase 2 referentie
 
-`archive/skills/` bevat 6 SKILL.md-bestanden met Dutch API-kennis voor toekomstige features:
-- `buurtanalyse-cbs/` — CBS Statline (buurtstatistieken)
-- `overpass-voorzieningen/` — OpenStreetMap POI-data
-- `woz-vergelijking/` — WOZ waardehistorie
-- `historisch-waarde/` — historische waardeontwikkeling
-- `marktdynamiek/` — marktdynamiek per object
-- `bag-data/` — BAG adres + bouwjaar + m²
-
-Deze komen terug bij de "local market analysis per object"-feature (Phase 2, maand 4+).
+`archive/skills/` bevat 6 SKILL.md-bestanden voor toekomstige marktdata-features:
+`buurtanalyse-cbs` · `overpass-voorzieningen` · `woz-vergelijking` · `historisch-waarde` · `marktdynamiek` · `bag-data`
