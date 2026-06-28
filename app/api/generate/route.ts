@@ -19,7 +19,13 @@ function checkRateLimit(userId: string): boolean {
   return true
 }
 
+function releaseRateLimit(userId: string) {
+  rateLimitMap.delete(userId)
+}
+
 export async function POST(req: NextRequest) {
+  let rateLimitedUserId: string | null = null
+
   try {
     const body = await req.json()
     const input = PropertyInputSchema.parse(body)
@@ -41,6 +47,7 @@ export async function POST(req: NextRequest) {
           { status: 429 },
         )
       }
+      rateLimitedUserId = user.id
 
       const { data: makelaar } = await supabase
         .from('makelaars')
@@ -121,6 +128,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ output, object_id: null })
 
   } catch (error) {
+    if (rateLimitedUserId) releaseRateLimit(rateLimitedUserId)
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: 'Ongeldige invoer', details: error.issues },

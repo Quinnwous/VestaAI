@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
+import { NavLinks } from './NavLinks'
 
 async function LogoutButton() {
   return (
@@ -67,14 +68,7 @@ export async function NavHeader() {
               )}
             </Link>
 
-            <nav className="flex items-center gap-4 text-sm">
-              <Link href="/object/new" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
-                Nieuw object
-              </Link>
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Overzicht
-              </Link>
-            </nav>
+            <NavLinks />
           </div>
 
           <div className="flex items-center gap-4">

@@ -120,9 +120,17 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
               className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-5 py-4 hover:border-gray-300 hover:shadow-sm transition-all group"
             >
               <div>
-                <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                  {obj.address}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                    {obj.address}
+                  </p>
+                  {obj.status === 'published' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                      Gepubliceerd
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-400 mt-0.5">{formatDatum(obj.created_at)}</p>
               </div>
               <svg
