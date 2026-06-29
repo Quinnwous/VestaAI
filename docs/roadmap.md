@@ -45,17 +45,14 @@ VestaAI is de AI-assistent voor het makelaarskantoor — niet alleen content, ma
 ### Wacht op Quinn (externe setup)
 
 - `ANTHROPIC_API_KEY` invullen in `.env.local` en happy-path testen op `localhost:3000`
-- Supabase-project aanmaken op supabase.com → SQL uit `supabase/migrations/001_initial.sql` uitvoeren
+- Supabase-project aanmaken op supabase.com → SQL uit `supabase/migrations/001_initial.sql` t/m `003_composite_indexes.sql` uitvoeren
 - `.env.local` aanvullen met alle keys (zie `.env.example`)
 - Test: magic link ontvangen in echte mailbox, sessie bewaard na refresh
 - Stripe-dashboard: Solo (€79/mo) en Kantoor (€149/mo) producten aanmaken → prijs-IDs invullen in `.env.local`
 - Lokaal testen met `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
 - Supabase Storage-bucket aanmaken (`kantoor-assets`, publiek leesbaar)
 - Testen: zelfde object met en zonder huisstijl → zichtbaar verschil
-
-### Nog te bouwen (code)
-
-- Sentry DSN instellen op sentry.io → `NEXT_PUBLIC_SENTRY_DSN` invullen in `.env.local`
+- Sentry DSN aanmaken op sentry.io → `NEXT_PUBLIC_SENTRY_DSN` invullen in `.env.local`
 
 ### Wacht op Quinn (deployment)
 
