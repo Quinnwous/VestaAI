@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function toggleObjectStatus(objectId: string, huidigStatus: 'draft' | 'published') {
@@ -30,4 +31,28 @@ export async function toggleObjectStatus(objectId: string, huidigStatus: 'draft'
   revalidatePath('/dashboard')
 
   return { ok: true, status: nieuwStatus }
+}
+
+export async function deleteObject(objectId: string) {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  const { data: makelaar } = await supabase
+    .from('makelaars')
+    .select('kantoor_id, role')
+    .eq('id', user.id)
+    .single()
+
+  if (!makelaar) return { ok: false, error: 'Geen rechten' }
+
+  // Admin mag alle kantoor-objecten verwijderen; makelaar alleen zijn eigen
+  const { error } = makelaar.role === 'admin'
+    ? await supabase.from('objecten').delete().eq('id', objectId).eq('kantoor_id', makelaar.kantoor_id)
+    : await supabase.from('objecten').delete().eq('id', objectId).eq('kantoor_id', makelaar.kantoor_id).eq('makelaar_id', user.id)
+
+  if (error) return { ok: false, error: error.message }
+
+  revalidatePath('/dashboard')
+  redirect('/dashboard')
 }

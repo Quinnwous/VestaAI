@@ -150,16 +150,18 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
           <button
             disabled={currentPage === 1}
             onClick={() => updateUrl({ page: String(currentPage - 1) })}
+            aria-label="Vorige pagina"
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-gray-400 transition-colors"
           >
             ←
           </button>
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-gray-600" aria-live="polite">
             {currentPage} / {totalPages}
           </span>
           <button
             disabled={currentPage === totalPages}
             onClick={() => updateUrl({ page: String(currentPage + 1) })}
+            aria-label="Volgende pagina"
             className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-gray-400 transition-colors"
           >
             →

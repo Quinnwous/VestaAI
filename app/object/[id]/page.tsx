@@ -4,6 +4,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { ResultTabs } from '@/components/ResultTabs'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
+import { DeleteButton } from './DeleteButton'
 import { formatDatum } from '@/lib/utils'
 import type { ContentOutput, PropertyInput } from '@/lib/schemas'
 
@@ -42,9 +43,12 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <p className="text-xs text-gray-400">{formatDatum(object.created_at)}</p>
-          <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published'} />
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-gray-400">{formatDatum(object.created_at)}</p>
+            <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published'} />
+          </div>
+          <DeleteButton objectId={object.id} adres={object.address} />
         </div>
         <h1 className="text-xl font-bold text-gray-900">{object.address}</h1>
       </div>

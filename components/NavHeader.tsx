@@ -72,6 +72,17 @@ export async function NavHeader() {
           </div>
 
           <div className="flex items-center gap-4">
+            {kantoor?.plan && (
+              <span className={`hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                kantoor.plan === 'franchise'
+                  ? 'bg-purple-100 text-purple-700'
+                  : kantoor.plan === 'kantoor'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-600'
+              }`}>
+                {kantoor.plan.charAt(0).toUpperCase() + kantoor.plan.slice(1)}
+              </span>
+            )}
             <Link
               href="/settings"
               className="text-gray-400 hover:text-gray-600 transition-colors"
