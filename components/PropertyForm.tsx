@@ -142,7 +142,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('bouwjaar', { valueAsNumber: true })}
             type="number"
             min={1800}
-            max={2025}
+            max={2035}
             disabled={disabled}
             placeholder="1995"
             className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"

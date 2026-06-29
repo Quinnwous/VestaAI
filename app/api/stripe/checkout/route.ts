@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
     line_items: [{ price: PLAN_PRICES[plan], quantity: 1 }],
     mode: 'subscription',
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/betaling-gelukt?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/betaling-mislukt`,
     metadata: { kantoor_id: makelaar.kantoor_id, plan },
     subscription_data: {
       metadata: { kantoor_id: makelaar.kantoor_id, plan },

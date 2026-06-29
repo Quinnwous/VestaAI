@@ -7,9 +7,12 @@ import type { ObjectRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Overzicht — VestaAI' }
 
+type StatusFilter = '' | 'draft' | 'published'
+
 interface SearchParams {
   search?: string
   page?: string
+  status?: string
 }
 
 const PER_PAGE = 20
@@ -37,6 +40,8 @@ export default async function DashboardPage({
 
   const search = searchParams.search ?? ''
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
+  const rawStatus = searchParams.status ?? ''
+  const statusFilter: StatusFilter = rawStatus === 'draft' || rawStatus === 'published' ? rawStatus : ''
   const from = (page - 1) * PER_PAGE
   const to = from + PER_PAGE - 1
 
@@ -49,6 +54,9 @@ export default async function DashboardPage({
 
   if (search) {
     query = query.ilike('address', `%${search}%`)
+  }
+  if (statusFilter) {
+    query = query.eq('status', statusFilter)
   }
 
   const [
@@ -95,6 +103,7 @@ export default async function DashboardPage({
         totalPages={totalPages}
         currentPage={page}
         search={search}
+        statusFilter={statusFilter}
         totalCount={count ?? 0}
       />
     </main>

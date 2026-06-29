@@ -17,7 +17,7 @@ export const PropertyInputSchema = z.object({
   ]),
   kamers: z.number().int().min(1).max(20),
   oppervlak_m2: z.number().int().min(1).max(9999),
-  bouwjaar: z.number().int().min(1800).max(2025),
+  bouwjaar: z.number().int().min(1800).max(2035),
   energielabel: z.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']),
   vraagprijs: z.number().int().min(1),
   usps: z.string().min(1).max(500),

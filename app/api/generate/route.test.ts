@@ -1,9 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('@/lib/claude', () => ({
+vi.mock('@/lib/schemas', () => ({
   PropertyInputSchema: {
     parse: vi.fn(),
   },
+}))
+
+vi.mock('@/lib/claude', () => ({
   generateContent: vi.fn(),
 }))
 
@@ -14,9 +17,10 @@ vi.mock('@/lib/supabase', () => ({
 }))
 
 import { POST } from './route'
+import * as schemasModule from '@/lib/schemas'
 import * as claudeModule from '@/lib/claude'
 import { ZodError } from 'zod'
-import type { PropertyInput } from '@/lib/claude'
+import type { PropertyInput } from '@/lib/schemas'
 
 const validInput: PropertyInput = {
   adres: 'Herengracht 1, Amsterdam',
@@ -51,7 +55,8 @@ describe('POST /api/generate', () => {
   })
 
   it('returns 200 with content on valid input', async () => {
-    vi.mocked(claudeModule.PropertyInputSchema.parse).mockReturnValue(validInput)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockReturnValue(validInput)
     vi.mocked(claudeModule.generateContent).mockResolvedValue(validOutput)
 
     const req = makeRequest(validInput)
@@ -66,7 +71,8 @@ describe('POST /api/generate', () => {
   it('returns 400 on Zod validation error', async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const zodError = new ZodError([{ code: 'invalid_type', path: ['adres'], message: 'Required' } as any])
-    vi.mocked(claudeModule.PropertyInputSchema.parse).mockImplementation(() => { throw zodError })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockImplementation(() => { throw zodError })
 
     const req = makeRequest({ invalid: true })
     const res = await POST(req as never)
@@ -78,7 +84,8 @@ describe('POST /api/generate', () => {
   })
 
   it('returns 500 when Claude fails', async () => {
-    vi.mocked(claudeModule.PropertyInputSchema.parse).mockReturnValue(validInput)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockReturnValue(validInput)
     vi.mocked(claudeModule.generateContent).mockRejectedValue(new Error('API timeout'))
 
     const req = makeRequest(validInput)

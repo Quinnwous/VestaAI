@@ -6,15 +6,24 @@ import Link from 'next/link'
 import { relatieveDatum } from '@/lib/utils'
 import type { ObjectRow } from '@/lib/supabase'
 
+type StatusFilter = '' | 'draft' | 'published'
+
+const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+  { value: '', label: 'Alles' },
+  { value: 'draft', label: 'Concept' },
+  { value: 'published', label: 'Gepubliceerd' },
+]
+
 interface Props {
   objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]
   totalPages: number
   currentPage: number
   search: string
+  statusFilter: StatusFilter
   totalCount: number
 }
 
-export function DashboardClient({ objecten, totalPages, currentPage, search, totalCount }: Props) {
+export function DashboardClient({ objecten, totalPages, currentPage, search, statusFilter, totalCount }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -56,6 +65,23 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
 
   return (
     <div>
+      {/* Status-filter tabs */}
+      <div className="flex gap-1 mb-4">
+        {STATUS_TABS.map(tab => (
+          <button
+            key={tab.value}
+            onClick={() => updateUrl({ status: tab.value, page: '1' })}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+              statusFilter === tab.value
+                ? 'bg-blue-600 text-white'
+                : 'border border-gray-300 text-gray-600 hover:border-gray-400 bg-white'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Zoekbalk */}
       <form onSubmit={handleSearch} className="flex gap-2 mb-6">
         <input
@@ -90,10 +116,23 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, tot
       {/* Lege state */}
       {objecten.length === 0 && (
         <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-16 text-center">
-          {search ? (
+          {search || statusFilter ? (
             <>
               <p className="text-sm font-medium text-gray-700">Geen objecten gevonden</p>
-              <p className="text-xs text-gray-500 mt-1">Probeer een ander adres.</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {search && statusFilter
+                  ? `Geen ${statusFilter === 'draft' ? 'concept' : 'gepubliceerde'} objecten voor "${search}".`
+                  : search
+                    ? 'Probeer een ander adres.'
+                    : `Nog geen ${statusFilter === 'draft' ? 'concept-' : 'gepubliceerde '}objecten.`}
+              </p>
+              <button
+                type="button"
+                onClick={() => { setZoekterm(''); updateUrl({ search: '', status: '', page: '1' }) }}
+                className="mt-3 text-xs text-blue-600 hover:underline"
+              >
+                Wis filters
+              </button>
             </>
           ) : (
             <>
