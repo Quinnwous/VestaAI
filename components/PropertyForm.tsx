@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
@@ -9,12 +9,31 @@ const WONINGSTYPES = ['Appartement', 'Tussenwoning', 'Hoekwoning', 'Vrijstaand',
 const ENERGIELABELS = ['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] as const
 const DOELGROEPEN = ['Starters', 'Jonge gezinnen', 'Senioren', 'Investeerders', 'Anders'] as const
 
+const DRAFT_KEY = 'vestaai_form_draft'
+
+function loadDraft(): Partial<PropertyInput> {
+  try {
+    const raw = localStorage.getItem(DRAFT_KEY)
+    if (!raw) return {}
+    return JSON.parse(raw) as Partial<PropertyInput>
+  } catch {
+    return {}
+  }
+}
+
+export function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY) } catch { /* ignore */ }
+}
+
 interface PropertyFormProps {
   onSubmit: (data: PropertyInput) => void
   disabled?: boolean
 }
 
 export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
+  const draft = typeof window !== 'undefined' ? loadDraft() : {}
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const {
     register,
     handleSubmit,
@@ -22,11 +41,23 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     formState: { errors },
   } = useForm<PropertyInput>({
     resolver: zodResolver(PropertyInputSchema),
+    defaultValues: draft,
   })
 
   const doelgroepValue = useWatch({ control, name: 'doelgroep' })
   const uspsValue = useWatch({ control, name: 'usps' }) ?? ''
+  const allValues = useWatch({ control })
   const MAX_USPS = 500
+
+  // Debounced autosave
+  useEffect(() => {
+    if (disabled) return
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    saveTimerRef.current = setTimeout(() => {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(allValues)) } catch { /* ignore */ }
+    }, 800)
+    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current) }
+  }, [allValues, disabled])
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {

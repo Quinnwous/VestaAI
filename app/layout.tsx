@@ -14,12 +14,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'VestaAI — Professionele vastgoedcontent in 90 seconden',
+    default: 'VestaAI — De AI-assistent voor makelaars',
     template: '%s — VestaAI',
   },
   description:
-    'VestaAI genereert Funda-teksten, brochures en social media content voor makelaars. 8 velden invullen, complete content-suite ontvangen.',
-  keywords: ['makelaars', 'vastgoedcontent', 'Funda-tekst', 'AI', 'NVM', 'VBO', 'brochure'],
+    'VestaAI is de AI-assistent voor makelaars. Voer een woning in en ontvang direct Funda-tekst, brochure, Instagram-posts, LinkedIn-copy, koper-e-mail en buurtomschrijving.',
+  keywords: ['makelaars', 'AI-assistent', 'Funda-tekst', 'AI', 'NVM', 'VBO', 'brochure', 'vastgoed'],
   authors: [{ name: 'VestaAI' }],
   creator: 'VestaAI',
   openGraph: {
@@ -27,22 +27,22 @@ export const metadata: Metadata = {
     locale: 'nl_NL',
     url: APP_URL,
     siteName: 'VestaAI',
-    title: 'VestaAI — Professionele vastgoedcontent in 90 seconden',
+    title: 'VestaAI — De AI-assistent voor makelaars',
     description:
-      'Vul 8 velden in en ontvang in 90 seconden een complete content-suite: Funda-tekst, brochure, Instagram, LinkedIn, koper-e-mail en buurtomschrijving.',
+      'De AI-assistent voor makelaars. Voer een woning in en ontvang direct alle teksten die je nodig hebt: Funda, brochure, social media, koper-e-mail en buurtomschrijving.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'VestaAI — vastgoedcontent voor makelaars',
+        alt: 'VestaAI — de AI-assistent voor makelaars',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VestaAI — Professionele vastgoedcontent in 90 seconden',
-    description: 'Vul 8 velden in en ontvang een complete content-suite voor je woning.',
+    title: 'VestaAI — De AI-assistent voor makelaars',
+    description: 'Voer een woning in en ontvang direct alle teksten die je nodig hebt.',
     images: ['/og-image.png'],
   },
   robots: {

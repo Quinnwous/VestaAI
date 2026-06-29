@@ -3,9 +3,9 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 import { redirect } from 'next/navigation'
 
 export const metadata = {
-  title: 'VestaAI — Professionele vastgoedcontent in 90 seconden',
+  title: 'VestaAI — De AI-assistent voor makelaars',
   description:
-    'VestaAI genereert Funda-teksten, brochures en social media content voor makelaars. 8 velden invullen, complete content-suite ontvangen.',
+    'VestaAI is de AI-assistent voor makelaars. Voer een woning in en ontvang direct Funda-tekst, brochure, Instagram-posts, LinkedIn-copy, koper-e-mail en buurtomschrijving.',
 }
 
 export default async function LandingPage() {
@@ -47,12 +47,12 @@ export default async function LandingPage() {
         </div>
 
         <h1 className="text-5xl font-extrabold text-gray-900 leading-tight tracking-tight mb-6">
-          Complete content-suite<br />
-          <span className="text-blue-600">in 90 seconden</span>
+          De AI-assistent<br />
+          <span className="text-blue-600">voor makelaars</span>
         </h1>
 
         <p className="text-xl text-gray-500 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Vul 8 velden in over een woning — VestaAI genereert direct een Funda-tekst,
+          Voer een woning in en ontvang direct alle teksten die je nodig hebt — Funda-tekst,
           brochure, drie Instagram-varianten, LinkedIn-posts, koper-e-mail en buurtomschrijving.
         </p>
 
@@ -79,8 +79,8 @@ export default async function LandingPage() {
         <div className="mx-auto max-w-4xl px-6">
           <div className="grid grid-cols-3 gap-8 text-center">
             {[
-              { getal: '90 sec', label: 'Gemiddelde generatietijd' },
               { getal: '10 teksten', label: 'Per object — klaar in één klik' },
+              { getal: '7 types', label: 'Funda, brochure, social, e-mail & meer' },
               { getal: '€79/mo', label: 'Solo-abonnement' },
             ].map(({ getal, label }) => (
               <div key={label}>
@@ -106,8 +106,8 @@ export default async function LandingPage() {
             },
             {
               stap: '2',
-              titel: 'AI genereert content',
-              tekst: 'Claude, het taalmodel van Anthropic, schrijft in 60–90 seconden een complete content-suite op basis van jouw invoer.',
+              titel: 'AI-assistent genereert alles',
+              tekst: 'Onze AI-assistent op basis van Claude (Anthropic) schrijft alle teksten in één keer — gericht op jouw woning, doelgroep en huisstijl.',
             },
             {
               stap: '3',

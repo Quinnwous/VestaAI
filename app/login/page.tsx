@@ -48,7 +48,7 @@ export default function LoginPage() {
           <Link href="/" className="inline-block text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
             VestaAI
           </Link>
-          <p className="mt-2 text-sm text-gray-500">Professionele vastgoedcontent in 90 seconden.</p>
+          <p className="mt-2 text-sm text-gray-500">De AI-assistent voor makelaars.</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">

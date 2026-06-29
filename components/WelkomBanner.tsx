@@ -28,7 +28,7 @@ export function WelkomBanner() {
           <div>
             <p className="text-sm font-semibold text-gray-900 mb-1">Welkom bij VestaAI!</p>
             <p className="text-sm text-gray-600 leading-relaxed">
-              Maak je eerste object aan en ontvang in 90 seconden een complete content-suite:
+              Voer je eerste woning in en ontvang direct alle teksten die je nodig hebt:
               Funda-tekst, brochure, social media posts, koper-e-mail en buurtomschrijving.
             </p>
             <div className="flex items-center gap-4 mt-3 flex-wrap">

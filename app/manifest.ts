@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'VestaAI',
     short_name: 'VestaAI',
-    description: 'Professionele vastgoedcontent voor makelaars in 90 seconden',
+    description: 'De AI-assistent voor makelaars — alle teksten voor een woning in één klik.',
     start_url: '/dashboard',
     display: 'standalone',
     background_color: '#f8fafc',

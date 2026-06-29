@@ -47,7 +47,7 @@ export function LoadingProgress() {
     <div className="flex flex-col items-center justify-center py-12">
       <div className="mb-8 text-center">
         <h2 className="text-lg font-semibold text-gray-900 mb-1">Content wordt gegenereerd</h2>
-        <p className="text-sm text-gray-400">Gemiddeld 60–90 seconden</p>
+        <p className="text-sm text-gray-400">Even geduld — je assistent is aan het werk</p>
       </div>
 
       <div className="w-full max-w-xs space-y-2.5">
