@@ -63,8 +63,16 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <body className={inter.className}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        >
+          Naar inhoud
+        </a>
         <NavHeader />
-        {children}
+        <div id="main-content">
+          {children}
+        </div>
       </body>
     </html>
   )

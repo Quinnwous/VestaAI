@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Prijzen — VestaAI',
-  description: 'Kies het abonnement dat bij jouw makelaarspraktijk past. Solo vanaf €79/maand, Kantoor vanaf €149/maand.',
+  description: 'Kies het abonnement dat bij jouw makelaarspraktijk past. Jouw AI-assistent voor makelaars — Solo vanaf €79/maand, Kantoor vanaf €149/maand.',
 }
 
 const PLANS = [
@@ -183,7 +183,7 @@ export default function PrijzenPage() {
               },
               {
                 v: 'Wordt er Nederlands gegenereerd?',
-                a: 'Ja — VestaAI genereert uitsluitend Nederlandse content, afgestemd op de Nederlandse en Belgische vastgoedmarkt en Funda-richtlijnen.',
+                a: 'Ja — onze AI-assistent genereert uitsluitend Nederlandse teksten, afgestemd op de Nederlandse en Belgische vastgoedmarkt en Funda-richtlijnen.',
               },
               {
                 v: 'Wat kost het per gegenereerd object?',

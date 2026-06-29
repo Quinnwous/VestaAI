@@ -27,12 +27,20 @@ export default function Error({
         <p className="text-sm text-gray-500 mb-6">
           {error.message ?? 'Onverwachte fout. Probeer het opnieuw.'}
         </p>
-        <button
-          onClick={reset}
-          className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-        >
-          Probeer opnieuw
-        </button>
+        <div className="flex items-center justify-center gap-3">
+          <button
+            onClick={reset}
+            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+          >
+            Probeer opnieuw
+          </button>
+          <a
+            href="/dashboard"
+            className="text-sm text-gray-500 hover:text-gray-700 underline"
+          >
+            Terug naar dashboard
+          </a>
+        </div>
       </div>
     </main>
   )

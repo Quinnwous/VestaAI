@@ -18,6 +18,18 @@ type PageState =
 export function NewObjectForm() {
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [countdown, setCountdown] = useState(0)
+  const isLoading = state.status === 'loading'
+
+  // Waarschuw de gebruiker als ze de pagina verlaten tijdens genereren
+  useEffect(() => {
+    if (!isLoading) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [isLoading])
 
   useEffect(() => {
     if (state.status !== 'error' || !state.isRateLimit) return
