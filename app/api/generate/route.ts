@@ -11,6 +11,14 @@ export const maxDuration = 120
 const rateLimitMap = new Map<string, number>()
 const RATE_LIMIT_MS = 90_000
 
+// Periodiek stale entries verwijderen (ouder dan 2× RATE_LIMIT_MS)
+setInterval(() => {
+  const cutoff = Date.now() - RATE_LIMIT_MS * 2
+  rateLimitMap.forEach((ts, userId) => {
+    if (ts < cutoff) rateLimitMap.delete(userId)
+  })
+}, 60_000)
+
 function checkRateLimit(userId: string): boolean {
   const last = rateLimitMap.get(userId) ?? 0
   const now = Date.now()

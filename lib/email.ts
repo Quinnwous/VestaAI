@@ -34,7 +34,7 @@ function baseTemplate(content: string) {
           <tr>
             <td style="padding-top:24px;text-align:center;">
               <p style="margin:0;font-size:12px;color:#9ca3af;">
-                VestaAI · Professionele vastgoedcontent voor makelaars<br/>
+                VestaAI · De AI-assistent voor makelaars<br/>
                 <a href="${APP_URL}" style="color:#9ca3af;text-decoration:underline;">vestaai.nl</a>
               </p>
             </td>
@@ -59,10 +59,10 @@ export async function sendWelcomeEmail(email: string, name: string) {
     html: baseTemplate(`
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${name}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Je 14-daagse proefperiode is actief. Maak nu je eerste object aan en zie hoe snel je content-suite klaarstaat.
+        Je 14-daagse proefperiode is actief. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
       </p>
       <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
-        Vul 8 velden in en ontvang binnen 90 seconden:
+        Vul 8 velden in en ontvang direct:
       </p>
       <ul style="margin:12px 0 0;padding-left:20px;font-size:14px;line-height:1.8;color:#374151;">
         <li>Funda-tekst (600–800 woorden)</li>
