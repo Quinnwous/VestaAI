@@ -5,6 +5,7 @@ import { ResultTabs } from '@/components/ResultTabs'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
 import { DeleteButton } from './DeleteButton'
+import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import type { ContentOutput, PropertyInput } from '@/lib/schemas'
 
@@ -48,7 +49,10 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
             <p className="text-xs text-gray-400">{formatDatum(object.created_at)}</p>
             <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published'} />
           </div>
-          <DeleteButton objectId={object.id} adres={object.address} />
+          <div className="flex items-center gap-4">
+              <RegenereerButton invoer={object.input_json as PropertyInput} />
+              <DeleteButton objectId={object.id} adres={object.address} />
+            </div>
         </div>
         <h1 className="text-xl font-bold text-gray-900">{object.address}</h1>
       </div>

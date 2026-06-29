@@ -6,10 +6,11 @@ interface TabContentProps {
   label?: string
   content: string
   wordCount?: boolean
+  wordLimit?: number
   charLimit?: number
 }
 
-export function TabContent({ label, content, wordCount, charLimit }: TabContentProps) {
+export function TabContent({ label, content, wordCount, wordLimit, charLimit }: TabContentProps) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -30,7 +31,12 @@ export function TabContent({ label, content, wordCount, charLimit }: TabContentP
           <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
         )}
         <div className="flex items-center gap-3 ml-auto flex-wrap">
-          {wordCount && (
+          {wordCount && wordLimit && (
+            <span className={`text-xs tabular-nums ${words > wordLimit ? 'text-red-600 font-medium' : words > wordLimit * 0.9 ? 'text-orange-500' : 'text-gray-400'}`}>
+              {words}/{wordLimit} woorden{words > wordLimit ? ' — te lang!' : ''}
+            </span>
+          )}
+          {wordCount && !wordLimit && (
             <span className="text-xs text-gray-400">{words} woorden</span>
           )}
           {charLimit && (

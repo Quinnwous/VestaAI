@@ -149,7 +149,10 @@ export function ResultTabs({ data, objectId, onReset, onResetHref }: ResultTabsP
       {/* Tab content */}
       <div>
         {activeTab === 'funda' && (
-          <TabContent content={data.funda_tekst} wordCount />
+          <div>
+            <p className="text-xs text-gray-400 mb-4">Funda-limiet: max 800 woorden</p>
+            <TabContent content={data.funda_tekst} wordCount wordLimit={800} />
+          </div>
         )}
 
         {activeTab === 'brochure' && (
