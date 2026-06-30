@@ -69,20 +69,20 @@ VestaAI/
 │   ├── supabase.ts        # (Week 2)
 │   └── stripe.ts          # (Week 2)
 ├── docs/
-│   ├── roadmap.md         # ← to-do + statusoverzicht (✅ = klaar)
-│   └── fase2/             # API-referenties voor toekomstige databronnen
+│   ├── roadmap.md             # open to-do's per fase (klaar = weg)
+│   ├── goals.md               # strategie & doelen (leidend)
+│   └── data-integraties/      # API-referenties voor toekomstige data-koppelingen
 │       ├── bag-data.md
 │       ├── buurtanalyse-cbs.md
 │       ├── historisch-waarde.md
 │       ├── marktdynamiek.md
 │       ├── overpass-voorzieningen.md
 │       └── woz-vergelijking.md
-│   └── goals.md           # strategie & doelen (leidend)
 ```
 
 ## To-do-conventie
 
-`docs/roadmap.md` is het enige stappenplan én statusoverzicht. Zet `✅` voor voltooide items — nooit verwijderen. Zo zie je altijd de volledige toestand van het product en wat er nog openstaat.
+`docs/roadmap.md` bevat alleen open items. Voltooide items worden verwijderd — geen ✅-archief. Zo blijft de roadmap een werklijst, geen logboek.
 
 ## Conventies
 
