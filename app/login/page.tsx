@@ -89,8 +89,8 @@ export default function LoginPage() {
               </div>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 10 }}>Controleer uw inbox</h2>
               <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6 }}>
-                Een inloglink is verstuurd naar <strong style={{ color: '#0E1A13' }}>{email}</strong>.
-                Klik op de link in de e-mail om in te loggen.
+                We hebben een toegangslink verstuurd naar <strong style={{ color: '#0E1A13' }}>{email}</strong>.
+                Klik op de link om in te loggen — of uw account te activeren als u nieuw bent.
               </p>
               <button
                 onClick={() => setStatus('idle')}
@@ -101,7 +101,10 @@ export default function LoginPage() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0E1A13', marginBottom: 24 }}>Inloggen</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0E1A13', marginBottom: 6 }}>Inloggen of aanmelden</h2>
+              <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 24, lineHeight: 1.5 }}>
+                Vul uw e-mailadres in. Nieuw bij VestaAI? Dan wordt automatisch een gratis proefaccount (14 dagen) aangemaakt.
+              </p>
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
                   <label htmlFor="email" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 6 }}>
@@ -130,16 +133,12 @@ export default function LoginPage() {
                   disabled={status === 'loading' || !email}
                   style={{ borderRadius: 11, background: '#1A6B45', padding: '13px 0', fontSize: 15, fontWeight: 700, color: '#fff', border: 'none', cursor: status === 'loading' || !email ? 'not-allowed' : 'pointer', opacity: status === 'loading' || !email ? .55 : 1, boxShadow: '0 4px 12px rgba(26,107,69,.22)', transition: 'opacity .15s' }}
                 >
-                  {status === 'loading' ? 'Bezig...' : 'Stuur inloglink →'}
+                  {status === 'loading' ? 'Bezig...' : 'Stuur toegangslink →'}
                 </button>
               </form>
 
               <p style={{ marginTop: 24, fontSize: 13, textAlign: 'center', color: '#9AA6A0' }}>
-                Nog geen account?{' '}
-                <Link href="/" style={{ color: '#1A6B45', textDecoration: 'underline' }}>
-                  Bekijk VestaAI
-                </Link>
-                {' '}en start uw proefperiode.
+                Geen wachtwoord nodig — u ontvangt een veilige link per e-mail.
               </p>
             </>
           )}
