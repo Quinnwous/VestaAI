@@ -1,5 +1,6 @@
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { createServiceSupabaseClient } from '@/lib/supabase'
 import { sendWelcomeEmail } from '@/lib/email'
 import type { EmailOtpType } from '@supabase/supabase-js'
 
@@ -13,7 +14,26 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
-  const supabase = createServerSupabaseClient()
+  // Maak de redirect-response eerst aan zodat cookies erop gezet kunnen worden
+  const redirectUrl = new URL(next, request.url)
+  const response = NextResponse.redirect(redirectUrl)
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          )
+        },
+      },
+    },
+  )
 
   const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
 
@@ -36,7 +56,6 @@ export async function GET(request: NextRequest) {
     const uitgenodigdVoorKantoorId = user.user_metadata?.kantoor_id as string | undefined
 
     if (uitgenodigdVoorKantoorId) {
-      // Uitgenodigde gebruiker: join bestaand kantoor als makelaar
       await serviceClient.from('makelaars').insert({
         id: user.id,
         kantoor_id: uitgenodigdVoorKantoorId,
@@ -45,7 +64,6 @@ export async function GET(request: NextRequest) {
         role: 'makelaar',
       })
     } else {
-      // Nieuwe gebruiker: automatisch kantoor + makelaar aanmaken
       const kantoorNaam = user.email?.split('@')[1]?.split('.')[0] ?? 'Kantoor'
       const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
 
@@ -67,11 +85,10 @@ export async function GET(request: NextRequest) {
           role: 'admin',
         })
 
-        // Welkomstmail sturen (niet-blokkerend)
         sendWelcomeEmail(user.email!, emailNaam).catch(console.error)
       }
     }
   }
 
-  return NextResponse.redirect(new URL(next, request.url))
+  return response
 }
