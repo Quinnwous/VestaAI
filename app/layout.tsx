@@ -15,6 +15,7 @@ const newsreader = Newsreader({
   display: 'swap',
   weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
+  adjustFontFallback: false,
 })
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
