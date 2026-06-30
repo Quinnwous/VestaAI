@@ -170,7 +170,7 @@ export function DocumentenAssistent({ objectId }: Props) {
           {chat.length === 0 && (
             <div className="px-4 py-6 text-center text-sm text-gray-400">
               <p>Stel een vraag over dit document.</p>
-              <p className="text-xs mt-1">Bijv. "Zijn er achterstallige VVE-bijdragen?" of "Wat staat er in de erfpachtclausule?"</p>
+              <p className="text-xs mt-1">Bijv. &quot;Zijn er achterstallige VVE-bijdragen?&quot; of &quot;Wat staat er in de erfpachtclausule?&quot;</p>
             </div>
           )}
 

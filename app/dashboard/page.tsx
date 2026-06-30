@@ -17,7 +17,7 @@ interface SearchParams {
 }
 
 const PER_PAGE = 20
-const STARTER_LIMIET = 40
+const STARTER_LIMIET = 5
 
 export default async function DashboardPage({
   searchParams,
@@ -30,14 +30,18 @@ export default async function DashboardPage({
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json)')
+    .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at)')
     .eq('id', user.id)
     .single()
 
   if (!makelaar) redirect('/login')
 
-  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null } | null
+  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null } | null
   const isStarter = kantoor?.plan === 'starter'
+
+  const trialDagenResterend = !kantoor?.plan && kantoor?.trial_ends_at
+    ? Math.max(0, Math.ceil((new Date(kantoor.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null
   const heeftObjecten = !!makelaar.first_generated_at
   const heeftHuisstijl = !!(kantoor?.huisstijl_json && Object.keys(kantoor.huisstijl_json).length > 0)
 
@@ -99,6 +103,33 @@ export default async function DashboardPage({
           + Nieuw object
         </Link>
       </div>
+
+      {trialDagenResterend !== null && (
+        <div style={{
+          borderRadius: 14,
+          background: trialDagenResterend <= 3 ? '#FFFBEB' : '#F1F7F3',
+          border: `1px solid ${trialDagenResterend <= 3 ? '#FDE68A' : '#D5E8DD'}`,
+          padding: '14px 18px',
+          marginBottom: 20,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 16,
+          flexWrap: 'wrap',
+        }}>
+          <p style={{ fontSize: 14, color: trialDagenResterend <= 3 ? '#92400E' : '#1A6B45', margin: 0, fontWeight: 500 }}>
+            {trialDagenResterend === 0
+              ? 'Uw proefperiode verloopt vandaag.'
+              : `Nog ${trialDagenResterend} ${trialDagenResterend === 1 ? 'dag' : 'dagen'} proefperiode resterend.`}
+          </p>
+          <Link
+            href="/prijzen"
+            style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: '#1A6B45', borderRadius: 9, padding: '7px 14px', textDecoration: 'none', whiteSpace: 'nowrap' }}
+          >
+            Kies een abonnement →
+          </Link>
+        </div>
+      )}
 
       <OnboardingChecklist heeftObjecten={heeftObjecten} heeftHuisstijl={heeftHuisstijl} />
 

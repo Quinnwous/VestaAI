@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
 export const maxDuration = 60
@@ -80,6 +81,7 @@ export async function POST(req: NextRequest) {
         .from('objecten')
         .update({ outputs_json: { ...(obj.outputs_json as Record<string, unknown>), fotos: [...fotos, publiekUrl] } })
         .eq('id', objectId)
+      revalidatePath(`/object/${objectId}`)
     }
   }
 

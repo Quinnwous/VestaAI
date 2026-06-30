@@ -25,13 +25,13 @@ export default function BetalingMisluktPage() {
             href="/api/stripe/checkout?plan=starter"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
           >
-            Starter — €99/maand
+            Starter — €60/maand
           </Link>
           <Link
             href="/api/stripe/checkout?plan=pro"
             className="inline-block rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors"
           >
-            Pro — €199/maand
+            Pro — €150/maand
           </Link>
           <Link
             href="/dashboard"

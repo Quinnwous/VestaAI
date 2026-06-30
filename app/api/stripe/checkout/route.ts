@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, PLAN_PRICES, PLAN_NAMES } from '@/lib/stripe'
+import { stripe, PLAN_PRICES } from '@/lib/stripe'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
 export async function GET(req: NextRequest) {

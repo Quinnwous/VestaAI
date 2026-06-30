@@ -1,140 +1,120 @@
 # VestaAI — Roadmap
 
-> Eerste tester: **i4housing**. Alles in Fase 0–2 is gericht op klaarstomen voor hun pilot.
+> Eerste tester: **i4housing**. Alles tot en met Fase 2 is gericht op klaarstomen voor hun pilot.
 > Alleen open items staan hier. Klaar = weg.
 
 ---
 
-## Fase 0 — Externe setup
+## Status-overzicht — 30 juni 2026
 
-- [ ] Stripe: Starter (€99/mo, €990/jr), Pro (€199/mo, €1.990/jr), Kantoor (€599/mo, €5.990/jr) aanmaken → price IDs in `.env.local` — uitgesteld tot na gratis testfase
-- [ ] Stripe webhook instellen (`stripe listen --forward-to localhost:3000/api/webhooks/stripe`) — uitgesteld
-- [ ] End-to-end smoke test op Vercel: registreer account → genereer object → exporteer PDF
+### Hoe ver zijn we?
+
+De kern van het product is **gebouwd en deploybaar**. De AI-generatie werkt, auth werkt, het dashboard werkt. Maar de e2e flow op Vercel is nooit doorgetest — dat is de grootste onzekerheid voor de pilot.
+
+### Wat werkt er wél?
+
+| Feature | Status | Toelichting |
+|---------|--------|-------------|
+| 8-velden formulier → 7 content-types | ✅ Werkt | Core AI-generatie via Claude API |
+| Tabbladen + kopieerknop | ✅ Werkt | Funda, brochure, Instagram (3×), LinkedIn (2×), koper-e-mail, buurt |
+| PDF-export | ✅ Werkt | react-pdf, downloadbaar |
+| Per-veld herschrijven | ✅ Werkt | Makelaar kan 1 content-blok opnieuw laten genereren |
+| Auth (magic link) | ✅ Werkt | Supabase email login |
+| Dashboard (objectenlijst) | ✅ Werkt | Overzicht van alle objecten |
+| Huisstijlgeheugen | ✅ Werkt | Schrijftoon + slogan + voorbeeldteksten worden echt in de Claude-prompt gebruikt — Pro/Kantoor plan |
+| Document assistent | ✅ Werkt | Upload PDF/TXT → vragen stellen via Claude |
+| Content kalender | ✅ Werkt | Posts plannen per dag, status bijhouden |
+| Betaalmuur + trial-check | ✅ Werkt | Plan-controle, trial-expiratie |
+| Settings (account, team, statistieken, chatbot) | ✅ Werkt | Admin-only acties correct afgeschermd |
+| Stripe checkout + customer portal | ✅ Code klaar | Nog niet end-to-end getest (price IDs ontbreken) |
+
+### Wat werkt NIET of is onaf?
+
+| Feature | Status | Wat ontbreekt |
+|---------|--------|----------------|
+| BAG-adresautocomplete | ✅ Werkt | `KADASTER_API_KEY` toegevoegd als Vercel Custom Secret — werkt nu ook live |
+| Foto-verbetering | ⚠️ Niet actief | `CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_IMAGES_TOKEN` ontbreken — toont "not configured" melding |
+| Virtual staging | ⚠️ Niet actief | `REIMAGINEHOME_API_KEY` ontbreekt — toont "not configured" melding |
+| Stripe betalingen | ⚠️ Niet actief | Price IDs niet aangemaakt, webhook niet geconfigureerd — uitgesteld tot na gratis testfase |
+| Trial-warning e-mail | ⚠️ Niet deployed | Code klaar (`supabase/functions/trial-warning-email/`) — moet nog gedeployed + gescheduled worden |
+| E2e smoke test op Vercel | ❌ Nooit gedaan | Registreer → genereer → PDF op productie-URL — grootste openstaande risico voor pilot |
+
+### Wat is helemaal nog niet gebouwd?
+
+Bewust uitgesteld tot Fase 3:
+
+| Feature | Toelichting |
+|---------|-------------|
+| Social media direct posten | Instagram/LinkedIn API integratie |
+| WOZ-vergelijking, CBS-buurtanalyse | Data-integraties voor slimmere buurtomschrijvingen |
+| Funda/Realworks XML-koppeling | Directe export naar CRM's |
+| Affiliateprogramma | Referral-links per klant |
 
 ---
 
-## Fase 1 — Product-polish
+## Fase 1 — Product afronden
 
-### 1C — Core-flow testen (happy path + edge cases)
+Alles wat nodig is om het product stabiel en productie-klaar te maken.
 
-- [ ] Formulier → loading → tabbladen: volledig end-to-end met echte Anthropic API
-- [ ] BAG-adresautocomplete (`api/bag`): vult adresveld automatisch aan — testen met echt adres
-- [ ] Resultaatscherm: alle 10 teksten zichtbaar, kopieerknop werkt, geen lege tabs
-- [ ] PDF-export: correct opgemaakt, downloadbaar, huisstijl correct
-- [ ] Herschrijf-knop (`api/object/[id]/herschrijf`): werkt per individueel veld?
-- [ ] Notitie-veld: opslaan en herladen na page refresh
-- [ ] Prijswijziging-modal: updatet bestaande output correct
-- [ ] StatusToggle (verkocht/beschikbaar): wijziging persisterend
-- [ ] Starter-limiet (40 objecten/mo): betaalmuur blokkeert na limiet, toont upgrade-prompt
+- [ ] Trial-warning e-mail deployen: `supabase functions deploy trial-warning-email` + dagelijkse cron schedulen in Supabase Dashboard (`0 8 * * *`)
+- [ ] E2e smoke test op Vercel: registreer account → genereer object → exporteer PDF — volledig doorlopen
+- [ ] Stripe: Starter (€99/mo, €990/jr), Pro (€199/mo, €1.990/jr), Kantoor (€599/mo, €5.990/jr) price IDs aanmaken → in Vercel env — uitgesteld tot na gratis testfase
+- [ ] Stripe webhook configureren op Vercel (`/api/webhooks/stripe`) — uitgesteld tot na gratis testfase
 
-### 1D — Trial + betaling flow
+### Claude-prompts verbeteren (lopend)
 
-- [ ] `trial_ends_at` correct gezet bij aanmelding (check in Supabase na registratie)
-- [ ] Trial-waarschuwingsmail 3 dagen voor einde: Edge Function triggert correct
-- [ ] Na trial: betaalmuur toont upgrade-prompt met directe link naar Stripe checkout
-- [ ] Stripe checkout → betaling → `/betaling-gelukt`: abonnement actief in Supabase
-- [ ] Stripe webhook (`api/webhooks/stripe`): plan-upgrade correct verwerkt in `kantoren`-tabel
-- [ ] Customer portal (`api/stripe/customer-portal`): makelaar kan zelf opzeggen/wijzigen
-- [ ] Testscenario: trial verlopen → upgrade → plan actief → objecten weer toegankelijk
-
-### 1E — Founding member
-
-- [ ] Stripe: founding member coupon aanmaken (30% recurring discount) — Quinn handmatig
+- [ ] Funda-tekst: minimum verhogen naar 700 woorden; eerste zin mag nooit met adres/straatnaam beginnen; meer alinea's over technische staat en duurzaamheid
+- [ ] Koper-e-mail: prompt gecorrigeerd (post-bezichtiging, niet uitnodiging) ✅ — testen met echte generatie of output correct is
 
 ---
 
-## Fase 2 — i4housing pilot
-
-### 2A — Uitnodiging en onboarding
+## Fase 2 — Live brengen (i4housing pilot)
 
 - [ ] i4housing uitnodigen: Pro-plan + founding member korting (30%)
 - [ ] Eerste generatie samen doorlopen of async met Loom-screenrecording
-
-### 2B — Feedback
-
 - [ ] Feedbackkanaal instellen: e-mail of WhatsApp met i4housing
 - [ ] Blokkades oplossen binnen 24 uur
-
-### 2C — AI-output kwaliteit
-
-- [ ] Buurtomschrijvingen: accuraat voor Amsterdam/i4housing-werkgebied?
-- [ ] Instagram-varianten: bruikbaar of te standaard?
-- [ ] Huisstijlgeheugen testen: logo uploaden + toonprofiel → genereer → klopt het?
+- [ ] Output kwaliteit valideren: buurtomschrijvingen accuraat voor Amsterdam? Instagram-varianten bruikbaar? Huisstijl correct toegepast?
+- [ ] Founding member coupon aanmaken in Stripe (30% recurring discount) — Quinn handmatig
 
 ---
 
-## Fase 3 — Eerste 5–30 betalende klanten
+## Fase 3 — Groei (eerste 5–50 kantoren)
 
-### 3A — Landingspagina versterken
+### Landingspagina versterken
 
 - [ ] Testimonial van i4housing toevoegen (naam, kantoor, quote + tijdsbesparing)
 - [ ] Product in actie: GIF of embedded screenrecording van de generatie-flow
 
-### 3B — GTM uitvoeren
+### Go-to-market
 
 - [ ] NVM PropTech-programma aanmelden
 - [ ] i4housing vragen om 2–3 doorverwijzingen in NVM-netwerk
 - [ ] Affiliateprogramma bouwen: unieke referral-link per klant → 1 maand gratis bij conversie
 
-### 3C — Monitoring
+### Foto-features activeren
 
-- [ ] Kosten per klant monitoren: bij €99/mo (Starter) moet API-kosten <€8/mo blijven
+- [ ] AI-fotoverbetering: Cloudflare Images activeren (`CLOUDFLARE_ACCOUNT_ID` + `CLOUDFLARE_IMAGES_TOKEN` in Vercel env)
+- [ ] Virtual staging: REimagineHome API-key aanvragen en instellen (`REIMAGINEHOME_API_KEY`)
 
----
+### Slimmere data-input
 
-## Fase 4 — Productuitbreiding (na 30+ kantoren)
-
-### 4A — Social media direct posten
-
-- [ ] Instagram/LinkedIn direct posten via API (Meta Business API + LinkedIn OAuth)
-
-### 4B — Foto-features activeren
-
-- [ ] AI fotoverbetering: externe API koppelen (vendor TBD)
-- [ ] Virtual staging: externe API koppelen (vendor TBD)
-
-### 4C — Intelligentere data-input (zie `docs/data-integraties/`)
-
-- [ ] WOZ-vergelijking: automatisch prijscontext toevoegen
+- [ ] WOZ-vergelijking: automatisch prijscontext toevoegen (zie `docs/data-integraties/`)
 - [ ] CBS-buurtanalyse: wijkdata ophalen voor buurtomschrijving
-- [ ] Historisch waardeverloop
-- [ ] Marktdynamiek
+- [ ] Historisch waardeverloop + marktdynamiek
 - [ ] Voorzieningen via Overpass (scholen, OV, winkels)
 
-### 4D — Chatbot-widget
+### Koppelingen
 
-- [ ] Widget testen op externe makelaarsite (embed-snippet staat klaar in ChatbotTab)
-
-### 4F — Funda/Realworks koppeling
-
+- [ ] Social media direct posten via API (Meta Business API + LinkedIn OAuth)
+- [ ] Chatbot-widget testen op externe makelaarsite (embed-snippet staat klaar in ChatbotTab)
 - [ ] Realworks XML-export genereren vanuit VestaAI
 - [ ] NVM-contact leggen via i4housing voor formele Funda-partneraccess
 
----
-
-## Fase 5 — België + franchise
-
-### 5A — Belgische markt (Vlaanderen)
-
-- [ ] BE-specifieke teksten: Immoweb i.p.v. Funda, Vlaamse regelgeving
-- [ ] CIB Vlaanderen aanmelden als partner/tool
-- [ ] Tenant-configuratie: NL vs. BE bij onboarding
-
-### 5B — Franchise
-
-- [ ] White-label: eigen logo + domeinnaam per franchise-partner
-- [ ] Multi-kantoor-beheer: franchise-eigenaar ziet alle kantoren in één dashboard
-- [ ] API-toegang: REST API + documentatie
-- [ ] Outreach: ERA NL, Engel & Völkers NL, Makelaarsland
-
----
-
-## Fase 6 — Groei & automatisering
+### Monitoring
 
 - [ ] Google Ads activeren bij €5K MRR (€500/mnd budget)
-- [ ] NVM Magazine artikel / advertentie
-- [ ] Affiliateprogramma automatiseren
-- [ ] Duits: interface vertalen, Immobilienscout24-regelset
+- [ ] Kosten per klant monitoren: bij €99/mo (Starter) moet API-kosten <€8/mo blijven
 
 ---
 

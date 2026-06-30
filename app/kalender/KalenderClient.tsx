@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
 
 type PlanItem = {
   id: string
@@ -47,7 +46,6 @@ interface Props {
 }
 
 export function KalenderClient({ initialPlanning }: Props) {
-  const router = useRouter()
   const nu = new Date()
   const [jaar, setJaar] = useState(nu.getFullYear())
   const [maand, setMaand] = useState(nu.getMonth())

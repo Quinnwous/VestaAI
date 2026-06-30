@@ -4,7 +4,7 @@ import { PrijzenToggle } from './PrijzenToggle'
 
 export const metadata: Metadata = {
   title: 'Prijzen — VestaAI',
-  description: 'Kies het abonnement dat bij uw makelaarspraktijk past. VestaAI — de complete AI-toolkit voor makelaars. Starter vanaf €99/maand, Pro vanaf €199/maand.',
+  description: 'Kies het abonnement dat bij uw makelaarspraktijk past. VestaAI — de complete AI-toolkit voor makelaars. Starter vanaf €60/maand, Pro vanaf €150/maand.',
 }
 
 export default function PrijzenPage() {
@@ -70,7 +70,7 @@ export default function PrijzenPage() {
               },
               {
                 v: 'Wat is het verschil tussen Starter en Pro?',
-                a: 'Starter is voor één gebruiker met een limiet van 40 objecten per maand (±€2,48 per object). Pro heeft geen limieten, ondersteuning voor 5 gebruikers en het huisstijlgeheugen: VestaAI leert de schrijfstijl, het logo en de toon van uw kantoor.',
+                a: 'Starter is voor één gebruiker met een limiet van 5 objecten per maand (±€12 per object). Pro heeft geen limieten, ondersteuning voor meerdere gebruikers en het huisstijlgeheugen: VestaAI leert de schrijfstijl, het logo en de toon van uw kantoor.',
               },
               {
                 v: 'Wordt er Nederlands gegenereerd?',
@@ -78,7 +78,7 @@ export default function PrijzenPage() {
               },
               {
                 v: 'Wat kost het per gegenereerd object?',
-                a: 'Bij het Starter-plan: €99 / 40 = ±€2,48 per object. Bij Pro en Kantoor is het onbeperkt. De achterliggende API-kosten zijn voor ons rekening.',
+                a: 'Bij het Starter-plan: €60 / 5 = €12 per object. Bij Pro en Kantoor is het onbeperkt. De achterliggende API-kosten zijn voor ons rekening.',
               },
             ].map(({ v, a }) => (
               <div key={v}>

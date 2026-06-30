@@ -17,13 +17,13 @@ function UpgradeLinks() {
         href="/api/stripe/checkout?plan=starter"
         className="inline-block text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
       >
-        Starter — €99/mo
+        Starter — €60/maand
       </Link>
       <Link
         href="/api/stripe/checkout?plan=pro"
         className="inline-block text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
       >
-        Pro — €199/mo
+        Pro — €150/maand
       </Link>
     </div>
   )
@@ -92,7 +92,7 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">Proefperiode verlopen</h2>
         <p className="text-gray-500 mb-6">
-          Je 14-daagse proefperiode is afgelopen. Kies een abonnement om verder te gaan.
+          Uw 14-daagse proefperiode is afgelopen. Kies een abonnement om verder te gaan.
         </p>
         <div className="flex flex-col gap-3 items-center">
           <UpgradeLinks />

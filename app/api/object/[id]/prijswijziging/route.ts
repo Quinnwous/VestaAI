@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { generatePrijswijzigingContent } from '@/lib/claude'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
@@ -74,5 +75,6 @@ export async function POST(
     .update({ outputs_json: { ...huidigeOutputs, prijswijzigingen } })
     .eq('id', params.id)
 
+  revalidatePath(`/object/${params.id}`)
   return NextResponse.json({ output })
 }

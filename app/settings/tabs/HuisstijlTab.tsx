@@ -22,7 +22,7 @@ function HuisstijlUpgradeBanner() {
         href="/api/stripe/checkout?plan=pro"
         className="inline-block rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition-colors"
       >
-        Upgrade naar Pro — €199/maand
+        Upgrade naar Pro — €150/maand
       </a>
     </div>
   )
@@ -40,7 +40,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
     huidig?.schrijftoon ?? 'informeel'
   )
   const [slogan, setSlogan] = useState(huidig?.slogan ?? '')
-  const [primaire_kleur, setPrimaireKleur] = useState(huidig?.primaire_kleur ?? '#1d4ed8')
+  const [primaire_kleur, setPrimaireKleur] = useState(huidig?.primaire_kleur ?? '#1A6B45')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(
     huidig?.voorbeelden ?? ['', '', '']
   )

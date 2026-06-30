@@ -166,6 +166,7 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
       <Page size="A4" style={s.page}>
         <View style={s.cover}>
           {kantoor.logo_url ? (
+            // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop
             <Image src={kantoor.logo_url} style={s.coverLogoImg} />
           ) : (
             <Text style={s.coverBrandName}>{kantoor.name}</Text>
@@ -188,6 +189,7 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
           {/* Pagina-header */}
           <View style={s.pageHeader}>
             {kantoor.logo_url ? (
+              // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop
               <Image src={kantoor.logo_url} style={s.pageHeaderLogoImg} />
             ) : (
               <Text style={s.pageHeaderBrand}>{kantoor.name}</Text>

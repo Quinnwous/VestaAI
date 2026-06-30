@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { PropertyInput } from '@/lib/schemas'
@@ -127,5 +128,6 @@ export async function POST(
     .update({ outputs_json: nieuweOutputs })
     .eq('id', params.id)
 
+  revalidatePath(`/object/${params.id}`)
   return NextResponse.json({ nieuweTekst })
 }

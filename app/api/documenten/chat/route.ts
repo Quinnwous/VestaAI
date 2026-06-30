@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
   if (doc.anthropic_file_id) {
     // Gebruik de Anthropic Files API file_id via beta endpoint
-    const rawMessage = await (client.beta.messages.create as Function)({
+    const rawMessage = await (client.beta.messages.create as unknown as (params: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
       model: 'claude-sonnet-4-6',
       max_tokens: 1500,
       system: `Je bent een juridisch assistent gespecialiseerd in Nederlands vastgoedrecht. Je analyseert documenten en beantwoordt vragen van makelaars. Geef heldere, feitelijke antwoorden. Geef bij twijfel altijd aan dat een notaris of jurist geraadpleegd moet worden.`,

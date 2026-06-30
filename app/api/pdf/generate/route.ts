@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
+import type * as ReactPDF from '@react-pdf/renderer'
 import { PdfTemplate } from '@/components/PdfTemplate'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import type { ContentOutput } from '@/lib/schemas'
@@ -35,12 +36,11 @@ export async function GET(req: NextRequest) {
 
   const kantoorData = object.kantoren as unknown as Pick<Kantoor, 'name' | 'logo_url' | 'huisstijl_json'> | null
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pdf = await renderToBuffer(React.createElement(PdfTemplate, {
     address: object.address,
     output: object.outputs_json as ContentOutput,
     kantoor: kantoorData ?? { name: 'VestaAI', logo_url: null, huisstijl_json: null },
-  }) as any)
+  }) as React.ReactElement<ReactPDF.DocumentProps>)
 
   const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`
 

@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
             .select('id', { count: 'exact', head: true })
             .eq('kantoor_id', makelaar.kantoor_id)
             .gte('created_at', startOfMonth.toISOString())
-          const STARTER_LIMIET = 40
+          const STARTER_LIMIET = 5
           if ((count ?? 0) >= STARTER_LIMIET) {
             return NextResponse.json(
               { error: `Maandlimiet bereikt: het Starter-plan staat ${STARTER_LIMIET} objecten per maand toe. Upgrade naar Pro voor onbeperkte toegang.` },

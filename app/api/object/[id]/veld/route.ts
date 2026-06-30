@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
 const TOEGESTANE_SLEUTELS = new Set([
@@ -49,5 +50,6 @@ export async function PATCH(
     .update({ outputs_json: nieuweOutputs })
     .eq('id', params.id)
 
+  revalidatePath(`/object/${params.id}`)
   return NextResponse.json({ ok: true })
 }

@@ -13,7 +13,8 @@ export async function middleware(request: NextRequest) {
     PUBLIC_EXACT.has(pathname) ||
     PUBLIC_PREFIX.some(p => pathname.startsWith(p)) ||
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/favicon')
+    pathname.startsWith('/favicon') ||
+    /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next()
   }

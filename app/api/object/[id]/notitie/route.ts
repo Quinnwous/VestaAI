@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
 export async function PATCH(
@@ -29,5 +30,6 @@ export async function PATCH(
     .eq('kantoor_id', makelaar.kantoor_id)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  revalidatePath(`/object/${params.id}`)
   return NextResponse.json({ ok: true })
 }

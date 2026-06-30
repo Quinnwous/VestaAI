@@ -53,7 +53,7 @@ export default function PrivacyPage() {
               <div>
                 <p className="font-medium text-gray-800 mb-1">Objectdata</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Adres, woningtype, m², bouwjaar, energielabel, vraagprijs en USP's die u invoert.
+                  Adres, woningtype, m², bouwjaar, energielabel, vraagprijs en USP&apos;s die u invoert.
                   Deze gegevens worden uitsluitend gebruikt om de AI-generatie te maken.
                   Wij verkopen of delen deze data niet met derden.
                 </p>

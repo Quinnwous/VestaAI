@@ -5,11 +5,25 @@ import Link from 'next/link'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const FUNDA_TEXT = `In het geliefde Spiegelkwartier staat deze karakteristieke vrijstaande jaren '30-woning op een royaal perceel van 520 m². Achter de authentieke gevel met glas-in-loodramen gaat een verrassend lichte en ruime woning schuil, waar originele details — paneeldeuren, een en-suite met schouw en een sierlijke trappartij — moeiteloos samengaan met een volledig vernieuwde keuken en badkamer.
+const FUNDA_TEXT = `Karakteristieke jaren '30-architectuur, een diepe zuidwesttuin en een ligging op loopafstand van het centrum — dit vrijstaande woonhuis aan de Lijsterbeslaan toont van buiten al wat het belooft.
 
-De woonkamer baadt dankzij de zuidwestligging het hele jaar in het licht en geeft directe toegang tot de diepe, beschutte achtertuin. De eerste verdieping biedt drie royale slaapkamers en een luxe badkamer; via een vaste trap bereikt u de geïsoleerde zolder met dakkapel — ideaal als vierde slaapkamer of werkkamer aan huis.
+Achter de statige gevel met originele glas-in-loodramen en een karakteristieke erker schuilt een verrassend ruime woning van 185 m², volledig gerenoveerd zonder afbreuk te doen aan de authenticiteit van het interbellum. Paneeldeuren, een en-suite kamer met monumentale schouw en een sierlijke eikenhouten trappartij herinneren aan het vakmanschap van de bouwers — en zijn bij de grondige renovatie van 2021 nauwgezet gerestaureerd.
 
-Gelegen op loopafstand van het bruisende centrum, met scholen, het stadspark en het NS-station om de hoek, is dit een woning voor wie het beste van karakter én comfort zoekt.`
+De L-vormige woonkamer is het kloppende hart van het huis. Dankzij de zuidwestligging valt het grootste deel van de dag direct zonlicht naar binnen; in de winter zorgt de sfeervolle open haard in de en-suite voor de ultieme huiselijkheid. In de zomer openen de deuren zich naar het terras en de diepe achtertuin, die daarmee een natuurlijk verlengde van de woonruimte vormt. De volledig vernieuwde keuken met centraal kookeiland, marmeren werkblad en inbouwapparatuur van topmerken sluit naadloos aan op de eetkamer — praktisch voor het dagelijks gebruik, ruim genoeg voor een uitgebreid diner.
+
+Op de eerste verdieping bevinden zich drie ruime slaapkamers. De master bedroom aan de achterzijde biedt fraai uitzicht over de tuin en geniet de hele avond van de zon; de twee overige slaapkamers zijn elk ruim genoeg voor een tweepersoonsbed met garderobeoplossing. De vernieuwde badkamer beschikt over vloerverwarming, een vrijstaand designbad, een ruime inloopdouche en een dubbele wastafel met spiegelkast.
+
+Via een vaste houten trap bereikt u de geïsoleerde zolderverdieping met dakkapel — licht, stil en veelzijdig inzetbaar als vierde slaapkamer, thuiskantoor of hobbyruimte die dagelijks prettig in gebruik is.
+
+De diepe achtertuin op het zuidwesten biedt alles wat een gezin zoekt: speelruimte voor kinderen, een hardhouten terras voor zomerse avonden en volop privacy dankzij volwassen hagen, een bouwkundige schutting en een klassieke tuinmuur. Een vrijstaand tuinhuis biedt extra bergruimte. Het oprit aan de voorzijde biedt plek voor twee voertuigen en sluit aan op de aangebouwde garage, compleet met laadpunt voor elektrische auto's.
+
+Bij de renovatie in 2021 is bewust ingezet op duurzaamheid: dakisolatie, spouwmuurisolatie, drievoudig isolatieglas en een hybride warmtepomp. Vijftien zonnepanelen op het zuiddak completeren het plaatje. Het resultaat is energielabel B en een jaarlijks energieverbruik dat ruim onder het gemiddelde ligt van vergelijkbare vooroorlogse woningen — goed voor uw portemonnee én voor het milieu.
+
+Het Spiegelkwartier behoort al decennialang tot de meest gewilde woonwijken van de regio. Statige lanen met volwassen bomen, een veilige omgeving en alle dagelijkse voorzieningen op fietsafstand: basis- en middelbare scholen, het stadspark, de weekmarkt en een gevarieerd winkelaanbod. Het NS-station ligt op zeven minuten fietsen; Amsterdam Zuid bereikt u in 24 minuten — ideaal voor de forensende professional of het gezin dat de stad wil bereiken zonder er te hoeven wonen.
+
+Vrijstaande woning · woonoppervlak 185 m² · perceel 520 m² · 4 slaapkamers · badkamer met vrijstaand bad en inloopdouche · geïsoleerde zolder met dakkapel · aangebouwde garage met laadpunt · diepe zuidwesttuin · 15 zonnepanelen · energielabel B · bouwjaar 1936, volledig gerenoveerd 2021.
+
+Bezichtiging op afspraak — bel of mail ons kantoor voor een tijdslot dat u schikt.`
 
 const DEMO_FIELDS = [
   { l: 'Adres', v: 'Lijsterbeslaan 14' },
@@ -24,7 +38,7 @@ const DEMO_FIELDS = [
 
 const ASSET_CHIPS = ['Brochure', '3× Instagram', '2× LinkedIn', 'Koper-e-mail', 'Buurtomschrijving', 'PDF-brochure']
 
-const TRUST_BADGES = ['Funda', 'NVM-richtlijnen', 'Realworks', 'BAG / Kadaster', 'AVG-proof']
+const TRUST_BADGES = ['Funda', 'NVM-richtlijnen', 'Realworks', 'BAG / Kadaster', 'AVG-proof', 'Claude AI · Anthropic']
 
 const FEATURES = [
   { icon: 'doc', titel: 'Woningteksten', tekst: 'Funda-tekst, korte én lange brochure, drie Instagram-varianten, twee LinkedIn-posts, koper-e-mail en buurtomschrijving — in één generatie.', soon: false },
@@ -34,16 +48,16 @@ const FEATURES = [
   { icon: 'folder', titel: 'Documentenassistent', tekst: 'Upload VVE-notulen, leveringsakte of koopakte en stel er vragen over. Vesta vat samen en zoekt het op.', soon: false },
   { icon: 'cal', titel: 'Content-kalender', tekst: 'Plan uw Instagram- en LinkedIn-posts vooruit in een overzichtelijke kalender per woning. Nooit meer last-minute.', soon: false },
   { icon: 'chat', titel: 'Chatbot voor uw site', tekst: 'Een slimme assistent op uw eigen website die bezoekersvragen beantwoordt en leads automatisch vastlegt.', soon: false },
-  { icon: 'data', titel: 'Automatische woningdata', tekst: 'Bouwjaar, oppervlak en energielabel automatisch uit BAG en Kadaster. Aangevuld met buurt-, WOZ- en marktdata.', soon: true },
+  { icon: 'data', titel: 'Automatische woningdata', tekst: 'Typ het adres — bouwjaar, oppervlak en energielabel worden automatisch opgehaald uit BAG en Kadaster. Aanvulling met buurt- en marktdata volgt.', soon: false },
   { icon: 'export', titel: 'Funda, Realworks & PDF', tekst: 'Teksten direct klaar voor Funda, te exporteren naar Realworks of als nette PDF-brochure voor de bezichtiging.', soon: false },
 ]
 
 const TABS_DATA = [
-  { key: 'funda', label: 'Funda-tekst', meta: '612 wrd', sub: 'Funda-regelset ingebakken', initial: 'F' },
+  { key: 'funda', label: 'Funda-tekst', meta: '600+ wrd', sub: 'Funda-regelset ingebakken', initial: 'F' },
   { key: 'brochure', label: 'Brochure', meta: 'kort + lang', sub: '200 én 500+ woorden', initial: 'B' },
   { key: 'instagram', label: 'Instagram', meta: '3 varianten', sub: 'Emotioneel · informatief · actie', initial: 'I' },
   { key: 'linkedin', label: 'LinkedIn', meta: '2 varianten', sub: 'Kantoor én makelaar', initial: 'L' },
-  { key: 'email', label: 'Koper-e-mail', meta: 'opvolging', sub: 'Persoonlijke opvolgmail', initial: 'E' },
+  { key: 'email', label: 'Koper-e-mail', meta: 'ná bezichtiging', sub: 'Opvolgmail na het bezoek', initial: 'E' },
   { key: 'buurt', label: 'Buurtomschrijving', meta: 'sfeer', sub: 'Buurt & voorzieningen', initial: 'O' },
 ]
 
@@ -68,13 +82,17 @@ Trots om deze karakteristieke jaren '30-villa in het Spiegelkwartier in de verko
 
 VARIANT — MAKELAAR
 Elke woning heeft een verhaal, en dit jaren '30-huis vertelt er een mooi. Ik liep er vanochtend rond en werd verrast door de lichtinval in de en-suite. Voor een gezin dat ruimte én karakter zoekt, is dit een buitenkans. Stuur me gerust een bericht voor de details.`,
-  email: `Onderwerp: Uw interesse in Lijsterbeslaan 14
+  email: `Onderwerp: Bedankt voor uw bezichtiging — Lijsterbeslaan 14
 
 Beste meneer/mevrouw,
 
-Wat fijn dat u interesse heeft getoond in deze karakteristieke jaren '30-woning in het Spiegelkwartier. Op basis van uw wensen denk ik dat met name de lichte en-suite, de vernieuwde keuken en de diepe zuidwesttuin u zullen aanspreken.
+Hartelijk dank voor uw bezoek aan de Lijsterbeslaan 14 gisteren. Het was prettig u te ontvangen, en ik hoop dat u een goed gevoel heeft meegenomen van de ruimte, het licht en de tuin.
 
-Ik plan graag een persoonlijke bezichtiging op een moment dat u uitkomt. Schikt komende donderdag of zaterdag? Dan reserveer ik alvast een tijdslot voor u.
+Heeft u na uw bezichtiging nog vragen? Denk aan de VVE-situatie, de bouwkundige staat of praktische zaken rondom de overname — ik beantwoord ze graag per mail of telefonisch, op een moment dat u schikt.
+
+Overweegt u een bod uit te brengen, of wilt u de woning nog een keer bekijken met uw partner of aannemer? Dat regelen we graag. Er is op dit moment serieuze interesse vanuit meerdere partijen; mochten er vragen zijn over de biedprocedure, dan informeer ik u graag verder.
+
+Ik hoor graag van u.
 
 Met hartelijke groet,
 [Makelaar] — [Kantoor]`,
@@ -92,9 +110,9 @@ const GEN_STEPS = [
 ]
 
 const FOTO_PUNTEN = [
-  "Automatisch ophelderen, rechtzetten en kleurcorrectie van uw woningfoto's.",
-  'Virtual staging: lege kamers digitaal inrichten met passend meubilair.',
-  'Eén consistente, professionele look over uw hele portefeuille.',
+  'Virtual staging: lege kamers digitaal inrichten in moderne, Scandinavische of klassieke stijl.',
+  'Kopers zien het potentieel van elke ruimte direct — ook bij leegstaande panden.',
+  "Aangevuld met automatische fotoverbetering: belichting, kadrering en kleurcorrectie in één stap.",
 ]
 
 const STEPS = [
@@ -130,9 +148,9 @@ const PLAN_DEFS = [
     features: ['Onbeperkt objecten', '1 gebruiker', 'Huisstijlgeheugen', 'Virtual staging, kalender & chatbot'],
   },
   {
-    naam: 'Kantoor', desc: 'Voor het kantoor met meerdere makelaars',
+    naam: 'Kantoor', desc: 'Voor kantoren die consistentie willen in elke woningpresentatie',
     maand: '€500', jaarMnd: '€417', jaarTot: '€5.000 per jaar', highlighted: false,
-    features: ['Onbeperkt gebruikers & objecten', 'Kantoorbreed huisstijlgeheugen', 'White-label', 'Virtual staging, kalender & chatbot', 'Binnenkort: API & multi-vestiging'],
+    features: ['Onbeperkt gebruikers & objecten', 'Bouw de kantoorhuisstijl op in VestaAI', 'Alle makelaars genereren in dezelfde stijl', 'White-label & eigen branding', 'Virtual staging, kalender & chatbot', 'Binnenkort: API & multi-vestiging'],
   },
 ]
 
@@ -363,12 +381,18 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '76px 28px 64px' }}>
         <div className="vhg" style={{ display: 'grid', gridTemplateColumns: '1.04fr .96fr', gap: 60, alignItems: 'center' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 999, padding: '7px 14px 7px 11px', fontSize: 13, fontWeight: 600, color: '#1A6B45', marginBottom: 26 }}>
-              <span style={{ position: 'relative', display: 'inline-flex', width: 8, height: 8 }}>
-                <span style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#4CAF80', animation: 'vping 1.8s cubic-bezier(0,0,.2,1) infinite' }} />
-                <span style={{ position: 'relative', width: 8, height: 8, borderRadius: 999, background: '#2A8A5C' }} />
-              </span>
-              Eén platform voor de hele woningmarketing
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 26 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 999, padding: '7px 14px 7px 11px', fontSize: 13, fontWeight: 600, color: '#1A6B45' }}>
+                <span style={{ position: 'relative', display: 'inline-flex', width: 8, height: 8 }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#4CAF80', animation: 'vping 1.8s cubic-bezier(0,0,.2,1) infinite' }} />
+                  <span style={{ position: 'relative', width: 8, height: 8, borderRadius: 999, background: '#2A8A5C' }} />
+                </span>
+                Eén platform voor de hele woningmarketing
+              </div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#FFF7ED', border: '1px solid #F0DDB0', borderRadius: 999, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#92400E' }}>
+                <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.04em' }}>NIEUW</span>
+                De nieuwste Claude AI · Anthropic
+              </div>
             </div>
             <h1 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(40px,5.2vw,66px)', lineHeight: 1.03, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 22px' }}>
               Dé complete<br />
@@ -381,9 +405,6 @@ export function LandingPageClient() {
               <Link href="/login" className="vg" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
                 Start gratis proefperiode →
               </Link>
-              <a href="#demo" style={{ fontSize: 16, fontWeight: 600, color: '#0E1A13', background: '#fff', border: '1px solid #DCE5E0', padding: '15px 24px', borderRadius: 13, textDecoration: 'none' }}>
-                Bekijk de live demo
-              </a>
             </div>
             <p style={{ fontSize: 13.5, color: '#7C8983', margin: '18px 0 0' }}>14 dagen gratis · geen creditcard nodig · maandelijks opzegbaar</p>
           </div>
@@ -555,16 +576,80 @@ export function LandingPageClient() {
         </div>
       </section>
 
+      {/* WONINGDATA / BAG */}
+      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
+        <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 54, alignItems: 'center' }}>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Automatische woningdata</div>
+            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
+              Adres ingevoerd. De rest vult Vesta.
+            </h2>
+            <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 440 }}>
+              Typ het adres — bouwjaar, oppervlak en energielabel worden automatisch opgehaald uit het BAG en Kadaster. Minder tikken, minder kans op fouten in uw Funda-tekst.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {['Koppeling met officieel BAG en Kadaster-register', 'Bouwjaar, oppervlak en energielabel in één stap', 'Aanvulbaar met buurt-, WOZ- en marktdata'].map(pt => (
+                <div key={pt} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
+                  <span style={{ width: 22, height: 22, borderRadius: 999, background: '#EAF5EE', color: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>✓</span>
+                  <span style={{ fontSize: 15.5, color: '#3A463F', lineHeight: 1.5 }}>{pt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
+                <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2A8A5C' }} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Nieuw object invoeren</span>
+              </div>
+              <div style={{ padding: 20 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 6 }}>Adres</div>
+                  <div style={{ border: '2px solid #1A6B45', borderRadius: '10px 10px 0 0', padding: '11px 14px', fontSize: 14.5, color: '#0E1A13', background: '#fff', borderBottom: 'none' }}>
+                    Lijsterbeslaan 14, Haarlem
+                  </div>
+                  <div style={{ border: '1px solid #E4EAE6', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden', marginBottom: 16 }}>
+                    {[
+                      { a: 'Lijsterbeslaan 14, 2023 BN Haarlem', active: true },
+                      { a: 'Lijsterbeslaan 14a, 2023 BN Haarlem', active: false },
+                    ].map(({ a, active }) => (
+                      <div key={a} style={{ padding: '10px 14px', fontSize: 13.5, color: active ? '#1A6B45' : '#5A6B61', background: active ? '#EAF5EE' : 'transparent', fontWeight: active ? 700 : 400, borderBottom: active ? '1px solid #EEF2EF' : 'none' }}>{a}</div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
+                  {[
+                    { l: 'Bouwjaar', v: '1936', src: 'BAG' },
+                    { l: 'Oppervlak', v: '185 m²', src: 'BAG' },
+                    { l: 'Energielabel', v: 'B', src: 'Kadaster' },
+                  ].map(f => (
+                    <div key={f.l} style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 3 }}>{f.l}</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', letterSpacing: '-.01em' }}>{f.v}</div>
+                      <div style={{ fontSize: 10.5, color: '#4A9970', marginTop: 3 }}>↗ {f.src}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 10, padding: '9px 12px', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 9, fontSize: 12.5, color: '#5A6B61', display: 'flex', alignItems: 'center', gap: 7 }}>
+                  <span style={{ color: '#1A6B45', fontWeight: 700, fontSize: 13 }}>✓</span>
+                  3 velden automatisch ingevuld vanuit BAG &amp; Kadaster
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FOTO / VIRTUAL STAGING */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '.9fr 1.1fr', gap: 54, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Foto &amp; presentatie</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Virtual staging &amp; fotopresentatie</div>
             <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
-              Laat elke woning op haar best zien.
+              Laat kopers zien wat de woning in huis heeft.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 440 }}>
-              Vesta haalt het beste uit uw woningfoto&apos;s: automatisch ophelderen, rechtzetten en uitlijnen. En met virtual staging richt u lege ruimtes digitaal in, zodat kopers de mogelijkheden meteen zien.
+              Van een lege kamer naar een stijlvolle showroom — zonder één meubel te verplaatsen. Vesta richt ruimtes digitaal in, zodat kopers meteen de mogelijkheden voor zich zien.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {FOTO_PUNTEN.map(p => (
@@ -578,15 +663,74 @@ export function LandingPageClient() {
           <div style={{ position: 'relative' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div style={{ position: 'relative' }}>
-                <div style={{ width: '100%', height: 230, border: '1px solid #E4EAE6', borderRadius: 18, background: '#F7FAF8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#9AA6A0' }}>Originele foto</div>
-                <span style={{ position: 'absolute', left: 12, bottom: 12, fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 11, color: '#8A9690', background: 'rgba(255,255,255,.85)', borderRadius: 6, padding: '4px 8px' }}>VOOR</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/staging-voor.jpg" alt="Lege kamer voor virtual staging" style={{ width: '100%', height: 260, objectFit: 'cover', borderRadius: 18, border: '1px solid #E4EAE6', display: 'block' }} />
+                <span style={{ position: 'absolute', left: 12, bottom: 12, fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 11, color: '#8A9690', background: 'rgba(255,255,255,.88)', borderRadius: 6, padding: '4px 8px' }}>Voor</span>
               </div>
               <div style={{ position: 'relative' }}>
-                <div style={{ width: '100%', height: 230, border: '1px solid #C7E6D5', borderRadius: 18, background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: '#2A8A5C', boxShadow: '0 16px 40px -26px rgba(26,107,69,.5)' }}>Verbeterde foto</div>
-                <span style={{ position: 'absolute', left: 12, bottom: 12, fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 11, color: '#1A6B45', background: 'rgba(255,255,255,.9)', borderRadius: 6, padding: '4px 8px' }}>NA · Vesta</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/staging-na.jpg" alt="Kamer na virtual staging door Vesta AI" style={{ width: '100%', height: 260, objectFit: 'cover', borderRadius: 18, border: '1px solid #C7E6D5', boxShadow: '0 16px 40px -26px rgba(26,107,69,.5)', display: 'block' }} />
+                <span style={{ position: 'absolute', left: 12, bottom: 12, fontFamily: 'ui-monospace,Menlo,monospace', fontSize: 11, color: '#1A6B45', background: 'rgba(255,255,255,.92)', borderRadius: 6, padding: '4px 8px' }}>Na · Virtual staging</span>
               </div>
             </div>
             <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1px solid #E4EAE6', boxShadow: '0 8px 24px rgba(14,26,19,.12)', width: 46, height: 46, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#1A6B45', fontWeight: 800 }}>→</span>
+          </div>
+        </div>
+      </section>
+
+      {/* DOCUMENT ASSISTENT */}
+      <section style={{ background: '#F1F7F3' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
+          <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 54, alignItems: 'center' }}>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Documentenassistent</div>
+              <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
+                Upload een document. Stel een vraag.
+              </h2>
+              <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 440 }}>
+                VVE-notulen, leveringsakte of koopovereenkomst — upload het document en stel Vesta uw vraag in gewoon Nederlands. U krijgt direct een nauwkeurig antwoord, inclusief de bron in het document.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {['VVE-notulen, aktes, taxaties en meer', 'Vraag stellen in gewoon Nederlands', 'Antwoord met paginaverwijzing'].map(pt => (
+                  <div key={pt} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
+                    <span style={{ width: 22, height: 22, borderRadius: 999, background: '#EAF5EE', color: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>✓</span>
+                    <span style={{ fontSize: 15.5, color: '#3A463F', lineHeight: 1.5 }}>{pt}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.32)', overflow: 'hidden' }}>
+                <div style={{ padding: '13px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A6B45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>VVE-notulen-2024.pdf</div>
+                    <div style={{ fontSize: 11, color: '#9AA6A0' }}>18 pagina&apos;s · geanalyseerd</div>
+                  </div>
+                  <span style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '4px 10px' }}>✓ Klaar</span>
+                </div>
+                <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 11 }}>
+                  <div style={{ alignSelf: 'flex-end', background: '#1A6B45', color: '#fff', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontSize: 14, maxWidth: '85%', lineHeight: 1.45 }}>
+                    Zijn er openstaande bestuursbesluiten over het dak?
+                  </div>
+                  <div style={{ background: '#F7FAF8', border: '1px solid #EDF2EF', padding: '13px 15px', borderRadius: '4px 14px 14px 14px', fontSize: 13.5, lineHeight: 1.6, color: '#2A372F', maxWidth: '93%' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 6 }}>Vesta AI</div>
+                    Ja. In de vergadering van 14 maart 2024 is besloten het platte dak van het achtergebouw in 2025 te vervangen. Het reservefonds dekt circa 60%; het verwachte eigenaarsdeel bedraagt <strong>€&nbsp;1.840</strong>.
+                    <div style={{ marginTop: 8 }}><span style={{ fontSize: 11, color: '#9AA6A0', background: '#F0F4F1', borderRadius: 6, padding: '3px 8px' }}>Bron: p.&nbsp;4 · agendapunt 3b</span></div>
+                  </div>
+                  <div style={{ alignSelf: 'flex-end', background: '#1A6B45', color: '#fff', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontSize: 14, maxWidth: '85%', lineHeight: 1.45 }}>
+                    Wat is het saldo van het reservefonds?
+                  </div>
+                  <div style={{ background: '#F7FAF8', border: '1px solid #EDF2EF', padding: '13px 15px', borderRadius: '4px 14px 14px 14px', fontSize: 13.5, lineHeight: 1.6, color: '#2A372F', maxWidth: '93%' }}>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 6 }}>Vesta AI</div>
+                    Het reservefonds bedroeg per 31 december 2023 <strong>€&nbsp;42.750</strong>. Met de geplande bijdragen loopt dat naar verwachting op tot €&nbsp;48.300 eind 2024.
+                    <div style={{ marginTop: 8 }}><span style={{ fontSize: 11, color: '#9AA6A0', background: '#F0F4F1', borderRadius: 6, padding: '3px 8px' }}>Bron: p.&nbsp;7 · jaarrekening 2023</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -607,6 +751,27 @@ export function LandingPageClient() {
                 <h3 style={{ fontSize: 21, fontWeight: 700, color: '#fff', margin: '0 0 12px', letterSpacing: '-.01em' }}>{st.titel}</h3>
                 <p style={{ fontSize: 15.5, lineHeight: 1.6, color: '#A8BBB0', margin: 0 }}>{st.tekst}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI-MOTOR STRIP */}
+      <section style={{ borderTop: '1px solid #EEF2EF', borderBottom: '1px solid #EEF2EF', background: '#fff' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 28px', display: 'flex', alignItems: 'flex-start', gap: 40, flexWrap: 'wrap' }}>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 7 }}>De motor achter Vesta&nbsp;AI</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#0E1A13', letterSpacing: '-.02em' }}>De nieuwste Claude AI</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#9AA6A0' }}>by Anthropic</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 15.5, lineHeight: 1.65, color: '#5A6B61', margin: 0, flex: '1 1 300px', maxWidth: 580 }}>
+            Vesta&nbsp;AI wordt aangedreven door de nieuwste Claude-modellen van Anthropic — het AI-platform dat dit jaar wereldwijd het nieuws domineerde en door Fortune&nbsp;500-bedrijven wordt ingezet voor de meest veeleisende schrijftaken. Wij updaten automatisch mee zodra Anthropic een nieuw model uitbrengt, zodat uw kantoor altijd de scherpste pen heeft.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flexShrink: 0 }}>
+            {['Nieuwste generatie', 'Altijd up-to-date', 'Europese AVG-privacy'].map(badge => (
+              <span key={badge} style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #D5E8DD', borderRadius: 999, padding: '5px 13px', whiteSpace: 'nowrap' }}>{badge}</span>
             ))}
           </div>
         </div>

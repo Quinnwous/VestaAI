@@ -35,7 +35,7 @@ LINKEDIN-VARIANTEN:
 OVERIGE KERNFORMATS:
 - brochure_kort: 200–240 woorden, printoptimaal, kernpunten helder per alinea
 - brochure_lang: 480–560 woorden, volledig verkoopverhaal met alle features uitgebreid toegelicht
-- koper_email: 220–280 woorden, professionele uitnodigingsmail aan geïnteresseerde kopers met concrete volgende stap
+- koper_email: 220–280 woorden, professionele opvolgmail ná de bezichtiging — de verkopende makelaar schrijft aan iemand die de woning al heeft bezichtigd; warm en persoonlijk, geen uitnodiging voor een eerste bezichtiging (die heeft al plaatsgevonden), wél een concrete vervolgstap (vragen beantwoorden, tweede bezichtiging of biedprocedure toelichten)
 - buurtomschrijving: 130–170 woorden, feitelijk en positief, geen sociale of demografische kwalificaties, geen vergelijkingen met andere wijken
 
 EXTRA VELDEN:

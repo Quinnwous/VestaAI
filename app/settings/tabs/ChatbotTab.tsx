@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 
 type FaqItem = {
   id: string
@@ -25,8 +24,7 @@ interface Props {
   leads: Lead[]
 }
 
-export function ChatbotTab({ kantoorId, kantoorNaam, faqItems: initFaq, leads: initLeads }: Props) {
-  const router = useRouter()
+export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: Props) {
   const [faq, setFaq] = useState<FaqItem[]>(initFaq)
   const [leads] = useState<Lead[]>(initLeads)
   const [nieuwVraag, setNieuwVraag] = useState('')
@@ -115,7 +113,7 @@ export function ChatbotTab({ kantoorId, kantoorNaam, faqItems: initFaq, leads: i
           <p className="text-sm text-gray-400 mb-4">Nog geen FAQ-items. Voeg hieronder het eerste item toe.</p>
         ) : (
           <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 mb-4 overflow-hidden">
-            {faq.map((item, i) => (
+            {faq.map((item) => (
               <div key={item.id} className="px-4 py-3 bg-white">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
