@@ -6,20 +6,18 @@ Status: `[ ]` open · `[~]` in uitvoering · `[x]` klaar
 
 ---
 
-## Fase 0 — Externe setup ⚠️ BLOKKEERDER VOOR ALLES
+## Fase 0 — Externe setup ✅ GROTENDEELS KLAAR
 
-Niets werkt zonder deze stap. Quinn regelt dit handmatig.
-
-- [x] `ANTHROPIC_API_KEY` invullen in `.env.local` → generatie testen op `localhost:3000`
-- [ ] Supabase-project aanmaken → migraties `001_initial.sql` t/m `010_object_status_uitbreiden.sql` uitvoeren (in volgorde)
-- [~] `.env.local` aanvullen met alle keys (zie `.env.example`) — Claude/Supabase/Stripe/Resend ✅ · Stripe webhook + price IDs + Kadaster nog open
-- [ ] Magic link testen: link ontvangen in echte mailbox, sessie bewaard na refresh
-- [x] Resend API key instellen + domein verifiëren (transactionele mail)
-- [ ] Stripe-dashboard: Starter (€99/mo, €990/jr), Pro (€199/mo, €1.990/jr), Kantoor (€599/mo, €5.990/jr) aanmaken → price-IDs in `.env.local`
-- [ ] Stripe webhook lokaal testen: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
-- [ ] Supabase Storage-bucket aanmaken (`kantoor-assets`, publiek leesbaar)
-- [ ] Vercel project aanmaken → alle env vars toevoegen → eerste deploy testen
-- [ ] Supabase Edge Function deployen: `supabase functions deploy trial-warning-email` → dagelijks schedule instellen (cron: `0 8 * * *`)
+- [x] `ANTHROPIC_API_KEY` in `.env.local` — generatie werkt lokaal
+- [x] Supabase-project aangemaakt · alle 10 migraties uitgevoerd via MCP (plan-constraint gecorrigeerd naar starter/pro/kantoor)
+- [x] `.env.local` volledig: Claude · Supabase · Resend ✅ — Stripe price IDs + webhook bewust uitgesteld (eerst gratis testen)
+- [x] Resend API key + domein geverifieerd
+- [x] Supabase Storage-bucket `kantoor-assets` aangemaakt (publiek leesbaar)
+- [x] Vercel deploy live ✅ → https://vesta-ai-git-main-quinnberkouwer-1836s-projects.vercel.app
+- [x] Supabase Edge Function `trial-warning-email` gedeployed · secrets ingesteld · schedule `0 8 * * *` actief
+- [ ] Magic link testen: link ontvangen in echte mailbox, sessie bewaard na refresh — Quinn
+- [ ] Stripe-dashboard: Starter (€99/mo, €990/jr), Pro (€199/mo, €1.990/jr), Kantoor (€599/mo, €5.990/jr) aanmaken → price-IDs in `.env.local` — uitgesteld tot na gratis testfase
+- [ ] Stripe webhook: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` — uitgesteld
 - [ ] End-to-end smoke test op Vercel: registreer account → genereer object → exporteer PDF
 
 ---
@@ -40,7 +38,7 @@ Een nieuwe gebruiker moet zonder handleiding begrijpen wat te doen.
 - [x] Welkomstmail via Resend: automatisch verzonden na registratie via `app/auth/confirm/route.ts` (non-blocking)
 - [x] Lege dashboard-state: `WelkomBanner.tsx` toont CTA wanneer count === 0
 - [x] `WelkomBanner.tsx`: geïnspecteerd — triggert correct wanneer count === 0, toont welkomstbericht met CTA naar /object/new en /settings
-- [x] Onboarding-tracking (`005_onboarding_tracking.sql`): voortgangsstrip `OnboardingChecklist.tsx` gebouwd — 3 stappen (account/object/huisstijl), verdwijnt als alles klaar
+- [x] Onboarding-tracking: voortgangsstrip `OnboardingChecklist.tsx` gebouwd — 3 stappen (account/object/huisstijl), verdwijnt als alles klaar
 - [x] `goals.md` bijgewerkt: verwijst nu naar i4housing als eerste tester i.p.v. "tante"
 
 ### 1C — Core-flow testen (happy path + edge cases)
