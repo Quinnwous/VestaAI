@@ -4,7 +4,7 @@ import { PrijzenToggle } from './PrijzenToggle'
 
 export const metadata: Metadata = {
   title: 'Prijzen — VestaAI',
-  description: 'Kies het abonnement dat bij uw makelaarspraktijk past. VestaAI — professionele content voor elk object, in 90 seconden. Starter vanaf €99/maand, Pro vanaf €199/maand.',
+  description: 'Kies het abonnement dat bij uw makelaarspraktijk past. VestaAI — de complete AI-toolkit voor makelaars. Starter vanaf €99/maand, Pro vanaf €199/maand.',
 }
 
 export default function PrijzenPage() {

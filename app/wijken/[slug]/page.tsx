@@ -76,7 +76,7 @@ export default async function WijkPage({ params }: { params: { slug: string } })
           Makelaar in {wijk.naam}?
         </p>
         <p className="text-sm text-blue-700 mb-4">
-          Genereer in 90 seconden professionele content voor uw woningen in {wijk.naam} met VestaAI.
+          Genereer razendsnel professionele content voor uw woningen in {wijk.naam} met VestaAI.
         </p>
         <a
           href="/login"

@@ -54,7 +54,7 @@ export default function LoginPage() {
             </span>
           </Link>
           <p style={{ marginTop: 12, fontSize: 14, color: '#5A6B61' }}>
-            Professionele content voor elk object, in 90 seconden.
+            De complete AI-toolkit voor makelaars.
           </p>
         </div>
 

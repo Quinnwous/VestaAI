@@ -34,10 +34,10 @@ export default function OverOnsPage() {
               Waarom Vesta AI?
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: '#445249', margin: '0 0 20px' }}>
-              Een gemiddelde makelaar besteedt 45 minuten aan de teksten voor één woning. Funda-tekst, brochure, Instagram-posts, LinkedIn, koper-e-mail, buurtomschrijving — het wordt steeds meer. En het moet ook nog kloppen met de Funda-richtlijnen, de NVM-stijlregels en de huisstijl van het kantoor.
+              Makelaars besteden veel te veel tijd aan schrijfwerk voor één woning. Funda-tekst, brochure, Instagram-posts, LinkedIn, koper-e-mail, buurtomschrijving — het wordt steeds meer. En het moet ook nog kloppen met de Funda-richtlijnen, de NVM-stijlregels en de huisstijl van het kantoor.
             </p>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: '#445249', margin: 0 }}>
-              Vesta AI doet dat in 90 seconden. Niet als een generieke vertaalde chatbot, maar als een platform dat de Nederlandse vastgoedmarkt door en door kent — van de BAG tot Funda, van NVM tot AVG. Uw huisstijl, uw toon, uw kwaliteit.
+              VestaAI neemt dat werk razendsnel uit handen. Niet als een generieke vertaalde chatbot, maar als een complete toolkit die de Nederlandse vastgoedmarkt door en door kent — van de BAG tot Funda, van NVM tot AVG. Uw huisstijl, uw toon, uw kwaliteit.
             </p>
           </div>
         </section>

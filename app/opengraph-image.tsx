@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'VestaAI — Van 45 minuten naar 90 seconden'
+export const alt = 'VestaAI — De AI-toolkit voor makelaars'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -58,9 +58,9 @@ export default function OgImage() {
             marginBottom: 24,
           }}
         >
-          Van 45 minuten
+          De AI-toolkit
           {'\n'}
-          <span style={{ color: '#1A6B45' }}>naar 90 seconden</span>
+          <span style={{ color: '#1A6B45' }}>voor makelaars</span>
         </div>
 
         {/* Sub */}
@@ -72,7 +72,7 @@ export default function OgImage() {
             lineHeight: 1.5,
           }}
         >
-          De AI-contentassistent voor Nederlandse makelaars. Funda-tekst, brochure, Instagram, LinkedIn en meer.
+          Van Funda-tekst tot koper-e-mail — razendsnel professionele content, afgestemd op uw huisstijl.
         </div>
 
         {/* Bottom badges */}
@@ -85,7 +85,7 @@ export default function OgImage() {
             gap: 16,
           }}
         >
-          {['10 teksten', '90 seconden', '14 dagen gratis'].map(label => (
+          {['10 teksten', 'Funda-klaar', '14 dagen gratis'].map(label => (
             <div
               key={label}
               style={{

@@ -27,12 +27,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'VestaAI — De AI-assistent voor makelaars',
+    default: 'VestaAI — De AI-toolkit voor makelaars',
     template: '%s — VestaAI',
   },
   description:
-    'VestaAI genereert in 90 seconden een complete content-set per woning: Funda-tekst, brochure, social media, koper-e-mail en buurtomschrijving. Voor makelaars die efficiënt werken.',
-  keywords: ['makelaars', 'AI-assistent', 'Funda-tekst', 'AI', 'NVM', 'VBO', 'brochure', 'vastgoed'],
+    'VestaAI is de complete AI-toolkit voor makelaars: professionele Funda-teksten, brochures, social media, koper-e-mails, documentanalyse en meer. Afgestemd op de Nederlandse vastgoedmarkt.',
+  keywords: ['makelaars', 'AI-toolkit', 'AI-assistent', 'Funda-tekst', 'AI', 'NVM', 'VBO', 'brochure', 'vastgoed'],
   authors: [{ name: 'VestaAI' }],
   creator: 'VestaAI',
   openGraph: {
@@ -40,22 +40,22 @@ export const metadata: Metadata = {
     locale: 'nl_NL',
     url: APP_URL,
     siteName: 'VestaAI',
-    title: 'VestaAI — De AI-assistent voor makelaars',
+    title: 'VestaAI — De AI-toolkit voor makelaars',
     description:
-      'In 90 seconden een complete content-set per woning: Funda-tekst, brochure, social media, koper-e-mail en buurtomschrijving. Voor makelaars die efficiënt werken.',
+      'Van Funda-tekst tot koper-e-mail — VestaAI genereert razendsnel professionele content die voldoet aan alle richtlijnen. Afgestemd op uw huisstijl.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'VestaAI — de AI-assistent voor makelaars',
+        alt: 'VestaAI — de AI-toolkit voor makelaars',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VestaAI — De AI-assistent voor makelaars',
-    description: 'In 90 seconden een complete content-set per woning. Voor makelaars die efficiënt werken.',
+    title: 'VestaAI — De AI-toolkit voor makelaars',
+    description: 'De complete AI-toolkit voor makelaars. Van Funda-tekst tot documentanalyse — alles in één platform.',
     images: ['/og-image.png'],
   },
   robots: {

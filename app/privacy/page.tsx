@@ -35,7 +35,7 @@ export default function PrivacyPage() {
             <p className="text-gray-600 leading-relaxed">
               VestaAI is een product van Quinn Berkouwer, gevestigd in Nederland.
               Contactadres: <a href="mailto:quinn.berkouwer@gmail.com" className="text-blue-600 underline">quinn.berkouwer@gmail.com</a>.
-              VestaAI is een SaaS-platform voor Nederlandse en Belgische makelaars waarmee zij in 90 seconden een
+              VestaAI is een SaaS-platform voor Nederlandse en Belgische makelaars waarmee zij razendsnel een
               complete content-set per woning kunnen genereren.
             </p>
           </section>
