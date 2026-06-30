@@ -3,6 +3,7 @@
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { HuisstijlSchema } from '@/lib/schemas'
+import { sendTeamInviteConfirmation } from '@/lib/email'
 
 export async function uploadLogo(formData: FormData) {
   const file = formData.get('logo') as File | null
@@ -64,6 +65,20 @@ export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: strin
     const { kantoor_id, ...rest } = data
     const huisstijl = HuisstijlSchema.parse(rest)
 
+    const supabase = createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+    const { data: makelaar } = await supabase
+      .from('makelaars')
+      .select('role, kantoor_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!makelaar || makelaar.role !== 'admin' || makelaar.kantoor_id !== kantoor_id) {
+      return { ok: false, error: 'Geen rechten' }
+    }
+
     const serviceClient = createServiceSupabaseClient()
     const { error } = await serviceClient
       .from('kantoren')
@@ -97,6 +112,84 @@ export async function nodigTeamlidUit(data: { email: string; kantoor_id: string 
   const { error } = await serviceClient.auth.admin.inviteUserByEmail(data.email, {
     data: { kantoor_id: data.kantoor_id },
   })
+
+  if (error) return { ok: false, error: error.message }
+
+  // Bevestigingsmail naar de admin (niet-blokkerend)
+  if (user.email) {
+    sendTeamInviteConfirmation(user.email, data.email).catch(console.error)
+  }
+
+  return { ok: true }
+}
+
+export async function slaKantoorNaamOp(naam: string) {
+  if (!naam.trim() || naam.length > 100) return { ok: false, error: 'Ongeldige naam' }
+
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  const { data: makelaar } = await supabase
+    .from('makelaars')
+    .select('kantoor_id, role')
+    .eq('id', user.id)
+    .single()
+  if (!makelaar || makelaar.role !== 'admin') return { ok: false, error: 'Geen rechten' }
+
+  const serviceClient = createServiceSupabaseClient()
+  const { error } = await serviceClient
+    .from('kantoren')
+    .update({ name: naam.trim() })
+    .eq('id', makelaar.kantoor_id)
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function slaProfielNaamOp(naam: string) {
+  if (!naam.trim() || naam.length > 100) return { ok: false, error: 'Ongeldige naam' }
+
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  const serviceClient = createServiceSupabaseClient()
+  const { error } = await serviceClient
+    .from('makelaars')
+    .update({ name: naam.trim() })
+    .eq('id', user.id)
+
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
+export async function verwijderTeamlid(data: { makelaar_id: string; kantoor_id: string }) {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  if (data.makelaar_id === user.id) {
+    return { ok: false, error: 'U kunt uzelf niet verwijderen' }
+  }
+
+  const { data: makelaar } = await supabase
+    .from('makelaars')
+    .select('role, kantoor_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!makelaar || makelaar.role !== 'admin' || makelaar.kantoor_id !== data.kantoor_id) {
+    return { ok: false, error: 'Geen rechten' }
+  }
+
+  const serviceClient = createServiceSupabaseClient()
+  const { error } = await serviceClient
+    .from('makelaars')
+    .delete()
+    .eq('id', data.makelaar_id)
+    .eq('kantoor_id', data.kantoor_id)
 
   if (error) return { ok: false, error: error.message }
   return { ok: true }

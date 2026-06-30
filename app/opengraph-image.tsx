@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'VestaAI — De AI-assistent voor makelaars'
+export const alt = 'VestaAI — Van 45 minuten naar 90 seconden'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -21,7 +21,7 @@ export default function OgImage() {
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         }}
       >
-        {/* Blue accent bar */}
+        {/* Forest Green accent bar */}
         <div
           style={{
             position: 'absolute',
@@ -29,7 +29,7 @@ export default function OgImage() {
             left: 0,
             right: 0,
             height: '6px',
-            background: '#2563eb',
+            background: '#1A6B45',
           }}
         />
 
@@ -38,7 +38,7 @@ export default function OgImage() {
           style={{
             fontSize: 28,
             fontWeight: 700,
-            color: '#111827',
+            color: '#1A6B45',
             letterSpacing: '-0.5px',
             marginBottom: 48,
           }}
@@ -58,9 +58,9 @@ export default function OgImage() {
             marginBottom: 24,
           }}
         >
-          De AI-assistent
+          Van 45 minuten
           {'\n'}
-          <span style={{ color: '#2563eb' }}>voor makelaars</span>
+          <span style={{ color: '#1A6B45' }}>naar 90 seconden</span>
         </div>
 
         {/* Sub */}
@@ -72,7 +72,7 @@ export default function OgImage() {
             lineHeight: 1.5,
           }}
         >
-          8 velden invullen → Funda-tekst, brochure, Instagram, LinkedIn, koper-e-mail en meer.
+          De AI-contentassistent voor Nederlandse makelaars. Funda-tekst, brochure, Instagram, LinkedIn en meer.
         </div>
 
         {/* Bottom badges */}
@@ -85,16 +85,16 @@ export default function OgImage() {
             gap: 16,
           }}
         >
-          {['10 teksten', '7 content-types', '14 dagen gratis'].map(label => (
+          {['10 teksten', '90 seconden', '14 dagen gratis'].map(label => (
             <div
               key={label}
               style={{
-                background: '#f0f9ff',
-                border: '1px solid #bae6fd',
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
                 borderRadius: 50,
                 padding: '8px 20px',
                 fontSize: 18,
-                color: '#1e40af',
+                color: '#166534',
                 fontWeight: 600,
               }}
             >

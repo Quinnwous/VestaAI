@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
@@ -30,26 +30,75 @@ interface PropertyFormProps {
   disabled?: boolean
 }
 
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  borderRadius: 11,
+  border: '1px solid #DCE5DF',
+  padding: '11px 14px',
+  fontSize: 14,
+  color: '#0E1A13',
+  background: '#fff',
+  outline: 'none',
+  boxSizing: 'border-box',
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 13,
+  fontWeight: 600,
+  color: '#0E1A13',
+  marginBottom: 6,
+}
+
 export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   const draft = typeof window !== 'undefined' ? loadDraft() : {}
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [openHuisActief, setOpenHuisActief] = useState(
+    () => !!(draft.open_huis_datum)
+  )
+  const [bagBezig, setBagBezig] = useState(false)
+  const [bagFout, setBagFout] = useState('')
 
   const {
     register,
     handleSubmit,
     control,
+    setValue,
+    getValues,
     formState: { errors },
   } = useForm<PropertyInput>({
     resolver: zodResolver(PropertyInputSchema),
-    defaultValues: draft,
+    defaultValues: { taal: 'nl', ...draft },
   })
 
+  const adresValue = useWatch({ control, name: 'adres' }) ?? ''
   const doelgroepValue = useWatch({ control, name: 'doelgroep' })
+  const taalValue = useWatch({ control, name: 'taal' }) ?? 'nl'
+  const [duplicaat, setDuplicaat] = useState<{ object_id: string; created_at: string } | null>(null)
+  const duplicaatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [doelgroepAnders, setDoelgroepAnders] = useState(
+    () => !DOELGROEPEN.slice(0, -1).includes(draft.doelgroep as typeof DOELGROEPEN[number])
+      && !!draft.doelgroep
+  )
   const uspsValue = useWatch({ control, name: 'usps' }) ?? ''
   const allValues = useWatch({ control })
   const MAX_USPS = 500
 
-  // Debounced autosave
+  const isEn = taalValue === 'en'
+
+  useEffect(() => {
+    if (duplicaatTimerRef.current) clearTimeout(duplicaatTimerRef.current)
+    if (adresValue.length < 6) { setDuplicaat(null); return }
+    duplicaatTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/object/check-adres?adres=${encodeURIComponent(adresValue)}`)
+        const json = await res.json()
+        setDuplicaat(json.bestaat ? { object_id: json.object_id, created_at: json.created_at } : null)
+      } catch { /* silent */ }
+    }, 600)
+    return () => { if (duplicaatTimerRef.current) clearTimeout(duplicaatTimerRef.current) }
+  }, [adresValue])
+
   useEffect(() => {
     if (disabled) return
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
@@ -69,127 +118,196 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [disabled, handleSubmit, onSubmit])
 
+  const handleBagOpzoeken = async () => {
+    const adres = getValues('adres')
+    if (!adres || adres.length < 5) {
+      setBagFout(isEn ? 'Enter an address first' : 'Vul eerst een adres in')
+      return
+    }
+    setBagBezig(true)
+    setBagFout('')
+    try {
+      const res = await fetch(`/api/bag?adres=${encodeURIComponent(adres)}`)
+      const json = await res.json()
+      if (!res.ok || !json.bouwjaar) {
+        setBagFout(isEn ? 'Address not found in BAG' : 'Adres niet gevonden in BAG')
+        return
+      }
+      if (json.bouwjaar) setValue('bouwjaar', json.bouwjaar, { shouldValidate: true })
+      if (json.oppervlak_m2) setValue('oppervlak_m2', json.oppervlak_m2, { shouldValidate: true })
+      if (json.energielabel) setValue('energielabel', json.energielabel, { shouldValidate: true })
+    } catch {
+      setBagFout(isEn ? 'BAG lookup failed' : 'BAG opzoeken mislukt')
+    } finally {
+      setBagBezig(false)
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+      {/* Taal toggle */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #E9EFEB' }}>
+        <p style={{ fontSize: 13, color: '#9AA6A0' }}>{isEn ? 'Generate content in:' : 'Genereer content in:'}</p>
+        <div style={{ display: 'flex', borderRadius: 10, border: '1px solid #E4EAE6', overflow: 'hidden', fontSize: 13, fontWeight: 600 }}>
+          {(['nl', 'en'] as const).map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setValue('taal', t)}
+              style={{ padding: '7px 14px', cursor: 'pointer', border: 'none', transition: 'all .15s', background: taalValue === t ? '#1A6B45' : '#fff', color: taalValue === t ? '#fff' : '#5A6B61' }}
+            >
+              {t === 'nl' ? '🇳🇱 Nederlands' : '🇬🇧 English'}
+            </button>
+          ))}
+        </div>
+        <input type="hidden" {...register('taal')} />
+      </div>
+
       {/* Adres */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Adres <span className="text-red-500">*</span>
+        <label style={labelStyle}>
+          {isEn ? 'Address' : 'Adres'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
         <input
           {...register('adres')}
           disabled={disabled}
-          placeholder="Herengracht 1, Amsterdam"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          placeholder={isEn ? '1 Main Street, Amsterdam' : 'Herengracht 1, Amsterdam'}
+          style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+          onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
         />
-        {errors.adres && <p className="mt-1 text-xs text-red-600">{errors.adres.message}</p>}
+        {errors.adres && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.adres.message}</p>}
+        {duplicaat && !errors.adres && (
+          <div style={{ marginTop: 8, borderRadius: 10, background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#D97706" style={{ flexShrink: 0, marginTop: 1 }}>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <p style={{ fontSize: 13, color: '#92400E' }}>
+              {isEn ? 'This address was already generated on ' : 'Dit adres is al gegenereerd op '}
+              {new Date(duplicaat.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' })}.{' '}
+              <a href={`/object/${duplicaat.object_id}`} style={{ textDecoration: 'underline', fontWeight: 600 }}>
+                {isEn ? 'View existing object →' : 'Bekijk bestaand object →'}
+              </a>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Woningtype + Kamers */}
-      <div className="grid grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Woningtype <span className="text-red-500">*</span>
+          <label style={labelStyle}>
+            {isEn ? 'Property type' : 'Woningtype'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <select
             {...register('woningtype')}
             disabled={disabled}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           >
-            <option value="">Kies type...</option>
+            <option value="">{isEn ? 'Choose type...' : 'Kies type...'}</option>
             {WONINGSTYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
-          {errors.woningtype && <p className="mt-1 text-xs text-red-600">{errors.woningtype.message}</p>}
+          {errors.woningtype && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.woningtype.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Kamers <span className="text-red-500">*</span>
+          <label style={labelStyle}>
+            {isEn ? 'Rooms' : 'Kamers'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <input
             {...register('kamers', { valueAsNumber: true })}
-            type="number"
-            min={1}
-            max={20}
-            disabled={disabled}
-            placeholder="3"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            type="number" min={1} max={20} disabled={disabled} placeholder="3"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
-          {errors.kamers && <p className="mt-1 text-xs text-red-600">{errors.kamers.message}</p>}
+          {errors.kamers && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.kamers.message}</p>}
         </div>
       </div>
 
       {/* Oppervlak + Bouwjaar */}
-      <div className="grid grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Woonoppervlak (m²) <span className="text-red-500">*</span>
+          <label style={labelStyle}>
+            {isEn ? 'Floor area (m²)' : 'Woonoppervlak (m²)'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <input
             {...register('oppervlak_m2', { valueAsNumber: true })}
-            type="number"
-            min={1}
-            disabled={disabled}
-            placeholder="85"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            type="number" min={1} disabled={disabled} placeholder="85"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
-          {errors.oppervlak_m2 && <p className="mt-1 text-xs text-red-600">{errors.oppervlak_m2.message}</p>}
+          {errors.oppervlak_m2 && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.oppervlak_m2.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Bouwjaar <span className="text-red-500">*</span>
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <label style={{ ...labelStyle, marginBottom: 0 }}>
+              {isEn ? 'Year built' : 'Bouwjaar'} <span style={{ color: '#DC2626' }}>*</span>
+            </label>
+            <button
+              type="button"
+              onClick={handleBagOpzoeken}
+              disabled={disabled || bagBezig}
+              style={{ fontSize: 12, color: '#1A6B45', background: 'none', border: 'none', cursor: disabled || bagBezig ? 'not-allowed' : 'pointer', opacity: disabled || bagBezig ? .5 : 1, fontWeight: 600 }}
+            >
+              {bagBezig ? '...' : isEn ? 'Auto-fill from BAG' : 'Ophalen uit BAG'}
+            </button>
+          </div>
           <input
             {...register('bouwjaar', { valueAsNumber: true })}
-            type="number"
-            min={1800}
-            max={2035}
-            disabled={disabled}
-            placeholder="1995"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            type="number" min={1800} max={2035} disabled={disabled} placeholder="1995"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
-          {errors.bouwjaar && <p className="mt-1 text-xs text-red-600">{errors.bouwjaar.message}</p>}
+          {bagFout && <p style={{ marginTop: 5, fontSize: 12, color: '#D97706' }}>{bagFout}</p>}
+          {errors.bouwjaar && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.bouwjaar.message}</p>}
         </div>
       </div>
 
       {/* Energielabel + Vraagprijs */}
-      <div className="grid grid-cols-2 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Energielabel <span className="text-red-500">*</span>
+          <label style={labelStyle}>
+            {isEn ? 'Energy label' : 'Energielabel'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <select
             {...register('energielabel')}
             disabled={disabled}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           >
-            <option value="">Kies label...</option>
+            <option value="">{isEn ? 'Choose label...' : 'Kies label...'}</option>
             {ENERGIELABELS.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
-          {errors.energielabel && <p className="mt-1 text-xs text-red-600">{errors.energielabel.message}</p>}
+          {errors.energielabel && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.energielabel.message}</p>}
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Vraagprijs (€) <span className="text-red-500">*</span>
+          <label style={labelStyle}>
+            {isEn ? 'Asking price (€)' : 'Vraagprijs (€)'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <input
             {...register('vraagprijs', { valueAsNumber: true })}
-            type="number"
-            min={1}
-            disabled={disabled}
-            placeholder="450000"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            type="number" min={1} disabled={disabled} placeholder="450000"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
-          {errors.vraagprijs && <p className="mt-1 text-xs text-red-600">{errors.vraagprijs.message}</p>}
+          {errors.vraagprijs && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.vraagprijs.message}</p>}
         </div>
       </div>
 
       {/* USP's */}
       <div>
-        <div className="flex items-center justify-between mb-1">
-          <label className="block text-sm font-medium text-gray-700">
-            USP&apos;s <span className="text-red-500">*</span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+          <label style={{ ...labelStyle, marginBottom: 0 }}>
+            {isEn ? "USPs" : "USP's"} <span style={{ color: '#DC2626' }}>*</span>
           </label>
-          <span className={`text-xs tabular-nums ${uspsValue.length > MAX_USPS * 0.9 ? 'text-orange-500' : 'text-gray-400'}`}>
+          <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#9AA6A0', fontVariantNumeric: 'tabular-nums' }}>
             {uspsValue.length}/{MAX_USPS}
           </span>
         </div>
@@ -198,53 +316,130 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           disabled={disabled}
           rows={3}
           maxLength={MAX_USPS}
-          placeholder="Bijv: gerenoveerde keuken, zonnig terras, vrij uitzicht, rustige straat, recent dak"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 resize-none"
+          placeholder={isEn
+            ? 'E.g. renovated kitchen, sunny terrace, unobstructed view, quiet street, new roof 2022'
+            : 'Bijv: gerenoveerde keuken, zonnig terras, vrij uitzicht, rustige straat, recent dak'}
+          style={{ ...inputStyle, resize: 'none', opacity: disabled ? .5 : 1 }}
+          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+          onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
         />
         {errors.usps
-          ? <p className="mt-1 text-xs text-red-600">{errors.usps.message}</p>
-          : <p className="mt-1.5 text-xs text-gray-400">Hoe meer unieke kenmerken, hoe sterker de tekst. Denk aan: recent gerenoveerd, eigen parkeerplaats, dak 2022, EV-laadpunt.</p>
+          ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.usps.message}</p>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#9AA6A0' }}>
+            {isEn
+              ? 'More unique features = stronger copy.'
+              : 'Hoe meer unieke kenmerken, hoe sterker de tekst.'}
+          </p>
         }
       </div>
 
       {/* Doelgroep */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Doelgroep <span className="text-red-500">*</span>
+        <label style={labelStyle}>
+          {isEn ? 'Target audience' : 'Doelgroep'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
         <select
-          {...register('doelgroep')}
+          value={doelgroepAnders ? 'Anders' : doelgroepValue ?? ''}
+          onChange={e => {
+            if (e.target.value === 'Anders') {
+              setDoelgroepAnders(true)
+              setValue('doelgroep', '', { shouldValidate: false })
+            } else {
+              setDoelgroepAnders(false)
+              setValue('doelgroep', e.target.value, { shouldValidate: true })
+            }
+          }}
           disabled={disabled}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+          style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+          onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
         >
-          <option value="">Kies doelgroep...</option>
+          <option value="">{isEn ? 'Choose audience...' : 'Kies doelgroep...'}</option>
           {DOELGROEPEN.map(d => <option key={d} value={d}>{d}</option>)}
         </select>
-        {doelgroepValue === 'Anders' && (
+        <input type="hidden" {...register('doelgroep')} />
+        {doelgroepAnders && (
           <input
-            {...register('doelgroep')}
             disabled={disabled}
-            placeholder="Beschrijf de doelgroep..."
-            className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+            placeholder={isEn ? 'Describe the target audience...' : 'Beschrijf de doelgroep...'}
+            defaultValue={doelgroepValue ?? ''}
+            onChange={e => setValue('doelgroep', e.target.value, { shouldValidate: true })}
+            style={{ ...inputStyle, marginTop: 8, opacity: disabled ? .5 : 1 }}
+            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+            onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
         )}
         {errors.doelgroep
-          ? <p className="mt-1 text-xs text-red-600">{errors.doelgroep.message}</p>
-          : <p className="mt-1.5 text-xs text-gray-400">Claude schrijft de tekst gericht op deze koper — toon, sfeer en USP-keuze worden hierop afgestemd.</p>
+          ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.doelgroep.message}</p>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#9AA6A0' }}>
+            {isEn
+              ? 'Claude tailors tone, atmosphere and USP selection to this buyer profile.'
+              : 'Claude schrijft de tekst gericht op deze koper — toon, sfeer en USP-keuze worden hierop afgestemd.'}
+          </p>
         }
+      </div>
+
+      {/* Open huis */}
+      <div style={{ border: '1px solid #E9EFEB', borderRadius: 14, padding: '16px 18px' }}>
+        <button
+          type="button"
+          onClick={() => setOpenHuisActief(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        >
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#0E1A13' }}>
+            {isEn ? 'Open house (optional)' : 'Open huis (optioneel)'}
+          </span>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: openHuisActief ? '#EAF5EE' : '#F1F7F3', color: openHuisActief ? '#1A6B45' : '#9AA6A0' }}>
+            {openHuisActief ? (isEn ? 'On' : 'Aan') : (isEn ? 'Off' : 'Uit')}
+          </span>
+        </button>
+
+        {openHuisActief && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
+            <div>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#9AA6A0' }}>
+                {isEn ? 'Date' : 'Datum'}
+              </label>
+              <input
+                {...register('open_huis_datum')}
+                type="date"
+                disabled={disabled}
+                style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+                onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+                onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
+              />
+            </div>
+            <div>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#9AA6A0' }}>
+                {isEn ? 'Time' : 'Tijdstip'}
+              </label>
+              <input
+                {...register('open_huis_tijd')}
+                type="time"
+                disabled={disabled}
+                style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+                onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
+                onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div>
         <button
           type="submit"
           disabled={disabled}
-          className="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          style={{ width: '100%', borderRadius: 11, background: '#1A6B45', padding: '14px 0', fontSize: 15, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 4px 14px rgba(26,107,69,.25)', transition: 'opacity .15s' }}
         >
-          {disabled ? 'Bezig met genereren...' : 'Genereer content →'}
+          {disabled
+            ? (isEn ? 'Generating...' : 'Bezig met genereren...')
+            : (isEn ? 'Generate content →' : 'Genereer content →')}
         </button>
         {!disabled && (
-          <p className="mt-2 text-center text-xs text-gray-400">
-            of druk <kbd className="font-mono bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">⌘ Enter</kbd>
+          <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#9AA6A0' }}>
+            {isEn ? 'or press' : 'of druk'}{' '}
+            <kbd style={{ fontFamily: 'monospace', background: '#F1F7F3', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5A6B61', border: '1px solid #E4EAE6' }}>⌘ Enter</kbd>
           </p>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 interface TabContentProps {
   label?: string
@@ -8,10 +8,27 @@ interface TabContentProps {
   wordCount?: boolean
   wordLimit?: number
   charLimit?: number
+  onSave?: (nieuweTekst: string) => void
 }
 
-export function TabContent({ label, content, wordCount, wordLimit, charLimit }: TabContentProps) {
+export function TabContent({ label, content, wordCount, wordLimit, charLimit, onSave }: TabContentProps) {
   const [copied, setCopied] = useState(false)
+  const [bewerkModus, setBewerkModus] = useState(false)
+  const [bewerkTekst, setBewerkTekst] = useState(content)
+  const [opslaan, setOpslaan] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    setBewerkTekst(content)
+  }, [content])
+
+  useEffect(() => {
+    if (bewerkModus && textareaRef.current) {
+      textareaRef.current.focus()
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
+    }
+  }, [bewerkModus])
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(content)
@@ -19,47 +36,99 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit }: 
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const words = content.trim().split(/\s+/).length
-  const chars = content.length
+  const handleSave = async () => {
+    if (!onSave) return
+    setOpslaan(true)
+    await onSave(bewerkTekst)
+    setOpslaan(false)
+    setBewerkModus(false)
+  }
+
+  const handleCancel = () => {
+    setBewerkTekst(content)
+    setBewerkModus(false)
+  }
+
+  const handleTextareaInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setBewerkTekst(e.target.value)
+    e.target.style.height = 'auto'
+    e.target.style.height = `${e.target.scrollHeight}px`
+  }
+
+  const weergaveTekst = bewerkModus ? bewerkTekst : content
+  const words = weergaveTekst.trim().split(/\s+/).length
+  const chars = weergaveTekst.length
   const overLimit = charLimit ? chars > charLimit : false
   const nearLimit = charLimit ? chars > charLimit * 0.9 : false
 
+  const btnBase: React.CSSProperties = { fontSize: 12, padding: '5px 10px', borderRadius: 8, border: '1px solid #E4EAE6', background: '#fff', cursor: 'pointer', color: '#5A6B61', transition: 'all .15s' }
+
   return (
-    <div className="relative">
-      <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+    <div style={{ position: 'relative' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
         {label && (
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#9AA6A0', textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
         )}
-        <div className="flex items-center gap-3 ml-auto flex-wrap">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
           {wordCount && wordLimit && (
-            <span className={`text-xs tabular-nums ${words > wordLimit ? 'text-red-600 font-medium' : words > wordLimit * 0.9 ? 'text-orange-500' : 'text-gray-400'}`}>
+            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: words > wordLimit ? '#DC2626' : words > wordLimit * 0.9 ? '#D97706' : '#9AA6A0', fontWeight: words > wordLimit ? 700 : 400 }}>
               {words}/{wordLimit} woorden{words > wordLimit ? ' — te lang!' : ''}
             </span>
           )}
           {wordCount && !wordLimit && (
-            <span className="text-xs text-gray-400">{words} woorden</span>
+            <span style={{ fontSize: 12, color: '#9AA6A0' }}>{words} woorden</span>
           )}
           {charLimit && (
-            <span className={`text-xs tabular-nums font-medium ${
-              overLimit ? 'text-red-600' : nearLimit ? 'text-orange-500' : 'text-gray-400'
-            }`}>
-              {chars.toLocaleString('nl-NL')}/{charLimit.toLocaleString('nl-NL')} tekens
-              {overLimit && ' — te lang!'}
+            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: overLimit ? '#DC2626' : nearLimit ? '#D97706' : '#9AA6A0' }}>
+              {chars.toLocaleString('nl-NL')}/{charLimit.toLocaleString('nl-NL')} tekens{overLimit ? ' — te lang!' : ''}
             </span>
           )}
-          <button
-            onClick={handleCopy}
-            className="text-xs px-3 py-1 rounded-md border border-gray-200 hover:bg-gray-50 transition-colors"
-          >
-            {copied ? '✓ Gekopieerd' : 'Kopieer'}
-          </button>
+
+          {bewerkModus ? (
+            <>
+              <button onClick={handleCancel} style={btnBase}>Annuleer</button>
+              <button
+                onClick={handleSave}
+                disabled={opslaan}
+                style={{ ...btnBase, background: '#1A6B45', color: '#fff', border: '1px solid #1A6B45', opacity: opslaan ? .6 : 1 }}
+              >
+                {opslaan ? 'Opslaan...' : 'Opslaan'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={handleCopy} style={{ ...btnBase, color: copied ? '#1A6B45' : '#5A6B61' }}>
+                {copied ? '✓ Gekopieerd' : 'Kopieer'}
+              </button>
+              {onSave && (
+                <button
+                  onClick={() => setBewerkModus(true)}
+                  style={btnBase}
+                  title="Tekst handmatig bewerken"
+                >
+                  <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }}>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  Bewerk
+                </button>
+              )}
+            </>
+          )}
         </div>
       </div>
-      <div className={`rounded-lg border bg-gray-50 p-4 text-sm text-gray-800 whitespace-pre-wrap leading-relaxed ${
-        overLimit ? 'border-red-200' : 'border-gray-100'
-      }`}>
-        {content}
-      </div>
+
+      {bewerkModus ? (
+        <textarea
+          ref={textareaRef}
+          value={bewerkTekst}
+          onChange={handleTextareaInput}
+          style={{ width: '100%', borderRadius: 12, border: `1px solid ${overLimit ? '#FCA5A5' : '#1A6B45'}`, background: '#fff', padding: '16px', fontSize: 14, color: '#0E1A13', lineHeight: 1.7, outline: 'none', resize: 'none', minHeight: 200, boxSizing: 'border-box' }}
+        />
+      ) : (
+        <div style={{ borderRadius: 12, border: `1px solid ${overLimit ? '#FCA5A5' : '#E9EFEB'}`, background: '#F8FAF8', padding: '16px', fontSize: 14, color: '#0E1A13', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+          {content}
+        </div>
+      )}
     </div>
   )
 }

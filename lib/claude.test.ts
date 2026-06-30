@@ -51,7 +51,7 @@ describe('PropertyInputSchema', () => {
 })
 
 describe('ContentOutputSchema', () => {
-  it('accepts valid output with all 10 keys', () => {
+  it('accepts valid output with all required keys', () => {
     const output = {
       funda_tekst: 'tekst',
       brochure_kort: 'kort',
@@ -85,6 +85,10 @@ const validOutput = {
   linkedin_makelaar: 'Trots dit object te mogen verkopen.',
   koper_email: 'Beste geïnteresseerde...',
   buurtomschrijving: 'De Jordaan is een levendige wijk.',
+  open_huis: '',
+  bezichtiging_followup_positief: '',
+  bezichtiging_followup_negatief: '',
+  video_script: '',
 }
 
 describe('generateContent', () => {

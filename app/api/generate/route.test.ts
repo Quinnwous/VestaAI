@@ -39,6 +39,8 @@ const validOutput = {
   instagram_emotioneel: 'em', instagram_informatief: 'inf', instagram_actie: 'act',
   linkedin_kantoor: 'knt', linkedin_makelaar: 'mak', koper_email: 'mail',
   buurtomschrijving: 'buurt',
+  open_huis: '', bezichtiging_followup_positief: '', bezichtiging_followup_negatief: '', video_script: '',
+  energie_advies: '', kopersvragen_faq: '', marktanalyse: '',
 }
 
 function makeRequest(body: unknown) {

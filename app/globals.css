@@ -9,7 +9,13 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900;
+    background: #FBFCFB;
+    color: #0E1A13;
+  }
+
+  ::selection {
+    background: #C7E6D5;
+    color: #0E1A13;
   }
 
   /* Scrollbar */

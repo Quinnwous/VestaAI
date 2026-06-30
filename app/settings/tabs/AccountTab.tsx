@@ -1,7 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
+import { slaProfielNaamOp } from '../actions'
 
 interface Props {
   makelaar: Makelaar
@@ -9,21 +11,21 @@ interface Props {
 }
 
 const PLAN_LABELS: Record<NonNullable<Kantoor['plan']>, string> = {
-  solo: 'Solo',
+  starter: 'Starter',
+  pro: 'Pro',
   kantoor: 'Kantoor',
-  franchise: 'Franchise',
 }
 
 const PLAN_PRIJZEN: Record<NonNullable<Kantoor['plan']>, string> = {
-  solo: '€79/maand',
-  kantoor: '€149/maand',
-  franchise: '€499/maand',
+  starter: '€99/maand',
+  pro: '€199/maand',
+  kantoor: '€599/maand',
 }
 
 const PLAN_FEATURES: Record<NonNullable<Kantoor['plan']>, string[]> = {
-  solo: ['30 objecten per maand', '1 gebruiker'],
-  kantoor: ['Onbeperkt objecten', '5 gebruikers', 'Huisstijlgeheugen'],
-  franchise: ['Onbeperkt alles', 'White-label', 'API-toegang'],
+  starter: ['40 objecten per maand', '1 gebruiker'],
+  pro: ['Onbeperkt objecten', '5 gebruikers', 'Huisstijlgeheugen'],
+  kantoor: ['Onbeperkt gebruikers & vestigingen', 'White-label', 'API-toegang'],
 }
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -45,6 +47,22 @@ export function AccountTab({ makelaar, kantoor }: Props) {
   const TRIAL_DAYS = 14
   const trialProgress = Math.round(((TRIAL_DAYS - daysLeft) / TRIAL_DAYS) * 100)
 
+  const [naamBewerkModus, setNaamBewerkModus] = useState(false)
+  const [naam, setNaam] = useState(makelaar.name)
+  const [naamStatus, setNaamStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+
+  const handleNaamOpslaan = async () => {
+    setNaamStatus('saving')
+    const result = await slaProfielNaamOp(naam)
+    if (result.ok) {
+      setNaamStatus('saved')
+      setNaamBewerkModus(false)
+      setTimeout(() => setNaamStatus('idle'), 2000)
+    } else {
+      setNaamStatus('error')
+    }
+  }
+
   return (
     <div className="space-y-8 max-w-md">
 
@@ -53,7 +71,54 @@ export function AccountTab({ makelaar, kantoor }: Props) {
         <h2 className="text-sm font-semibold text-gray-900 mb-4">Profiel</h2>
         <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Naam" value={makelaar.name} />
+            {/* Naam — bewerkbaar */}
+            <div>
+              <div className="flex items-center justify-between mb-0.5">
+                <p className="text-xs text-gray-500">Naam</p>
+                {!naamBewerkModus && (
+                  <button
+                    onClick={() => setNaamBewerkModus(true)}
+                    className="text-xs text-blue-600 hover:text-blue-700"
+                  >
+                    Bewerk
+                  </button>
+                )}
+              </div>
+              {naamBewerkModus ? (
+                <div className="space-y-1.5">
+                  <input
+                    value={naam}
+                    onChange={e => setNaam(e.target.value)}
+                    maxLength={100}
+                    autoFocus
+                    className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={handleNaamOpslaan}
+                      disabled={naamStatus === 'saving'}
+                      className="text-xs bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {naamStatus === 'saving' ? 'Opslaan...' : 'Opslaan'}
+                    </button>
+                    <button
+                      onClick={() => { setNaam(makelaar.name); setNaamBewerkModus(false) }}
+                      className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                    >
+                      Annuleer
+                    </button>
+                  </div>
+                  {naamStatus === 'error' && (
+                    <p className="text-xs text-red-600">Opslaan mislukt</p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm font-medium text-gray-900">
+                  {naam || <span className="text-gray-400 italic">Geen naam ingesteld</span>}
+                  {naamStatus === 'saved' && <span className="ml-2 text-xs text-green-600">✓ Opgeslagen</span>}
+                </p>
+              )}
+            </div>
             <Field label="Rol" value={makelaar.role === 'admin' ? 'Beheerder' : 'Medewerker'} />
           </div>
           <Field label="E-mail" value={makelaar.email} />
@@ -87,17 +152,22 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                 </li>
               ))}
             </ul>
-            {kantoor.plan === 'solo' && (
-              <div className="mt-4 pt-3 border-t border-green-200">
-                <p className="text-xs text-green-700 mb-2">Wil je meer? Upgrade naar Kantoor.</p>
+            <div className="mt-4 pt-3 border-t border-green-200 flex flex-wrap gap-2">
+              {kantoor.plan === 'starter' && (
                 <Link
-                  href="/api/stripe/checkout?plan=kantoor"
+                  href="/api/stripe/checkout?plan=pro"
                   className="inline-block text-xs rounded-lg bg-blue-600 px-3 py-1.5 text-white font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Upgrade naar Kantoor — €149/mo
+                  Upgrade naar Pro — €199/mo
                 </Link>
-              </div>
-            )}
+              )}
+              <Link
+                href="/api/stripe/customer-portal"
+                className="inline-block text-xs rounded-lg border border-green-300 px-3 py-1.5 text-green-700 font-medium hover:border-green-400 transition-colors"
+              >
+                Abonnement beheren →
+              </Link>
+            </div>
           </div>
         ) : isTrialActive ? (
           <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
@@ -122,22 +192,22 @@ export function AccountTab({ makelaar, kantoor }: Props) {
             </div>
 
             <p className="text-xs text-amber-800 mb-4">
-              Kies een abonnement om na je proefperiode door te gaan.
+              Kies een abonnement om na uw proefperiode door te gaan.
               <Link href="/prijzen" className="underline ml-1">Vergelijk plannen →</Link>
             </p>
 
             <div className="flex gap-2 flex-wrap">
               <Link
-                href="/api/stripe/checkout?plan=solo"
+                href="/api/stripe/checkout?plan=starter"
                 className="text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
               >
-                Solo — €79/mo
+                Starter — €99/mo
               </Link>
               <Link
-                href="/api/stripe/checkout?plan=kantoor"
+                href="/api/stripe/checkout?plan=pro"
                 className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
               >
-                Kantoor — €149/mo
+                Pro — €199/mo
               </Link>
             </div>
           </div>
@@ -149,16 +219,16 @@ export function AccountTab({ makelaar, kantoor }: Props) {
             </p>
             <div className="flex gap-2 flex-wrap">
               <Link
-                href="/api/stripe/checkout?plan=solo"
+                href="/api/stripe/checkout?plan=starter"
                 className="text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
               >
-                Solo — €79/mo
+                Starter — €99/mo
               </Link>
               <Link
-                href="/api/stripe/checkout?plan=kantoor"
+                href="/api/stripe/checkout?plan=pro"
                 className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
               >
-                Kantoor — €149/mo
+                Pro — €199/mo
               </Link>
             </div>
           </div>

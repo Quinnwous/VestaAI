@@ -1,5 +1,3 @@
-import { withSentryConfig } from '@sentry/nextjs'
-
 const SECURITY_HEADERS = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -38,13 +36,4 @@ const nextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  org: 'vestaai',
-  project: 'vestaai-nextjs',
-  silent: !process.env.CI,
-  widenClientFileUpload: true,
-  tunnelRoute: '/monitoring-tunnel',
-  hideSourceMaps: true,
-  disableLogger: true,
-  automaticVercelMonitors: true,
-})
+export default nextConfig

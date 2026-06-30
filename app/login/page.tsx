@@ -41,64 +41,70 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div style={{ minHeight: '100vh', background: '#FBFCFB', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-2xl font-bold text-gray-900 hover:text-blue-600 transition-colors">
-            VestaAI
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 11, textDecoration: 'none' }}>
+            <span style={{ width: 40, height: 40, borderRadius: 12, background: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(26,107,69,.28)' }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-.04em' }}>V</span>
+            </span>
+            <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-.02em', color: '#0E1A13' }}>
+              Vesta<span style={{ color: '#1A6B45' }}>AI</span>
+            </span>
           </Link>
-          <p className="mt-2 text-sm text-gray-500">De AI-assistent voor makelaars.</p>
+          <p style={{ marginTop: 12, fontSize: 14, color: '#5A6B61' }}>
+            Professionele content voor elk object, in 90 seconden.
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+        <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #E4EAE6', padding: '36px 32px', boxShadow: '0 4px 24px rgba(14,26,19,.06)' }}>
           {!supabaseConfigured ? (
-            // Dev-modus: Supabase nog niet geconfigureerd
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#FFFBEB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#D97706">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
-              <h2 className="text-base font-semibold text-gray-900 mb-2">Auth nog niet geconfigureerd</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Vul <code className="bg-gray-100 px-1 rounded text-xs">NEXT_PUBLIC_SUPABASE_URL</code> en{' '}
-                <code className="bg-gray-100 px-1 rounded text-xs">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{' '}
-                in in <code className="bg-gray-100 px-1 rounded text-xs">.env.local</code>.
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', marginBottom: 8 }}>Auth nog niet geconfigureerd</h2>
+              <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 20, lineHeight: 1.6 }}>
+                Vul <code style={{ background: '#F1F7F3', padding: '1px 5px', borderRadius: 4, fontSize: 12 }}>NEXT_PUBLIC_SUPABASE_URL</code> en{' '}
+                <code style={{ background: '#F1F7F3', padding: '1px 5px', borderRadius: 4, fontSize: 12 }}>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>{' '}
+                in in <code style={{ background: '#F1F7F3', padding: '1px 5px', borderRadius: 4, fontSize: 12 }}>.env.local</code>.
               </p>
               <Link
                 href="/object/new"
-                className="inline-block rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+                style={{ display: 'inline-block', borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
               >
                 Toch verder in dev-modus →
               </Link>
             </div>
           ) : status === 'sent' ? (
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#1A6B45">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Check je inbox</h2>
-              <p className="text-sm text-gray-500">
-                We hebben een inloglink gestuurd naar <strong>{email}</strong>.
-                Klik op de link in de mail om in te loggen.
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 10 }}>Controleer uw inbox</h2>
+              <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6 }}>
+                Een inloglink is verstuurd naar <strong style={{ color: '#0E1A13' }}>{email}</strong>.
+                Klik op de link in de e-mail om in te loggen.
               </p>
               <button
                 onClick={() => setStatus('idle')}
-                className="mt-4 text-sm text-blue-600 hover:text-blue-800 underline"
+                style={{ marginTop: 20, fontSize: 14, color: '#1A6B45', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Andere e-mail proberen
               </button>
             </div>
           ) : (
             <>
-              <h2 className="text-lg font-semibold text-gray-900 mb-6">Inloggen</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0E1A13', marginBottom: 24 }}>Inloggen</h2>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 6 }}>
                     E-mailadres
                   </label>
                   <input
@@ -109,29 +115,31 @@ export default function LoginPage() {
                     required
                     autoFocus
                     placeholder="naam@kantoor.nl"
-                    className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={{ width: '100%', borderRadius: 11, border: '1px solid #DCE5DF', padding: '11px 14px', fontSize: 15, color: '#0E1A13', background: '#fff', outline: 'none', boxSizing: 'border-box' }}
+                    onFocus={e => (e.target.style.borderColor = '#1A6B45')}
+                    onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
                   />
                 </div>
 
                 {status === 'error' && (
-                  <p className="text-sm text-red-600">{errorMsg}</p>
+                  <p style={{ fontSize: 14, color: '#DC2626' }}>{errorMsg}</p>
                 )}
 
                 <button
                   type="submit"
                   disabled={status === 'loading' || !email}
-                  className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
+                  style={{ borderRadius: 11, background: '#1A6B45', padding: '13px 0', fontSize: 15, fontWeight: 700, color: '#fff', border: 'none', cursor: status === 'loading' || !email ? 'not-allowed' : 'pointer', opacity: status === 'loading' || !email ? .55 : 1, boxShadow: '0 4px 12px rgba(26,107,69,.22)', transition: 'opacity .15s' }}
                 >
                   {status === 'loading' ? 'Bezig...' : 'Stuur inloglink →'}
                 </button>
               </form>
 
-              <p className="mt-5 text-xs text-center text-gray-400">
+              <p style={{ marginTop: 24, fontSize: 13, textAlign: 'center', color: '#9AA6A0' }}>
                 Nog geen account?{' '}
-                <Link href="/" className="text-blue-600 hover:text-blue-800 underline">
+                <Link href="/" style={{ color: '#1A6B45', textDecoration: 'underline' }}>
                   Bekijk VestaAI
                 </Link>
-                {' '}en start je proefperiode.
+                {' '}en start uw proefperiode.
               </p>
             </>
           )}

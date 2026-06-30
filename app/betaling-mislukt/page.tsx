@@ -18,20 +18,20 @@ export default function BetalingMisluktPage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Betaling geannuleerd</h1>
         <p className="text-gray-500 mb-8">
-          Er is niets in rekening gebracht. Kies wanneer je klaar bent een abonnement om door te gaan.
+          Er is niets in rekening gebracht. Kies een abonnement wanneer u klaar bent om door te gaan.
         </p>
         <div className="flex flex-col gap-3">
           <Link
-            href="/api/stripe/checkout?plan=solo"
+            href="/api/stripe/checkout?plan=starter"
             className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
           >
-            Solo — €79/maand
+            Starter — €99/maand
           </Link>
           <Link
-            href="/api/stripe/checkout?plan=kantoor"
+            href="/api/stripe/checkout?plan=pro"
             className="inline-block rounded-lg border border-gray-300 px-6 py-3 text-sm font-medium text-gray-700 hover:border-gray-400 transition-colors"
           >
-            Kantoor — €149/maand
+            Pro — €199/maand
           </Link>
           <Link
             href="/dashboard"

@@ -8,7 +8,7 @@ export type { HuisstijlConfig }
 export type Kantoor = {
   id: string
   name: string
-  plan: 'solo' | 'kantoor' | 'franchise' | null
+  plan: 'starter' | 'pro' | 'kantoor' | null
   logo_url: string | null
   huisstijl_json: HuisstijlConfig | null
   stripe_id: string | null
@@ -21,6 +21,8 @@ export type Makelaar = {
   name: string
   email: string
   role: 'admin' | 'makelaar'
+  created_at?: string
+  first_generated_at?: string | null
 }
 
 export type ObjectRow = {

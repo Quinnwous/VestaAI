@@ -62,13 +62,13 @@ export function NpsModal({ trigger }: NpsModalProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="font-semibold text-gray-900">Bedankt voor je feedback!</p>
+            <p className="font-semibold text-gray-900">Bedankt voor uw feedback!</p>
           </div>
         ) : (
           <>
             <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="text-sm font-semibold text-gray-900">Hoe waarschijnlijk is het dat je VestaAI aanbeveelt?</p>
+                <p className="text-sm font-semibold text-gray-900">Hoe waarschijnlijk is het dat u VestaAI aanbeveelt?</p>
                 <p className="text-xs text-gray-500 mt-0.5">0 = absoluut niet · 10 = zeker weten</p>
               </div>
               <button onClick={handleDismiss} className="text-gray-300 hover:text-gray-500 ml-4 flex-shrink-0">

@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
-export async function toggleObjectStatus(objectId: string, huidigStatus: 'draft' | 'published') {
+type ObjectStatus = 'draft' | 'published' | 'onder_bod' | 'verkocht'
+
+export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatus) {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
@@ -17,7 +19,8 @@ export async function toggleObjectStatus(objectId: string, huidigStatus: 'draft'
 
   if (!makelaar) return { ok: false, error: 'Geen rechten' }
 
-  const nieuwStatus: 'draft' | 'published' = huidigStatus === 'draft' ? 'published' : 'draft'
+  const GELDIGE_STATUSSEN: ObjectStatus[] = ['draft', 'published', 'onder_bod', 'verkocht']
+  if (!GELDIGE_STATUSSEN.includes(nieuwStatus)) return { ok: false, error: 'Ongeldige status' }
 
   const { error } = await supabase
     .from('objecten')
@@ -31,6 +34,13 @@ export async function toggleObjectStatus(objectId: string, huidigStatus: 'draft'
   revalidatePath('/dashboard')
 
   return { ok: true, status: nieuwStatus }
+}
+
+export async function toggleObjectStatus(objectId: string, huidigStatus: ObjectStatus) {
+  const volgorde: ObjectStatus[] = ['draft', 'published', 'onder_bod', 'verkocht']
+  const huidigIndex = volgorde.indexOf(huidigStatus)
+  const nieuwStatus = volgorde[(huidigIndex + 1) % volgorde.length]
+  return setObjectStatus(objectId, nieuwStatus)
 }
 
 export async function deleteObject(objectId: string) {

@@ -132,7 +132,7 @@ function makeStyles(kleur: string) {
   })
 }
 
-const SECTIES: { badge: string; titel: string; key: keyof ContentOutput }[] = [
+const ALLE_SECTIES: { badge: string; titel: string; key: keyof ContentOutput; optioneel?: boolean }[] = [
   { badge: 'Funda', titel: 'Funda-tekst', key: 'funda_tekst' },
   { badge: 'Brochure', titel: 'Brochure (lang)', key: 'brochure_lang' },
   { badge: 'Brochure', titel: 'Brochure (kort)', key: 'brochure_kort' },
@@ -143,6 +143,13 @@ const SECTIES: { badge: string; titel: string; key: keyof ContentOutput }[] = [
   { badge: 'LinkedIn', titel: 'LinkedIn — Makelaar', key: 'linkedin_makelaar' },
   { badge: 'E-mail', titel: 'Koper-e-mail', key: 'koper_email' },
   { badge: 'Buurt', titel: 'Buurtomschrijving', key: 'buurtomschrijving' },
+  { badge: 'Open huis', titel: 'Open huis-aankondiging', key: 'open_huis', optioneel: true },
+  { badge: 'Follow-up', titel: 'Follow-up — Geïnteresseerd', key: 'bezichtiging_followup_positief', optioneel: true },
+  { badge: 'Follow-up', titel: 'Follow-up — Niet geïnteresseerd', key: 'bezichtiging_followup_negatief', optioneel: true },
+  { badge: 'Video', titel: 'Video script', key: 'video_script', optioneel: true },
+  { badge: 'Energieadvies', titel: 'Energieadvies & subsidies', key: 'energie_advies', optioneel: true },
+  { badge: 'Kopersvragen', titel: 'Veelgestelde vragen kopers', key: 'kopersvragen_faq', optioneel: true },
+  { badge: 'Marktanalyse', titel: 'Marktanalyse & verkoopstrategie', key: 'marktanalyse', optioneel: true },
 ]
 
 export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
@@ -176,7 +183,7 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
       </Page>
 
       {/* Eén pagina per content-sectie */}
-      {SECTIES.map(({ badge, titel, key }) => (
+      {ALLE_SECTIES.filter(s => !s.optioneel || !!output[s.key]).map(({ badge, titel, key }) => (
         <Page key={key} size="A4" style={s.contentPage}>
           {/* Pagina-header */}
           <View style={s.pageHeader}>
@@ -201,7 +208,11 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
 
           {/* Vaste footer */}
           <View style={s.pageFooterFixed} fixed>
-            <Text style={s.pageFooterText}>VestaAI · {datum}</Text>
+            <Text style={s.pageFooterText}>
+              {kantoor.huisstijl_json?.slogan
+                ? `${kantoor.huisstijl_json.slogan} · ${datum}`
+                : `VestaAI · ${datum}`}
+            </Text>
             <Text
               style={s.pageFooterText}
               render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}

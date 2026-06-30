@@ -2,56 +2,144 @@ import Anthropic from '@anthropic-ai/sdk'
 import {
   PropertyInputSchema,
   ContentOutputSchema,
+  PrijswijzigingOutputSchema,
   type PropertyInput,
   type ContentOutput,
   type HuisstijlConfig,
+  type PrijswijzigingOutput,
 } from './schemas'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
-const BASE_SYSTEM_PROMPT = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in Funda-advertenties.
+const BASE_SYSTEM_PROMPT_NL = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in woningomschrijvingen voor Funda en social media.
 
-Funda-regels:
-- Max 800 woorden hoofdtekst
-- Geen superlatieven zonder bewijs
-- Geen discriminerende buurtomschrijvingen
-- Unieke openingszin verplicht
+FUNDA-TEKST (funda_tekst) — verplichte regels:
+- 600–800 woorden, minimaal 4 alinea's
+- Openingszin: uniek en prikkelend; begin NOOIT met "Dit", de straatnaam of "De woning"
+- Schrijf in derde persoon of wij-vorm — geen ik-vorm
+- Geen prijsvermelding in de tekst (staat apart op Funda)
+- Superlatieven alleen met onderbouwing uit de USP's ("luxe keuken" vereist bewijs in de invoer)
+- Geen discriminerende buurt- of wijkomschrijvingen (WWGB)
+- Geen overdreven leestekens (!!, ???) of ALL-CAPS
+- Sluit af met een concrete call-to-action (bezichtiging of contact)
+
+INSTAGRAM-VARIANTEN (elk 200–270 woorden, inclusief emoji's en hashtags):
+- instagram_emotioneel: lifestyle-focus, aspirationeel gevoel, weinig feitjes — spreekt het hart aan
+- instagram_informatief: kernfeiten compact en helder, praktisch en to-the-point
+- instagram_actie: urgente CTA centraal, schaarste of momentum benadrukken, eindigt met duidelijke actie
+
+LINKEDIN-VARIANTEN:
+- linkedin_kantoor: 220–280 woorden, wij-vorm, professionele kantoorpresentatie voor bedrijfspagina
+- linkedin_makelaar: 200–260 woorden, persoonlijk perspectief van de individuele makelaar, netwerk-aanspreken stijl
+
+OVERIGE KERNFORMATS:
+- brochure_kort: 200–240 woorden, printoptimaal, kernpunten helder per alinea
+- brochure_lang: 480–560 woorden, volledig verkoopverhaal met alle features uitgebreid toegelicht
+- koper_email: 220–280 woorden, professionele uitnodigingsmail aan geïnteresseerde kopers met concrete volgende stap
+- buurtomschrijving: 130–170 woorden, feitelijk en positief, geen sociale of demografische kwalificaties, geen vergelijkingen met andere wijken
+
+EXTRA VELDEN:
+- open_huis: aankondigingstekst voor social (±150 woorden) met datum en tijd als opgegeven; lege string als geen datum bekend.
+- bezichtiging_followup_positief: opvolgmail na bezichtiging voor geïnteresseerde koper (±200 woorden, warm en uitnodigend).
+- bezichtiging_followup_negatief: opvolgmail na bezichtiging voor niet-geïnteresseerde koper (±150 woorden, bedankend en netwerk-vriendelijk).
+- video_script: voice-over script voor woningvideo ±60 seconden (±120 woorden), verdeeld in korte scènes.
+- energie_advies: altijd invullen. Structuur: (1) Huidige situatie — wat betekent dit label, vergelijking met gemiddelde woning; (2) Verbetermaatregelen — top 3 maatregelen met geschatte kosten en terugverdientijd; (3) Subsidies — ISDE, SEEH, Nationaal Warmtefonds, gemeente-subsidies; (4) Advies voor makelaar — hoe het label te communiceren in de verkoop. In "u"-vorm, ±400 woorden.
+- kopersvragen_faq: altijd invullen. 8–10 realistische kopervragen specifiek voor déze woning (adres, type, bouwjaar, prijs, energielabel, USP's). Format: "V: [vraag]\nA: [antwoord]".
+- marktanalyse: altijd invullen. (1) Marktsegment en concurrentiepositie; (2) Doelgroepanalyse; (3) Verkoopstrategie; (4) Timing. ±300 woorden.
 
 Output: geldig JSON-object met precies deze sleutels:
 { "funda_tekst", "brochure_kort", "brochure_lang", "instagram_emotioneel",
   "instagram_informatief", "instagram_actie", "linkedin_kantoor",
-  "linkedin_makelaar", "koper_email", "buurtomschrijving" }
+  "linkedin_makelaar", "koper_email", "buurtomschrijving",
+  "open_huis", "bezichtiging_followup_positief", "bezichtiging_followup_negatief",
+  "video_script", "energie_advies", "kopersvragen_faq", "marktanalyse" }
 
 Geen tekst buiten het JSON-object.`
 
-function buildSystemPrompt(huisstijl?: HuisstijlConfig): string {
-  if (!huisstijl) return BASE_SYSTEM_PROMPT
+const BASE_SYSTEM_PROMPT_EN = `You are a real estate copywriter specialised in Dutch property listings.
+
+Rules:
+- Max 800 words for the main description
+- No superlatives without evidence
+- No discriminatory neighbourhood descriptions
+- A unique opening sentence is required
+
+Output: valid JSON object with exactly these keys:
+{ "funda_tekst", "brochure_kort", "brochure_lang", "instagram_emotioneel",
+  "instagram_informatief", "instagram_actie", "linkedin_kantoor",
+  "linkedin_makelaar", "koper_email", "buurtomschrijving",
+  "open_huis", "bezichtiging_followup_positief", "bezichtiging_followup_negatief",
+  "video_script", "energie_advies", "kopersvragen_faq", "marktanalyse" }
+
+Guidelines per extra field:
+- open_huis: open house announcement for Instagram/social (±150 words) with date and time if provided; empty string if unknown.
+- bezichtiging_followup_positief: follow-up email after viewing for an interested buyer (±200 words, warm and inviting).
+- bezichtiging_followup_negatief: follow-up email after viewing for a non-interested buyer (±150 words, appreciative and network-friendly).
+- video_script: voice-over script for a property video of ±60 seconds (±120 words), divided into short scenes.
+- energie_advies: concrete energy advice based on the energy label. Always fill in. Structure: (1) Current situation — what this label means, comparison with average home; (2) Improvement measures — top 3 measures with estimated costs and payback period; (3) Subsidies — relevant Dutch subsidies applicable; (4) Advice for agent — how to communicate the energy label in the sale. ±400 words.
+- kopersvragen_faq: realistic frequently asked questions from buyers about this specific property. Provide 8–10 questions with full answers. Format per item: "Q: [question]\nA: [answer]". Always fill in.
+- marktanalyse: brief market analysis for this property. Structure: (1) Market segment; (2) Target audience analysis; (3) Sales strategy recommendations; (4) Timing. ±300 words. Always fill in.
+
+No text outside the JSON object.`
+
+function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'): string {
+  const base = taal === 'en' ? BASE_SYSTEM_PROMPT_EN : BASE_SYSTEM_PROMPT_NL
+  if (!huisstijl) return base
 
   const schrijftoonLabel = {
-    formeel: 'Formeel en professioneel',
-    informeel: 'Informeel en toegankelijk',
-    enthousiast: 'Enthousiast en uitnodigend',
+    formeel: taal === 'en' ? 'Formal and professional' : 'Formeel en professioneel',
+    informeel: taal === 'en' ? 'Informal and accessible' : 'Informeel en toegankelijk',
+    enthousiast: taal === 'en' ? 'Enthusiastic and inviting' : 'Enthousiast en uitnodigend',
   }[huisstijl.schrijftoon]
 
-  let extra = `\n\nHuisstijl van het makelaarskantoor:\n- Schrijftoon: ${schrijftoonLabel}`
-  if (huisstijl.slogan) extra += `\n- Slogan: "${huisstijl.slogan}"`
+  const toonLabel = taal === 'en' ? 'Tone of voice' : 'Schrijftoon'
+  const sloganLabel = taal === 'en' ? 'Slogan' : 'Slogan'
+  const voorbeeldLabel = taal === 'en' ? 'Example texts (use as style reference)' : 'Voorbeeldteksten (gebruik als stijlreferentie)'
+  const kantoorLabel = taal === 'en' ? "Agency's house style" : 'Huisstijl van het makelaarskantoor'
+
+  let extra = `\n\n${kantoorLabel}:\n- ${toonLabel}: ${schrijftoonLabel}`
+  if (huisstijl.slogan) extra += `\n- ${sloganLabel}: "${huisstijl.slogan}"`
   if (huisstijl.voorbeelden.length > 0) {
-    extra += `\n\nVoorbeeldteksten (gebruik als stijlreferentie):\n`
-    huisstijl.voorbeelden.forEach((v, i) => { extra += `\n--- Voorbeeld ${i + 1} ---\n${v}\n` })
+    extra += `\n\n${voorbeeldLabel}:\n`
+    huisstijl.voorbeelden.forEach((v, i) => {
+      extra += `\n--- ${taal === 'en' ? 'Example' : 'Voorbeeld'} ${i + 1} ---\n${v}\n`
+    })
   }
 
-  return BASE_SYSTEM_PROMPT + extra
+  return base + extra
 }
 
 function buildUserMessage(input: PropertyInput): string {
+  const isEn = input.taal === 'en'
+  const prijsFormatted = `€${input.vraagprijs.toLocaleString('nl-NL')}`
+
+  const openHuisRegel = input.open_huis_datum
+    ? isEn
+      ? `\nOpen house: ${input.open_huis_datum}${input.open_huis_tijd ? ` at ${input.open_huis_tijd}` : ''}`
+      : `\nOpen huis: ${input.open_huis_datum}${input.open_huis_tijd ? ` om ${input.open_huis_tijd}` : ''}`
+    : ''
+
+  if (isEn) {
+    return `Property: ${input.adres}
+Type: ${input.woningtype}, ${input.kamers} rooms
+Floor area: ${input.oppervlak_m2} m²
+Year built: ${input.bouwjaar}
+Energy label: ${input.energielabel}
+Asking price: ${prijsFormatted}
+USPs: ${input.usps}
+Target audience: ${input.doelgroep}${openHuisRegel}
+
+Generate all content in English as JSON.`
+  }
+
   return `Woning: ${input.adres}
 Type: ${input.woningtype}, ${input.kamers} kamers
 Oppervlak: ${input.oppervlak_m2} m²
 Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}
-Vraagprijs: €${input.vraagprijs.toLocaleString('nl-NL')}
+Vraagprijs: ${prijsFormatted}
 USP's: ${input.usps}
-Doelgroep: ${input.doelgroep}
+Doelgroep: ${input.doelgroep}${openHuisRegel}
 
 Genereer alle content als JSON.`
 }
@@ -66,7 +154,6 @@ export async function generateContent(
   huisstijlOrClient?: HuisstijlConfig | Anthropic,
   clientArg?: Anthropic,
 ): Promise<ContentOutput> {
-  // Ondersteunt zowel generateContent(input, huisstijl, client) als generateContent(input, client) (legacy tests)
   let huisstijl: HuisstijlConfig | undefined
   let client: Anthropic
 
@@ -79,16 +166,18 @@ export async function generateContent(
     huisstijl = huisstijlOrClient as HuisstijlConfig | undefined
     client = clientArg ?? new Anthropic()
   }
-  const systemPrompt = buildSystemPrompt(huisstijl)
+  const systemPrompt = buildSystemPrompt(huisstijl, input.taal ?? 'nl')
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const extra = attempt > 0
-      ? '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.'
+      ? (input.taal === 'en'
+        ? '\n\nIMPORTANT: return ONLY the JSON object, no text before or after.'
+        : '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.')
       : ''
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 6000,
+      max_tokens: 16000,
       system: systemPrompt,
       messages: [{ role: 'user', content: buildUserMessage(input) + extra }],
     })
@@ -102,4 +191,78 @@ export async function generateContent(
     }
   }
   throw new Error('Onverwachte fout')
+}
+
+// Prijswijziging: aparte Claude-call voor een bestaand object
+export async function generatePrijswijzigingContent(params: {
+  adres: string
+  huidigeprijs: number
+  nieuweprijs?: number
+  type: 'prijsreductie' | 'verkocht'
+  huisstijl?: HuisstijlConfig
+}): Promise<PrijswijzigingOutput> {
+  const client = new Anthropic()
+
+  const isVerkocht = params.type === 'verkocht'
+  const prijsInfo = isVerkocht
+    ? `Verkoopprijs: €${params.nieuweprijs?.toLocaleString('nl-NL') ?? 'onbekend'}`
+    : `Oude vraagprijs: €${params.huidigeprijs.toLocaleString('nl-NL')} → Nieuwe vraagprijs: €${params.nieuweprijs?.toLocaleString('nl-NL') ?? 'onbekend'}`
+
+  const huisstijlExtra = params.huisstijl
+    ? `\nHuisstijl: ${params.huisstijl.schrijftoon}${params.huisstijl.slogan ? `, slogan: "${params.huisstijl.slogan}"` : ''}`
+    : ''
+
+  const systemPrompt = `Je bent een Nederlandse vastgoedcopywriter. Genereer drie korte berichten als JSON:
+{ "instagram_post", "linkedin_post", "email_geinteresseerden" }
+
+- instagram_post: ±150 woorden, pakkend en visueel
+- linkedin_post: ±200 woorden, professioneel en informatief
+- email_geinteresseerden: ±250 woorden, persoonlijk en informatief
+
+Geen tekst buiten het JSON-object.`
+
+  const userMessage = `Woning: ${params.adres}
+Situatie: ${isVerkocht ? 'VERKOCHT' : 'PRIJSREDUCTIE'}
+${prijsInfo}${huisstijlExtra}
+
+Genereer de drie berichten als JSON.`
+
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userMessage }],
+    })
+
+    const text = message.content[0].type === 'text' ? message.content[0].text : ''
+    const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
+
+    try {
+      return PrijswijzigingOutputSchema.parse(JSON.parse(cleaned))
+    } catch {
+      if (attempt === 1) throw new Error('Claude gaf geen valide JSON voor prijswijziging')
+    }
+  }
+  throw new Error('Onverwachte fout')
+}
+
+// SEO-tekst voor een wijk
+export async function generateWijkSeoTekst(params: {
+  wijk: string
+  stad: string
+}): Promise<string> {
+  const client = new Anthropic()
+
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1500,
+    system: `Je bent een Nederlandse SEO-copywriter gespecialiseerd in vastgoed. Schrijf een informatieve SEO-tekst over een wijk. Schrijf puur de tekst (geen JSON, geen markdown), ±400–600 woorden.`,
+    messages: [{
+      role: 'user',
+      content: `Schrijf een SEO-tekst over de wijk ${params.wijk} in ${params.stad}. Focus op: sfeer, woningaanbod, voorzieningen, bereikbaarheid en kopers-doelgroep. Doel: hoog scoren op "[wijk] huizen te koop".`,
+    }],
+  })
+
+  return message.content[0].type === 'text' ? message.content[0].text : ''
 }

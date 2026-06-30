@@ -5,8 +5,8 @@ export const metadata = { title: 'Nieuw object — VestaAI' }
 
 export default function NewObjectPage() {
   return (
-    <main className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-10">
+    <main style={{ minHeight: '100vh' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 28px 80px' }}>
         <Betaalmuur>
           <NewObjectForm />
         </Betaalmuur>

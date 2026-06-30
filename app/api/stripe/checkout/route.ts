@@ -4,9 +4,9 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
-  const plan = searchParams.get('plan') as 'solo' | 'kantoor' | null
+  const plan = searchParams.get('plan') as 'starter' | 'pro' | 'kantoor' | null
 
-  if (!plan || !['solo', 'kantoor'].includes(plan)) {
+  if (!plan || !['starter', 'pro', 'kantoor'].includes(plan)) {
     return NextResponse.json({ error: 'Ongeldig plan' }, { status: 400 })
   }
 

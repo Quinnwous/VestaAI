@@ -31,32 +31,45 @@ export async function GET(request: NextRequest) {
     .eq('id', user.id)
     .single()
 
-  // Nieuwe gebruiker: automatisch kantoor + makelaar aanmaken
   if (!bestaandeMakelaar) {
     const emailNaam = user.email?.split('@')[0] ?? 'Makelaar'
-    const kantoorNaam = user.email?.split('@')[1]?.split('.')[0] ?? 'Kantoor'
-    const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+    const uitgenodigdVoorKantoorId = user.user_metadata?.kantoor_id as string | undefined
 
-    const { data: nieuwKantoor } = await serviceClient
-      .from('kantoren')
-      .insert({
-        name: kantoorNaam.charAt(0).toUpperCase() + kantoorNaam.slice(1),
-        trial_ends_at: trialEndsAt,
-      })
-      .select('id')
-      .single()
-
-    if (nieuwKantoor) {
+    if (uitgenodigdVoorKantoorId) {
+      // Uitgenodigde gebruiker: join bestaand kantoor als makelaar
       await serviceClient.from('makelaars').insert({
         id: user.id,
-        kantoor_id: nieuwKantoor.id,
+        kantoor_id: uitgenodigdVoorKantoorId,
         name: emailNaam.charAt(0).toUpperCase() + emailNaam.slice(1),
         email: user.email!,
-        role: 'admin',
+        role: 'makelaar',
       })
+    } else {
+      // Nieuwe gebruiker: automatisch kantoor + makelaar aanmaken
+      const kantoorNaam = user.email?.split('@')[1]?.split('.')[0] ?? 'Kantoor'
+      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
 
-      // Welkomstmail sturen (niet-blokkerend)
-      sendWelcomeEmail(user.email!, emailNaam).catch(console.error)
+      const { data: nieuwKantoor } = await serviceClient
+        .from('kantoren')
+        .insert({
+          name: kantoorNaam.charAt(0).toUpperCase() + kantoorNaam.slice(1),
+          trial_ends_at: trialEndsAt,
+        })
+        .select('id')
+        .single()
+
+      if (nieuwKantoor) {
+        await serviceClient.from('makelaars').insert({
+          id: user.id,
+          kantoor_id: nieuwKantoor.id,
+          name: emailNaam.charAt(0).toUpperCase() + emailNaam.slice(1),
+          email: user.email!,
+          role: 'admin',
+        })
+
+        // Welkomstmail sturen (niet-blokkerend)
+        sendWelcomeEmail(user.email!, emailNaam).catch(console.error)
+      }
     }
   }
 

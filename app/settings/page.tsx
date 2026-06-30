@@ -26,18 +26,31 @@ export default async function SettingsPage() {
 
   const { data: teamleden } = await supabase
     .from('makelaars')
-    .select('id, name, email, role')
+    .select('id, name, email, role, created_at, first_generated_at')
     .eq('kantoor_id', (makelaar as Makelaar).kantoor_id)
     .order('role', { ascending: false })
 
+  const isAdmin = (makelaar as Makelaar).role === 'admin'
+  const kantoorId = (makelaar as Makelaar).kantoor_id
+
+  // Chatbot-data alleen laden voor admins (niet-blokkerend via Promise.all)
+  const [chatbotFaqRes, chatbotLeadsRes] = isAdmin
+    ? await Promise.all([
+        supabase.from('chatbot_faq').select('id, vraag, antwoord, volgorde').eq('kantoor_id', kantoorId).order('volgorde'),
+        supabase.from('chatbot_leads').select('id, naam, email, bericht, created_at').eq('kantoor_id', kantoorId).order('created_at', { ascending: false }).limit(50),
+      ])
+    : [{ data: [] }, { data: [] }]
+
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-xl font-bold text-gray-900 mb-8">Instellingen</h1>
+    <main style={{ maxWidth: 820, margin: '0 auto', padding: '40px 28px 80px' }}>
+      <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0E1A13', marginBottom: 32 }}>Instellingen</h1>
       <SettingsTabs
         makelaar={makelaar as Makelaar}
         kantoor={kantoor as Kantoor}
         teamleden={(teamleden ?? []) as Makelaar[]}
-        isAdmin={(makelaar as Makelaar).role === 'admin'}
+        isAdmin={isAdmin}
+        chatbotFaq={(chatbotFaqRes.data ?? []) as { id: string; vraag: string; antwoord: string; volgorde: number }[]}
+        chatbotLeads={(chatbotLeadsRes.data ?? []) as { id: string; naam: string | null; email: string; bericht: string | null; created_at: string }[]}
       />
     </main>
   )

@@ -1,6 +1,6 @@
 # VestaAI
 
-SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Claude genereert in 90 seconden een complete content-suite. Businessplan: `VestaAI.html` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
+SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Claude genereert in 90 seconden een complete content-suite. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
 
 ## Product
 
@@ -44,9 +44,9 @@ objecten:  id, kantoor_id, makelaar_id, address, input_json, outputs_json, creat
 
 | Plan | Prijs | Limieten |
 |------|-------|----------|
-| Solo | €79/mo (€790/jr) | 30 objecten/mo · 1 user |
-| Kantoor | €149/mo (€1.490/jr) | onbeperkt · 5 users · huisstijlgeheugen |
-| Franchise | €499/mo | onbeperkt users/kantoren · white-label · API |
+| Starter | €99/mo (€990/jr) | 40 objecten/mo · 1 user |
+| Pro | €199/mo (€1.990/jr) | onbeperkt · 5 users · huisstijlgeheugen |
+| Kantoor | €599/mo (€5.990/jr) | onbeperkt users/kantoren · white-label · API |
 
 14 dagen gratis proefperiode → automatische facturering via Stripe.
 
@@ -69,22 +69,20 @@ VestaAI/
 │   ├── supabase.ts        # (Week 2)
 │   └── stripe.ts          # (Week 2)
 ├── docs/
-│   ├── roadmap.md         # ← volgende stappen (dag-voor-dag)
-│   ├── specs/             # architectuurontwerpen per sprint
-│   │   └── day1-form-api.md
-│   └── fase2/             # API-referenties voor Fase 2 (Maand 4+)
+│   ├── roadmap.md         # ← to-do + statusoverzicht (✅ = klaar)
+│   └── fase2/             # API-referenties voor toekomstige databronnen
 │       ├── bag-data.md
 │       ├── buurtanalyse-cbs.md
 │       ├── historisch-waarde.md
 │       ├── marktdynamiek.md
 │       ├── overpass-voorzieningen.md
 │       └── woz-vergelijking.md
-└── VestaAI.html           # businessplan (leidend)
+│   └── goals.md           # strategie & doelen (leidend)
 ```
 
-## Roadmap-conventie
+## To-do-conventie
 
-`docs/roadmap.md` is het enige stappenplan. Na het afronden van een stap: **verwijder die stap uit het bestand**. Geen vinkjes, geen archief — gewoon weg. Zo blijft de lijst altijd de actuele to-do.
+`docs/roadmap.md` is het enige stappenplan én statusoverzicht. Zet `✅` voor voltooide items — nooit verwijderen. Zo zie je altijd de volledige toestand van het product en wat er nog openstaat.
 
 ## Conventies
 

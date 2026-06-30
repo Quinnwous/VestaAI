@@ -22,6 +22,11 @@ export const PropertyInputSchema = z.object({
   vraagprijs: z.number().int().min(1),
   usps: z.string().min(1).max(500),
   doelgroep: z.string().min(1),
+  // Optioneel: open huis
+  open_huis_datum: z.string().max(50).optional(),
+  open_huis_tijd: z.string().max(20).optional(),
+  // Optioneel: taal (default NL — optioneel zodat bestaande records compatible blijven)
+  taal: z.enum(['nl', 'en']).optional(),
 })
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>
@@ -37,6 +42,23 @@ export const ContentOutputSchema = z.object({
   linkedin_makelaar: z.string(),
   koper_email: z.string(),
   buurtomschrijving: z.string(),
+  // Optionele secties — standaard lege string als Claude ze weglaat
+  open_huis: z.string().default(''),
+  bezichtiging_followup_positief: z.string().default(''),
+  bezichtiging_followup_negatief: z.string().default(''),
+  video_script: z.string().default(''),
+  energie_advies: z.string().default(''),
+  kopersvragen_faq: z.string().default(''),
+  marktanalyse: z.string().default(''),
 })
 
 export type ContentOutput = z.infer<typeof ContentOutputSchema>
+
+// Schema voor prijswijziging-content (apart van de hoofd-output)
+export const PrijswijzigingOutputSchema = z.object({
+  instagram_post: z.string(),
+  linkedin_post: z.string(),
+  email_geinteresseerden: z.string(),
+})
+
+export type PrijswijzigingOutput = z.infer<typeof PrijswijzigingOutputSchema>

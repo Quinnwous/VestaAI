@@ -1,13 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_EXACT = new Set(['/', '/login', '/prijzen'])
+// Altijd publiek toegankelijk, geen auth-check nodig
+const PUBLIC_EXACT = new Set(['/', '/prijzen'])
 const PUBLIC_PREFIX = ['/auth/confirm', '/api/webhooks']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Publieke routes en statische assets overslaan
+  // Volledig publieke routes en statische assets overslaan
   if (
     PUBLIC_EXACT.has(pathname) ||
     PUBLIC_PREFIX.some(p => pathname.startsWith(p)) ||
@@ -45,15 +46,15 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Niet ingelogd → naar login
-  if (!user) {
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+  // /login: ingelogden doorsturen naar dashboard, niet-ingelogden doorlaten
+  if (pathname === '/login') {
+    if (user) return NextResponse.redirect(new URL('/dashboard', request.url))
+    return NextResponse.next()
   }
 
-  // Al ingelogd en op /login → naar dashboard
-  if (pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+  // Overige beveiligde routes: niet ingelogd → naar login
+  if (!user) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return response

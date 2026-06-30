@@ -5,7 +5,7 @@ import { PropertyInputSchema } from '@/lib/schemas'
 import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 
-export const maxDuration = 120
+export const maxDuration = 180
 
 // In-memory rate limit: 1 generate per 90 seconden per user
 const rateLimitMap = new Map<string, number>()
@@ -74,10 +74,39 @@ export async function POST(req: NextRequest) {
           huisstijl = kantoorData.huisstijl_json
         }
 
+        // Cache-check: zelfde invoer recent gegenereerd voor dit kantoor?
+        const zeveDagenGeleden = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+        const inputVergelijk = JSON.stringify(input)
+        const { data: recenteObjecten } = await supabase
+          .from('objecten')
+          .select('id, outputs_json, input_json')
+          .eq('kantoor_id', makelaar.kantoor_id)
+          .gte('created_at', zeveDagenGeleden)
+          .order('created_at', { ascending: false })
+          .limit(50)
+        const cachedTreffer = recenteObjecten?.find(r => JSON.stringify(r.input_json) === inputVergelijk)
+        if (cachedTreffer?.outputs_json) {
+          releaseRateLimit(user.id)
+          return NextResponse.json({
+            output: cachedTreffer.outputs_json,
+            object_id: cachedTreffer.id,
+            cached: true,
+          })
+        }
+
         // Limieten controleren
         const plan = kantoorData?.plan
 
         if (!plan) {
+          // Controleer of de proefperiode is verlopen
+          const trialEndsAt = kantoorData?.trial_ends_at ? new Date(kantoorData.trial_ends_at) : null
+          if (trialEndsAt && trialEndsAt < new Date()) {
+            return NextResponse.json(
+              { error: 'Uw proefperiode is verlopen. Kies een abonnement om door te gaan.' },
+              { status: 402 },
+            )
+          }
+
           // Proefperiode: max 15 objecten totaal
           const { count } = await supabase
             .from('objecten')
@@ -86,12 +115,12 @@ export async function POST(req: NextRequest) {
           const BETA_LIMIET = 15
           if ((count ?? 0) >= BETA_LIMIET) {
             return NextResponse.json(
-              { error: `Limiet bereikt: je kunt maximaal ${BETA_LIMIET} objecten genereren tijdens de proefperiode. Kies een abonnement om door te gaan.` },
+              { error: `Limiet bereikt: u kunt maximaal ${BETA_LIMIET} objecten genereren tijdens de proefperiode. Kies een abonnement om door te gaan.` },
               { status: 402 },
             )
           }
-        } else if (plan === 'solo') {
-          // Solo: max 30 objecten per kalendermaand
+        } else if (plan === 'starter') {
+          // Starter: max 40 objecten per kalendermaand
           const startOfMonth = new Date()
           startOfMonth.setDate(1)
           startOfMonth.setHours(0, 0, 0, 0)
@@ -100,15 +129,15 @@ export async function POST(req: NextRequest) {
             .select('id', { count: 'exact', head: true })
             .eq('kantoor_id', makelaar.kantoor_id)
             .gte('created_at', startOfMonth.toISOString())
-          const SOLO_LIMIET = 30
-          if ((count ?? 0) >= SOLO_LIMIET) {
+          const STARTER_LIMIET = 40
+          if ((count ?? 0) >= STARTER_LIMIET) {
             return NextResponse.json(
-              { error: `Maandlimiet bereikt: het Solo-plan staat ${SOLO_LIMIET} objecten per maand toe. Upgrade naar Kantoor voor onbeperkte toegang.` },
+              { error: `Maandlimiet bereikt: het Starter-plan staat ${STARTER_LIMIET} objecten per maand toe. Upgrade naar Pro voor onbeperkte toegang.` },
               { status: 402 },
             )
           }
         }
-        // Kantoor en franchise: geen limiet
+        // Pro en Kantoor: geen limiet
 
         const output = await generateContent(input, huisstijl)
 
@@ -126,6 +155,19 @@ export async function POST(req: NextRequest) {
           .single()
 
         objectId = savedObject?.id ?? null
+
+        // Onboarding-meting: sla eerste generatie-tijdstip op (niet-blokkerend)
+        const { data: makelaarDetails } = await supabase
+          .from('makelaars')
+          .select('first_generated_at')
+          .eq('id', makelaar.id)
+          .single()
+        if (!makelaarDetails?.first_generated_at) {
+          void serviceClient
+            .from('makelaars')
+            .update({ first_generated_at: new Date().toISOString() })
+            .eq('id', makelaar.id)
+        }
 
         return NextResponse.json({ output, object_id: objectId })
       }

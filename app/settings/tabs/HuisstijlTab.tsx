@@ -11,6 +11,23 @@ interface Props {
   isAdmin: boolean
 }
 
+function HuisstijlUpgradeBanner() {
+  return (
+    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-lg">
+      <p className="text-sm font-semibold text-amber-900 mb-1">Huisstijlgeheugen — Pro-functie</p>
+      <p className="text-sm text-amber-800 mb-4">
+        Stel uw schrijftoon, slogan en voorbeeldteksten in. VestaAI leert de stijl van uw kantoor en past die automatisch toe bij elke generatie.
+      </p>
+      <a
+        href="/api/stripe/checkout?plan=pro"
+        className="inline-block rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition-colors"
+      >
+        Upgrade naar Pro — €199/maand
+      </a>
+    </div>
+  )
+}
+
 const SCHRIJFTONEN: { value: HuisstijlConfig['schrijftoon']; label: string; desc: string }[] = [
   { value: 'formeel', label: 'Formeel', desc: 'Professioneel en zakelijk' },
   { value: 'informeel', label: 'Informeel', desc: 'Toegankelijk en persoonlijk' },
@@ -45,6 +62,10 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
     })
     setStatus(result.ok ? 'saved' : 'error')
     if (result.ok) setTimeout(() => setStatus('idle'), 2000)
+  }
+
+  if (kantoor.plan === 'starter') {
+    return <HuisstijlUpgradeBanner />
   }
 
   if (!isAdmin) {
@@ -110,7 +131,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       {/* Voorbeeldteksten */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Voorbeeldteksten <span className="text-gray-400 font-normal">(max 3 · Claude leert van jouw schrijfstijl)</span>
+          Voorbeeldteksten <span className="text-gray-400 font-normal">(max 3 · VestaAI leert de schrijfstijl van uw kantoor)</span>
         </label>
         <div className="space-y-3">
           {[0, 1, 2].map(i => (
@@ -120,7 +141,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
               onChange={e => updateVoorbeeld(i, e.target.value)}
               rows={4}
               maxLength={2000}
-              placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure die jij hebt geschreven`}
+              placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure van uw kantoor`}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
             />
           ))}

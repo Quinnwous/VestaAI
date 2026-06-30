@@ -1,6 +1,15 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+let _resend: Resend | null = null
+
+function getResend(): Resend {
+  if (!_resend) {
+    const key = process.env.RESEND_API_KEY
+    if (!key) throw new Error('RESEND_API_KEY is not set')
+    _resend = new Resend(key)
+  }
+  return _resend
+}
 
 const FROM = 'VestaAI <noreply@vestaai.nl>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
@@ -48,11 +57,11 @@ function baseTemplate(content: string) {
 }
 
 function btn(href: string, label: string) {
-  return `<a href="${href}" style="display:inline-block;background:#2563eb;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin-top:24px;">${label} →</a>`
+  return `<a href="${href}" style="display:inline-block;background:#1A6B45;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin-top:24px;">${label} →</a>`
 }
 
 export async function sendWelcomeEmail(email: string, name: string) {
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: 'Welkom bij VestaAI — je proefperiode is gestart',
@@ -84,7 +93,7 @@ export async function sendTrialWarningEmail(email: string, name: string, trialEn
   const daysLeft = Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
   const dagLabel = daysLeft === 1 ? 'dag' : 'dagen'
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: `VestaAI — je proefperiode verloopt over ${daysLeft} ${dagLabel}`,
@@ -101,20 +110,66 @@ export async function sendTrialWarningEmail(email: string, name: string, trialEn
       </p>
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
-          <td width="48%" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Solo</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">30 objecten/maand · 1 gebruiker</p>
-            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€79<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
+          <td width="48%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;vertical-align:top;">
+            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Starter</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">40 objecten/maand · 1 gebruiker</p>
+            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€99<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
           </td>
           <td width="4%"></td>
-          <td width="48%" style="background:#eff6ff;border:2px solid #2563eb;border-radius:10px;padding:16px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Kantoor</p>
+          <td width="48%" style="background:#f0fdf4;border:2px solid #1A6B45;border-radius:10px;padding:16px;vertical-align:top;">
+            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Pro</p>
             <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Onbeperkt · 5 gebruikers · Huisstijl</p>
-            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€149<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
+            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€199<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
           </td>
         </tr>
       </table>
       ${btn(`${APP_URL}/settings`, 'Kies een abonnement')}
+      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
+    `),
+  })
+}
+
+export async function sendCancellationEmail(email: string, name: string) {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: 'VestaAI — uw abonnement is opgezegd',
+    html: baseTemplate(`
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Abonnement opgezegd</h2>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        Hoi ${name}, uw VestaAI-abonnement is opgezegd. U heeft nog toegang tot het einde van uw huidige betaalperiode.
+      </p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        Alle eerder gegenereerde content blijft bewaard in uw account. U kunt uw abonnement op elk moment hervatten.
+      </p>
+      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;color:#991b1b;">
+          Na het verlopen van uw betaalperiode heeft u geen toegang meer tot het genereren van nieuwe content.
+        </p>
+      </div>
+      ${btn(`${APP_URL}/settings`, 'Abonnement hervatten')}
+      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
+    `),
+  })
+}
+
+export async function sendTeamInviteConfirmation(adminEmail: string, uitgenodigdEmail: string) {
+  await getResend().emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `VestaAI — uitnodiging verstuurd naar ${uitgenodigdEmail}`,
+    html: baseTemplate(`
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Uitnodiging verstuurd</h2>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        We hebben een uitnodigingsmail gestuurd naar <strong>${uitgenodigdEmail}</strong>.
+        Zodra uw collega de link heeft geopend en een account heeft aangemaakt, verschijnt hij of zij automatisch in uw teamoverzicht.
+      </p>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-top:8px;">
+        <p style="margin:0;font-size:13px;color:#166534;">
+          De uitnodigingslink is 24 uur geldig. Heeft uw collega de mail niet ontvangen? Stuur de uitnodiging opnieuw vanuit uw teaminstellingen.
+        </p>
+      </div>
+      ${btn(`${APP_URL}/settings`, 'Beheer uw team')}
       <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
     `),
   })
@@ -128,7 +183,7 @@ export async function sendInvoiceConfirmationEmail(
 ) {
   const formatted = new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(amount / 100)
 
-  await resend.emails.send({
+  await getResend().emails.send({
     from: FROM,
     to: email,
     subject: `VestaAI — betaling ontvangen (${formatted})`,

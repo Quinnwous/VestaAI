@@ -6,13 +6,22 @@ import Link from 'next/link'
 import { relatieveDatum } from '@/lib/utils'
 import type { ObjectRow } from '@/lib/supabase'
 
-type StatusFilter = '' | 'draft' | 'published'
+type StatusFilter = '' | 'draft' | 'published' | 'onder_bod' | 'verkocht'
 
 const STATUS_TABS: { value: StatusFilter; label: string }[] = [
   { value: '', label: 'Alles' },
   { value: 'draft', label: 'Concept' },
   { value: 'published', label: 'Gepubliceerd' },
+  { value: 'onder_bod', label: 'Onder bod' },
+  { value: 'verkocht', label: 'Verkocht' },
 ]
+
+const STATUS_LABELS: Record<string, { label: string; color: string; dot: string }> = {
+  draft:     { label: 'Concept',       color: '#9AA6A0', dot: '#9AA6A0' },
+  published: { label: 'Gepubliceerd',  color: '#1A6B45', dot: '#1A6B45' },
+  onder_bod: { label: 'Onder bod',     color: '#D97706', dot: '#D97706' },
+  verkocht:  { label: 'Verkocht',      color: '#5A6B61', dot: '#5A6B61' },
+}
 
 interface Props {
   objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]
@@ -21,6 +30,17 @@ interface Props {
   search: string
   statusFilter: StatusFilter
   totalCount: number
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const cfg = STATUS_LABELS[status]
+  if (!cfg || status === 'draft') return null
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 20, border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.dot }} />
+      {cfg.label}
+    </span>
+  )
 }
 
 export function DashboardClient({ objecten, totalPages, currentPage, search, statusFilter, totalCount }: Props) {
@@ -66,16 +86,23 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
   return (
     <div>
       {/* Status-filter tabs */}
-      <div className="flex gap-1 mb-4">
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
         {STATUS_TABS.map(tab => (
           <button
             key={tab.value}
             onClick={() => updateUrl({ status: tab.value, page: '1' })}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-              statusFilter === tab.value
-                ? 'bg-blue-600 text-white'
-                : 'border border-gray-300 text-gray-600 hover:border-gray-400 bg-white'
-            }`}
+            style={{
+              padding: '6px 14px',
+              borderRadius: 20,
+              fontSize: 13,
+              fontWeight: 600,
+              border: '1px solid',
+              cursor: 'pointer',
+              transition: 'all .15s',
+              background: statusFilter === tab.value ? '#1A6B45' : '#fff',
+              color: statusFilter === tab.value ? '#fff' : '#5A6B61',
+              borderColor: statusFilter === tab.value ? '#1A6B45' : '#E4EAE6',
+            }}
           >
             {tab.label}
           </button>
@@ -83,17 +110,19 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
       </div>
 
       {/* Zoekbalk */}
-      <form onSubmit={handleSearch} className="flex gap-2 mb-6">
+      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         <input
           type="text"
           value={zoekterm}
           onChange={e => handleZoekChange(e.target.value)}
           placeholder="Zoek op adres..."
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{ flex: 1, borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 14px', fontSize: 14, color: '#0E1A13', background: '#fff', outline: 'none' }}
+          onFocus={e => (e.target.style.borderColor = '#1A6B45')}
+          onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
         />
         <button
           type="submit"
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:border-gray-400 transition-colors"
+          style={{ borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 18px', fontSize: 14, color: '#5A6B61', background: '#fff', cursor: 'pointer' }}
         >
           Zoek
         </button>
@@ -101,7 +130,7 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
           <button
             type="button"
             onClick={() => { setZoekterm(''); updateUrl({ search: '', page: '1' }) }}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            style={{ borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 16px', fontSize: 14, color: '#9AA6A0', background: '#fff', cursor: 'pointer' }}
           >
             Wis
           </button>
@@ -110,16 +139,16 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
 
       {/* Resultaten header */}
       {totalCount > 0 && (
-        <p className="text-xs text-gray-500 mb-3">{totalCount} object{totalCount === 1 ? '' : 'en'}</p>
+        <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 10 }}>{totalCount} object{totalCount === 1 ? '' : 'en'}</p>
       )}
 
       {/* Lege state */}
       {objecten.length === 0 && (
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-16 text-center">
+        <div style={{ borderRadius: 18, border: '2px dashed #E4EAE6', background: '#fff', padding: '64px 32px', textAlign: 'center' }}>
           {search || statusFilter ? (
             <>
-              <p className="text-sm font-medium text-gray-700">Geen objecten gevonden</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13' }}>Geen objecten gevonden</p>
+              <p style={{ fontSize: 14, color: '#9AA6A0', marginTop: 6 }}>
                 {search && statusFilter
                   ? `Geen ${statusFilter === 'draft' ? 'concept' : 'gepubliceerde'} objecten voor "${search}".`
                   : search
@@ -129,18 +158,18 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
               <button
                 type="button"
                 onClick={() => { setZoekterm(''); updateUrl({ search: '', status: '', page: '1' }) }}
-                className="mt-3 text-xs text-blue-600 hover:underline"
+                style={{ marginTop: 12, fontSize: 13, color: '#1A6B45', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Wis filters
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm font-medium text-gray-700">Nog geen objecten</p>
-              <p className="text-xs text-gray-500 mt-1 mb-4">Maak je eerste object aan om te beginnen.</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13' }}>Nog geen objecten</p>
+              <p style={{ fontSize: 14, color: '#9AA6A0', marginTop: 6, marginBottom: 20 }}>Maak je eerste object aan om te beginnen.</p>
               <Link
                 href="/object/new"
-                className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+                style={{ display: 'inline-block', borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
               >
                 Nieuw object →
               </Link>
@@ -151,31 +180,23 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
 
       {/* Object-kaartjes */}
       {objecten.length > 0 && (
-        <div className="space-y-2">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {objecten.map(obj => (
             <Link
               key={obj.id}
               href={`/object/${obj.id}`}
-              className="flex items-center justify-between rounded-xl border border-gray-200 bg-white px-5 py-4 hover:border-gray-300 hover:shadow-sm transition-all group"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 14, border: '1px solid #E9EFEB', background: '#fff', padding: '16px 20px', textDecoration: 'none', transition: 'border-color .15s, box-shadow .15s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#C7E6D5'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(26,107,69,.08)' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#E9EFEB'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
             >
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {obj.address}
-                  </p>
-                  {obj.status === 'published' && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs text-green-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      Gepubliceerd
-                    </span>
-                  )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <p style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13' }}>{obj.address}</p>
+                  <StatusBadge status={obj.status ?? 'draft'} />
                 </div>
-                <p className="text-xs text-gray-400 mt-0.5">{formatDatum(obj.created_at)}</p>
+                <p style={{ fontSize: 13, color: '#9AA6A0', marginTop: 3 }}>{formatDatum(obj.created_at)}</p>
               </div>
-              <svg
-                className="w-4 h-4 text-gray-300 group-hover:text-blue-400 transition-colors"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor"
-              >
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#C7E6D5">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>
@@ -185,23 +206,23 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
 
       {/* Paginering */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-8">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 32 }}>
           <button
             disabled={currentPage === 1}
             onClick={() => updateUrl({ page: String(currentPage - 1) })}
             aria-label="Vorige pagina"
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-gray-400 transition-colors"
+            style={{ borderRadius: 10, border: '1px solid #E4EAE6', padding: '7px 14px', fontSize: 14, background: '#fff', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? .4 : 1, color: '#5A6B61' }}
           >
             ←
           </button>
-          <span className="text-sm text-gray-600" aria-live="polite">
+          <span style={{ fontSize: 14, color: '#5A6B61' }} aria-live="polite">
             {currentPage} / {totalPages}
           </span>
           <button
             disabled={currentPage === totalPages}
             onClick={() => updateUrl({ page: String(currentPage + 1) })}
             aria-label="Volgende pagina"
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40 hover:border-gray-400 transition-colors"
+            style={{ borderRadius: 10, border: '1px solid #E4EAE6', padding: '7px 14px', fontSize: 14, background: '#fff', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? .4 : 1, color: '#5A6B61' }}
           >
             →
           </button>
