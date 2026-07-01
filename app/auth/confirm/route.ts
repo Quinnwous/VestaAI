@@ -36,9 +36,12 @@ export async function GET(request: NextRequest) {
     },
   )
 
+  console.log('[auth/confirm] token_hash:', token_hash?.slice(0, 20) + '...', '| type:', type, '| next:', next)
   const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
+  console.log('[auth/confirm] verifyOtp error:', error?.message ?? 'none', '| user:', data?.user?.id ?? 'null')
 
   if (error || !data.user) {
+    console.log('[auth/confirm] → redirect to invalid_link')
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
