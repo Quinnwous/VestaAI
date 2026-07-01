@@ -1,22 +1,93 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import Anthropic from '@anthropic-ai/sdk'
+import sharp from 'sharp'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
 export const maxDuration = 60
 
-// Cloudflare Images API — vereist CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_IMAGES_TOKEN in .env.local
-// Registreer op: https://dash.cloudflare.com → Images
-const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
-const CF_IMAGES_TOKEN = process.env.CLOUDFLARE_IMAGES_TOKEN
+const client = new Anthropic()
 
-export async function POST(req: NextRequest) {
-  if (!CF_ACCOUNT_ID || !CF_IMAGES_TOKEN) {
-    return NextResponse.json(
-      { error: 'Foto-verbetering is nog niet geconfigureerd. Voeg CLOUDFLARE_ACCOUNT_ID en CLOUDFLARE_IMAGES_TOKEN toe aan .env.local.' },
-      { status: 503 },
+interface FotoAnalyse {
+  score_belichting: number       // 1–10
+  score_kadrering: number        // 1–10
+  score_kleur: number            // 1–10
+  funda_geschikt: boolean
+  samenvatting: string           // 2-3 zinnen over de foto
+  aanbevelingen: string[]        // max 5 concrete tips
+  correcties: {
+    brightness: number           // 0.5–2.0, 1.0 = geen wijziging
+    contrast: number             // 0.5–2.0
+    saturation: number           // 0.5–2.0
+    sharpness: number            // 0–3, 0 = geen sharpening
+  }
+}
+
+async function analyseerFoto(imageBase64: string, mimeType: string): Promise<FotoAnalyse> {
+  const message = await client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    system: `Je bent een expert in vastgoedfotografie en weet precies wat een goede Funda-foto maakt.
+Analyseer de aangeleverde woningfoto en geef een JSON-antwoord. Geen tekst buiten het JSON-object.
+
+Output exact dit formaat:
+{
+  "score_belichting": <1–10>,
+  "score_kadrering": <1–10>,
+  "score_kleur": <1–10>,
+  "funda_geschikt": <true|false>,
+  "samenvatting": "<2–3 zinnen over kwaliteit en geschiktheid voor Funda>",
+  "aanbevelingen": ["<tip 1>", "<tip 2>"],
+  "correcties": {
+    "brightness": <0.5–2.0, 1.0 = ongewijzigd>,
+    "contrast": <0.5–2.0, 1.0 = ongewijzigd>,
+    "saturation": <0.5–2.0, 1.0 = ongewijzigd>,
+    "sharpness": <0.0–3.0, 0 = geen sharpening>
+  }
+}
+
+Regels voor correcties:
+- brightness > 1.0 als foto te donker is; < 1.0 als overbelicht
+- contrast verhogen bij vlakke foto's (bijv. 1.1–1.2)
+- saturation licht verhogen voor warme kleuren (bijv. 1.05–1.15)
+- sharpness 0.5–1.5 bij zachte foto's; 0 als al scherp`,
+    messages: [{
+      role: 'user',
+      content: [{
+        type: 'image',
+        source: { type: 'base64', media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/webp', data: imageBase64 },
+      }, {
+        type: 'text',
+        text: 'Analyseer deze woningfoto voor gebruik op Funda. Geef alleen het JSON-object terug.',
+      }],
+    }],
+  })
+
+  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
+  return JSON.parse(cleaned) as FotoAnalyse
+}
+
+async function verbeterFoto(buffer: Buffer, analyse: FotoAnalyse): Promise<Buffer> {
+  const { brightness, contrast, saturation, sharpness } = analyse.correcties
+
+  let pipeline = sharp(buffer)
+    .modulate({
+      brightness: Math.max(0.5, Math.min(2.0, brightness)),
+      saturation: Math.max(0.5, Math.min(2.0, saturation)),
+    })
+    .linear(
+      Math.max(0.5, Math.min(2.0, contrast)),
+      -(128 * (Math.max(0.5, Math.min(2.0, contrast)) - 1)),
     )
+
+  if (sharpness > 0) {
+    pipeline = pipeline.sharpen({ sigma: Math.max(0.3, Math.min(3.0, sharpness)) })
   }
 
+  return pipeline.jpeg({ quality: 92, progressive: true }).toBuffer()
+}
+
+export async function POST(req: NextRequest) {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
@@ -42,48 +113,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Foto mag maximaal 20 MB zijn' }, { status: 400 })
   }
 
-  // Upload naar Cloudflare Images
-  const cfForm = new FormData()
-  cfForm.append('file', foto)
+  const buffer = Buffer.from(await foto.arrayBuffer())
+  const base64 = buffer.toString('base64')
 
-  const cfRes = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/images/v1`,
-    {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${CF_IMAGES_TOKEN}` },
-      body: cfForm,
-    },
-  )
-
-  if (!cfRes.ok) {
-    const err = await cfRes.text()
-    return NextResponse.json({ error: `Cloudflare fout: ${err}` }, { status: 502 })
+  // Claude Vision analyse
+  let analyse: FotoAnalyse
+  try {
+    analyse = await analyseerFoto(base64, foto.type)
+  } catch {
+    return NextResponse.json({ error: 'Analyse mislukt — probeer opnieuw' }, { status: 502 })
   }
 
-  const cfData = await cfRes.json()
-  const imageId: string = cfData.result?.id
-  // Cloudflare Images levert varianten: /cdn-cgi/imagedelivery/<hash>/<id>/public
-  const variants: string[] = cfData.result?.variants ?? []
-  const publiekUrl = variants[0] ?? null
+  // Sharp auto-correcties toepassen
+  let verbeterdBase64: string | null = null
+  try {
+    const verbeterdBuffer = await verbeterFoto(buffer, analyse)
+    verbeterdBase64 = verbeterdBuffer.toString('base64')
 
-  // Sla URL op in objecten.outputs_json.fotos (append)
-  if (objectId && publiekUrl) {
-    const serviceClient = createServiceSupabaseClient()
-    const { data: obj } = await serviceClient
-      .from('objecten')
-      .select('outputs_json')
-      .eq('id', objectId)
-      .single()
-
-    if (obj) {
-      const fotos: string[] = (obj.outputs_json as Record<string, unknown>).fotos as string[] ?? []
-      await serviceClient
+    // Sla verbeterde URL op in object indien opgegeven
+    if (objectId) {
+      const serviceClient = createServiceSupabaseClient()
+      const { data: obj } = await serviceClient
         .from('objecten')
-        .update({ outputs_json: { ...(obj.outputs_json as Record<string, unknown>), fotos: [...fotos, publiekUrl] } })
+        .select('outputs_json')
         .eq('id', objectId)
-      revalidatePath(`/object/${objectId}`)
+        .single()
+
+      if (obj) {
+        const outputs = (obj.outputs_json ?? {}) as Record<string, unknown>
+        const bestaandeFotos: string[] = (outputs.fotos_analyse as string[]) ?? []
+        await serviceClient
+          .from('objecten')
+          .update({ outputs_json: { ...outputs, fotos_analyse: [...bestaandeFotos, analyse.samenvatting] } })
+          .eq('id', objectId)
+      }
     }
+  } catch {
+    // Sharp fout is niet fataal — stuur analyse zonder verbeterde foto
   }
 
-  return NextResponse.json({ image_id: imageId, url: publiekUrl })
+  return NextResponse.json({
+    analyse,
+    verbeterd_jpeg_base64: verbeterdBase64,
+  })
 }

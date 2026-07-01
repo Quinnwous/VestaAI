@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as EmailOtpType | null
   const next = searchParams.get('next') ?? '/dashboard'
+  const refCode = searchParams.get('ref') ?? null
 
   if (!token_hash || !type) {
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
@@ -84,6 +85,35 @@ export async function GET(request: NextRequest) {
           email: user.email!,
           role: 'admin',
         })
+
+        // Verwerk referral: zoek referrer op via code, verleng trial met 30 dagen
+        if (refCode) {
+          const { data: referrerKantoor } = await serviceClient
+            .from('kantoren')
+            .select('id')
+            .eq('referral_code', refCode.toUpperCase())
+            .neq('id', nieuwKantoor.id)
+            .single()
+
+          if (referrerKantoor) {
+            const nieuweTrialEinddatum = new Date(Date.now() + 44 * 24 * 60 * 60 * 1000).toISOString()
+            await Promise.all([
+              // Verleng trial referee met extra 30 dagen (14 + 30 = 44 dagen totaal)
+              serviceClient
+                .from('kantoren')
+                .update({ trial_ends_at: nieuweTrialEinddatum })
+                .eq('id', nieuwKantoor.id),
+              // Sla referral op — beloning voor referrer wordt later verwerkt
+              serviceClient
+                .from('referrals')
+                .upsert({
+                  referrer_kantoor_id: referrerKantoor.id,
+                  referee_kantoor_id: nieuwKantoor.id,
+                  reward_applied: false,
+                }, { onConflict: 'referee_kantoor_id', ignoreDuplicates: true }),
+            ])
+          }
+        }
 
         sendWelcomeEmail(user.email!, emailNaam).catch(console.error)
       }

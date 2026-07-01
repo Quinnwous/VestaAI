@@ -14,13 +14,15 @@ export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type Cont
 const BASE_SYSTEM_PROMPT_NL = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in woningomschrijvingen voor Funda en social media.
 
 FUNDA-TEKST (funda_tekst) — verplichte regels:
-- 600–800 woorden, minimaal 4 alinea's
-- Openingszin: uniek en prikkelend; begin NOOIT met "Dit", de straatnaam of "De woning"
+- 700–800 woorden minimum, minimaal 5 alinea's
+- Openingszin: uniek en prikkelend; begin NOOIT met het adres, de straatnaam, "Dit", "Deze", "De woning" of het woningtype
 - Schrijf in derde persoon of wij-vorm — geen ik-vorm
 - Geen prijsvermelding in de tekst (staat apart op Funda)
 - Superlatieven alleen met onderbouwing uit de USP's ("luxe keuken" vereist bewijs in de invoer)
 - Geen discriminerende buurt- of wijkomschrijvingen (WWGB)
 - Geen overdreven leestekens (!!, ???) of ALL-CAPS
+- Verplicht: minstens één alinea over technische staat (installaties, isolatie, renovaties, dakbedekking, cv-ketel)
+- Verplicht: minstens één alinea over duurzaamheid — energielabel concreet uitgelegd (wat betekent het, vergelijking met gemiddelde woning), eventuele zonnepanelen, warmtepomp of extra isolatie uitgelicht
 - Sluit af met een concrete call-to-action (bezichtiging of contact)
 
 INSTAGRAM-VARIANTEN (elk 200–270 woorden, inclusief emoji's en hashtags):
@@ -59,10 +61,14 @@ Geen tekst buiten het JSON-object.`
 const BASE_SYSTEM_PROMPT_EN = `You are a real estate copywriter specialised in Dutch property listings.
 
 Rules:
-- Max 800 words for the main description
+- Minimum 700 words for the main description, at least 5 paragraphs
+- Opening sentence must be unique and compelling; NEVER start with the address, street name, "This", "The property" or the property type
 - No superlatives without evidence
 - No discriminatory neighbourhood descriptions
-- A unique opening sentence is required
+- No price mention in the text
+- Mandatory: at least one paragraph on technical condition (installations, insulation, renovations, boiler)
+- Mandatory: at least one paragraph on sustainability — explain the energy label concretely (what it means, comparison with average home), highlight solar panels, heat pump, or extra insulation if present
+- End with a concrete call-to-action (viewing or contact)
 
 Output: valid JSON object with exactly these keys:
 { "funda_tekst", "brochure_kort", "brochure_lang", "instagram_emotioneel",
@@ -109,7 +115,7 @@ function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'
   return base + extra
 }
 
-function buildUserMessage(input: PropertyInput): string {
+function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): string {
   const isEn = input.taal === 'en'
   const prijsFormatted = `€${input.vraagprijs.toLocaleString('nl-NL')}`
 
@@ -119,6 +125,8 @@ function buildUserMessage(input: PropertyInput): string {
       : `\nOpen huis: ${input.open_huis_datum}${input.open_huis_tijd ? ` om ${input.open_huis_tijd}` : ''}`
     : ''
 
+  const verrijking = verrijkingTekst ? `\n${verrijkingTekst}` : ''
+
   if (isEn) {
     return `Property: ${input.adres}
 Type: ${input.woningtype}, ${input.kamers} rooms
@@ -127,7 +135,7 @@ Year built: ${input.bouwjaar}
 Energy label: ${input.energielabel}
 Asking price: ${prijsFormatted}
 USPs: ${input.usps}
-Target audience: ${input.doelgroep}${openHuisRegel}
+Target audience: ${input.doelgroep}${openHuisRegel}${verrijking}
 
 Generate all content in English as JSON.`
   }
@@ -139,7 +147,7 @@ Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}
 Vraagprijs: ${prijsFormatted}
 USP's: ${input.usps}
-Doelgroep: ${input.doelgroep}${openHuisRegel}
+Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}
 
 Genereer alle content als JSON.`
 }
@@ -153,6 +161,7 @@ export async function generateContent(
   input: PropertyInput,
   huisstijlOrClient?: HuisstijlConfig | Anthropic,
   clientArg?: Anthropic,
+  verrijkingTekst?: string,
 ): Promise<ContentOutput> {
   let huisstijl: HuisstijlConfig | undefined
   let client: Anthropic
@@ -179,7 +188,7 @@ export async function generateContent(
       model: 'claude-sonnet-4-6',
       max_tokens: 16000,
       system: systemPrompt,
-      messages: [{ role: 'user', content: buildUserMessage(input) + extra }],
+      messages: [{ role: 'user', content: buildUserMessage(input, verrijkingTekst) + extra }],
     })
 
     const text = message.content[0].type === 'text' ? message.content[0].text : ''

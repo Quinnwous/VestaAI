@@ -4,6 +4,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
+import { AddressAutocomplete } from '@/components/AddressAutocomplete'
+import { WoningdataPanel } from '@/components/WoningdataPanel'
+import type { VerrijkingData } from '@/lib/verrijking'
+import type { BagSuggestie } from '@/app/api/bag/suggest/route'
 
 const WONINGSTYPES = ['Appartement', 'Tussenwoning', 'Hoekwoning', 'Vrijstaand', 'Villa', 'Penthouse'] as const
 const ENERGIELABELS = ['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] as const
@@ -56,8 +60,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   const [openHuisActief, setOpenHuisActief] = useState(
     () => !!(draft.open_huis_datum)
   )
-  const [bagBezig, setBagBezig] = useState(false)
-  const [bagFout, setBagFout] = useState('')
+  const [verrijkingData, setVerrijkingData] = useState<VerrijkingData | null>(null)
+  const [verrijkingBezig, setVerrijkingBezig] = useState(false)
 
   const {
     register,
@@ -118,28 +122,32 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [disabled, handleSubmit, onSubmit])
 
-  const handleBagOpzoeken = async () => {
-    const adres = getValues('adres')
-    if (!adres || adres.length < 5) {
-      setBagFout(isEn ? 'Enter an address first' : 'Vul eerst een adres in')
-      return
-    }
-    setBagBezig(true)
-    setBagFout('')
+  const handleAdresSelect = async (suggestie: BagSuggestie) => {
+    // BAG-data ophalen (bouwjaar, oppervlak, energielabel)
     try {
-      const res = await fetch(`/api/bag?adres=${encodeURIComponent(adres)}`)
+      const res = await fetch(`/api/bag?adres=${encodeURIComponent(suggestie.label)}`)
       const json = await res.json()
-      if (!res.ok || !json.bouwjaar) {
-        setBagFout(isEn ? 'Address not found in BAG' : 'Adres niet gevonden in BAG')
-        return
+      if (res.ok) {
+        if (json.bouwjaar) setValue('bouwjaar', json.bouwjaar, { shouldValidate: true })
+        if (json.oppervlak_m2) setValue('oppervlak_m2', json.oppervlak_m2, { shouldValidate: true })
+        if (json.energielabel) setValue('energielabel', json.energielabel, { shouldValidate: true })
       }
-      if (json.bouwjaar) setValue('bouwjaar', json.bouwjaar, { shouldValidate: true })
-      if (json.oppervlak_m2) setValue('oppervlak_m2', json.oppervlak_m2, { shouldValidate: true })
-      if (json.energielabel) setValue('energielabel', json.energielabel, { shouldValidate: true })
-    } catch {
-      setBagFout(isEn ? 'BAG lookup failed' : 'BAG opzoeken mislukt')
-    } finally {
-      setBagBezig(false)
+    } catch { /* stilzwijgend */ }
+
+    // Verrijkingsdata ophalen (WOZ + CBS + markt + voorzieningen)
+    setVerrijkingBezig(true)
+    setVerrijkingData(null)
+    try {
+      const oppervlak = getValues('oppervlak_m2')
+      const params = new URLSearchParams({ adres: suggestie.label })
+      if (oppervlak) params.set('oppervlak', String(oppervlak))
+      const res = await fetch(`/api/verrijking?${params}`)
+      if (res.ok) {
+        const data: VerrijkingData = await res.json()
+        setVerrijkingData(data)
+      }
+    } catch { /* stilzwijgend */ } finally {
+      setVerrijkingBezig(false)
     }
   }
 
@@ -169,14 +177,14 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         <label style={labelStyle}>
           {isEn ? 'Address' : 'Adres'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
-        <input
-          {...register('adres')}
+        <AddressAutocomplete
+          value={adresValue}
+          onChange={v => setValue('adres', v, { shouldValidate: adresValue.length > 2 })}
+          onSelect={handleAdresSelect}
           disabled={disabled}
           placeholder={isEn ? '1 Main Street, Amsterdam' : 'Herengracht 1, Amsterdam'}
-          style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-          onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
         />
+        <input type="hidden" {...register('adres')} />
         {errors.adres && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.adres.message}</p>}
         {duplicaat && !errors.adres && (
           <div style={{ marginTop: 8, borderRadius: 10, background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
@@ -192,10 +200,20 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             </p>
           </div>
         )}
+
+        {/* Woningdata-paneel: verschijnt zodra adres is geselecteerd */}
+        {(verrijkingBezig || verrijkingData) && (
+          <div style={{ marginTop: 12 }}>
+            <WoningdataPanel
+              data={verrijkingData ?? { woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null }}
+              bezig={verrijkingBezig}
+            />
+          </div>
+        )}
       </div>
 
       {/* Woningtype + Kamers */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
             {isEn ? 'Property type' : 'Woningtype'} <span style={{ color: '#DC2626' }}>*</span>
@@ -228,7 +246,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       </div>
 
       {/* Oppervlak + Bouwjaar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
             {isEn ? 'Floor area (m²)' : 'Woonoppervlak (m²)'} <span style={{ color: '#DC2626' }}>*</span>
@@ -243,19 +261,9 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           {errors.oppervlak_m2 && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.oppervlak_m2.message}</p>}
         </div>
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-            <label style={{ ...labelStyle, marginBottom: 0 }}>
-              {isEn ? 'Year built' : 'Bouwjaar'} <span style={{ color: '#DC2626' }}>*</span>
-            </label>
-            <button
-              type="button"
-              onClick={handleBagOpzoeken}
-              disabled={disabled || bagBezig}
-              style={{ fontSize: 12, color: '#1A6B45', background: 'none', border: 'none', cursor: disabled || bagBezig ? 'not-allowed' : 'pointer', opacity: disabled || bagBezig ? .5 : 1, fontWeight: 600 }}
-            >
-              {bagBezig ? '...' : isEn ? 'Auto-fill from BAG' : 'Ophalen uit BAG'}
-            </button>
-          </div>
+          <label style={labelStyle}>
+            {isEn ? 'Year built' : 'Bouwjaar'} <span style={{ color: '#DC2626' }}>*</span>
+          </label>
           <input
             {...register('bouwjaar', { valueAsNumber: true })}
             type="number" min={1800} max={2035} disabled={disabled} placeholder="1995"
@@ -263,13 +271,12 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
             onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
           />
-          {bagFout && <p style={{ marginTop: 5, fontSize: 12, color: '#D97706' }}>{bagFout}</p>}
           {errors.bouwjaar && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.bouwjaar.message}</p>}
         </div>
       </div>
 
       {/* Energielabel + Vraagprijs */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
             {isEn ? 'Energy label' : 'Energielabel'} <span style={{ color: '#DC2626' }}>*</span>

@@ -118,6 +118,18 @@ export async function GET() {
   const dezeMaand = dezeMaandResult.count ?? 0
   const maandLimiet = plan === 'starter' ? 40 : null
 
+  // API-kosten schatting (€0,08 per content-set op Sonnet 4.6)
+  const KOSTEN_PER_OBJECT = 0.08
+  const KOSTEN_BUDGET: Record<string, number> = { starter: 8, pro: 20, kantoor: 60 }
+  const kostenschatting = {
+    deze_maand: Math.round(dezeMaand * KOSTEN_PER_OBJECT * 100) / 100,
+    budget_maand: KOSTEN_BUDGET[plan] ?? 20,
+    per_maand: Object.fromEntries(
+      Object.entries(perMaand).map(([k, v]) => [k, Math.round(v * KOSTEN_PER_OBJECT * 100) / 100])
+    ),
+    prijs_per_object: KOSTEN_PER_OBJECT,
+  }
+
   return NextResponse.json({
     perMaand,
     makelaarStats,
@@ -128,6 +140,7 @@ export async function GET() {
     isTrialActief,
     dezeMaand,
     maandLimiet,
+    kostenschatting,
     nps: {
       gemiddeld: npsGemiddeld,
       score: npsScore,

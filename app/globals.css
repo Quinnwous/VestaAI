@@ -28,6 +28,19 @@
   ::-webkit-scrollbar-thumb:hover { @apply bg-gray-400; }
 }
 
+/* Formulier: 2-koloms grid collaps op mobile */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Print styles — Ctrl/Cmd+P vanuit de result-pagina */
 @media print {
   /* Verberg navigatie en knoppen */

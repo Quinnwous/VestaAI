@@ -37,6 +37,13 @@ export default function PrijzenPage() {
 
       {/* Plannen */}
       <section className="mx-auto max-w-4xl px-6 pb-24">
+        {/* Founding member banner */}
+        <div className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 px-8 py-6 text-center">
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-1">Founding Member — Eerste 50 klanten</p>
+          <p className="text-3xl font-extrabold text-amber-900 mb-1">30% korting op elk abonnement</p>
+          <p className="text-sm text-amber-700">Geldt voor de volledige eerste 12 maanden. Sluit u nu aan en betaal nooit meer de volle prijs.</p>
+        </div>
+
         <PrijzenToggle />
 
         {/* Enterprise contact */}

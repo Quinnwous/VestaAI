@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 import { slaProfielNaamOp } from '../actions'
+import { ReferralPanel } from '@/components/ReferralPanel'
 
 interface Props {
   makelaar: Makelaar
@@ -234,6 +235,14 @@ export function AccountTab({ makelaar, kantoor }: Props) {
           </div>
         )}
       </section>
+
+      {/* Doorverwijzingen */}
+      {makelaar.role === 'admin' && (
+        <section>
+          <h2 className="text-sm font-semibold text-gray-900 mb-4">Doorverwijzingen</h2>
+          <ReferralPanel isAdmin={makelaar.role === 'admin'} />
+        </section>
+      )}
 
       {/* Gevaar-zone */}
       <section className="border-t border-gray-100 pt-6">

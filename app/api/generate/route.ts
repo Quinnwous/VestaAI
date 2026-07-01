@@ -3,6 +3,7 @@ import { ZodError } from 'zod'
 import { generateContent } from '@/lib/claude'
 import { PropertyInputSchema } from '@/lib/schemas'
 import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
+import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import type { HuisstijlConfig } from '@/lib/schemas'
 
 export const maxDuration = 180
@@ -139,7 +140,10 @@ export async function POST(req: NextRequest) {
         }
         // Pro en Kantoor: geen limiet
 
-        const output = await generateContent(input, huisstijl)
+        const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
+        const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
+
+        const output = await generateContent(input, huisstijl, undefined, verrijkingTekst)
 
         const serviceClient = createServiceSupabaseClient()
         const { data: savedObject } = await serviceClient
@@ -174,7 +178,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Fallback: geen Supabase of geen makelaar-record
-    const output = await generateContent(input, huisstijl)
+    const verrijkingFallback = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
+    const verrijkingTekstFallback = verrijkingFallback ? verrijkingNaarPrompt(verrijkingFallback) : undefined
+    const output = await generateContent(input, huisstijl, undefined, verrijkingTekstFallback)
     return NextResponse.json({ output, object_id: null })
 
   } catch (error) {

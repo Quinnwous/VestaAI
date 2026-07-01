@@ -53,7 +53,7 @@ const FEATURES = [
 ]
 
 const TABS_DATA = [
-  { key: 'funda', label: 'Funda-tekst', meta: '600+ wrd', sub: 'Funda-regelset ingebakken', initial: 'F' },
+  { key: 'funda', label: 'Funda-tekst', meta: '700+ wrd', sub: 'Funda-regelset ingebakken', initial: 'F' },
   { key: 'brochure', label: 'Brochure', meta: 'kort + lang', sub: '200 én 500+ woorden', initial: 'B' },
   { key: 'instagram', label: 'Instagram', meta: '3 varianten', sub: 'Emotioneel · informatief · actie', initial: 'I' },
   { key: 'linkedin', label: 'LinkedIn', meta: '2 varianten', sub: 'Kantoor én makelaar', initial: 'L' },
@@ -153,6 +153,18 @@ const PLAN_DEFS = [
     features: ['Onbeperkt gebruikers & objecten', 'Bouw de kantoorhuisstijl op in VestaAI', 'Alle makelaars genereren in dezelfde stijl', 'White-label & eigen branding', 'Virtual staging, kalender & chatbot', 'Binnenkort: API & multi-vestiging'],
   },
 ]
+
+// ─── Testimonial ─────────────────────────────────────────────────────────────
+// TODO: vervang onderstaande placeholders met de echte i4housing-quote na de pilot
+const TESTIMONIAL = {
+  quote:
+    '"VestaAI bespaart ons per woning minstens een uur schrijfwerk. De Funda-teksten zijn direct plaatsbaar — onze makelaar hoeft ze nauwelijks aan te passen."',
+  naam: 'Naam makelaar',
+  functie: 'Makelaar',
+  kantoor: 'i4housing',
+  tijdsbesparing: '1 uur per woning',
+  placeholder: true,
+}
 
 const FAQS = [
   { v: 'Wat kan Vesta AI precies allemaal?', a: "Vesta genereert al uw woningteksten (Funda, brochure, social, e-mail, buurt), verbetert foto's, doet virtual staging, beantwoordt vragen over woningdocumenten, plant uw social posts en biedt een chatbot voor uw eigen website. Eén platform voor uw hele online presentatie." },
@@ -398,7 +410,24 @@ export function LandingPageClient() {
               Dé complete<br />
               <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>AI-assistent</span> voor de makelaardij.
             </h1>
-            <p style={{ fontSize: 19, lineHeight: 1.6, color: '#445249', maxWidth: 498, margin: '0 0 32px' }}>
+
+            {/* Tijdsbesparing — sterkste verkoopargument */}
+            <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 26px', background: '#F1F7F3', border: '1px solid #C7E6D5', borderRadius: 14, overflow: 'hidden', maxWidth: 480 }}>
+              <div style={{ padding: '13px 18px', textAlign: 'center', flexShrink: 0 }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#0E1A13', lineHeight: 1, letterSpacing: '-.02em' }}>45 min</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#5A6B61', marginTop: 3 }}>schrijven per woning</div>
+              </div>
+              <div style={{ padding: '0 6px', color: '#1A6B45', fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
+              <div style={{ padding: '13px 18px', textAlign: 'center', flexShrink: 0, background: '#1A6B45' }}>
+                <div style={{ fontSize: 26, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-.02em' }}>90 sec</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#C7E6D5', marginTop: 3 }}>met Vesta AI</div>
+              </div>
+              <div style={{ flex: 1, padding: '12px 15px', borderLeft: '1px solid #C7E6D5', fontSize: 12.5, lineHeight: 1.5, color: '#3A463F', fontWeight: 500 }}>
+                Funda-tekst, brochure, social posts, e-mail en buurtomschrijving — in één generatie klaar.
+              </div>
+            </div>
+
+            <p style={{ fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 498, margin: '0 0 32px' }}>
               Alles voor uw online woningpresentatie in één Nederlands platform: teksten, foto&apos;s, virtual staging, documenten, planning en een chatbot. Afgestemd op Funda-richtlijnen en de NVM-stijlregels.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
@@ -574,6 +603,48 @@ export function LandingPageClient() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* PRODUCT IN ACTIE */}
+      {/* TODO: vervang de placeholder hieronder door een echte GIF of <video>-embed van de generatie-flow */}
+      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: 42 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Zie het zelf</div>
+          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 18px', maxWidth: 680 }}>
+            Van adres naar volledige content-suite <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in 90 seconden.</span>
+          </h2>
+          <p style={{ fontSize: 17, color: '#5A6B61', maxWidth: 520, margin: '0 auto' }}>
+            Kijk hoe Vesta&nbsp;AI live teksten genereert op basis van acht woningvelden — inclusief huisstijl van het kantoor.
+          </p>
+        </div>
+        <div style={{ background: '#0E1A13', borderRadius: 24, overflow: 'hidden', border: '1px solid #1E2F24', boxShadow: '0 40px 80px -40px rgba(14,26,19,.6)' }}>
+          {/* Pseudo browser chrome */}
+          <div style={{ background: '#1A2920', padding: '13px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #253D2D' }}>
+            <div style={{ display: 'flex', gap: 7 }}>
+              {['#FF5F57', '#FEBC2E', '#28C840'].map(c => <span key={c} style={{ width: 12, height: 12, borderRadius: 999, background: c }} />)}
+            </div>
+            <div style={{ flex: 1, background: '#243320', borderRadius: 7, height: 26, display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
+              <span style={{ fontSize: 12, color: '#6B8070', fontFamily: 'ui-monospace,monospace' }}>vestaai.nl/object/new</span>
+            </div>
+          </div>
+          {/* Video / GIF placeholder */}
+          <div style={{ position: 'relative', paddingTop: '56.25%' /* 16:9 */ }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, background: 'linear-gradient(135deg,#0E1A13,#152A1B)' }}>
+              {/* Play button */}
+              <div style={{ width: 72, height: 72, borderRadius: 999, background: 'rgba(26,107,69,.9)', border: '2px solid rgba(124,196,160,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 32px rgba(26,107,69,.45)', cursor: 'pointer' }}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#EAF5EE', marginBottom: 6 }}>Product walkthrough — binnenkort beschikbaar</div>
+                <div style={{ fontSize: 13.5, color: '#6B8070' }}>Volledige generatie-demo · ca. 90 seconden</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p style={{ textAlign: 'center', fontSize: 13.5, color: '#9AA6A0', marginTop: 18 }}>
+          Liever zelf proberen?{' '}
+          <Link href="/login" style={{ color: '#1A6B45', fontWeight: 700, textDecoration: 'none' }}>Start de gratis proefperiode →</Link>
+        </p>
       </section>
 
       {/* WONINGDATA / BAG */}
@@ -883,6 +954,44 @@ export function LandingPageClient() {
             Alle plannen: 14 dagen gratis · geen creditcard · maandelijks opzegbaar.{' '}
             <Link href="/prijzen" style={{ color: '#1A6B45', fontWeight: 700, textDecoration: 'none' }}>Volledige vergelijking →</Link>
           </p>
+        </div>
+      </section>
+
+      {/* TESTIMONIAL */}
+      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px 0' }}>
+        <div style={{ textAlign: 'center', marginBottom: 46 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Wat makelaars zeggen</div>
+          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto', maxWidth: 640 }}>
+            Vertrouwd door <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>makelaars</span> die tijd terugwinnen.
+          </h2>
+        </div>
+        <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative' }}>
+          {TESTIMONIAL.placeholder && (
+            <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 10.5, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: '#9A6B16', background: '#FBF4E6', border: '1px solid #F0E2C2', borderRadius: 999, padding: '4px 9px', zIndex: 1 }}>
+              Binnenkort — na pilot
+            </div>
+          )}
+          <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 24, padding: '44px 48px', boxShadow: '0 24px 60px -34px rgba(14,26,19,.18)', position: 'relative' }}>
+            <div style={{ fontSize: 52, lineHeight: 1, color: '#D5E8DD', fontFamily: 'Georgia, serif', position: 'absolute', top: 28, left: 36 }}>&ldquo;</div>
+            <p style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontSize: 'clamp(18px,2.4vw,24px)', lineHeight: 1.55, color: '#0E1A13', margin: '0 0 32px', paddingTop: 16, fontStyle: 'italic' }}>
+              {TESTIMONIAL.quote}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <div style={{ width: 48, height: 48, borderRadius: 999, background: '#EAF5EE', border: '2px solid #C7E6D5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 18, fontWeight: 700, color: '#1A6B45' }}>{TESTIMONIAL.naam[0]}</span>
+                </div>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13' }}>{TESTIMONIAL.naam}</div>
+                  <div style={{ fontSize: 13.5, color: '#5A6B61' }}>{TESTIMONIAL.functie} · {TESTIMONIAL.kantoor}</div>
+                </div>
+              </div>
+              <div style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 12, padding: '10px 18px', textAlign: 'center' }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: '#1A6B45', letterSpacing: '-.02em' }}>{TESTIMONIAL.tijdsbesparing}</div>
+                <div style={{ fontSize: 12, color: '#4A9970', fontWeight: 600, marginTop: 2 }}>bespaard per woning</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

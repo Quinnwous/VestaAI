@@ -71,12 +71,6 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
     if (debounceRef.current) clearTimeout(debounceRef.current)
   }, [])
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    updateUrl({ search: zoekterm, page: '1' })
-  }
-
   const [now, setNow] = useState<number | null>(null)
   useEffect(() => { setNow(Date.now()) }, [])
 
@@ -109,23 +103,17 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
         ))}
       </div>
 
-      {/* Zoekbalk */}
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+      {/* Zoekbalk — live filter via debounce, geen submit nodig */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         <input
-          type="text"
+          type="search"
           value={zoekterm}
           onChange={e => handleZoekChange(e.target.value)}
-          placeholder="Zoek op adres..."
+          placeholder="Zoek op adres…"
           style={{ flex: 1, borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 14px', fontSize: 14, color: '#0E1A13', background: '#fff', outline: 'none' }}
           onFocus={e => (e.target.style.borderColor = '#1A6B45')}
           onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
         />
-        <button
-          type="submit"
-          style={{ borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 18px', fontSize: 14, color: '#5A6B61', background: '#fff', cursor: 'pointer' }}
-        >
-          Zoek
-        </button>
         {search && (
           <button
             type="button"
@@ -135,7 +123,7 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
             Wis
           </button>
         )}
-      </form>
+      </div>
 
       {/* Resultaten header */}
       {totalCount > 0 && (

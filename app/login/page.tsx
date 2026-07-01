@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
 const supabaseConfigured =
@@ -39,12 +39,22 @@ const btnPrimary: React.CSSProperties = {
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [refCode, setRefCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    const ref = searchParams.get('ref')
+    if (ref) {
+      setRefCode(ref.toUpperCase())
+      setMode('register')
+    }
+  }, [searchParams])
 
   const supabase = supabaseConfigured
     ? createBrowserClient(
@@ -98,10 +108,13 @@ export default function LoginPage() {
     setStatus('loading')
     setErrorMsg('')
 
+    const confirmUrl = new URL(`${window.location.origin}/auth/confirm`)
+    if (refCode) confirmUrl.searchParams.set('ref', refCode)
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+      options: { emailRedirectTo: confirmUrl.toString() },
     })
 
     if (error) {
@@ -287,9 +300,15 @@ export default function LoginPage() {
               {/* Aanmelden */}
               {mode === 'register' && (
                 <>
-                  <div style={{ background: '#EAF5EE', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>
-                    14 dagen gratis proberen — geen creditcard nodig.
-                  </div>
+                  {refCode ? (
+                    <div style={{ background: '#EAF5EE', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>
+                      Uitgenodigd via een doorverwijzing — u krijgt <strong>44 dagen</strong> gratis te proberen!
+                    </div>
+                  ) : (
+                    <div style={{ background: '#EAF5EE', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>
+                      14 dagen gratis proberen — geen creditcard nodig.
+                    </div>
+                  )}
                   <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
                       <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 6 }}>E-mailadres</label>

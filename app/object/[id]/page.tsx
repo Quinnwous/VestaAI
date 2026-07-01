@@ -7,6 +7,8 @@ import { DocumentenAssistent } from '@/components/DocumentenAssistent'
 import { FotoVerbetering } from '@/components/FotoVerbetering'
 import { VirtualStaging } from '@/components/VirtualStaging'
 import { NotitieVeld } from '@/components/NotitieVeld'
+import { RealworksExportButton } from '@/components/RealworksExportButton'
+import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
 import { DeleteButton } from './DeleteButton'
@@ -67,6 +69,8 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
             <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <EmailPdfButton objectId={object.id} userEmail={user.email ?? undefined} />
+            <RealworksExportButton objectId={object.id} />
             <PrijswijzigingModal
               objectId={object.id}
               adres={object.address}

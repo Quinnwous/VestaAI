@@ -170,8 +170,8 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-3 mb-6">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
           <h2 className="text-lg font-semibold text-gray-900">
             {isEn ? 'Generated content' : 'Gegenereerde content'}
           </h2>
@@ -181,7 +181,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
             </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleCopyAll}
             style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5A6B61', border: '1px solid #E4EAE6', borderRadius: 10, padding: '7px 12px', background: '#fff', cursor: 'pointer' }}

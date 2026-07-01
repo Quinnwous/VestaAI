@@ -15,6 +15,13 @@ interface NpsFeedback {
   datum: string
 }
 
+interface KostenSchatting {
+  deze_maand: number
+  budget_maand: number
+  per_maand: Record<string, number>
+  prijs_per_object: number
+}
+
 interface StatsData {
   perMaand: Record<string, number>
   makelaarStats: MakelaarStat[]
@@ -25,6 +32,7 @@ interface StatsData {
   isTrialActief: boolean
   dezeMaand: number
   maandLimiet: number | null
+  kostenschatting: KostenSchatting
   nps: {
     gemiddeld: number | null
     score: number | null
@@ -160,6 +168,40 @@ export function StatistiekenTab() {
           })}
         </div>
       </div>
+
+      {/* API-kosten */}
+      {stats.kostenschatting && (() => {
+        const k = stats.kostenschatting
+        const pct = Math.min((k.deze_maand / k.budget_maand) * 100, 100)
+        const overschreden = k.deze_maand >= k.budget_maand * 0.9
+        return (
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 mb-3">API-kosten (schatting)</h3>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Claude API — deze maand</span>
+                <span className={`text-sm font-bold ${overschreden ? 'text-amber-600' : 'text-gray-900'}`}>
+                  €{k.deze_maand.toFixed(2)} / €{k.budget_maand.toFixed(0)}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${overschreden ? 'bg-amber-500' : 'bg-[#1A6B45]'}`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              {overschreden && (
+                <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                  API-kosten naderen het maandbudget voor dit plan (€{k.budget_maand}/mo). Overweeg het plan te upgraden.
+                </p>
+              )}
+              <p className="text-xs text-gray-400">
+                Schatting op basis van €{k.prijs_per_object.toFixed(2)} per content-set (Claude Sonnet 4.6). Werkelijke kosten kunnen afwijken.
+              </p>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* NPS */}
       {stats.nps.totaal > 0 && (

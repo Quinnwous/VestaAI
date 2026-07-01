@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, Newsreader } from 'next/font/google'
+import Script from 'next/script'
 import './globals.css'
 import { NavHeader } from '@/components/NavHeader'
 
@@ -75,6 +76,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
+      <head>
+        <Script
+          defer
+          data-domain="vestaai.nl"
+          src="https://plausible.io/js/script.js"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${jakarta.variable} ${newsreader.variable} ${jakarta.className}`}>
         <a
           href="#main-content"

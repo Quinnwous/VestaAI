@@ -9,6 +9,21 @@ import { NpsModal } from '@/components/NpsModal'
 
 const RATE_LIMIT_SECONDS = 90
 
+const DRAFT_KEY = 'vestaai_form_draft'
+
+const DEMO_DATA: PropertyInput = {
+  adres: 'Herengracht 1, Amsterdam',
+  woningtype: 'Appartement',
+  kamers: 3,
+  oppervlak_m2: 85,
+  bouwjaar: 1890,
+  energielabel: 'D',
+  vraagprijs: 595000,
+  usps: 'Authentieke gevelwoning op de Herengracht · originele details bewaard · lichte woonkamer met grachtzicht · moderne open keuken · gerenoveerde badkamer · loopafstand van Jordaan en centrum',
+  doelgroep: 'Jonge gezinnen',
+  taal: 'nl',
+}
+
 type PageState =
   | { status: 'idle' }
   | { status: 'loading' }
@@ -26,7 +41,13 @@ const card: React.CSSProperties = {
 export function NewObjectForm() {
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [countdown, setCountdown] = useState(0)
+  const [formKey, setFormKey] = useState(0)
   const isLoading = state.status === 'loading'
+
+  function fillDemo() {
+    try { localStorage.setItem(DRAFT_KEY, JSON.stringify(DEMO_DATA)) } catch { /* ignore */ }
+    setFormKey(k => k + 1)
+  }
 
   useEffect(() => {
     if (!isLoading) return
@@ -96,8 +117,17 @@ export function NewObjectForm() {
     <>
       {state.status === 'idle' && (
         <div style={card}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 24 }}>Object invoeren</h2>
-          <PropertyForm onSubmit={handleSubmit} />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: 0 }}>Object invoeren</h2>
+            <button
+              type="button"
+              onClick={fillDemo}
+              style={{ fontSize: 13, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 9, padding: '7px 13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
+            >
+              Probeer met voorbeeldadres →
+            </button>
+          </div>
+          <PropertyForm key={formKey} onSubmit={handleSubmit} />
         </div>
       )}
 
