@@ -1,24 +1,45 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const [sessionReady, setSessionReady] = useState(false)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   )
 
+  useEffect(() => {
+    const code = searchParams.get('code')
+    if (!code) {
+      setSessionReady(true)
+      return
+    }
+    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+      if (error) {
+        setErrorMsg('De resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.')
+        setStatus('error')
+      }
+      setSessionReady(true)
+      // Verwijder de code uit de URL zonder herlaad
+      window.history.replaceState({}, '', '/auth/reset-password')
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!sessionReady) return
     if (password !== passwordConfirm) {
       setErrorMsg('Wachtwoorden komen niet overeen.')
       setStatus('error')
@@ -117,8 +138,8 @@ export default function ResetPasswordPage() {
                 )}
                 <button
                   type="submit"
-                  disabled={status === 'loading'}
-                  style={{ borderRadius: 11, background: '#1A6B45', padding: '13px 0', fontSize: 15, fontWeight: 700, color: '#fff', border: 'none', cursor: status === 'loading' ? 'not-allowed' : 'pointer', opacity: status === 'loading' ? .55 : 1, boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
+                  disabled={status === 'loading' || !sessionReady}
+                  style={{ borderRadius: 11, background: '#1A6B45', padding: '13px 0', fontSize: 15, fontWeight: 700, color: '#fff', border: 'none', cursor: (status === 'loading' || !sessionReady) ? 'not-allowed' : 'pointer', opacity: (status === 'loading' || !sessionReady) ? .55 : 1, boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
                 >
                   {status === 'loading' ? 'Bezig...' : 'Wachtwoord opslaan →'}
                 </button>

@@ -25,7 +25,12 @@
 **Landingspagina versterken**
 
 - Testimonial toevoegen (naam, kantoor, quote + tijdsbesparing) — placeholder staat klaar in LandingPageClient.tsx
-- Domein kopen (vestaai.nl of vergelijkbaar) → daarna in Supabase: Project Settings → Auth → SMTP Provider → Sender Email aanpassen van `onboarding@resend.dev` naar `noreply@vestaai.nl` (domein eerst verifiëren in Resend dashboard)
+- **vestaai.nl domein** — gekocht, DNS ingesteld bij TransIP (A `76.76.21.21`, www CNAME Vercel, Resend DKIM/SPF/DMARC/MX). Checken na propagatie (30 min–paar uur):
+  1. `vestaai.nl` bereikbaar via browser
+  2. Resend dashboard → Domains → **Verify** klikken tot groen
+  3. Supabase → Auth → SMTP Settings → Sender Email wijzigen naar `noreply@vestaai.nl`
+  4. Supabase → Authentication → URL Configuration → Site URL wijzigen naar `https://vestaai.nl`
+- **Supabase bevestigingsmail werkt nog niet** — geen mail ontvangen bij registratie. Stap 3 hierboven lost dit op zodra Resend geverifieerd is. Controleer ook of SMTP-wachtwoord exact de `re_...` Resend API key is en Username letterlijk `resend` (niet het e-mailadres).
 
 **Go-to-market**
 
