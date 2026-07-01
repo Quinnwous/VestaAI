@@ -11,10 +11,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/dashboard'
   const refCode = searchParams.get('ref') ?? null
 
-  console.log('[auth/confirm] RAW params:', { token_hash: token_hash ? token_hash.slice(0, 30) + '...' : 'NULL/EMPTY', type, next })
-
   if (!token_hash || !type) {
-    console.log('[auth/confirm] → early return: missing token_hash or type')
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
@@ -39,12 +36,9 @@ export async function GET(request: NextRequest) {
     },
   )
 
-  console.log('[auth/confirm] token_hash:', token_hash?.slice(0, 20) + '...', '| type:', type, '| next:', next)
   const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
-  console.log('[auth/confirm] verifyOtp error:', error?.message ?? 'none', '| user:', data?.user?.id ?? 'null')
 
   if (error || !data.user) {
-    console.log('[auth/confirm] → redirect to invalid_link')
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
