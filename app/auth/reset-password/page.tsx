@@ -21,19 +21,40 @@ export default function ResetPasswordPage() {
 
   useEffect(() => {
     const code = searchParams.get('code')
-    if (!code) {
-      setSessionReady(true)
+
+    if (code) {
+      // PKCE flow: ?code= in de URL
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setErrorMsg('De resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.')
+          setStatus('error')
+        }
+        setSessionReady(true)
+        window.history.replaceState({}, '', '/auth/reset-password')
+      })
       return
     }
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        setErrorMsg('De resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.')
-        setStatus('error')
+
+    // Implicit flow: Supabase verwerkt #access_token= hash automatisch en
+    // vuurt een PASSWORD_RECOVERY event — wacht daarop voor de knop activeert.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
+        setSessionReady(true)
       }
-      setSessionReady(true)
-      // Verwijder de code uit de URL zonder herlaad
-      window.history.replaceState({}, '', '/auth/reset-password')
     })
+
+    // Als er al een sessie is (bijv. al ingelogd), meteen gereed
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSessionReady(true)
+      } else if (!window.location.hash.includes('access_token')) {
+        // Geen code, geen hash-tokens: directe navigatie zonder resetlink
+        setSessionReady(true)
+      }
+      // Als er wél hash-tokens zijn: wacht op PASSWORD_RECOVERY event hierboven
+    })
+
+    return () => subscription.unsubscribe()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
