@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/dashboard'
   const refCode = searchParams.get('ref') ?? null
 
+  console.log('[auth/confirm] RAW params:', { token_hash: token_hash ? token_hash.slice(0, 30) + '...' : 'NULL/EMPTY', type, next })
+
   if (!token_hash || !type) {
+    console.log('[auth/confirm] → early return: missing token_hash or type')
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
