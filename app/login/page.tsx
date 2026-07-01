@@ -139,7 +139,11 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setErrorMsg(error.message)
+      console.error('[forgot] resetPasswordForEmail error:', JSON.stringify(error))
+      const msg = error.message && error.message !== '{}'
+        ? error.message
+        : 'Te veel pogingen. Wacht een paar minuten en probeer opnieuw.'
+      setErrorMsg(msg)
       setStatus('error')
     } else {
       setStatus('success')
