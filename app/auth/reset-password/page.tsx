@@ -28,6 +28,8 @@ export default function ResetPasswordPage() {
         if (error) {
           setErrorMsg('De resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.')
           setStatus('error')
+          // sessionReady blijft false — formulier blijft geblokkeerd
+          return
         }
         setSessionReady(true)
         window.history.replaceState({}, '', '/auth/reset-password')
