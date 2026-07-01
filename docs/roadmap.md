@@ -40,6 +40,7 @@
 **Monitoring**
 
 - Google Ads activeren bij €5K MRR (€500/mnd budget)
+- Vercel AI Gateway activeren: per-gebruiker kostentracking, rate limiting en budget alerts (nu nog niet nodig, loont pas bij 10+ actieve klanten)
 
 ---
 

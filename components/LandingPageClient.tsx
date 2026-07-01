@@ -155,13 +155,12 @@ const PLAN_DEFS = [
 ]
 
 // ─── Testimonial ─────────────────────────────────────────────────────────────
-// TODO: vervang onderstaande placeholders met de echte i4housing-quote na de pilot
 const TESTIMONIAL = {
   quote:
     '"VestaAI bespaart ons per woning minstens een uur schrijfwerk. De Funda-teksten zijn direct plaatsbaar — onze makelaar hoeft ze nauwelijks aan te passen."',
   naam: 'Naam makelaar',
   functie: 'Makelaar',
-  kantoor: 'i4housing',
+  kantoor: 'Eerste klant',
   tijdsbesparing: '1 uur per woning',
   placeholder: true,
 }
@@ -407,22 +406,6 @@ export function LandingPageClient() {
               <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>AI-assistent</span> voor de makelaardij.
             </h1>
 
-            {/* Tijdsbesparing — sterkste verkoopargument */}
-            <div style={{ display: 'flex', alignItems: 'center', margin: '0 0 26px', background: '#F1F7F3', border: '1px solid #C7E6D5', borderRadius: 14, overflow: 'hidden', maxWidth: 480 }}>
-              <div style={{ padding: '13px 18px', textAlign: 'center', flexShrink: 0 }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#0E1A13', lineHeight: 1, letterSpacing: '-.02em' }}>45 min</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#5A6B61', marginTop: 3 }}>schrijven per woning</div>
-              </div>
-              <div style={{ padding: '0 6px', color: '#1A6B45', fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
-              <div style={{ padding: '13px 18px', textAlign: 'center', flexShrink: 0, background: '#1A6B45' }}>
-                <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.1, letterSpacing: '-.02em' }}>In minuten</div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#C7E6D5', marginTop: 3 }}>met Vesta AI</div>
-              </div>
-              <div style={{ flex: 1, padding: '12px 15px', borderLeft: '1px solid #C7E6D5', fontSize: 12.5, lineHeight: 1.5, color: '#3A463F', fontWeight: 500 }}>
-                Funda-tekst, brochure, social posts, e-mail en buurtomschrijving — in één generatie klaar.
-              </div>
-            </div>
-
             <p style={{ fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 498, margin: '0 0 32px' }}>
               Alles voor uw online woningpresentatie in één Nederlands platform: teksten, foto&apos;s, virtual staging, documenten, planning en een chatbot. Afgestemd op Funda-richtlijnen en de NVM-stijlregels.
             </p>
@@ -652,11 +635,8 @@ export function LandingPageClient() {
               <div style={{ padding: 20 }}>
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 6 }}>Adres</div>
-                  <div style={{ border: '2px solid #1A6B45', borderRadius: '10px 10px 0 0', padding: '11px 14px', fontSize: 14.5, color: '#0E1A13', background: '#fff', borderBottom: 'none' }}>
-                    Lijsterbeslaan 14, Haarlem
-                  </div>
-                  <div style={{ border: '1px solid #E4EAE6', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden', marginBottom: 16 }}>
-                    <div style={{ padding: '10px 14px', fontSize: 13.5, color: '#1A6B45', background: '#EAF5EE', fontWeight: 700 }}>Lijsterbeslaan 14, 2023 BN Haarlem</div>
+                  <div style={{ border: '2px solid #1A6B45', borderRadius: 10, padding: '11px 14px', fontSize: 14.5, color: '#0E1A13', background: '#fff', marginBottom: 16 }}>
+                    Lijsterbeslaan 14, 2023 BN Haarlem
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>

@@ -34,7 +34,7 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 | Mijlpaal | MRR | Klanten |
 |----------|-----|---------|
-| Pilot (i4housing live) | €495 | ~5 |
+| Pilot (eerste klant live) | €495 | ~5 |
 | Lancering NL | €12.000 | ~80 kantoren |
 | Groei NL | €42.000 | ~250 kantoren |
 | Schaal NL | €74.000 | ~400 kantoren |
@@ -68,7 +68,7 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 **Kernregel:** Makelaars kopen van mensen die ze vertrouwen. Geen advertenties in de beginfase.
 
-**Fase 1 — Pilot:** i4housing test als eerste. Directe ingang tot NVM-netwerk. Doel: 5 testers + 1 testimonial.
+**Fase 1 — Pilot:** Eerste klant als pilotpartner. Directe ingang tot NVM-netwerk. Doel: 5 testers + 1 testimonial.
 
 **Fase 2 — Lancering:** Testers converteren naar betaald. LinkedIn-lancering met persoonlijk verhaal. NVM PropTech-programma aanmelden. Doel: 30 kantoren.
 
@@ -118,7 +118,7 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 ## Strategisch voordeel
 
-Quinn heeft directe toegang tot i4housing, een actief makelaarskantoor in Amsterdam. Dit elimineert de koude acquisitie-fase en biedt:
+Quinn heeft directe toegang tot een actief makelaarskantoor in Amsterdam als eerste pilotpartner. Dit elimineert de koude acquisitie-fase en biedt:
 - Gratis testomgeving en directe productfeedback
 - Eerste referentieklant met testimonial
 - Directe entree tot het NVM-netwerk
