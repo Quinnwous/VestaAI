@@ -2,39 +2,50 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const [sessionReady, setSessionReady] = useState(false)
+  const [linkExpired, setLinkExpired] = useState(false)
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { flowType: 'implicit' } },
   )
 
   useEffect(() => {
-    // Implicit flow: Supabase verwerkt #access_token= hash automatisch en
-    // vuurt een PASSWORD_RECOVERY event — wacht daarop voor de knop activeert.
+    const code = searchParams.get('code')
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        if (error) {
+          setLinkExpired(true)
+          return
+        }
+        setSessionReady(true)
+        window.history.replaceState({}, '', '/auth/reset-password')
+      })
+      return
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setSessionReady(true)
       }
     })
 
-    // Als er al een sessie is (bijv. al ingelogd), meteen gereed.
-    // Als er géén hash is, is dit directe navigatie zonder resetlink.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSessionReady(true)
       } else if (!window.location.hash.includes('access_token')) {
-        setSessionReady(true)
+        setLinkExpired(true)
       }
     })
 
@@ -105,6 +116,14 @@ export default function ResetPasswordPage() {
               </div>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 10 }}>Wachtwoord opgeslagen</h2>
               <p style={{ fontSize: 14, color: '#5A6B61' }}>U wordt doorgestuurd naar uw dashboard…</p>
+            </div>
+          ) : linkExpired ? (
+            <div style={{ textAlign: 'center' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: '#0E1A13', marginBottom: 8 }}>Link verlopen</h2>
+              <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 24 }}>Deze resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.</p>
+              <Link href="/login?mode=forgot" style={{ display: 'inline-block', borderRadius: 11, background: '#1A6B45', padding: '13px 24px', fontSize: 15, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
+                Nieuwe link aanvragen →
+              </Link>
             </div>
           ) : (
             <>

@@ -51,11 +51,14 @@ export default function LoginPage() {
   useEffect(() => {
     const ref = searchParams.get('ref')
     const aanmelden = searchParams.get('aanmelden')
+    const mode = searchParams.get('mode')
     if (ref) {
       setRefCode(ref.toUpperCase())
       setMode('register')
     } else if (aanmelden) {
       setMode('register')
+    } else if (mode === 'forgot') {
+      setMode('forgot')
     }
   }, [searchParams])
 
@@ -63,7 +66,6 @@ export default function LoginPage() {
     ? createBrowserClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        { auth: { flowType: 'implicit' } },
       )
     : null
 
