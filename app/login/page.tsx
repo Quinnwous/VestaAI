@@ -124,7 +124,15 @@ export default function LoginPage() {
     })
 
     if (error) {
-      setErrorMsg(error.message)
+      // Meest voorkomende oorzaak: Supabase kan de bevestigingsmail niet
+      // versturen (bv. Resend-domein nog niet geverifieerd) → lege/`{}` of
+      // "Error sending confirmation email". Toon dan een begrijpelijke melding.
+      const raw = error.message ?? ''
+      const isSendFailure = !raw || raw === '{}' || /sending|confirmation|smtp|email/i.test(raw)
+      const msg = isSendFailure
+        ? 'Er ging iets mis bij het versturen van de bevestigingsmail. Probeer het later opnieuw of neem contact op via quinn.berkouwer@gmail.com.'
+        : raw
+      setErrorMsg(msg)
       setStatus('error')
     } else {
       setStatus('success')
