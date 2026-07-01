@@ -50,8 +50,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     const ref = searchParams.get('ref')
+    const aanmelden = searchParams.get('aanmelden')
     if (ref) {
       setRefCode(ref.toUpperCase())
+      setMode('register')
+    } else if (aanmelden) {
       setMode('register')
     }
   }, [searchParams])
@@ -256,7 +259,7 @@ export default function LoginPage() {
                       onChange={e => setEmail(e.target.value)}
                       required
                       autoFocus
-                      placeholder="naam@kantoor.nl"
+                      placeholder="uw@emailadres.nl"
                       style={inputStyle}
                       onFocus={e => (e.target.style.borderColor = '#1A6B45')}
                       onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
@@ -318,7 +321,7 @@ export default function LoginPage() {
                         onChange={e => setEmail(e.target.value)}
                         required
                         autoFocus
-                        placeholder="naam@kantoor.nl"
+                        placeholder="uw@emailadres.nl"
                         style={inputStyle}
                         onFocus={e => (e.target.style.borderColor = '#1A6B45')}
                         onBlur={e => (e.target.style.borderColor = '#DCE5DF')}
@@ -390,7 +393,7 @@ export default function LoginPage() {
                         onChange={e => setEmail(e.target.value)}
                         required
                         autoFocus
-                        placeholder="naam@kantoor.nl"
+                        placeholder="uw@emailadres.nl"
                         style={inputStyle}
                         onFocus={e => (e.target.style.borderColor = '#1A6B45')}
                         onBlur={e => (e.target.style.borderColor = '#DCE5DF')}

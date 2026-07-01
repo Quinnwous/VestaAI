@@ -18,9 +18,9 @@ const PLAN_LABELS: Record<NonNullable<Kantoor['plan']>, string> = {
 }
 
 const PLAN_PRIJZEN: Record<NonNullable<Kantoor['plan']>, string> = {
-  starter: '€99/maand',
-  pro: '€199/maand',
-  kantoor: '€599/maand',
+  starter: '€60/maand',
+  pro: '€150/maand',
+  kantoor: '€500/maand',
 }
 
 const PLAN_FEATURES: Record<NonNullable<Kantoor['plan']>, string[]> = {
@@ -159,7 +159,7 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                   href="/api/stripe/checkout?plan=pro"
                   className="inline-block text-xs rounded-lg bg-blue-600 px-3 py-1.5 text-white font-medium hover:bg-blue-700 transition-colors"
                 >
-                  Upgrade naar Pro — €199/mo
+                  Upgrade naar Pro — €150/mo
                 </Link>
               )}
               <Link
@@ -202,13 +202,13 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                 href="/api/stripe/checkout?plan=starter"
                 className="text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
               >
-                Starter — €99/mo
+                Starter — €60/mo
               </Link>
               <Link
                 href="/api/stripe/checkout?plan=pro"
                 className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
               >
-                Pro — €199/mo
+                Pro — €150/mo
               </Link>
             </div>
           </div>
@@ -223,13 +223,13 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                 href="/api/stripe/checkout?plan=starter"
                 className="text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
               >
-                Starter — €99/mo
+                Starter — €60/mo
               </Link>
               <Link
                 href="/api/stripe/checkout?plan=pro"
                 className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
               >
-                Pro — €199/mo
+                Pro — €150/mo
               </Link>
             </div>
           </div>

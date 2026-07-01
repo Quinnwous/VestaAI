@@ -127,7 +127,7 @@ export function PrijzenToggle() {
               </p>
 
               <Link
-                href="/login"
+                href="/login?aanmelden=1"
                 className={`block w-full rounded-xl py-3.5 text-center text-sm font-semibold transition-colors mb-8 ${
                   plan.highlighted
                     ? 'bg-green-700 text-white hover:bg-green-800'

@@ -141,7 +141,7 @@ export function TeamTab({ teamleden, kantoorId, isAdmin, kantoorPlan, huidigeMak
           {!kanTeamGebruiken ? (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
               <p className="text-sm text-gray-600">
-                Teamleden toevoegen is beschikbaar vanaf het Pro-plan (€199/maand).
+                Teamleden toevoegen is beschikbaar vanaf het Pro-plan (€150/maand).
               </p>
             </div>
           ) : (

@@ -98,13 +98,13 @@ export default async function AdminPage() {
         <p className="text-xs font-semibold text-green-800 mb-1">Indicatieve MRR</p>
         <p className="text-3xl font-extrabold text-green-900">
           €{(
-            (starterResult.count ?? 0) * 99 +
-            (proResult.count ?? 0) * 199 +
-            (kantoorResult.count ?? 0) * 599
+            (starterResult.count ?? 0) * 60 +
+            (proResult.count ?? 0) * 150 +
+            (kantoorResult.count ?? 0) * 500
           ).toLocaleString('nl-NL')}
         </p>
         <p className="text-xs text-green-700 mt-1">
-          {starterResult.count ?? 0} × €99 + {proResult.count ?? 0} × €199 + {kantoorResult.count ?? 0} × €599
+          {starterResult.count ?? 0} × €60 + {proResult.count ?? 0} × €150 + {kantoorResult.count ?? 0} × €500
         </p>
       </div>
 

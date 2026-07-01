@@ -42,9 +42,9 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 | **ARR-target** | **€1.392.000** | |
 
 **Samenstelling bij doorbraak (indicatief):**
-- 180 Starter × €99 = €17.820
-- 320 Pro × €199 = €63.680
-- 25 Kantoor × €599 = €14.975
+- 180 Starter × €60 = €10.800
+- 320 Pro × €150 = €48.000
+- 25 Kantoor × €500 = €12.500
 - Overig (jaarplannen, upsells) = €19.525
 
 **Nettomarge:** ~85% (API + infra < 8% van MRR)  
@@ -56,16 +56,11 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 | Plan | Prijs | Limieten | Kernwaarde |
 |------|-------|----------|-----------|
-| Starter | €99/mo (€990/jr) | 40 objecten · 1 user | ZZP-makelaars |
-| Pro | €199/mo (€1.990/jr) | Onbeperkt · 5 users · huisstijlgeheugen | Meest gekozen |
-| Kantoor | €599/mo (€5.990/jr) | Onbeperkt users/kantoren · white-label · API | ERA, E&V, Makelaarsland |
+| Starter | €60/mo (€600/jr) | 40 objecten · 1 user | ZZP-makelaars |
+| Pro | €150/mo (€1.500/jr) | Onbeperkt · 5 users · huisstijlgeheugen | Meest gekozen |
+| Kantoor | €500/mo (€5.000/jr) | Onbeperkt users/kantoren · white-label · API | ERA, E&V, Makelaarsland |
 
-**Founding member actie:** Eerste 50 klanten krijgen 30% korting voor altijd.
-- Starter founding: €69/mo
-- Pro founding: €139/mo
-- Kantoor founding: €419/mo
-
-**Waarom €199 en niet goedkoper:** Eén extra bezichtiging door een betere Funda-tekst = ROI van 15×+. Te goedkoop prijzen verlaagt perceived value en verhoogt churn.
+**Waarom €150 en niet goedkoper:** Eén extra bezichtiging door een betere Funda-tekst = ROI van 15×+. Te goedkoop prijzen verlaagt perceived value en verhoogt churn.
 
 ---
 

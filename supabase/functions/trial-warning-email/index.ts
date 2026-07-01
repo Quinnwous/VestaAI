@@ -90,13 +90,13 @@ Deno.serve(async () => {
             <td width="48%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;vertical-align:top;">
               <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Starter</p>
               <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">40 objecten/maand · 1 gebruiker</p>
-              <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€99<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
+              <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€60<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
             </td>
             <td width="4%"></td>
             <td width="48%" style="background:#f0fdf4;border:2px solid #1A6B45;border-radius:10px;padding:16px;vertical-align:top;">
               <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Pro</p>
               <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Onbeperkt · 5 gebruikers · Huisstijl</p>
-              <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€199<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
+              <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€150<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
             </td>
           </tr>
         </table>

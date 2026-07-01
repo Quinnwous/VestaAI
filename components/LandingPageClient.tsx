@@ -38,7 +38,7 @@ const DEMO_FIELDS = [
 
 const ASSET_CHIPS = ['Brochure', '3× Instagram', '2× LinkedIn', 'Koper-e-mail', 'Buurtomschrijving', 'PDF-brochure']
 
-const TRUST_BADGES = ['Funda', 'NVM-richtlijnen', 'Realworks', 'BAG / Kadaster', 'AVG-proof', 'Claude AI · Anthropic']
+const TRUST_BADGES = ['Funda', 'NVM-richtlijnen', 'Realworks', 'BAG / Kadaster', 'AVG-proof', 'Claude · Anthropic']
 
 const FEATURES = [
   { icon: 'doc', titel: 'Woningteksten', tekst: 'Funda-tekst, korte én lange brochure, drie Instagram-varianten, twee LinkedIn-posts, koper-e-mail en buurtomschrijving — in één generatie.', soon: false },
@@ -372,7 +372,7 @@ export function LandingPageClient() {
                 </button>
                 {mobileOpen && (
                   <div style={{ position: 'absolute', right: 0, top: 52, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 14, boxShadow: '0 18px 40px -20px rgba(14,26,19,.3)', padding: 10, width: 210, display: 'flex', flexDirection: 'column', gap: 2, zIndex: 60 }}>
-                    {[{ href: '/', label: 'Home' }, { href: '/prijzen', label: 'Prijzen' }, { href: '/over-ons', label: 'Over ons' }, { href: '/contact', label: 'Contact' }, { href: '/login', label: 'Inloggen' }].map(({ href, label }) => (
+                    {[{ href: '/', label: 'Home' }, { href: '/prijzen', label: 'Prijzen' }, { href: '/over-ons', label: 'Over ons' }, { href: '/contact', label: 'Contact' }, { href: '/login', label: 'Inloggen' }, { href: '/login?aanmelden=1', label: 'Aanmelden' }].map(({ href, label }) => (
                       <Link key={href + label} href={href} onClick={() => setMobileOpen(false)} style={{ padding: '11px 12px', borderRadius: 9, fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>
                         {label}
                       </Link>
@@ -381,8 +381,8 @@ export function LandingPageClient() {
                 )}
               </div>
               <Link href="/login" className="vll" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>Inloggen</Link>
-              <Link href="/prijzen" className="vg" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '11px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 6px 16px rgba(26,107,69,.22)', transition: 'background .15s' }}>
-                Gratis starten
+              <Link href="/login?aanmelden=1" className="vg" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '11px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 6px 16px rgba(26,107,69,.22)', transition: 'background .15s' }}>
+                Aanmelden
               </Link>
             </div>
           </div>
@@ -401,10 +401,6 @@ export function LandingPageClient() {
                 </span>
                 Eén platform voor de hele woningmarketing
               </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#FFF7ED', border: '1px solid #F0DDB0', borderRadius: 999, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#92400E' }}>
-                <span style={{ fontSize: 10, fontWeight: 900, letterSpacing: '.04em' }}>NIEUW</span>
-                De nieuwste Claude AI · Anthropic
-              </div>
             </div>
             <h1 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(40px,5.2vw,66px)', lineHeight: 1.03, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 22px' }}>
               Dé complete<br />
@@ -419,7 +415,7 @@ export function LandingPageClient() {
               </div>
               <div style={{ padding: '0 6px', color: '#1A6B45', fontSize: 20, fontWeight: 800, flexShrink: 0 }}>→</div>
               <div style={{ padding: '13px 18px', textAlign: 'center', flexShrink: 0, background: '#1A6B45' }}>
-                <div style={{ fontSize: 26, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: '-.02em' }}>90 sec</div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: '#fff', lineHeight: 1.1, letterSpacing: '-.02em' }}>In minuten</div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: '#C7E6D5', marginTop: 3 }}>met Vesta AI</div>
               </div>
               <div style={{ flex: 1, padding: '12px 15px', borderLeft: '1px solid #C7E6D5', fontSize: 12.5, lineHeight: 1.5, color: '#3A463F', fontWeight: 500 }}>
@@ -527,6 +523,27 @@ export function LandingPageClient() {
         </div>
       </section>
 
+      {/* AI-MOTOR STRIP */}
+      <section style={{ borderTop: '1px solid #EEF2EF', borderBottom: '1px solid #EEF2EF', background: '#fff' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 28px', display: 'flex', alignItems: 'flex-start', gap: 40, flexWrap: 'wrap' }}>
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 7 }}>De motor achter Vesta&nbsp;AI</div>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
+              <span style={{ fontSize: 24, fontWeight: 800, color: '#0E1A13', letterSpacing: '-.02em' }}>Het nieuwste Claude-model</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: '#9AA6A0' }}>van Anthropic</span>
+            </div>
+          </div>
+          <p style={{ fontSize: 15.5, lineHeight: 1.65, color: '#5A6B61', margin: 0, flex: '1 1 300px', maxWidth: 580 }}>
+            Vesta&nbsp;AI wordt aangedreven door de nieuwste Claude-modellen van Anthropic — het AI-platform dat dit jaar wereldwijd het nieuws domineerde en door Fortune&nbsp;500-bedrijven wordt ingezet voor de meest veeleisende schrijftaken. Wij updaten automatisch mee zodra Anthropic een nieuw model uitbrengt, zodat uw kantoor altijd de scherpste pen heeft.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flexShrink: 0 }}>
+            {['Nieuwste generatie', 'Altijd up-to-date', 'Europese AVG-privacy'].map(badge => (
+              <span key={badge} style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #D5E8DD', borderRadius: 999, padding: '5px 13px', whiteSpace: 'nowrap' }}>{badge}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* WAT IS VESTA AI */}
       <section style={{ maxWidth: 980, margin: '0 auto', padding: '96px 28px 72px', textAlign: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 18 }}>Wat is Vesta&nbsp;AI</div>
@@ -605,47 +622,6 @@ export function LandingPageClient() {
         </div>
       </section>
 
-      {/* PRODUCT IN ACTIE */}
-      {/* TODO: vervang de placeholder hieronder door een echte GIF of <video>-embed van de generatie-flow */}
-      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px 0' }}>
-        <div style={{ textAlign: 'center', marginBottom: 42 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Zie het zelf</div>
-          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 18px', maxWidth: 680 }}>
-            Van adres naar volledige content-suite <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in 90 seconden.</span>
-          </h2>
-          <p style={{ fontSize: 17, color: '#5A6B61', maxWidth: 520, margin: '0 auto' }}>
-            Kijk hoe Vesta&nbsp;AI live teksten genereert op basis van acht woningvelden — inclusief huisstijl van het kantoor.
-          </p>
-        </div>
-        <div style={{ background: '#0E1A13', borderRadius: 24, overflow: 'hidden', border: '1px solid #1E2F24', boxShadow: '0 40px 80px -40px rgba(14,26,19,.6)' }}>
-          {/* Pseudo browser chrome */}
-          <div style={{ background: '#1A2920', padding: '13px 18px', display: 'flex', alignItems: 'center', gap: 10, borderBottom: '1px solid #253D2D' }}>
-            <div style={{ display: 'flex', gap: 7 }}>
-              {['#FF5F57', '#FEBC2E', '#28C840'].map(c => <span key={c} style={{ width: 12, height: 12, borderRadius: 999, background: c }} />)}
-            </div>
-            <div style={{ flex: 1, background: '#243320', borderRadius: 7, height: 26, display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
-              <span style={{ fontSize: 12, color: '#6B8070', fontFamily: 'ui-monospace,monospace' }}>vestaai.nl/object/new</span>
-            </div>
-          </div>
-          {/* Video / GIF placeholder */}
-          <div style={{ position: 'relative', paddingTop: '56.25%' /* 16:9 */ }}>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, background: 'linear-gradient(135deg,#0E1A13,#152A1B)' }}>
-              {/* Play button */}
-              <div style={{ width: 72, height: 72, borderRadius: 999, background: 'rgba(26,107,69,.9)', border: '2px solid rgba(124,196,160,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 32px rgba(26,107,69,.45)', cursor: 'pointer' }}>
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#EAF5EE', marginBottom: 6 }}>Product walkthrough — binnenkort beschikbaar</div>
-                <div style={{ fontSize: 13.5, color: '#6B8070' }}>Volledige generatie-demo · ca. 90 seconden</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p style={{ textAlign: 'center', fontSize: 13.5, color: '#9AA6A0', marginTop: 18 }}>
-          Liever zelf proberen?{' '}
-          <Link href="/login" style={{ color: '#1A6B45', fontWeight: 700, textDecoration: 'none' }}>Start de gratis proefperiode →</Link>
-        </p>
-      </section>
 
       {/* WONINGDATA / BAG */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
@@ -680,12 +656,7 @@ export function LandingPageClient() {
                     Lijsterbeslaan 14, Haarlem
                   </div>
                   <div style={{ border: '1px solid #E4EAE6', borderTop: 'none', borderRadius: '0 0 10px 10px', overflow: 'hidden', marginBottom: 16 }}>
-                    {[
-                      { a: 'Lijsterbeslaan 14, 2023 BN Haarlem', active: true },
-                      { a: 'Lijsterbeslaan 14a, 2023 BN Haarlem', active: false },
-                    ].map(({ a, active }) => (
-                      <div key={a} style={{ padding: '10px 14px', fontSize: 13.5, color: active ? '#1A6B45' : '#5A6B61', background: active ? '#EAF5EE' : 'transparent', fontWeight: active ? 700 : 400, borderBottom: active ? '1px solid #EEF2EF' : 'none' }}>{a}</div>
-                    ))}
+                    <div style={{ padding: '10px 14px', fontSize: 13.5, color: '#1A6B45', background: '#EAF5EE', fontWeight: 700 }}>Lijsterbeslaan 14, 2023 BN Haarlem</div>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
@@ -701,9 +672,22 @@ export function LandingPageClient() {
                     </div>
                   ))}
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9, marginTop: 9 }}>
+                  {[
+                    { l: 'WOZ-waarde', v: '€ 445.000', src: 'WOZ' },
+                    { l: 'Gem. verkooptijd', v: '18 dagen', src: 'NVM' },
+                    { l: 'Centrum', v: '8 min lopen', src: 'BAG' },
+                  ].map(f => (
+                    <div key={f.l} style={{ background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 10, padding: '10px 12px' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 3 }}>{f.l}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13', letterSpacing: '-.01em' }}>{f.v}</div>
+                      <div style={{ fontSize: 10.5, color: '#4A9970', marginTop: 3 }}>↗ {f.src}</div>
+                    </div>
+                  ))}
+                </div>
                 <div style={{ marginTop: 10, padding: '9px 12px', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 9, fontSize: 12.5, color: '#5A6B61', display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ color: '#1A6B45', fontWeight: 700, fontSize: 13 }}>✓</span>
-                  3 velden automatisch ingevuld vanuit BAG &amp; Kadaster
+                  6 velden automatisch ingevuld vanuit BAG, Kadaster &amp; WOZ
                 </div>
               </div>
             </div>
@@ -827,27 +811,6 @@ export function LandingPageClient() {
         </div>
       </section>
 
-      {/* AI-MOTOR STRIP */}
-      <section style={{ borderTop: '1px solid #EEF2EF', borderBottom: '1px solid #EEF2EF', background: '#fff' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '40px 28px', display: 'flex', alignItems: 'flex-start', gap: 40, flexWrap: 'wrap' }}>
-          <div style={{ flexShrink: 0 }}>
-            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 7 }}>De motor achter Vesta&nbsp;AI</div>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 9 }}>
-              <span style={{ fontSize: 24, fontWeight: 800, color: '#0E1A13', letterSpacing: '-.02em' }}>De nieuwste Claude AI</span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: '#9AA6A0' }}>by Anthropic</span>
-            </div>
-          </div>
-          <p style={{ fontSize: 15.5, lineHeight: 1.65, color: '#5A6B61', margin: 0, flex: '1 1 300px', maxWidth: 580 }}>
-            Vesta&nbsp;AI wordt aangedreven door de nieuwste Claude-modellen van Anthropic — het AI-platform dat dit jaar wereldwijd het nieuws domineerde en door Fortune&nbsp;500-bedrijven wordt ingezet voor de meest veeleisende schrijftaken. Wij updaten automatisch mee zodra Anthropic een nieuw model uitbrengt, zodat uw kantoor altijd de scherpste pen heeft.
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, flexShrink: 0 }}>
-            {['Nieuwste generatie', 'Altijd up-to-date', 'Europese AVG-privacy'].map(badge => (
-              <span key={badge} style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #D5E8DD', borderRadius: 999, padding: '5px 13px', whiteSpace: 'nowrap' }}>{badge}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* WAAROM */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
@@ -935,7 +898,7 @@ export function LandingPageClient() {
                 <div style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 24, minHeight: 18 }}>
                   {billing === 'jaar' ? `${p.jaarTot} · 2 maanden gratis` : ''}
                 </div>
-                <Link href="/login" style={p.highlighted
+                <Link href="/login?aanmelden=1" style={p.highlighted
                   ? { display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', fontSize: 15, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: 13, borderRadius: 12, textDecoration: 'none' }
                   : { display: 'block', width: '100%', boxSizing: 'border-box', textAlign: 'center', fontSize: 15, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', padding: 13, borderRadius: 12, textDecoration: 'none' }}>
                   Gratis starten

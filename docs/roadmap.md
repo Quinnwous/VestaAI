@@ -9,7 +9,7 @@
 ### Fase 1 — Product afronden
 
 - E2e smoke test op Vercel: registreer account → genereer object → exporteer PDF — volledig doorlopen
-- Stripe: Starter (€99/mo, €990/jr), Pro (€199/mo, €1.990/jr), Kantoor (€599/mo, €5.990/jr) price IDs aanmaken → in Vercel env — uitgesteld tot na gratis testfase
+- Stripe: Starter (€60/mo, €600/jr), Pro (€150/mo, €1.500/jr), Kantoor (€500/mo, €5.000/jr) price IDs aanmaken → in Vercel env — uitgesteld tot na gratis testfase
 - Stripe webhook configureren op Vercel (`/api/webhooks/stripe`) — uitgesteld tot na gratis testfase
 
 ---
@@ -25,7 +25,7 @@
 **Landingspagina versterken**
 
 - Testimonial toevoegen (naam, kantoor, quote + tijdsbesparing) — placeholder staat klaar in LandingPageClient.tsx
-- Product in actie: GIF of embedded screenrecording van de generatie-flow — placeholder staat klaar
+- Domein kopen (vestaai.nl of vergelijkbaar) → daarna in Supabase: Project Settings → Auth → SMTP Provider → Sender Email aanpassen van `onboarding@resend.dev` naar `noreply@vestaai.nl` (domein eerst verifiëren in Resend dashboard)
 
 **Go-to-market**
 

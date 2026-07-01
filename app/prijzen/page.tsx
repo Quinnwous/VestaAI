@@ -16,12 +16,17 @@ export default function PrijzenPage() {
           <Link href="/" className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors">
             VestaAI
           </Link>
-          <Link
-            href="/login"
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-          >
-            Inloggen →
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">
+              Inloggen
+            </Link>
+            <Link
+              href="/login?aanmelden=1"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
+            >
+              Aanmelden →
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -37,13 +42,6 @@ export default function PrijzenPage() {
 
       {/* Plannen */}
       <section className="mx-auto max-w-4xl px-6 pb-24">
-        {/* Founding member banner */}
-        <div className="mb-10 rounded-2xl border border-amber-200 bg-amber-50 px-8 py-6 text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-amber-700 mb-1">Founding Member — Eerste 50 klanten</p>
-          <p className="text-3xl font-extrabold text-amber-900 mb-1">30% korting op elk abonnement</p>
-          <p className="text-sm text-amber-700">Geldt voor de volledige eerste 12 maanden. Sluit u nu aan en betaal nooit meer de volle prijs.</p>
-        </div>
-
         <PrijzenToggle />
 
         {/* Enterprise contact */}
@@ -116,7 +114,7 @@ export default function PrijzenPage() {
           <div className="flex gap-6">
             <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
             <Link href="/privacy" className="hover:text-gray-600 transition-colors">Privacy</Link>
-            <Link href="/login" className="hover:text-gray-600 transition-colors">Inloggen</Link>
+            <Link href="/login?aanmelden=1" className="hover:text-gray-600 transition-colors">Aanmelden</Link>
           </div>
         </div>
       </footer>

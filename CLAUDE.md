@@ -1,6 +1,8 @@
 # VestaAI
 
-SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Claude genereert in 90 seconden een complete content-suite. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
+SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Claude genereert een complete content-suite. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
+
+> **Copyregels:** Nooit "90 seconden" of specifieke generatietijden noemen in copy of UI. Tijdsbesparing mag benoemen, specifieke seconden niet. Geen "Founding Member"-taal gebruiken.
 
 ## Product
 
@@ -16,7 +18,7 @@ adres · woningtype + kamers · m² · bouwjaar · energielabel · vraagprijs ·
 6. `koper_email`
 7. `buurtomschrijving`
 
-**UI-flow:** formulier → loading (90s) → 6 tabbladen → kopieer of exporteer PDF.
+**UI-flow:** formulier → loading → 6 tabbladen → kopieer of exporteer PDF.
 
 ## Stack
 
@@ -44,9 +46,9 @@ objecten:  id, kantoor_id, makelaar_id, address, input_json, outputs_json, creat
 
 | Plan | Prijs | Limieten |
 |------|-------|----------|
-| Starter | €99/mo (€990/jr) | 40 objecten/mo · 1 user |
-| Pro | €199/mo (€1.990/jr) | onbeperkt · 5 users · huisstijlgeheugen |
-| Kantoor | €599/mo (€5.990/jr) | onbeperkt users/kantoren · white-label · API |
+| Starter | €60/mo (€600/jr) | 5 objecten/mo · 1 user |
+| Pro | €150/mo (€1.500/jr) | onbeperkt · 5 users · huisstijlgeheugen |
+| Kantoor | €500/mo (€5.000/jr) | onbeperkt users/kantoren · white-label · API |
 
 14 dagen gratis proefperiode → automatische facturering via Stripe.
 
