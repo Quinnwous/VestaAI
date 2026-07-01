@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -17,26 +16,10 @@ export default function ResetPasswordPage() {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { flowType: 'implicit' } },
   )
 
   useEffect(() => {
-    const code = searchParams.get('code')
-
-    if (code) {
-      // PKCE flow: ?code= in de URL
-      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) {
-          setErrorMsg('De resetlink is verlopen of al gebruikt. Vraag een nieuwe aan.')
-          setStatus('error')
-          // sessionReady blijft false — formulier blijft geblokkeerd
-          return
-        }
-        setSessionReady(true)
-        window.history.replaceState({}, '', '/auth/reset-password')
-      })
-      return
-    }
-
     // Implicit flow: Supabase verwerkt #access_token= hash automatisch en
     // vuurt een PASSWORD_RECOVERY event — wacht daarop voor de knop activeert.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -45,15 +28,14 @@ export default function ResetPasswordPage() {
       }
     })
 
-    // Als er al een sessie is (bijv. al ingelogd), meteen gereed
+    // Als er al een sessie is (bijv. al ingelogd), meteen gereed.
+    // Als er géén hash is, is dit directe navigatie zonder resetlink.
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setSessionReady(true)
       } else if (!window.location.hash.includes('access_token')) {
-        // Geen code, geen hash-tokens: directe navigatie zonder resetlink
         setSessionReady(true)
       }
-      // Als er wél hash-tokens zijn: wacht op PASSWORD_RECOVERY event hierboven
     })
 
     return () => subscription.unsubscribe()
