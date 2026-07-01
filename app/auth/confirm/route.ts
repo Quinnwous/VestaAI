@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get('next') ?? '/dashboard'
   const refCode = searchParams.get('ref') ?? null
 
+  console.log('[auth/confirm] token_hash:', token_hash ? token_hash.slice(0, 12) + '…' : 'LEEG', '| type:', type, '| next:', next)
+
   if (!token_hash || !type) {
+    console.error('[auth/confirm] Ontbrekende params — redirect naar invalid_link')
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
 
@@ -39,8 +42,11 @@ export async function GET(request: NextRequest) {
   const { data, error } = await supabase.auth.verifyOtp({ token_hash, type })
 
   if (error || !data.user) {
+    console.error('[auth/confirm] verifyOtp mislukt:', error?.message, error?.status)
     return NextResponse.redirect(new URL('/login?error=invalid_link', request.url))
   }
+
+  console.log('[auth/confirm] verifyOtp geslaagd, user:', data.user.id)
 
   const user = data.user
 
