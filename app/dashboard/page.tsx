@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { ensureMakelaar } from '@/lib/ensureMakelaar'
+import { verwerkNieuweKlant } from '@/lib/nieuweKlant'
 import { isPlatformAdmin } from '@/lib/admin'
 import { heeftToegang, maandLimietVoor } from '@/lib/plans'
 import { DashboardClient } from './DashboardClient'
@@ -36,7 +37,7 @@ export default async function DashboardPage({
   const selectMakelaar = () =>
     supabase
       .from('makelaars')
-      .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at)')
+      .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at, admin_notified_at)')
       .eq('id', user.id)
       .single()
 
@@ -63,7 +64,13 @@ export default async function DashboardPage({
     )
   }
 
-  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null } | null
+  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null; admin_notified_at: string | null } | null
+
+  // Eénmalige verwerking van een nieuwe klant (welkomstmail + melding aan de
+  // platform-admin); atomisch geclaimd, dus nooit dubbel.
+  if (kantoor && kantoor.admin_notified_at === null) {
+    await verwerkNieuweKlant(makelaar.kantoor_id)
+  }
 
   // Geen actief plan én geen lopende gratis-periode → account wacht op activering.
   if (!heeftToegang(kantoor?.plan ?? null, kantoor?.trial_ends_at ?? null)) {
