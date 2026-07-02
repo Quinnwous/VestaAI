@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { isPlatformAdmin } from '@/lib/admin'
+import { AdminBeheer, type KantoorRow } from './AdminBeheer'
 
 export const metadata = { title: 'Admin — VestaAI' }
-
-const ADMIN_EMAIL = 'quinn.berkouwer@gmail.com'
 
 function Kaart({ label, waarde, sub }: { label: string; waarde: string | number; sub?: string }) {
   return (
@@ -19,7 +19,7 @@ export default async function AdminPage() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  if (!user || user.email !== ADMIN_EMAIL) redirect('/dashboard')
+  if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')
 
   const serviceClient = createServiceSupabaseClient()
   const nu = new Date()
@@ -76,6 +76,51 @@ export default async function AdminPage() {
 
   const makelaars = (makelaarResult.data ?? []) as unknown as MakelaarRow[]
 
+  // ---- Data voor klantenbeheer (alle kantoren) ----
+  const [alleKantorenRes, alleMakelaarsRes, alleObjectenRes, usersRes] = await Promise.all([
+    serviceClient.from('kantoren').select('id, name, plan, trial_ends_at, created_at').order('created_at', { ascending: false }),
+    serviceClient.from('makelaars').select('id, email, role, kantoor_id'),
+    serviceClient.from('objecten').select('id, kantoor_id'),
+    serviceClient.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+  ])
+
+  const bannedMap = new Map<string, boolean>()
+  for (const u of usersRes.data?.users ?? []) {
+    const banUntil = (u as { banned_until?: string | null }).banned_until
+    bannedMap.set(u.id, !!banUntil && new Date(banUntil) > new Date())
+  }
+
+  const ledenPerKantoor = new Map<string, { ids: string[]; adminEmail: string | null }>()
+  for (const m of (alleMakelaarsRes.data ?? []) as { id: string; email: string; role: string; kantoor_id: string }[]) {
+    const entry = ledenPerKantoor.get(m.kantoor_id) ?? { ids: [], adminEmail: null }
+    entry.ids.push(m.id)
+    if (!entry.adminEmail || m.role === 'admin') entry.adminEmail = m.email
+    ledenPerKantoor.set(m.kantoor_id, entry)
+  }
+
+  const objectenPerKantoor = new Map<string, number>()
+  for (const o of (alleObjectenRes.data ?? []) as { id: string; kantoor_id: string }[]) {
+    objectenPerKantoor.set(o.kantoor_id, (objectenPerKantoor.get(o.kantoor_id) ?? 0) + 1)
+  }
+
+  const beheerRows: KantoorRow[] = ((alleKantorenRes.data ?? []) as {
+    id: string; name: string; plan: string | null; trial_ends_at: string | null; created_at: string
+  }[]).map(k => {
+    const leden = ledenPerKantoor.get(k.id)
+    const ids = leden?.ids ?? []
+    return {
+      id: k.id,
+      name: k.name,
+      plan: (k.plan ?? null) as KantoorRow['plan'],
+      trialEndsAt: k.trial_ends_at,
+      createdAt: k.created_at,
+      aantalMakelaars: ids.length,
+      aantalObjecten: objectenPerKantoor.get(k.id) ?? 0,
+      adminEmail: leden?.adminEmail ?? null,
+      actief: ids.length === 0 || ids.some(id => !bannedMap.get(id)),
+    }
+  })
+
   const planBadge = (plan: string | null, trialEndsAt: string | null) => {
     if (plan === 'starter') return <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">Starter</span>
     if (plan === 'pro') return <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Pro</span>
@@ -90,7 +135,7 @@ export default async function AdminPage() {
     <main className="mx-auto max-w-5xl px-4 py-10">
       <div className="mb-8">
         <h1 className="text-xl font-bold text-gray-900">Platform admin</h1>
-        <p className="text-xs text-gray-400 mt-0.5">Alleen zichtbaar voor {ADMIN_EMAIL}</p>
+        <p className="text-xs text-gray-400 mt-0.5">Platform-eigenaar · beheer alle klanten</p>
       </div>
 
       {/* MRR indicatie */}
@@ -125,6 +170,13 @@ export default async function AdminPage() {
         <Kaart label="Vandaag" waarde={objectenVandaagResult.count ?? 0} />
         <Kaart label="Deze week" waarde={objectenWeekResult.count ?? 0} />
         <Kaart label="Deze maand" waarde={objectenMaandResult.count ?? 0} />
+      </div>
+
+      {/* Klanten beheren */}
+      <h2 className="text-sm font-semibold text-gray-700 mb-3">Klanten beheren</h2>
+      <p className="text-xs text-gray-400 mb-3">Wijzig plan, geef gratis toegang of (de)activeer een kantoor.</p>
+      <div className="mb-8">
+        <AdminBeheer rows={beheerRows} />
       </div>
 
       {/* Recente gebruikers */}

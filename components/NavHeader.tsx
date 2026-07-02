@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
+import { isPlatformAdmin } from '@/lib/admin'
 import { NavLinks } from './NavLinks'
 
 async function LogoutButton() {
@@ -92,7 +93,7 @@ export async function NavHeader() {
                 {planInfo.label}
               </span>
             )}
-            {user.email === 'quinn.berkouwer@gmail.com' && (
+            {isPlatformAdmin(user.email) && (
               <Link href="/admin" style={{ fontSize: 13, color: '#9AA6A0', textDecoration: 'none', fontWeight: 500 }}>
                 Admin
               </Link>
