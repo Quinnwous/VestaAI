@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { ensureMakelaar } from '@/lib/ensureMakelaar'
 import { DashboardClient } from './DashboardClient'
 import { WelkomBanner } from '@/components/WelkomBanner'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
@@ -28,13 +29,35 @@ export default async function DashboardPage({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: makelaar } = await supabase
-    .from('makelaars')
-    .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at)')
-    .eq('id', user.id)
-    .single()
+  const selectMakelaar = () =>
+    supabase
+      .from('makelaars')
+      .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at)')
+      .eq('id', user.id)
+      .single()
 
-  if (!makelaar) redirect('/login')
+  let { data: makelaar } = await selectMakelaar()
+
+  // Self-heal: geen makelaar-record? Maak het alsnog aan (vangnet voor self-signup)
+  // en lees opnieuw. Zo ontstaat er nooit een dashboard↔login redirect-loop.
+  if (!makelaar) {
+    await ensureMakelaar(user)
+    ;({ data: makelaar } = await selectMakelaar())
+  }
+
+  // Nog steeds niets leesbaar (bv. RLS niet toegepast): toon een nette melding
+  // i.p.v. door te sturen naar /login (dat zou een oneindige loop geven).
+  if (!makelaar) {
+    return (
+      <main style={{ maxWidth: 520, margin: '80px auto', padding: '0 28px', textAlign: 'center' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Account wordt klaargezet…</h1>
+        <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6 }}>
+          Je account is aangemaakt maar kon nog niet worden geladen. Herlaad de pagina.
+          Blijft dit? Log uit en opnieuw in, of neem contact op via quinn.berkouwer@gmail.com.
+        </p>
+      </main>
+    )
+  }
 
   const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null } | null
   const isStarter = kantoor?.plan === 'starter'
