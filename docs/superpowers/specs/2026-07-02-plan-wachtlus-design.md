@@ -16,7 +16,7 @@ plan-gating, `/admin` met klantenbeheer). Wat resteert:
 - De wachtlus is niet rond: klant hoort niets als een plan wordt toegewezen; Quinn hoort
   niets als iemand nieuw registreert en wacht.
 - Het vangnet `lib/ensureMakelaar.ts` botst met het model: het maakt kantoren aan met
-  365 dagen gratis toegang en stuurt een verouderde "14-daagse proefperiode"-welkomstmail.
+  365 dagen gratis toegang en stuurt een verouderde "30-daagse proefperiode"-welkomstmail.
 - `/admin` toont geen maandverbruik t.o.v. de planlimiet.
 - De live end-to-end-verificatie (reset, registratie, plan-toewijzing) is nooit gedaan.
 
@@ -147,8 +147,8 @@ Vercel deployt `main` automatisch. Kwaliteitspoort vóór de PR: `npm run typech
 
 Quinn draaide de kernbeslissing om. Nieuw toegangsmodel:
 
-1. **Registratie → automatisch 14 dagen proef met max 5 objecten totaal.** De DB-trigger
-   `handle_new_user()` én het vangnet `ensureMakelaar` zetten `trial_ends_at = now() + 14 dagen`
+1. **Registratie → automatisch 30 dagen proef met max 5 objecten totaal.** De DB-trigger
+   `handle_new_user()` én het vangnet `ensureMakelaar` zetten `trial_ends_at = now() + 30 dagen`
    (plan blijft null = proef). Migratie `20260703_trial_model.sql`.
 2. **Nieuw planniveau `'gratis'`** (kolom-CHECK uitbreiden): door de platform-admin toe te
    wijzen, geen einddatum, **5 objecten per maand**. Vervangt de oude "gratis toegang"-hack
@@ -163,15 +163,15 @@ Quinn draaide de kernbeslissing om. Nieuw toegangsmodel:
    `https://www.vestaai.nl/api/webhooks/stripe` en de bijbehorende Vercel-env-waarden
    (`STRIPE_PRICE_*`, `STRIPE_WEBHOOK_SECRET`). Env-waarden zet Quinn in het Vercel-dashboard
    (geen CLI-auth beschikbaar); Claude levert de exacte waarden aan.
-6. **Mails:** welkomstmail "je 14-daagse proefperiode is gestart" blijft bestaan en wordt —
+6. **Mails:** welkomstmail "je 30-daagse proefperiode is gestart" blijft bestaan en wordt —
    net als de melding aan Quinn ("nieuwe klant is gestart met de proefperiode") — verstuurd
    bij het eerste dashboard-bezoek via de atomische `admin_notified_at`-claim (beide mails,
    één claim). Activeringsmail (geen toegang → toegang) en trial-waarschuwing blijven zoals
    ontworpen.
 7. **Uitloggen → homepage** (`/` i.p.v. `/login`).
 8. **Verificatie-aanpassing:** het wegwerpaccount moet nu direct toegang hebben (proef,
-   `trial_ends_at` ≈ +14 dagen), welkomstmail op het testadres én melding-mail bij Quinn.
+   `trial_ends_at` ≈ +30 dagen), welkomstmail op het testadres én melding-mail bij Quinn.
    Er is geen wachtscherm meer direct na registratie.
 
-Succescriterium 2 wordt: *elk nieuw account krijgt exact één 14-daagse proef (5 objecten
+Succescriterium 2 wordt: *elk nieuw account krijgt exact één 30-daagse proef (5 objecten
 totaal); daarna alleen toegang via betaald plan, 'gratis' of handmatige trial-verlenging.*

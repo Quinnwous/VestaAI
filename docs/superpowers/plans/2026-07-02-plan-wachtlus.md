@@ -34,7 +34,7 @@
 | `app/admin/actions.ts` | wijzigen | Activeringsmail bij toegangs-transitie |
 | `app/admin/page.tsx` | wijzigen | Maandverbruik per kantoor berekenen |
 | `app/admin/AdminBeheer.tsx` | wijzigen | Kolom "Deze mnd" (verbruik / limiet) |
-| `app/auth/confirm/route.ts` | verwijderen | Dood codepad dat 14 dagen trial uitdeelde |
+| `app/auth/confirm/route.ts` | verwijderen | Dood codepad dat 30 dagen trial uitdeelde |
 | `middleware.ts` | wijzigen | `/auth/confirm` uit `PUBLIC_PREFIX` |
 | `docs/roadmap.md` | wijzigen | Achterhaald testaccounts-item weg |
 
@@ -325,7 +325,7 @@ Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>"
 - Consumes: niets nieuws.
 - Produces: `ensureMakelaar(user: User): Promise<boolean>` behoudt exact dezelfde signature (aanroeper `app/dashboard/page.tsx:48` hoeft niet te wijzigen).
 
-Context: de DB-trigger `handle_new_user()` maakt kantoren aan met `plan null / trial null` (wachtstand). Twee codepaden ondermijnden dat: het vangnet `ensureMakelaar` (365 dagen trial + verouderde "14-daagse proefperiode"-welkomstmail) en de legacy route `/auth/confirm` (14 dagen trial). Die route wordt door geen enkele mailtemplate meer gelinkt (templates wijzen naar `/auth/verify`; referral-links wijzen naar `/login?ref=`) — de enige verwijzing is de middleware-allowlist. Na deze taak heeft `sendWelcomeEmail` nul call sites en gaat dus ook weg.
+Context: de DB-trigger `handle_new_user()` maakt kantoren aan met `plan null / trial null` (wachtstand). Twee codepaden ondermijnden dat: het vangnet `ensureMakelaar` (365 dagen trial + verouderde "30-daagse proefperiode"-welkomstmail) en de legacy route `/auth/confirm` (30 dagen trial). Die route wordt door geen enkele mailtemplate meer gelinkt (templates wijzen naar `/auth/verify`; referral-links wijzen naar `/login?ref=`) — de enige verwijzing is de middleware-allowlist. Na deze taak heeft `sendWelcomeEmail` nul call sites en gaat dus ook weg.
 
 - [ ] **Step 1: Vervang `lib/ensureMakelaar.ts` volledig door:**
 
@@ -822,7 +822,7 @@ gh pr create --title "Wachten-op-abonnement waterdicht: activeringsmail, registr
 - **Activeringsmail naar de klant** zodra een plan of gratis toegang wordt toegewezen in /admin (alleen bij de overgang géén toegang → wél toegang; planwissels blijven stil). Unit-getest.
 - **Melding naar de platform-admin** bij het eerste dashboard-bezoek van een nieuwe klant zonder plan (atomische claim op nieuwe kolom `kantoren.admin_notified_at`; migratie incl. backfill is al toegepast).
 - **Maandverbruik vs. planlimiet** per klant op /admin ("3 / 15").
-- **Geen enkel codepad geeft nog automatische toegang:** vangnet `ensureMakelaar` maakt nu aan in de wachtstand (was 365 dagen trial + verouderde welkomstmail); legacy `/auth/confirm` verwijderd (deelde 14 dagen trial uit, wordt nergens meer gelinkt). NB: de referral-verwerking zat alléén in die dode route en werkte dus al niet meer via de huidige signup-flow — bewust niet herbouwd (beloning = trialverlenging, botst met het toewijs-model).
+- **Geen enkel codepad geeft nog automatische toegang:** vangnet `ensureMakelaar` maakt nu aan in de wachtstand (was 365 dagen trial + verouderde welkomstmail); legacy `/auth/confirm` verwijderd (deelde 30 dagen trial uit, wordt nergens meer gelinkt). NB: de referral-verwerking zat alléén in die dode route en werkte dus al niet meer via de huidige signup-flow — bewust niet herbouwd (beloning = trialverlenging, botst met het toewijs-model).
 - Trial-waarschuwingsmail noemt nu de echte limieten (5 / 15 i.p.v. 40 / onbeperkt).
 
 ## Na de merge
@@ -1046,9 +1046,9 @@ Tasks 7b/7c/12 komen erbij. Nummering verificatietaken blijft (9/10/11→13).
 
 ### Δ Task 3 (mails)
 - `sendWelcomeEmail` **blijft bestaan** (copy klopt weer onder het proefmodel). Pas alleen
-  de eerste zin aan naar: `Je 14-daagse proefperiode is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.`
+  de eerste zin aan naar: `Je 30-daagse proefperiode is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.`
 - `sendNieuweKlantMelding`: onderwerp wordt `VestaAI — nieuwe klant gestart met proefperiode`,
-  kop `Nieuwe klant gestart met proefperiode`, intro `Er heeft zich een nieuwe klant aangemeld; de 14-daagse proefperiode loopt:`
+  kop `Nieuwe klant gestart met proefperiode`, intro `Er heeft zich een nieuwe klant aangemeld; de 30-daagse proefperiode loopt:`
   knoplabel blijft `Wijs een plan toe` (kan ook tijdens de proef).
 - Trial-copy-fix (5/15) ongewijzigd uitvoeren.
 
@@ -1076,7 +1076,7 @@ Tasks 7b/7c/12 komen erbij. Nummering verificatietaken blijft (9/10/11→13).
   MCP `apply_migration`, name `trial_model`):
 
 ```sql
--- Proefperiode-model: elke nieuwe gebruiker start met 14 dagen proef (5 objecten
+-- Proefperiode-model: elke nieuwe gebruiker start met 30 dagen proef (5 objecten
 -- totaal, afgedwongen in de app). 'gratis' wordt een echt planniveau (5/maand,
 -- geen einddatum), toegewezen door de platform-admin.
 alter table public.kantoren drop constraint if exists kantoren_plan_check;
@@ -1094,9 +1094,9 @@ begin
   if exists (select 1 from public.makelaars where id = new.id) then
     return new;
   end if;
-  insert into public.kantoren (name, trial_ends_at)   -- proef: 14 dagen, plan blijft null
+  insert into public.kantoren (name, trial_ends_at)   -- proef: 30 dagen, plan blijft null
     values (coalesce(nullif(initcap(split_part(split_part(new.email,'@',2),'.',1)),''),'Kantoor'),
-            now() + interval '14 days')
+            now() + interval '30 days')
     returning id into v_kantoor_id;
   insert into public.makelaars (id, kantoor_id, name, email, role)
     values (new.id, v_kantoor_id,
@@ -1109,7 +1109,7 @@ end $function$;
 ```
 
   Verifieer daarna via `execute_sql`: `select pg_get_functiondef('public.handle_new_user'::regproc);`
-  bevat `interval '14 days'`, en de constraint-def bevat `'gratis'`.
+  bevat `interval '30 days'`, en de constraint-def bevat `'gratis'`.
 
 ### Δ Task 5 (welkomst + melding bij eerste dashboard-bezoek)
 - Bestand heet `lib/nieuweKlant.ts`, functie **`verwerkNieuweKlant(kantoorId)`**. Bij een
@@ -1216,7 +1216,7 @@ export const PLAN_LABELS: Record<Plan, string> = {
 }
 
 /** Proefperiode voor elk nieuw account. */
-export const PROEF_DAGEN = 14
+export const PROEF_DAGEN = 30
 /** Maximum aantal objecten gedurende de hele proef (totaal, geen maandgrens). */
 export const PROEF_LIMIET = 5
 ```
@@ -1244,7 +1244,7 @@ export const PROEF_LIMIET = 5
   starter/pro staan (regels ±202–229): voeg op beide plekken een Kantoor-knop toe naar
   `/api/stripe/checkout?plan=kantoor` in dezelfde stijl als de bestaande knoppen.
 - [ ] Step 6: `npm run typecheck && npm run test` groen → commit
-  `feat: proefperiode-model (14 dagen / 5 objecten) + gratis-plan + verlopen-schermen`.
+  `feat: proefperiode-model (30 dagen / 5 objecten) + gratis-plan + verlopen-schermen`.
 
 ### NIEUW Task 7c: uitloggen naar homepage
 
@@ -1258,7 +1258,7 @@ PR-tekst aanvullen met het proefperiode-model en de Stripe-activatie (Task 12). 
 
 ### Δ Task 10 (registratie-verificatie)
 Verwachtingen onder het nieuwe model:
-- Na verify: kantoor heeft `plan null`, `trial_ends_at ≈ now()+14d`, `admin_notified_at null`.
+- Na verify: kantoor heeft `plan null`, `trial_ends_at ≈ now()+30d`, `admin_notified_at null`.
 - Browser-login → dashboard is DIRECT bruikbaar (geen wachtscherm); assert dat de tekst
   `Je proefperiode is afgelopen` NIET voorkomt en het dashboard-element wel.
 - Daarna: `admin_notified_at` gevuld; welkomstmail op `+e2e`-adres ("proefperiode is actief");
@@ -1296,6 +1296,6 @@ Stripe-status en het proefperiode-model meenemen in roadmap/memory-update.
 
 ## Self-review (uitgevoerd bij het schrijven)
 
-- **Spec-dekking:** A→Task 4 · B→Tasks 2/3/6 · C→Tasks 1/3/5 · D→Tasks 3/7 · E→Task 8 · F→Tasks 9/10/11. Succescriterium 2 ("géén codepad automatische toegang") vereiste één afwijking van de spec-scope: `/auth/confirm` wordt verwijderd i.p.v. bewaard, omdat die route 14 dagen trial uitdeelt (spec-aanname "inert" bleek onjuist). Gemeld in de PR-tekst.
+- **Spec-dekking:** A→Task 4 · B→Tasks 2/3/6 · C→Tasks 1/3/5 · D→Tasks 3/7 · E→Task 8 · F→Tasks 9/10/11. Succescriterium 2 ("géén codepad automatische toegang") vereiste één afwijking van de spec-scope: `/auth/confirm` wordt verwijderd i.p.v. bewaard, omdat die route 30 dagen trial uitdeelt (spec-aanname "inert" bleek onjuist). Gemeld in de PR-tekst.
 - **Geen placeholders:** alle stappen bevatten volledige code/commando's; de enige runtime-onbekenden (login-selectors, token uit mail) zijn expliciet gemarkeerd met waar ze vandaan komen.
 - **Typeconsistentie:** `moetActiveringsmailSturen(oud, nieuw)` met `ToegangsStand` overal gelijk; `sendNieuweKlantMelding(to: string[], klantNaam, klantEmail, kantoorNaam)` in Task 3 = aanroep in Task 5; `KantoorRow.objectenDezeMaand` in Task 7 in zowel page als component.
