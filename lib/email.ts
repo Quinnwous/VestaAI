@@ -68,7 +68,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
     html: baseTemplate(`
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${name}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Je 14-daagse proefperiode is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
+        Je proefperiode van 30 dagen is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
       </p>
       <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
         Vul 8 velden in en ontvang direct:
@@ -221,7 +221,7 @@ export async function sendNieuweKlantMelding(
     html: baseTemplate(`
       <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Nieuwe klant gestart met proefperiode</h2>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Er heeft zich een nieuwe klant aangemeld; de 14-daagse proefperiode loopt:
+        Er heeft zich een nieuwe klant aangemeld; de proefperiode van 30 dagen loopt:
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
         <tr style="background:#f9fafb;">

@@ -1,4 +1,4 @@
--- Proefperiode-model: elke nieuwe gebruiker start met 14 dagen proef (5 objecten
+-- Proefperiode-model: elke nieuwe gebruiker start met 30 dagen proef (5 objecten
 -- totaal, afgedwongen in de app). 'gratis' wordt een echt planniveau (5/maand,
 -- geen einddatum), toegewezen door de platform-admin.
 alter table public.kantoren drop constraint if exists kantoren_plan_check;
@@ -16,9 +16,9 @@ begin
   if exists (select 1 from public.makelaars where id = new.id) then
     return new;
   end if;
-  insert into public.kantoren (name, trial_ends_at)   -- proef: 14 dagen, plan blijft null
+  insert into public.kantoren (name, trial_ends_at)   -- proef: 30 dagen, plan blijft null
     values (coalesce(nullif(initcap(split_part(split_part(new.email,'@',2),'.',1)),''),'Kantoor'),
-            now() + interval '14 days')
+            now() + interval '30 days')
     returning id into v_kantoor_id;
   insert into public.makelaars (id, kantoor_id, name, email, role)
     values (new.id, v_kantoor_id,

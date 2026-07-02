@@ -17,8 +17,8 @@ export const PLAN_LABELS: Record<Plan, string> = {
   gratis: 'Gratis',
 }
 
-/** Proefperiode voor elk nieuw account. */
-export const PROEF_DAGEN = 14
+/** Proefperiode voor elk nieuw account (30 — HousApp-norm, zie roadmap). */
+export const PROEF_DAGEN = 30
 /** Maximum aantal objecten gedurende de hele proef (totaal, geen maandgrens). */
 export const PROEF_LIMIET = 5
 
