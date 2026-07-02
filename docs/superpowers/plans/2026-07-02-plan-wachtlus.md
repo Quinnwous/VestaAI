@@ -1038,6 +1038,262 @@ Rapporteer alle bewijzen (per stap: wat gedraaid, wat de output was) en geef Qui
 
 ---
 
+## ADDENDUM v2 (2026-07-03) — proefperiode-model
+
+Quinn draaide het toegangsmodel om (zie spec-addendum v2). Tasks 1–2 waren al uitgevoerd
+en blijven geldig. Onderstaande delta's overschrijven de taakteksten hierboven; nieuwe
+Tasks 7b/7c/12 komen erbij. Nummering verificatietaken blijft (9/10/11→13).
+
+### Δ Task 3 (mails)
+- `sendWelcomeEmail` **blijft bestaan** (copy klopt weer onder het proefmodel). Pas alleen
+  de eerste zin aan naar: `Je 14-daagse proefperiode is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.`
+- `sendNieuweKlantMelding`: onderwerp wordt `VestaAI — nieuwe klant gestart met proefperiode`,
+  kop `Nieuwe klant gestart met proefperiode`, intro `Er heeft zich een nieuwe klant aangemeld; de 14-daagse proefperiode loopt:`
+  knoplabel blijft `Wijs een plan toe` (kan ook tijdens de proef).
+- Trial-copy-fix (5/15) ongewijzigd uitvoeren.
+
+### Δ Task 4 (vangnet + trigger + legacy route)
+- `ensureMakelaar`: nieuw kantoor krijgt **`trial_ends_at = now() + PROEF_DAGEN`** (niet null).
+  Gebruik `PROEF_DAGEN` uit `lib/plans.ts` (Task 7b). Geen welkomstmail-aanroep hier (de
+  claim-hook van Task 5 verstuurt hem). Insert wordt:
+
+```ts
+  const trialEndsAt = new Date(Date.now() + PROEF_DAGEN * 24 * 60 * 60 * 1000).toISOString()
+  const { data: nieuwKantoor, error: kantoorError } = await service
+    .from('kantoren')
+    .insert({
+      name: kantoorNaam.charAt(0).toUpperCase() + kantoorNaam.slice(1),
+      trial_ends_at: trialEndsAt,
+    })
+    .select('id')
+    .single()
+```
+
+- `/auth/confirm` verwijderen + middleware-edit + `sendWelcomeEmail`-import daar weg: zoals
+  gepland (de route gaf een eigen, ongecontroleerde 14d-trial en is scanner-onveilig).
+  `sendWelcomeEmail` zelf NIET uit `lib/email.ts` verwijderen.
+- **Extra stap: migratie `supabase/migrations/20260703_trial_model.sql`** (én toepassen via
+  MCP `apply_migration`, name `trial_model`):
+
+```sql
+-- Proefperiode-model: elke nieuwe gebruiker start met 14 dagen proef (5 objecten
+-- totaal, afgedwongen in de app). 'gratis' wordt een echt planniveau (5/maand,
+-- geen einddatum), toegewezen door de platform-admin.
+alter table public.kantoren drop constraint if exists kantoren_plan_check;
+alter table public.kantoren add constraint kantoren_plan_check
+  check (plan = any (array['starter'::text, 'pro'::text, 'kantoor'::text, 'gratis'::text]));
+
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public'
+as $function$
+declare v_kantoor_id uuid;
+begin
+  if exists (select 1 from public.makelaars where id = new.id) then
+    return new;
+  end if;
+  insert into public.kantoren (name, trial_ends_at)   -- proef: 14 dagen, plan blijft null
+    values (coalesce(nullif(initcap(split_part(split_part(new.email,'@',2),'.',1)),''),'Kantoor'),
+            now() + interval '14 days')
+    returning id into v_kantoor_id;
+  insert into public.makelaars (id, kantoor_id, name, email, role)
+    values (new.id, v_kantoor_id,
+            coalesce(nullif(initcap(split_part(new.email,'@',1)),''),'Makelaar'),
+            new.email, 'admin');
+  return new;
+exception when others then
+  return new; -- signup nooit blokkeren
+end $function$;
+```
+
+  Verifieer daarna via `execute_sql`: `select pg_get_functiondef('public.handle_new_user'::regproc);`
+  bevat `interval '14 days'`, en de constraint-def bevat `'gratis'`.
+
+### Δ Task 5 (welkomst + melding bij eerste dashboard-bezoek)
+- Bestand heet `lib/nieuweKlant.ts`, functie **`verwerkNieuweKlant(kantoorId)`**. Bij een
+  gewonnen claim gaan er nu TWEE mails uit: welkomstmail naar de klant én melding naar de
+  platform-admins. Geen `heeftToegang`-skip meer (nieuwe klanten hebben immers altijd een
+  lopende proef). Volledige inhoud:
+
+```ts
+import { createServiceSupabaseClient } from '@/lib/supabase'
+import { PLATFORM_ADMIN_EMAILS } from '@/lib/admin'
+import { sendNieuweKlantMelding, sendWelcomeEmail } from '@/lib/email'
+
+/**
+ * Verwerkt een nieuwe klant éénmalig bij het eerste dashboard-bezoek: welkomst-
+ * mail naar de klant + melding naar de platform-admin. De vlag wordt atomisch
+ * geclaimd (update ... where admin_notified_at is null), dus ook bij gelijk-
+ * tijdige bezoeken gaat er nooit meer dan één set mails uit. Fouten zijn bewust
+ * niet-fataal: het dashboard mag hier nooit op stuklopen.
+ */
+export async function verwerkNieuweKlant(kantoorId: string): Promise<void> {
+  try {
+    const service = createServiceSupabaseClient()
+
+    const { data: geclaimd } = await service
+      .from('kantoren')
+      .update({ admin_notified_at: new Date().toISOString() })
+      .eq('id', kantoorId)
+      .is('admin_notified_at', null)
+      .select('name')
+      .maybeSingle()
+
+    if (!geclaimd) return // al verwerkt (of race verloren)
+
+    const { data: lid } = await service
+      .from('makelaars')
+      .select('name, email')
+      .eq('kantoor_id', kantoorId)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+
+    await Promise.all([
+      lid ? sendWelcomeEmail(lid.email, lid.name) : Promise.resolve(),
+      sendNieuweKlantMelding(
+        PLATFORM_ADMIN_EMAILS,
+        lid?.name ?? 'Onbekend',
+        lid?.email ?? 'onbekend',
+        geclaimd.name,
+      ),
+    ])
+  } catch {
+    // best-effort: mag het dashboard nooit blokkeren
+  }
+}
+```
+
+- Dashboard-hook: identiek aan het plan maar met `verwerkNieuweKlant` als naam/import.
+
+### Δ Task 6 (admin-actions)
+- `grantGratisToegang(kantoorId)` wijzigt van gedrag: zet **`plan = 'gratis'`,
+  `trial_ends_at = null`** (parameter `dagen` vervalt). Transitiecheck met
+  `moetActiveringsmailSturen({voor}, { plan: 'gratis', trialEndsAt: null })`, maillabel
+  `PLAN_LABELS.gratis`. `setPlan` accepteert ook `'gratis'` via het `Plan`-type uit Task 7b
+  (`type Plan = 'starter' | 'pro' | 'kantoor' | 'gratis' | null` lokaal in actions).
+- `setPlan(id, null)` betekent: terug naar proef-/verlopen-status (laat `trial_ends_at`
+  ongemoeid). Geen mail (transitieregel dekt dat al).
+
+### Δ Task 7 (/admin UI)
+- `PLAN_OPTIES` wordt: `[{ value: 'geen', label: 'Proef / geen' }, { value: 'gratis', label: 'Gratis (5/mnd)' }, { value: 'starter', label: 'Starter' }, { value: 'pro', label: 'Pro' }, { value: 'kantoor', label: 'Kantoor' }]`;
+  de `onChange`-mapping: `'geen'` → `setPlan(row.id, null)`, anders `setPlan(row.id, v as ...)`.
+  De losse knop "Gratis toegang" vervalt (de dropdown dekt het); `grantGratisToegang`-import
+  vervalt in `AdminBeheer.tsx` — let op: de server action blijft bestaan voor de spec maar
+  wordt door de UI niet meer gebruikt; verwijder hem dan óók uit `app/admin/actions.ts` (dode
+  code) en laat de dropdown alles doen via `setPlan`.
+- `statusLabel`: `plan === 'gratis'` → `{ label: 'Gratis', klasse: 'bg-green-100 text-green-700' }`;
+  lopende trial → `Proef (Xd)` (amber); de oude `dagen > 90 → 'Gratis'`-hack vervalt.
+- Kolom "Deze mnd": betaald plan of gratis → `x / maandLimietVoor(plan)`; lopende proef
+  (plan null + trial actief) → `x / 5 (totaal)` waarbij x = `aantalObjecten` (totaal, niet
+  maand); verlopen → `—`.
+- `KantoorRow['plan']`-type: `'starter' | 'pro' | 'kantoor' | 'gratis' | null`.
+
+### NIEUW Task 7b: toegangsmodel v2 in code
+
+**Files:** Modify: `lib/plans.ts`, `lib/supabase.ts`, `app/api/generate/route.ts`,
+`app/dashboard/page.tsx` (verlopen-scherm), `components/Betaalmuur.tsx`, `app/settings/tabs/AccountTab.tsx`
+
+- [ ] Step 1: `lib/plans.ts` — voeg toe/wijzig (en laat bestaande exports staan):
+
+```ts
+export type Plan = 'starter' | 'pro' | 'kantoor' | 'gratis'
+
+export const PLAN_MAANDLIMIET: Record<Plan, number> = {
+  starter: 5,
+  pro: 15,
+  kantoor: 100,
+  gratis: 5,
+}
+
+export const PLAN_LABELS: Record<Plan, string> = {
+  starter: 'Starter',
+  pro: 'Pro',
+  kantoor: 'Kantoor',
+  gratis: 'Gratis',
+}
+
+/** Proefperiode voor elk nieuw account. */
+export const PROEF_DAGEN = 14
+/** Maximum aantal objecten gedurende de hele proef (totaal, geen maandgrens). */
+export const PROEF_LIMIET = 5
+```
+
+  En `maandLimietVoor`: het vangnet voor onbekend/null wordt `PROEF_LIMIET` (was
+  `PLAN_MAANDLIMIET.kantoor`) — proef-accounts hebben geen maandlimiet-pad meer nodig,
+  maar als iets het toch aanroept is 5 het veilige antwoord.
+
+- [ ] Step 2: `lib/supabase.ts` — `Kantoor['plan']`-type: `'starter' | 'pro' | 'kantoor' | 'gratis' | null`.
+
+- [ ] Step 3: `app/api/generate/route.ts` — vervang de 402-copy en de limiettelling:
+  - "nog niet geactiveerd"-melding wordt: `Je proefperiode is afgelopen. Kies een abonnement om verder te gaan.`
+  - Limiet-branch: bij `plan === null` (lopende proef, want heeftToegang was al true) tel
+    objecten van het kantoor **zonder datumfilter** en vergelijk met `PROEF_LIMIET`; melding:
+    `Proeflimiet bereikt: tijdens de proefperiode kun je ${PROEF_LIMIET} objecten aanmaken. Kies een abonnement om verder te gaan.`
+    Bij een gezet plan: bestaande maandtelling met `maandLimietVoor(plan)` (dekt ook 'gratis').
+
+- [ ] Step 4: verlopen-schermen:
+  - `app/dashboard/page.tsx` (regels 76–83): kop `Je proefperiode is afgelopen`, tekst
+    `Kies een abonnement om verder te gaan met VestaAI — of neem contact op als je vragen hebt.`,
+    primaire knop `Kies een abonnement` → `/settings`, secundair de bestaande mailto + uitloggen.
+  - `components/Betaalmuur.tsx`: zelfde copy-swap (hard: kop + tekst + knop naar `/settings`
+    met dezelfde stijl; soft-banner: `Je proefperiode is afgelopen — kies een abonnement om nieuwe objecten te genereren.`).
+- [ ] Step 5: `app/settings/tabs/AccountTab.tsx` — waar de checkout-knoppen voor
+  starter/pro staan (regels ±202–229): voeg op beide plekken een Kantoor-knop toe naar
+  `/api/stripe/checkout?plan=kantoor` in dezelfde stijl als de bestaande knoppen.
+- [ ] Step 6: `npm run typecheck && npm run test` groen → commit
+  `feat: proefperiode-model (14 dagen / 5 objecten) + gratis-plan + verlopen-schermen`.
+
+### NIEUW Task 7c: uitloggen naar homepage
+
+**Files:** Modify: `app/api/auth/logout/route.ts:8`
+
+- [ ] `return NextResponse.redirect(new URL('/login', base))` → `new URL('/', base)`.
+- [ ] `npm run typecheck` groen → commit `feat: uitloggen stuurt naar homepage`.
+
+### Δ Task 8 (PR)
+PR-tekst aanvullen met het proefperiode-model en de Stripe-activatie (Task 12). Verder gelijk.
+
+### Δ Task 10 (registratie-verificatie)
+Verwachtingen onder het nieuwe model:
+- Na verify: kantoor heeft `plan null`, `trial_ends_at ≈ now()+14d`, `admin_notified_at null`.
+- Browser-login → dashboard is DIRECT bruikbaar (geen wachtscherm); assert dat de tekst
+  `Je proefperiode is afgelopen` NIET voorkomt en het dashboard-element wel.
+- Daarna: `admin_notified_at` gevuld; welkomstmail op `+e2e`-adres ("proefperiode is actief");
+  melding-mail ("nieuwe klant gestart met proefperiode") bij Quinn. Cleanup ongewijzigd.
+
+### NIEUW Task 12: (na merge) Stripe live zetten
+
+**Files:** geen repo-wijzigingen (extern: Stripe API + Vercel dashboard-instructie voor Quinn)
+
+- [ ] Step 1: check key-modus zonder de key te printen:
+  `grep -o '^STRIPE_SECRET_KEY=sk_[a-z]*' .env.local` → `sk_test` of `sk_live`. Rapporteer.
+- [ ] Step 2: maak via de Stripe API (Node-script in scratchpad, key uit `.env.local`)
+  drie producten + maandprijzen aan als ze nog niet bestaan (idempotent: eerst
+  `prices.list`/`products.search` op naam):
+  VestaAI Starter €60/mnd · VestaAI Pro €150/mnd · VestaAI Kantoor €500/mnd (EUR, recurring
+  month, namen exact als `PLAN_NAMES` in `lib/stripe.ts`). Print de drie price IDs.
+- [ ] Step 3: maak een webhook-endpoint aan: url `https://www.vestaai.nl/api/webhooks/stripe`,
+  events `checkout.session.completed`, `customer.subscription.updated`,
+  `customer.subscription.deleted`. Print het endpoint-secret (whsec_…) — alleen in het
+  bericht aan Quinn, nergens in een gecommit bestand.
+- [ ] Step 4: geef Quinn de exacte Vercel-env-instructie (Production):
+  `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_KANTOOR`, `STRIPE_WEBHOOK_SECRET`
+  (+ check dat `STRIPE_SECRET_KEY` daar al staat; zo nee, ook aanleveren als actiepunt) →
+  daarna redeploy. Zet dezelfde price IDs ook in `.env.local` (niet committen).
+- [ ] Step 5: smoke test na Quinns env-actie: ingelogd als testklant
+  `GET /api/stripe/checkout?plan=pro` → 3xx naar `checkout.stripe.com`. GEEN echte betaling
+  doorvoeren; de webhook-verwerking is codematig al aanwezig en wordt met een echte betaling
+  van Quinn zelf gevalideerd zodra hij dat wil.
+
+### Hernummering
+Task 11 (afronding) wordt ná Task 12 uitgevoerd en heet verder Task 13; inhoud gelijk plus:
+Stripe-status en het proefperiode-model meenemen in roadmap/memory-update.
+
+---
+
 ## Self-review (uitgevoerd bij het schrijven)
 
 - **Spec-dekking:** A→Task 4 · B→Tasks 2/3/6 · C→Tasks 1/3/5 · D→Tasks 3/7 · E→Task 8 · F→Tasks 9/10/11. Succescriterium 2 ("géén codepad automatische toegang") vereiste één afwijking van de spec-scope: `/auth/confirm` wordt verwijderd i.p.v. bewaard, omdat die route 14 dagen trial uitdeelt (spec-aanname "inert" bleek onjuist). Gemeld in de PR-tekst.
