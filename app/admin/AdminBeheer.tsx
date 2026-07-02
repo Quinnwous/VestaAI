@@ -2,22 +2,26 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { setPlan, grantGratisToegang, setActief } from './actions'
+import { setPlan, setActief } from './actions'
+import { heeftToegang, maandLimietVoor, PROEF_LIMIET } from '@/lib/plans'
+import type { Plan } from '@/lib/plans'
 
 export type KantoorRow = {
   id: string
   name: string
-  plan: 'starter' | 'pro' | 'kantoor' | null
+  plan: Plan | null
   trialEndsAt: string | null
   createdAt: string
   aantalMakelaars: number
   aantalObjecten: number
+  objectenDezeMaand: number
   adminEmail: string | null
   actief: boolean
 }
 
 const PLAN_OPTIES: { value: string; label: string }[] = [
-  { value: 'gratis', label: 'Gratis / trial' },
+  { value: 'geen', label: 'Proef / geen' },
+  { value: 'gratis', label: 'Gratis (5/mnd)' },
   { value: 'starter', label: 'Starter' },
   { value: 'pro', label: 'Pro' },
   { value: 'kantoor', label: 'Kantoor' },
@@ -25,12 +29,20 @@ const PLAN_OPTIES: { value: string; label: string }[] = [
 
 function statusLabel(row: KantoorRow): { label: string; klasse: string } {
   if (!row.actief) return { label: 'Gedeactiveerd', klasse: 'bg-red-100 text-red-700' }
+  if (row.plan === 'gratis') return { label: 'Gratis', klasse: 'bg-green-100 text-green-700' }
   if (row.plan) return { label: row.plan.charAt(0).toUpperCase() + row.plan.slice(1), klasse: 'bg-blue-100 text-blue-700' }
   if (row.trialEndsAt && new Date(row.trialEndsAt) > new Date()) {
     const dagen = Math.ceil((new Date(row.trialEndsAt).getTime() - Date.now()) / 86400000)
-    return { label: dagen > 90 ? 'Gratis' : `Trial (${dagen}d)`, klasse: 'bg-amber-100 text-amber-700' }
+    return { label: `Proef (${dagen}d)`, klasse: 'bg-amber-100 text-amber-700' }
   }
   return { label: 'Verlopen', klasse: 'bg-gray-100 text-gray-600' }
+}
+
+/** Verbruik-weergave: proef telt totaal (5 in de hele proef), plannen per maand. */
+function verbruikLabel(row: KantoorRow): string {
+  if (row.plan) return `${row.objectenDezeMaand} / ${maandLimietVoor(row.plan)}`
+  if (heeftToegang(row.plan, row.trialEndsAt)) return `${row.aantalObjecten} / ${PROEF_LIMIET} (totaal)`
+  return '—'
 }
 
 export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
@@ -57,6 +69,7 @@ export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
             <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Status</th>
             <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Gebr.</th>
             <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Obj.</th>
+            <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Deze mnd</th>
             <th className="px-4 py-2.5 text-left text-xs font-medium text-gray-500">Plan wijzigen</th>
             <th className="px-4 py-2.5 text-right text-xs font-medium text-gray-500">Acties</th>
           </tr>
@@ -76,13 +89,14 @@ export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
                 </td>
                 <td className="px-4 py-2.5 text-xs text-gray-700">{row.aantalMakelaars}</td>
                 <td className="px-4 py-2.5 text-xs text-gray-700">{row.aantalObjecten}</td>
+                <td className="px-4 py-2.5 text-xs text-gray-700">{verbruikLabel(row)}</td>
                 <td className="px-4 py-2.5">
                   <select
-                    defaultValue={row.plan ?? 'gratis'}
+                    defaultValue={row.plan ?? 'geen'}
                     disabled={bezig}
                     onChange={e => {
                       const v = e.target.value
-                      const plan = v === 'gratis' ? null : (v as 'starter' | 'pro' | 'kantoor')
+                      const plan = v === 'geen' ? null : (v as Plan)
                       voerUit(row.id, () => setPlan(row.id, plan))
                     }}
                     className="text-xs border border-gray-200 rounded px-2 py-1 bg-white"
@@ -94,14 +108,6 @@ export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
                 </td>
                 <td className="px-4 py-2.5">
                   <div className="flex items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      disabled={bezig}
-                      onClick={() => voerUit(row.id, () => grantGratisToegang(row.id))}
-                      className="text-xs font-medium text-green-700 hover:text-green-800 disabled:opacity-40"
-                    >
-                      Gratis toegang
-                    </button>
                     <button
                       type="button"
                       disabled={bezig}
@@ -122,7 +128,7 @@ export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
           })}
           {rows.length === 0 && (
             <tr>
-              <td colSpan={6} className="px-4 py-6 text-center text-xs text-gray-400">Nog geen kantoren</td>
+              <td colSpan={7} className="px-4 py-6 text-center text-xs text-gray-400">Nog geen kantoren</td>
             </tr>
           )}
         </tbody>

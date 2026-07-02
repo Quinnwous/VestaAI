@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
+import { moetActiveringsmailSturen, PLAN_LABELS } from '@/lib/plans'
+import type { Plan } from '@/lib/plans'
+import { sendAccountGeactiveerdEmail } from '@/lib/email'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -12,27 +15,55 @@ async function vereisPlatformAdmin(): Promise<boolean> {
   return isPlatformAdmin(user?.email)
 }
 
-type Plan = 'starter' | 'pro' | 'kantoor' | null
-
-export async function setPlan(kantoorId: string, plan: Plan): Promise<Result> {
-  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
-  const service = createServiceSupabaseClient()
-  const { error } = await service.from('kantoren').update({ plan }).eq('id', kantoorId)
-  if (error) return { ok: false, error: error.message }
-  revalidatePath('/admin')
-  return { ok: true }
+/**
+ * Mailt de kantoor-admin dat het account actief is. Een mailfout mag een
+ * toewijzing nooit laten falen — daarom try/catch zonder foutpropagatie.
+ */
+async function stuurActiveringsmail(
+  service: ReturnType<typeof createServiceSupabaseClient>,
+  kantoorId: string,
+  planLabel: string,
+): Promise<void> {
+  try {
+    const { data: leden } = await service
+      .from('makelaars')
+      .select('name, email, role')
+      .eq('kantoor_id', kantoorId)
+    const ontvanger = leden?.find(l => l.role === 'admin') ?? leden?.[0]
+    if (ontvanger) await sendAccountGeactiveerdEmail(ontvanger.email, ontvanger.name, planLabel)
+  } catch {
+    // best-effort
+  }
 }
 
-/** Geeft een kantoor gratis toegang: geen plan (dus geen limieten) + ruime trial. */
-export async function grantGratisToegang(kantoorId: string, dagen = 3650): Promise<Result> {
+/**
+ * Wijs een plan toe ('gratis' incluis) of zet terug naar proef-/verlopen-status
+ * met null. Bij de overgang géén toegang → wél toegang gaat er automatisch een
+ * activeringsmail naar de kantoor-admin; planwissels blijven stil.
+ */
+export async function setPlan(kantoorId: string, plan: Plan | null): Promise<Result> {
   if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
   const service = createServiceSupabaseClient()
-  const trialEndsAt = new Date(Date.now() + dagen * 24 * 60 * 60 * 1000).toISOString()
-  const { error } = await service
+
+  const { data: voor } = await service
     .from('kantoren')
-    .update({ plan: null, trial_ends_at: trialEndsAt })
+    .select('plan, trial_ends_at')
     .eq('id', kantoorId)
+    .single()
+
+  // Plan gezet → proefdatum wissen (het plan bepaalt de toegang); terug naar
+  // null laat een eventueel lopende proefperiode ongemoeid.
+  const update = plan ? { plan, trial_ends_at: null } : { plan: null }
+  const { error } = await service.from('kantoren').update(update).eq('id', kantoorId)
   if (error) return { ok: false, error: error.message }
+
+  if (voor && plan && moetActiveringsmailSturen(
+    { plan: voor.plan, trialEndsAt: voor.trial_ends_at },
+    { plan, trialEndsAt: null },
+  )) {
+    await stuurActiveringsmail(service, kantoorId, PLAN_LABELS[plan])
+  }
+
   revalidatePath('/admin')
   return { ok: true }
 }
