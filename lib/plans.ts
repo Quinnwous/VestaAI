@@ -1,18 +1,26 @@
 // Abonnementen en hun maandelijkse objectlimieten. "Kantoor" adverteren we als
-// onbeperkt, maar is technisch gecapt op 100/maand.
-export type Plan = 'starter' | 'pro' | 'kantoor'
+// onbeperkt, maar is technisch gecapt op 100/maand. 'gratis' is een door de
+// platform-admin toegewezen plan zonder einddatum (5 objecten per maand).
+export type Plan = 'starter' | 'pro' | 'kantoor' | 'gratis'
 
 export const PLAN_MAANDLIMIET: Record<Plan, number> = {
   starter: 5,
   pro: 15,
   kantoor: 100,
+  gratis: 5,
 }
 
 export const PLAN_LABELS: Record<Plan, string> = {
   starter: 'Starter',
   pro: 'Pro',
   kantoor: 'Kantoor',
+  gratis: 'Gratis',
 }
+
+/** Proefperiode voor elk nieuw account. */
+export const PROEF_DAGEN = 14
+/** Maximum aantal objecten gedurende de hele proef (totaal, geen maandgrens). */
+export const PROEF_LIMIET = 5
 
 /**
  * Heeft dit account toegang tot generatie? Alleen met een expliciet plan, óf een
@@ -24,10 +32,10 @@ export function heeftToegang(plan: string | null, trialEndsAt: string | null): b
   return !!trialEndsAt && new Date(trialEndsAt) > new Date()
 }
 
-/** Maandlimiet voor een account. Trial/gratis toegang (geen plan) = zelfde cap als Kantoor. */
+/** Maandlimiet voor een plan. Geen/onbekend plan valt terug op de proeflimiet. */
 export function maandLimietVoor(plan: string | null): number {
   if (plan && plan in PLAN_MAANDLIMIET) return PLAN_MAANDLIMIET[plan as Plan]
-  return PLAN_MAANDLIMIET.kantoor
+  return PROEF_LIMIET
 }
 
 export type ToegangsStand = { plan: string | null; trialEndsAt: string | null }

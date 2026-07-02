@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Altijd publiek toegankelijk, geen auth-check nodig
 const PUBLIC_EXACT = new Set(['/', '/prijzen'])
-const PUBLIC_PREFIX = ['/auth/confirm', '/auth/verify', '/auth/reset-password', '/api/webhooks']
+const PUBLIC_PREFIX = ['/auth/verify', '/auth/reset-password', '/api/webhooks']
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
