@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { heeftToegang } from '@/lib/plans'
 
 interface BetaalmuurProps {
   children: React.ReactNode
@@ -10,24 +10,7 @@ interface BetaalmuurProps {
   modus?: 'hard' | 'soft'
 }
 
-function UpgradeLinks() {
-  return (
-    <div className="flex gap-2 flex-wrap">
-      <Link
-        href="/api/stripe/checkout?plan=starter"
-        className="inline-block text-xs rounded-lg bg-blue-600 px-4 py-2 text-white font-semibold hover:bg-blue-700 transition-colors"
-      >
-        Starter — €60/maand
-      </Link>
-      <Link
-        href="/api/stripe/checkout?plan=pro"
-        className="inline-block text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
-      >
-        Pro — €150/maand
-      </Link>
-    </div>
-  )
-}
+const CONTACT = 'quinn.berkouwer@gmail.com'
 
 export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) {
   const supabase = createServerSupabaseClient()
@@ -51,13 +34,8 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
 
   if (!kantoor) return <>{children}</>
 
-  const trialExpired = kantoor.trial_ends_at
-    ? new Date(kantoor.trial_ends_at) < new Date()
-    : true
-
-  const toegangGeblokkeerd = trialExpired && !kantoor.plan
-
-  if (!toegangGeblokkeerd) return <>{children}</>
+  // Toegang = actief plan óf lopende gratis-periode. Anders: wachten op activering.
+  if (heeftToegang(kantoor.plan, kantoor.trial_ends_at)) return <>{children}</>
 
   if (modus === 'soft') {
     return (
@@ -68,11 +46,11 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-900 mb-1">Proefperiode verlopen</p>
-            <p className="text-xs text-amber-800 mb-2">
-              Kies een abonnement om nieuwe content te blijven genereren.
+            <p className="text-sm font-semibold text-amber-900 mb-1">Account nog niet geactiveerd</p>
+            <p className="text-xs text-amber-800">
+              Er wordt binnenkort een abonnement toegewezen. Vragen?{' '}
+              <a href={`mailto:${CONTACT}`} className="underline font-medium">Neem contact op met VestaAI</a>.
             </p>
-            <UpgradeLinks />
           </div>
         </div>
         {children}
@@ -84,19 +62,21 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="max-w-md text-center">
-        <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-5">
-          <svg className="w-7 h-7 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        <div className="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-5">
+          <svg className="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Proefperiode verlopen</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Je account is nog niet geactiveerd</h2>
         <p className="text-gray-500 mb-6">
-          Uw 14-daagse proefperiode is afgelopen. Kies een abonnement om verder te gaan.
+          Er wordt binnenkort een abonnement aan je account toegewezen. Zodra dat is gebeurd, kun je direct objecten genereren.
         </p>
-        <div className="flex flex-col gap-3 items-center">
-          <UpgradeLinks />
-        </div>
+        <a
+          href={`mailto:${CONTACT}`}
+          className="inline-block text-sm rounded-lg bg-green-700 px-5 py-2.5 text-white font-semibold hover:bg-green-800 transition-colors"
+        >
+          Neem contact op met VestaAI
+        </a>
       </div>
     </div>
   )

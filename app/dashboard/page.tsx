@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { ensureMakelaar } from '@/lib/ensureMakelaar'
+import { isPlatformAdmin } from '@/lib/admin'
+import { heeftToegang, maandLimietVoor } from '@/lib/plans'
 import { DashboardClient } from './DashboardClient'
 import { WelkomBanner } from '@/components/WelkomBanner'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
@@ -18,7 +20,6 @@ interface SearchParams {
 }
 
 const PER_PAGE = 20
-const STARTER_LIMIET = 5
 
 export default async function DashboardPage({
   searchParams,
@@ -28,6 +29,9 @@ export default async function DashboardPage({
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  // Platform-admins gebruiken de app niet als klant → direct naar het beheer.
+  if (isPlatformAdmin(user.email)) redirect('/admin')
 
   const selectMakelaar = () =>
     supabase
@@ -60,7 +64,29 @@ export default async function DashboardPage({
   }
 
   const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null } | null
-  const isStarter = kantoor?.plan === 'starter'
+
+  // Geen actief plan én geen lopende gratis-periode → account wacht op activering.
+  if (!heeftToegang(kantoor?.plan ?? null, kantoor?.trial_ends_at ?? null)) {
+    return (
+      <main style={{ maxWidth: 520, margin: '80px auto', padding: '0 28px', textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, borderRadius: '50%', background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+          <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#1A6B45">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Je account is nog niet geactiveerd</h1>
+        <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6, marginBottom: 24 }}>
+          Er wordt binnenkort een abonnement aan je account toegewezen. Zodra dat is gebeurd, kun je direct aan de slag.
+          <br />Vragen? Neem contact op via <a href="mailto:quinn.berkouwer@gmail.com" style={{ color: '#1A6B45', fontWeight: 600 }}>VestaAI</a>.
+        </p>
+        <form action="/api/auth/logout" method="POST">
+          <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5A6B61', background: 'none', border: 'none', cursor: 'pointer' }}>Uitloggen</button>
+        </form>
+      </main>
+    )
+  }
+
+  const maandLimiet = kantoor?.plan ? maandLimietVoor(kantoor.plan) : null
 
   const trialDagenResterend = !kantoor?.plan && kantoor?.trial_ends_at
     ? Math.max(0, Math.ceil((new Date(kantoor.trial_ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
@@ -95,7 +121,7 @@ export default async function DashboardPage({
     maandTelling,
   ] = await Promise.all([
     query,
-    isStarter
+    maandLimiet !== null
       ? supabase
           .from('objecten')
           .select('id', { count: 'exact', head: true })
@@ -112,10 +138,10 @@ export default async function DashboardPage({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0E1A13', marginBottom: 2 }}>Objecten</h1>
-          {isStarter && (
-            <p style={{ fontSize: 13, color: maandCount >= STARTER_LIMIET ? '#DC2626' : maandCount >= STARTER_LIMIET * 0.8 ? '#D97706' : '#9AA6A0', fontWeight: maandCount >= STARTER_LIMIET ? 600 : 400 }}>
-              {maandCount}/{STARTER_LIMIET} objecten deze maand
-              {maandCount >= STARTER_LIMIET && ' — limiet bereikt'}
+          {maandLimiet !== null && (
+            <p style={{ fontSize: 13, color: maandCount >= maandLimiet ? '#DC2626' : maandCount >= maandLimiet * 0.8 ? '#D97706' : '#9AA6A0', fontWeight: maandCount >= maandLimiet ? 600 : 400 }}>
+              {maandCount}/{maandLimiet} objecten deze maand
+              {maandCount >= maandLimiet && ' — limiet bereikt'}
             </p>
           )}
         </div>

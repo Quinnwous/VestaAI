@@ -1,6 +1,7 @@
 import type { User } from '@supabase/supabase-js'
 import { createServiceSupabaseClient } from '@/lib/supabase'
 import { sendWelcomeEmail } from '@/lib/email'
+import { isPlatformAdmin } from '@/lib/admin'
 
 // Nieuwe accounts krijgen tijdens de gratis-fase automatisch volledige toegang:
 // een ruime "trial" (geen betaling nodig, geen limieten). Het platform-admin-
@@ -16,6 +17,9 @@ const GRATIS_TOEGANG_DAGEN = 365
  * @returns true als er (nu) een makelaar-record bestaat.
  */
 export async function ensureMakelaar(user: User): Promise<boolean> {
+  // Platform-admins zijn geen klant en krijgen dus geen kantoor/makelaar-record.
+  if (isPlatformAdmin(user.email)) return false
+
   const service = createServiceSupabaseClient()
 
   const { data: bestaand } = await service
