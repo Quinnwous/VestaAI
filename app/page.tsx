@@ -1,4 +1,5 @@
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
+import { isPlatformAdmin } from '@/lib/admin'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { LandingPageClient } from '@/components/LandingPageClient'
@@ -23,7 +24,7 @@ export default async function LandingPage() {
   if (isSupabaseConfigured()) {
     const supabase = createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) redirect('/dashboard')
+    if (user) redirect(isPlatformAdmin(user.email) ? '/admin' : '/dashboard')
   }
 
   return <LandingPageClient />
