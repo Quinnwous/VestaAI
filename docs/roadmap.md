@@ -8,6 +8,8 @@
 
 ### Fase 1 — Product afronden
 
+- **Wachtwoord-reset** — button-gated token_hash-flow gefixt (commit fae56ee), mechanisme bewezen tegen productie-Supabase. Echte root cause: de token_hash-afhandeling was nooit gedeployed (stond alleen lokaal). ⏳ Wacht op merge naar main → Vercel-deploy, daarna: vraag nieuwe resetmail aan → "Ga verder" → formulier verschijnt.
+- **Registratie voor niet-gmail adressen** — geeft `{}` omdat Resend-domein `vestaai.nl` nog niet geverifieerd is (sandbox-afzender `onboarding@resend.dev` mag alleen naar quinn.berkouwer@gmail.com). Actie: Resend-domein verifiëren + Supabase SMTP sender → `noreply@vestaai.nl`.
 - E2e smoke test op Vercel: registreer account → genereer object → exporteer PDF — volledig doorlopen
 - Stripe: Starter (€60/mo, €600/jr), Pro (€150/mo, €1.500/jr), Kantoor (€500/mo, €5.000/jr) price IDs aanmaken → in Vercel env — uitgesteld tot na gratis testfase
 - Stripe webhook configureren op Vercel (`/api/webhooks/stripe`) — uitgesteld tot na gratis testfase
