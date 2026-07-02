@@ -8,7 +8,7 @@ export type { HuisstijlConfig }
 export type Kantoor = {
   id: string
   name: string
-  plan: 'starter' | 'pro' | 'kantoor' | null
+  plan: 'starter' | 'pro' | 'kantoor' | 'gratis' | null
   logo_url: string | null
   huisstijl_json: HuisstijlConfig | null
   stripe_id: string | null

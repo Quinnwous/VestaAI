@@ -46,10 +46,10 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-900 mb-1">Account nog niet geactiveerd</p>
+            <p className="text-sm font-semibold text-amber-900 mb-1">Proefperiode afgelopen</p>
             <p className="text-xs text-amber-800">
-              Er wordt binnenkort een abonnement toegewezen. Vragen?{' '}
-              <a href={`mailto:${CONTACT}`} className="underline font-medium">Neem contact op met VestaAI</a>.
+              Kies een abonnement om nieuwe objecten te genereren.{' '}
+              <a href="/settings" className="underline font-medium">Bekijk abonnementen</a>
             </p>
           </div>
         </div>
@@ -67,16 +67,19 @@ export async function Betaalmuur({ children, modus = 'hard' }: BetaalmuurProps) 
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Je account is nog niet geactiveerd</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Je proefperiode is afgelopen</h2>
         <p className="text-gray-500 mb-6">
-          Er wordt binnenkort een abonnement aan je account toegewezen. Zodra dat is gebeurd, kun je direct objecten genereren.
+          Kies een abonnement om nieuwe objecten te genereren. Alle eerder gegenereerde content blijft bewaard.
         </p>
         <a
-          href={`mailto:${CONTACT}`}
+          href="/settings"
           className="inline-block text-sm rounded-lg bg-green-700 px-5 py-2.5 text-white font-semibold hover:bg-green-800 transition-colors"
         >
-          Neem contact op met VestaAI
+          Kies een abonnement
         </a>
+        <p className="mt-4 text-xs text-gray-400">
+          Vragen? <a href={`mailto:${CONTACT}`} className="underline">Neem contact op met VestaAI</a>.
+        </p>
       </div>
     </div>
   )

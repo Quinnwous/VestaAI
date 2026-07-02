@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
 import { generateContent } from '@/lib/claude'
 import { PropertyInputSchema } from '@/lib/schemas'
-import { heeftToegang, maandLimietVoor } from '@/lib/plans'
+import { heeftToegang, maandLimietVoor, PROEF_LIMIET } from '@/lib/plans'
 import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import type { HuisstijlConfig } from '@/lib/schemas'
@@ -103,27 +103,42 @@ export async function POST(req: NextRequest) {
         if (!heeftToegang(plan, trialEndsAt)) {
           releaseRateLimit(user.id)
           return NextResponse.json(
-            { error: 'Je account is nog niet geactiveerd. Neem contact op met VestaAI om een abonnement te activeren.' },
+            { error: 'Je proefperiode is afgelopen. Kies een abonnement om verder te gaan.' },
             { status: 402 },
           )
         }
 
-        // Maandlimiet per plan (Starter 5 · Pro 15 · Kantoor 100 · gratis toegang 100)
-        const startOfMonth = new Date()
-        startOfMonth.setDate(1)
-        startOfMonth.setHours(0, 0, 0, 0)
-        const { count } = await supabase
-          .from('objecten')
-          .select('id', { count: 'exact', head: true })
-          .eq('kantoor_id', makelaar.kantoor_id)
-          .gte('created_at', startOfMonth.toISOString())
-        const maandLimiet = maandLimietVoor(plan)
-        if ((count ?? 0) >= maandLimiet) {
-          releaseRateLimit(user.id)
-          return NextResponse.json(
-            { error: `Maandlimiet bereikt: je plan staat ${maandLimiet} objecten per maand toe.` },
-            { status: 402 },
-          )
+        if (plan === null) {
+          // Lopende proef: harde limiet over de hele proefperiode (geen maandgrens).
+          const { count } = await supabase
+            .from('objecten')
+            .select('id', { count: 'exact', head: true })
+            .eq('kantoor_id', makelaar.kantoor_id)
+          if ((count ?? 0) >= PROEF_LIMIET) {
+            releaseRateLimit(user.id)
+            return NextResponse.json(
+              { error: `Proeflimiet bereikt: tijdens de proefperiode kun je ${PROEF_LIMIET} objecten aanmaken. Kies een abonnement om verder te gaan.` },
+              { status: 402 },
+            )
+          }
+        } else {
+          // Maandlimiet per plan (Starter 5 · Pro 15 · Kantoor 100 · Gratis 5)
+          const startOfMonth = new Date()
+          startOfMonth.setDate(1)
+          startOfMonth.setHours(0, 0, 0, 0)
+          const { count } = await supabase
+            .from('objecten')
+            .select('id', { count: 'exact', head: true })
+            .eq('kantoor_id', makelaar.kantoor_id)
+            .gte('created_at', startOfMonth.toISOString())
+          const maandLimiet = maandLimietVoor(plan)
+          if ((count ?? 0) >= maandLimiet) {
+            releaseRateLimit(user.id)
+            return NextResponse.json(
+              { error: `Maandlimiet bereikt: je plan staat ${maandLimiet} objecten per maand toe.` },
+              { status: 402 },
+            )
+          }
         }
 
         const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
