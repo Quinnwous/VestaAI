@@ -114,7 +114,7 @@ export default function LoginPage() {
     setStatus('loading')
     setErrorMsg('')
 
-    const confirmUrl = new URL(`${window.location.origin}/auth/confirm`)
+    const confirmUrl = new URL(`${window.location.origin}/auth/verify`)
     if (refCode) confirmUrl.searchParams.set('ref', refCode)
 
     const { error } = await supabase.auth.signUp({
