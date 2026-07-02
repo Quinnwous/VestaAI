@@ -68,7 +68,7 @@ export async function sendWelcomeEmail(email: string, name: string) {
     html: baseTemplate(`
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${name}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Je 14-daagse proefperiode is actief. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
+        Je proefperiode van 30 dagen is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
       </p>
       <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
         Vul 8 velden in en ontvang direct:
@@ -112,13 +112,13 @@ export async function sendTrialWarningEmail(email: string, name: string, trialEn
         <tr>
           <td width="48%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;vertical-align:top;">
             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Starter</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">40 objecten/maand · 1 gebruiker</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">5 objecten/maand · 1 gebruiker</p>
             <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€60<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
           </td>
           <td width="4%"></td>
           <td width="48%" style="background:#f0fdf4;border:2px solid #1A6B45;border-radius:10px;padding:16px;vertical-align:top;">
             <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Pro</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Onbeperkt · 5 gebruikers · Huisstijl</p>
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">15 objecten/maand · 5 gebruikers · Huisstijl</p>
             <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€150<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
           </td>
         </tr>
@@ -171,6 +171,73 @@ export async function sendTeamInviteConfirmation(adminEmail: string, uitgenodigd
       </div>
       ${btn(`${APP_URL}/settings`, 'Beheer uw team')}
       <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
+    `),
+  })
+}
+
+/** Klantdata (naam/e-mail) komt uit registratie-invoer → escapen vóór HTML-interpolatie. */
+function esc(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+export async function sendAccountGeactiveerdEmail(email: string, name: string, planLabel: string) {
+  await getResend().emails.send({
+    from: FROM,
+    to: email,
+    subject: 'VestaAI — je account is geactiveerd',
+    html: baseTemplate(`
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
+        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">✓ Je account is geactiveerd</p>
+      </div>
+      <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${esc(name)}!</h2>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
+        Je VestaAI-account is geactiveerd met <strong>${esc(planLabel)}</strong>.
+        Je kunt nu direct aan de slag: vul 8 velden in en ontvang je complete content-suite.
+      </p>
+      ${btn(`${APP_URL}/dashboard`, 'Ga naar je dashboard')}
+      <p style="margin:28px 0 0;font-size:13px;color:#6b7280;">
+        Vragen? Reageer gewoon op deze mail — ik help je graag.
+      </p>
+      <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
+    `),
+  })
+}
+
+export async function sendNieuweKlantMelding(
+  to: string[],
+  klantNaam: string,
+  klantEmail: string,
+  kantoorNaam: string,
+) {
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    subject: 'VestaAI — nieuwe klant gestart met proefperiode',
+    html: baseTemplate(`
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Nieuwe klant gestart met proefperiode</h2>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        Er heeft zich een nieuwe klant aangemeld; de proefperiode van 30 dagen loopt:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        <tr style="background:#f9fafb;">
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Naam</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;border-bottom:1px solid #e5e7eb;">${esc(klantNaam)}</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">E-mail</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;border-bottom:1px solid #e5e7eb;">${esc(klantEmail)}</td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;">Kantoor</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;">${esc(kantoorNaam)}</td>
+        </tr>
+      </table>
+      ${btn(`${APP_URL}/admin`, 'Wijs een plan toe')}
     `),
   })
 }

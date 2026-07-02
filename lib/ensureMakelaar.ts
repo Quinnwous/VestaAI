@@ -1,18 +1,14 @@
 import type { User } from '@supabase/supabase-js'
 import { createServiceSupabaseClient } from '@/lib/supabase'
-import { sendWelcomeEmail } from '@/lib/email'
 import { isPlatformAdmin } from '@/lib/admin'
-
-// Nieuwe accounts krijgen tijdens de gratis-fase automatisch volledige toegang:
-// een ruime "trial" (geen betaling nodig, geen limieten). Het platform-admin-
-// paneel kan dit per klant aanpassen.
-const GRATIS_TOEGANG_DAGEN = 365
+import { PROEF_DAGEN } from '@/lib/plans'
 
 /**
  * Zorgt dat de ingelogde gebruiker een makelaar-record (en kantoor) heeft.
- * Dit is de vangnet-versie van app/auth/confirm/route.ts: als de bevestigings-
- * flow het record niet heeft aangemaakt, gebeurt het alsnog bij de eerste
- * ingelogde paginabezoek. Draait met de service-role (omzeilt RLS).
+ * Vangnet voor het geval de DB-trigger handle_new_user() niet liep. Maakt —
+ * identiek aan de trigger — aan met een lopende proefperiode (PROEF_DAGEN);
+ * de welkomstmail en admin-melding verstuurt lib/nieuweKlant.ts bij het
+ * eerste dashboard-bezoek.
  *
  * @returns true als er (nu) een makelaar-record bestaat.
  */
@@ -46,9 +42,9 @@ export async function ensureMakelaar(user: User): Promise<boolean> {
     return !error
   }
 
-  // Nieuw kantoor aanmaken met gratis toegang.
+  // Nieuw kantoor met lopende proefperiode aanmaken.
   const kantoorNaam = user.email?.split('@')[1]?.split('.')[0] ?? 'Kantoor'
-  const trialEndsAt = new Date(Date.now() + GRATIS_TOEGANG_DAGEN * 24 * 60 * 60 * 1000).toISOString()
+  const trialEndsAt = new Date(Date.now() + PROEF_DAGEN * 24 * 60 * 60 * 1000).toISOString()
 
   const { data: nieuwKantoor, error: kantoorError } = await service
     .from('kantoren')
@@ -69,8 +65,5 @@ export async function ensureMakelaar(user: User): Promise<boolean> {
     role: 'admin',
   })
 
-  if (makelaarError) return false
-
-  sendWelcomeEmail(user.email!, naam).catch(() => {})
-  return true
+  return !makelaarError
 }

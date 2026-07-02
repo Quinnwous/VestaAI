@@ -80,7 +80,7 @@ export default async function AdminPage() {
   const [alleKantorenRes, alleMakelaarsRes, alleObjectenRes, usersRes] = await Promise.all([
     serviceClient.from('kantoren').select('id, name, plan, trial_ends_at, created_at').order('created_at', { ascending: false }),
     serviceClient.from('makelaars').select('id, email, role, kantoor_id'),
-    serviceClient.from('objecten').select('id, kantoor_id'),
+    serviceClient.from('objecten').select('id, kantoor_id, created_at'),
     serviceClient.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ])
 
@@ -99,8 +99,12 @@ export default async function AdminPage() {
   }
 
   const objectenPerKantoor = new Map<string, number>()
-  for (const o of (alleObjectenRes.data ?? []) as { id: string; kantoor_id: string }[]) {
+  const objectenDezeMaandPerKantoor = new Map<string, number>()
+  for (const o of (alleObjectenRes.data ?? []) as { id: string; kantoor_id: string; created_at: string }[]) {
     objectenPerKantoor.set(o.kantoor_id, (objectenPerKantoor.get(o.kantoor_id) ?? 0) + 1)
+    if (new Date(o.created_at) >= eersteDagMaand) {
+      objectenDezeMaandPerKantoor.set(o.kantoor_id, (objectenDezeMaandPerKantoor.get(o.kantoor_id) ?? 0) + 1)
+    }
   }
 
   const beheerRows: KantoorRow[] = ((alleKantorenRes.data ?? []) as {
@@ -116,6 +120,7 @@ export default async function AdminPage() {
       createdAt: k.created_at,
       aantalMakelaars: ids.length,
       aantalObjecten: objectenPerKantoor.get(k.id) ?? 0,
+      objectenDezeMaand: objectenDezeMaandPerKantoor.get(k.id) ?? 0,
       adminEmail: leden?.adminEmail ?? null,
       actief: ids.length === 0 || ids.some(id => !bannedMap.get(id)),
     }
@@ -125,8 +130,9 @@ export default async function AdminPage() {
     if (plan === 'starter') return <span className="text-xs bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded">Starter</span>
     if (plan === 'pro') return <span className="text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Pro</span>
     if (plan === 'kantoor') return <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">Kantoor</span>
+    if (plan === 'gratis') return <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Gratis</span>
     if (trialEndsAt && new Date(trialEndsAt) > new Date()) {
-      return <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Trial</span>
+      return <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">Proef</span>
     }
     return <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded">Verlopen</span>
   }

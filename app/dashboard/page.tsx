@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { ensureMakelaar } from '@/lib/ensureMakelaar'
+import { verwerkNieuweKlant } from '@/lib/nieuweKlant'
 import { isPlatformAdmin } from '@/lib/admin'
 import { heeftToegang, maandLimietVoor } from '@/lib/plans'
 import { DashboardClient } from './DashboardClient'
@@ -36,7 +37,7 @@ export default async function DashboardPage({
   const selectMakelaar = () =>
     supabase
       .from('makelaars')
-      .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at)')
+      .select('kantoor_id, first_generated_at, kantoren(plan, huisstijl_json, trial_ends_at, admin_notified_at)')
       .eq('id', user.id)
       .single()
 
@@ -63,7 +64,13 @@ export default async function DashboardPage({
     )
   }
 
-  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null } | null
+  const kantoor = makelaar.kantoren as unknown as { plan: string | null; huisstijl_json: Record<string, unknown> | null; trial_ends_at: string | null; admin_notified_at: string | null } | null
+
+  // Eénmalige verwerking van een nieuwe klant (welkomstmail + melding aan de
+  // platform-admin); atomisch geclaimd, dus nooit dubbel.
+  if (kantoor && kantoor.admin_notified_at === null) {
+    await verwerkNieuweKlant(makelaar.kantoor_id)
+  }
 
   // Geen actief plan én geen lopende gratis-periode → account wacht op activering.
   if (!heeftToegang(kantoor?.plan ?? null, kantoor?.trial_ends_at ?? null)) {
@@ -74,11 +81,17 @@ export default async function DashboardPage({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Je account is nog niet geactiveerd</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Je proefperiode is afgelopen</h1>
         <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6, marginBottom: 24 }}>
-          Er wordt binnenkort een abonnement aan je account toegewezen. Zodra dat is gebeurd, kun je direct aan de slag.
+          Kies een abonnement om verder te gaan met VestaAI — alle eerder gegenereerde content blijft bewaard.
           <br />Vragen? Neem contact op via <a href="mailto:quinn.berkouwer@gmail.com" style={{ color: '#1A6B45', fontWeight: 600 }}>VestaAI</a>.
         </p>
+        <a
+          href="/settings"
+          style={{ display: 'inline-block', borderRadius: 11, background: '#1A6B45', padding: '13px 24px', fontSize: 15, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)', marginBottom: 20 }}
+        >
+          Kies een abonnement
+        </a>
         <form action="/api/auth/logout" method="POST">
           <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5A6B61', background: 'none', border: 'none', cursor: 'pointer' }}>Uitloggen</button>
         </form>

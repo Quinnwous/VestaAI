@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
+import { PROEF_DAGEN } from '@/lib/plans'
 import { slaProfielNaamOp } from '../actions'
 import { ReferralPanel } from '@/components/ReferralPanel'
 
@@ -15,18 +16,21 @@ const PLAN_LABELS: Record<NonNullable<Kantoor['plan']>, string> = {
   starter: 'Starter',
   pro: 'Pro',
   kantoor: 'Kantoor',
+  gratis: 'Gratis',
 }
 
 const PLAN_PRIJZEN: Record<NonNullable<Kantoor['plan']>, string> = {
   starter: '€60/maand',
   pro: '€150/maand',
   kantoor: '€500/maand',
+  gratis: 'Gratis',
 }
 
 const PLAN_FEATURES: Record<NonNullable<Kantoor['plan']>, string[]> = {
-  starter: ['40 objecten per maand', '1 gebruiker'],
-  pro: ['Onbeperkt objecten', '5 gebruikers', 'Huisstijlgeheugen'],
+  starter: ['5 objecten per maand', '1 gebruiker'],
+  pro: ['15 objecten per maand', '5 gebruikers', 'Huisstijlgeheugen'],
   kantoor: ['Onbeperkt gebruikers & vestigingen', 'White-label', 'API-toegang'],
+  gratis: ['5 objecten per maand', 'Toegewezen door VestaAI'],
 }
 
 function Field({ label, value }: { label: string; value: string }) {
@@ -45,7 +49,7 @@ export function AccountTab({ makelaar, kantoor }: Props) {
   const daysLeft = trialEndsAt
     ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
     : 0
-  const TRIAL_DAYS = 14
+  const TRIAL_DAYS = PROEF_DAGEN
   const trialProgress = Math.round(((TRIAL_DAYS - daysLeft) / TRIAL_DAYS) * 100)
 
   const [naamBewerkModus, setNaamBewerkModus] = useState(false)
@@ -154,7 +158,7 @@ export function AccountTab({ makelaar, kantoor }: Props) {
               ))}
             </ul>
             <div className="mt-4 pt-3 border-t border-green-200 flex flex-wrap gap-2">
-              {kantoor.plan === 'starter' && (
+              {(kantoor.plan === 'starter' || kantoor.plan === 'gratis') && (
                 <Link
                   href="/api/stripe/checkout?plan=pro"
                   className="inline-block text-xs rounded-lg bg-blue-600 px-3 py-1.5 text-white font-medium hover:bg-blue-700 transition-colors"
@@ -162,12 +166,14 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                   Upgrade naar Pro — €150/mo
                 </Link>
               )}
-              <Link
-                href="/api/stripe/customer-portal"
-                className="inline-block text-xs rounded-lg border border-green-300 px-3 py-1.5 text-green-700 font-medium hover:border-green-400 transition-colors"
-              >
-                Abonnement beheren →
-              </Link>
+              {kantoor.plan !== 'gratis' && (
+                <Link
+                  href="/api/stripe/customer-portal"
+                  className="inline-block text-xs rounded-lg border border-green-300 px-3 py-1.5 text-green-700 font-medium hover:border-green-400 transition-colors"
+                >
+                  Abonnement beheren →
+                </Link>
+              )}
             </div>
           </div>
         ) : isTrialActive ? (
@@ -210,6 +216,12 @@ export function AccountTab({ makelaar, kantoor }: Props) {
               >
                 Pro — €150/mo
               </Link>
+              <Link
+                href="/api/stripe/checkout?plan=kantoor"
+                className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
+              >
+                Kantoor — €500/mo
+              </Link>
             </div>
           </div>
         ) : (
@@ -230,6 +242,12 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                 className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
               >
                 Pro — €150/mo
+              </Link>
+              <Link
+                href="/api/stripe/checkout?plan=kantoor"
+                className="text-xs rounded-lg border border-gray-300 bg-white px-4 py-2 text-gray-700 font-medium hover:border-gray-400 transition-colors"
+              >
+                Kantoor — €500/mo
               </Link>
             </div>
           </div>
