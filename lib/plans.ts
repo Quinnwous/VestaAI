@@ -29,3 +29,13 @@ export function maandLimietVoor(plan: string | null): number {
   if (plan && plan in PLAN_MAANDLIMIET) return PLAN_MAANDLIMIET[plan as Plan]
   return PLAN_MAANDLIMIET.kantoor
 }
+
+export type ToegangsStand = { plan: string | null; trialEndsAt: string | null }
+
+/**
+ * Activeringsmail alléén bij de overgang géén toegang → wél toegang.
+ * Een planwissel (Pro → Kantoor) of een intrekking blijft stil.
+ */
+export function moetActiveringsmailSturen(oud: ToegangsStand, nieuw: ToegangsStand): boolean {
+  return !heeftToegang(oud.plan, oud.trialEndsAt) && heeftToegang(nieuw.plan, nieuw.trialEndsAt)
+}
