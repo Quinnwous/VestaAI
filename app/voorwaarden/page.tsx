@@ -30,7 +30,7 @@ export default function VoorwaardenPage() {
             },
             {
               nr: '3', titel: 'Abonnement en betaling',
-              tekst: 'Abonnementen worden maandelijks of jaarlijks vooruit gefactureerd via Stripe. De proefperiode duurt 14 kalenderdagen vanaf aanmelding. Na afloop van de proefperiode start automatisch facturering op het gekozen plan, tenzij u vóór afloop opzegt. Prijswijzigingen worden minimaal 30 dagen van tevoren aangekondigd per e-mail.',
+              tekst: 'Abonnementen worden maandelijks of jaarlijks vooruit gefactureerd via Stripe. De proefperiode duurt 30 kalenderdagen vanaf aanmelding. Na afloop van de proefperiode start automatisch facturering op het gekozen plan, tenzij u vóór afloop opzegt. Prijswijzigingen worden minimaal 30 dagen van tevoren aangekondigd per e-mail.',
             },
             {
               nr: '4', titel: 'Opzegging',
