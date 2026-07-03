@@ -222,6 +222,35 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
           </View>
         </Page>
       ))}
+
+      {/* Slotpagina: kantoorgegevens uit de brochure-huisstijl */}
+      {kantoor.huisstijl_json?.brochure_stijl?.slot_tekst && (
+        <Page size="A4" style={s.contentPage}>
+          <View style={s.pageHeader}>
+            {kantoor.logo_url ? (
+              // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop
+              <Image src={kantoor.logo_url} style={s.pageHeaderLogoImg} />
+            ) : (
+              <Text style={s.pageHeaderBrand}>{kantoor.name}</Text>
+            )}
+            <Text style={s.pageHeaderAddress}>{address}</Text>
+          </View>
+          <View style={s.sectionBadge}>
+            <Text style={s.sectionBadgeText}>Kantoor</Text>
+          </View>
+          <Text style={s.sectionTitle}>Kantoorgegevens</Text>
+          <Text style={s.sectionBody}>{kantoor.huisstijl_json.brochure_stijl.slot_tekst}</Text>
+          <View style={s.pageFooterFixed} fixed>
+            <Text style={s.pageFooterText}>
+              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `VestaAI · ${datum}`}
+            </Text>
+            <Text
+              style={s.pageFooterText}
+              render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}
+            />
+          </View>
+        </Page>
+      )}
     </Document>
   )
 }

@@ -53,14 +53,29 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   const removeVoorbeeld = (i: number) =>
     setVoorbeelden(prev => (prev.length <= 1 ? [''] : prev.filter((_, idx) => idx !== i)))
 
+  // Brochure-huisstijl (apart van de schrijfstijl hierboven)
+  const [brochureVoorbeelden, setBrochureVoorbeelden] = useState<string[]>(
+    huidig?.brochure_stijl?.voorbeelden?.length ? huidig.brochure_stijl.voorbeelden : []
+  )
+  const [slotTekst, setSlotTekst] = useState(huidig?.brochure_stijl?.slot_tekst ?? '')
+  const updateBrochure = (i: number, val: string) =>
+    setBrochureVoorbeelden(prev => { const v = [...prev]; v[i] = val; return v })
+  const addBrochure = () => setBrochureVoorbeelden(prev => (prev.length >= 10 ? prev : [...prev, '']))
+  const removeBrochure = (i: number) =>
+    setBrochureVoorbeelden(prev => prev.filter((_, idx) => idx !== i))
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('saving')
+    const broVb = brochureVoorbeelden.filter(Boolean)
     const result = await slaHuisstijlOp({
       schrijftoon,
       slogan,
       primaire_kleur,
       voorbeelden: voorbeelden.filter(Boolean),
+      brochure_stijl: broVb.length || slotTekst.trim()
+        ? { voorbeelden: broVb, ...(slotTekst.trim() ? { slot_tekst: slotTekst.trim() } : {}) }
+        : undefined,
       kantoor_id: kantoor.id,
     })
     setStatus(result.ok ? 'saved' : 'error')
@@ -175,6 +190,67 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
             + Voorbeeld toevoegen ({voorbeelden.length}/20)
           </button>
         )}
+      </div>
+
+      {/* Brochure-huisstijl */}
+      <div className="border-t border-gray-100 pt-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Brochure-huisstijl <span className="text-gray-400 font-normal">(optioneel · apart van de schrijfstijl)</span>
+        </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Plak voorbeelden van úw brochures. VestaAI stemt de gegenereerde brochure-teksten hier specifiek op af —
+          los van de Funda- en social-stijl hierboven.
+        </p>
+
+        {brochureVoorbeelden.length > 0 && (
+          <div className="space-y-3 mb-3">
+            {brochureVoorbeelden.map((v, i) => (
+              <div key={i} className="relative">
+                <textarea
+                  value={v}
+                  onChange={e => updateBrochure(i, e.target.value)}
+                  rows={4}
+                  maxLength={2000}
+                  placeholder={`Brochure-voorbeeld ${i + 1}`}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeBrochure(i)}
+                  aria-label={`Brochure-voorbeeld ${i + 1} verwijderen`}
+                  className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"
+                >
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        {brochureVoorbeelden.length < 10 && (
+          <button
+            type="button"
+            onClick={addBrochure}
+            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
+            + Brochure-voorbeeld toevoegen{brochureVoorbeelden.length > 0 ? ` (${brochureVoorbeelden.length}/10)` : ''}
+          </button>
+        )}
+
+        <div className="mt-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Kantoorgegevens-slot <span className="text-gray-400 font-normal">(verschijnt als slotpagina in de PDF-export)</span>
+          </label>
+          <textarea
+            value={slotTekst}
+            onChange={e => setSlotTekst(e.target.value)}
+            rows={3}
+            maxLength={600}
+            placeholder="Bijv: Makelaardij De Sleutel · Dorpsstraat 1, 1234 AB · 020-1234567 · info@desleutel.nl · KvK 12345678"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          />
+        </div>
       </div>
 
       <button

@@ -80,20 +80,34 @@ export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: strin
       return { ok: false, error: 'Geen rechten' }
     }
 
-    // Destilleer een compact stijlprofiel uit de voorbeelden (best-effort). Faalt dit,
-    // dan slaan we de huisstijl gewoon op zonder profiel — buildSystemPrompt valt dan
-    // terug op maximaal 3 integrale voorbeelden.
-    let stijlprofiel: string | undefined
-    try {
-      stijlprofiel = await distilleerStijlprofiel(huisstijl.voorbeelden, huisstijl.schrijftoon, huisstijl.slogan)
-    } catch {
-      stijlprofiel = undefined
-    }
+    // Destilleer compacte stijlprofielen uit de voorbeelden (best-effort, parallel):
+    // één voor de algemene huisstijl en één voor de brochure-huisstijl. Faalt een
+    // destillatie, dan slaan we op zonder dat profiel — buildSystemPrompt valt dan
+    // terug op enkele integrale voorbeelden.
+    const broVoorbeelden = huisstijl.brochure_stijl?.voorbeelden?.filter(Boolean) ?? []
+    const [stijlprofiel, brochureStijlprofiel] = await Promise.all([
+      huisstijl.voorbeelden.filter(Boolean).length
+        ? distilleerStijlprofiel(huisstijl.voorbeelden, huisstijl.schrijftoon, huisstijl.slogan).catch(() => '')
+        : Promise.resolve(''),
+      broVoorbeelden.length
+        ? distilleerStijlprofiel(broVoorbeelden, huisstijl.schrijftoon, huisstijl.slogan).catch(() => '')
+        : Promise.resolve(''),
+    ])
+
+    const brochure_stijl = huisstijl.brochure_stijl
+      ? { ...huisstijl.brochure_stijl, ...(brochureStijlprofiel ? { stijlprofiel: brochureStijlprofiel } : {}) }
+      : undefined
 
     const serviceClient = createServiceSupabaseClient()
     const { error } = await serviceClient
       .from('kantoren')
-      .update({ huisstijl_json: { ...huisstijl, ...(stijlprofiel ? { stijlprofiel } : {}) } })
+      .update({
+        huisstijl_json: {
+          ...huisstijl,
+          ...(stijlprofiel ? { stijlprofiel } : {}),
+          ...(brochure_stijl ? { brochure_stijl } : {}),
+        },
+      })
       .eq('id', kantoor_id)
 
     if (error) return { ok: false, error: error.message }

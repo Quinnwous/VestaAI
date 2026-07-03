@@ -8,6 +8,13 @@ export const HuisstijlSchema = z.object({
   // Uit de voorbeelden gedestilleerd, compact stijlprofiel (server-side gegenereerd).
   // Wordt in de prompt gebruikt i.p.v. alle voorbeelden integraal → schaalt zonder promptkosten-explosie.
   stijlprofiel: z.string().max(4000).optional(),
+  // Aparte brochure-huisstijl: eigen voorbeelden + gedestilleerd profiel (alleen voor
+  // brochure_kort/brochure_lang) + vaste slottekst met kantoorgegevens voor de PDF-export.
+  brochure_stijl: z.object({
+    voorbeelden: z.array(z.string().max(2000)).max(10),
+    stijlprofiel: z.string().max(4000).optional(),
+    slot_tekst: z.string().max(600).optional(),
+  }).optional(),
 })
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>

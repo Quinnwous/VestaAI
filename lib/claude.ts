@@ -120,6 +120,20 @@ function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'
     })
   }
 
+  // Brochure-specifieke stijl: alleen sturend voor brochure_kort en brochure_lang.
+  const bro = huisstijl.brochure_stijl
+  const broVoorbeelden = bro?.voorbeelden?.filter(Boolean).slice(0, 2) ?? []
+  if (bro?.stijlprofiel || broVoorbeelden.length > 0) {
+    const broLabel = taal === 'en'
+      ? 'Brochure-specific style (apply ONLY to brochure_kort and brochure_lang)'
+      : 'Brochure-specifieke stijl (pas ALLEEN toe op brochure_kort en brochure_lang)'
+    extra += `\n\n${broLabel}:`
+    if (bro?.stijlprofiel) extra += `\n${bro.stijlprofiel}`
+    broVoorbeelden.forEach((v, i) => {
+      extra += `\n\n--- ${taal === 'en' ? 'Brochure example' : 'Brochure-voorbeeld'} ${i + 1} ---\n${v}`
+    })
+  }
+
   return base + extra
 }
 
