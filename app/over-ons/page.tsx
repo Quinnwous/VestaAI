@@ -69,7 +69,7 @@ export default function OverOnsPage() {
               Klaar om te starten?
             </h2>
             <p style={{ fontSize: 17, color: '#C8D7CF', margin: '0 0 28px' }}>
-              14 dagen gratis, geen creditcard, direct aan de slag.
+              30 dagen gratis, geen creditcard, direct aan de slag.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/login" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '14px 28px', borderRadius: 12, textDecoration: 'none' }}>

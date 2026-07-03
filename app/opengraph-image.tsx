@@ -85,7 +85,7 @@ export default function OgImage() {
             gap: 16,
           }}
         >
-          {['10 teksten', 'Funda-klaar', '14 dagen gratis'].map(label => (
+          {['10 teksten', 'Funda-klaar', '30 dagen gratis'].map(label => (
             <div
               key={label}
               style={{

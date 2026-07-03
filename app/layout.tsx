@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, Newsreader } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
-import { NavHeader } from '@/components/NavHeader'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -91,7 +90,6 @@ export default function RootLayout({
         >
           Naar inhoud
         </a>
-        <NavHeader />
         <div id="main-content">
           {children}
         </div>

@@ -9,25 +9,18 @@ interface ReferralData {
   recente: Array<{ id: string; reward_applied: boolean; datum: string }>
 }
 
-interface Props {
-  isAdmin: boolean
-}
-
-export function ReferralPanel({ isAdmin }: Props) {
+export function ReferralPanel() {
   const [data, setData] = useState<ReferralData | null>(null)
   const [laden, setLaden] = useState(true)
   const [gekopieerd, setGekopieerd] = useState(false)
 
   useEffect(() => {
-    if (!isAdmin) return
     fetch('/api/referral')
       .then(r => r.json())
       .then(d => setData(d as ReferralData))
       .catch(() => setData(null))
       .finally(() => setLaden(false))
-  }, [isAdmin])
-
-  if (!isAdmin) return null
+  }, [])
 
   const referralUrl = data?.referral_code
     ? `${typeof window !== 'undefined' ? window.location.origin : 'https://vestaai.nl'}/login?ref=${data.referral_code}`
@@ -45,7 +38,7 @@ export function ReferralPanel({ isAdmin }: Props) {
     <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
       <div>
         <h3 className="text-sm font-semibold text-gray-900 mb-0.5">Doorverwijzingsprogramma</h3>
-        <p className="text-xs text-gray-500">Deel uw unieke link. Nieuwe klanten krijgen 44 dagen gratis (i.p.v. 14), u verdient 1 maand gratis zodra ze betaald abonnee worden.</p>
+        <p className="text-xs text-gray-500">Deel uw unieke link met andere makelaarskantoren. Zodra een doorverwezen kantoor betaald abonnee wordt, verdient u 1 maand gratis.</p>
       </div>
 
       {laden ? (

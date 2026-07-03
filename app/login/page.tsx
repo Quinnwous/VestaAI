@@ -324,7 +324,7 @@ export default function LoginPage() {
                     </div>
                   ) : (
                     <div style={{ background: '#EAF5EE', borderRadius: 10, padding: '10px 14px', marginBottom: 20, fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>
-                      14 dagen gratis proberen — geen creditcard nodig.
+                      30 dagen gratis proberen — geen creditcard nodig.
                     </div>
                   )}
                   <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

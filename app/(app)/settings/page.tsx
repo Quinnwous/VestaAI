@@ -31,15 +31,6 @@ export default async function SettingsPage() {
     .order('role', { ascending: false })
 
   const isAdmin = (makelaar as Makelaar).role === 'admin'
-  const kantoorId = (makelaar as Makelaar).kantoor_id
-
-  // Chatbot-data alleen laden voor admins (niet-blokkerend via Promise.all)
-  const [chatbotFaqRes, chatbotLeadsRes] = isAdmin
-    ? await Promise.all([
-        supabase.from('chatbot_faq').select('id, vraag, antwoord, volgorde').eq('kantoor_id', kantoorId).order('volgorde'),
-        supabase.from('chatbot_leads').select('id, naam, email, bericht, created_at').eq('kantoor_id', kantoorId).order('created_at', { ascending: false }).limit(50),
-      ])
-    : [{ data: [] }, { data: [] }]
 
   return (
     <main style={{ maxWidth: 820, margin: '0 auto', padding: '40px 28px 80px' }}>
@@ -49,8 +40,6 @@ export default async function SettingsPage() {
         kantoor={kantoor as Kantoor}
         teamleden={(teamleden ?? []) as Makelaar[]}
         isAdmin={isAdmin}
-        chatbotFaq={(chatbotFaqRes.data ?? []) as { id: string; vraag: string; antwoord: string; volgorde: number }[]}
-        chatbotLeads={(chatbotLeadsRes.data ?? []) as { id: string; naam: string | null; email: string; bericht: string | null; created_at: string }[]}
       />
     </main>
   )

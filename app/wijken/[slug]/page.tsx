@@ -82,7 +82,7 @@ export default async function WijkPage({ params }: { params: { slug: string } })
           href="/login"
           className="inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
         >
-          Probeer gratis — 14 dagen →
+          Probeer gratis — 30 dagen →
         </a>
       </div>
     </main>

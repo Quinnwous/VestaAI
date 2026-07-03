@@ -170,7 +170,7 @@ const FAQS = [
   { v: 'Werkt dit met Funda en Realworks?', a: 'De teksten voldoen aan de Funda-richtlijnen (lengte, structuur, verboden woorden) en zijn direct te plaatsen. U kopieert ze naar Funda of uw CRM, of exporteert naar Realworks-formaat. Een directe Funda-API-koppeling is in ontwikkeling.' },
   { v: 'Houdt Vesta rekening met de Nederlandse regels?', a: 'Ja. Vesta is getraind op Funda-richtlijnen en NVM-stijlregels, en houdt rekening met de toon en buurtcultuur die de Nederlandse markt verwacht. Algemene of vertaalde tools missen die context.' },
   { v: 'Hoe zit het met de privacy van mijn objectdata?', a: 'Alle data wordt versleuteld opgeslagen op Nederlandse servers en is AVG-proof. Wij verkopen geen data; uw objectgegevens worden uitsluitend gebruikt voor uw eigen generaties.' },
-  { v: 'Kan ik na de proefperiode opzeggen?', a: 'Ja, maandelijks opzegbaar via uw accountpagina. Geen verborgen kosten en geen opzegtermijn. De eerste veertien dagen zijn gratis en zonder creditcard.' },
+  { v: 'Kan ik na de proefperiode opzeggen?', a: 'Ja, maandelijks opzegbaar via uw accountpagina. Geen verborgen kosten en geen opzegtermijn. De eerste dertig dagen zijn gratis en zonder creditcard.' },
 ]
 
 // ─── SVG Icons ────────────────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ export function LandingPageClient() {
                 Start gratis proefperiode →
               </Link>
             </div>
-            <p style={{ fontSize: 13.5, color: '#7C8983', margin: '18px 0 0' }}>14 dagen gratis · geen creditcard nodig · maandelijks opzegbaar</p>
+            <p style={{ fontSize: 13.5, color: '#7C8983', margin: '18px 0 0' }}>30 dagen gratis · geen creditcard nodig · maandelijks opzegbaar</p>
           </div>
 
           {/* Live demo card */}
@@ -849,7 +849,7 @@ export function LandingPageClient() {
             <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 14px' }}>
               Eén abonnement. <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>Het hele platform.</span>
             </h2>
-            <p style={{ fontSize: 17, color: '#5A6B61', margin: 0 }}>14 dagen gratis. Daarna kiest u pas.</p>
+            <p style={{ fontSize: 17, color: '#5A6B61', margin: 0 }}>30 dagen gratis. Daarna kiest u pas.</p>
           </div>
 
           {/* Toggle */}
@@ -894,7 +894,7 @@ export function LandingPageClient() {
             ))}
           </div>
           <p style={{ textAlign: 'center', fontSize: 14, color: '#5A6B61', margin: '28px 0 0' }}>
-            Alle plannen: 14 dagen gratis · geen creditcard · maandelijks opzegbaar.{' '}
+            Alle plannen: 30 dagen gratis · geen creditcard · maandelijks opzegbaar.{' '}
             <Link href="/prijzen" style={{ color: '#1A6B45', fontWeight: 700, textDecoration: 'none' }}>Volledige vergelijking →</Link>
           </p>
         </div>
@@ -970,7 +970,7 @@ export function LandingPageClient() {
               Geef uw kantoor <span style={{ fontStyle: 'italic', color: '#7DC4A0' }}>één assistent</span> die alles aankan.
             </h2>
             <p style={{ fontSize: 18, color: '#A8BBB0', margin: '0 auto 34px', maxWidth: 520 }}>
-              Probeer Vesta&nbsp;AI veertien dagen gratis. Uw eerste woning staat zo online.
+              Probeer Vesta&nbsp;AI dertig dagen gratis. Uw eerste woning staat zo online.
             </p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/login" className="vw" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '16px 30px', borderRadius: 13, textDecoration: 'none', transition: 'background .15s' }}>

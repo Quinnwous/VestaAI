@@ -254,13 +254,11 @@ export function AccountTab({ makelaar, kantoor }: Props) {
         )}
       </section>
 
-      {/* Doorverwijzingen */}
-      {makelaar.role === 'admin' && (
-        <section>
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Doorverwijzingen</h2>
-          <ReferralPanel isAdmin={makelaar.role === 'admin'} />
-        </section>
-      )}
+      {/* Doorverwijzingen — zichtbaar voor alle rollen; iedere makelaar is ambassadeur */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-900 mb-4">Doorverwijzingen</h2>
+        <ReferralPanel />
+      </section>
 
       {/* Gevaar-zone */}
       <section className="border-t border-gray-100 pt-6">

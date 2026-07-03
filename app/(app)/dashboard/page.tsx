@@ -8,6 +8,7 @@ import { heeftToegang, maandLimietVoor } from '@/lib/plans'
 import { DashboardClient } from './DashboardClient'
 import { WelkomBanner } from '@/components/WelkomBanner'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
+import { FeatureKaarten } from '@/components/FeatureKaarten'
 import type { ObjectRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Overzicht — VestaAI' }
@@ -132,6 +133,8 @@ export default async function DashboardPage({
   const [
     { data: objecten, count },
     maandTelling,
+    documentenTelling,
+    planningTelling,
   ] = await Promise.all([
     query,
     maandLimiet !== null
@@ -141,10 +144,15 @@ export default async function DashboardPage({
           .eq('kantoor_id', makelaar.kantoor_id)
           .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
       : Promise.resolve({ count: null }),
+    supabase.from('object_documenten').select('id', { count: 'exact', head: true }).eq('kantoor_id', makelaar.kantoor_id),
+    supabase.from('post_planning').select('id', { count: 'exact', head: true }).eq('kantoor_id', makelaar.kantoor_id),
   ])
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE)
   const maandCount = maandTelling.count ?? 0
+  const heeftDocumenten = (documentenTelling.count ?? 0) > 0
+  const heeftPlanning = (planningTelling.count ?? 0) > 0
+  const newestObjectId = objecten?.[0]?.id ?? null
 
   return (
     <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 28px 80px' }}>
@@ -193,7 +201,13 @@ export default async function DashboardPage({
         </div>
       )}
 
-      <OnboardingChecklist heeftObjecten={heeftObjecten} heeftHuisstijl={heeftHuisstijl} />
+      <OnboardingChecklist
+        heeftObjecten={heeftObjecten}
+        heeftHuisstijl={heeftHuisstijl}
+        heeftDocumenten={heeftDocumenten}
+        heeftPlanning={heeftPlanning}
+        newestObjectId={newestObjectId}
+      />
 
       {(count ?? 0) === 0 && !search && <WelkomBanner />}
 
@@ -205,6 +219,8 @@ export default async function DashboardPage({
         statusFilter={statusFilter}
         totalCount={count ?? 0}
       />
+
+      <FeatureKaarten newestObjectId={newestObjectId} />
     </main>
   )
 }

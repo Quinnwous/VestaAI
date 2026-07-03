@@ -8,17 +8,18 @@ SaaS voor Nederlandse en Belgische makelaars. Makelaar vult 8 velden in → Clau
 
 **Input (8 velden):**
 adres · woningtype + kamers · m² · bouwjaar · energielabel · vraagprijs · USP's (vrij tekstveld) · doelgroep
+Optioneel: open-huis-datum/-tijd · taal (`nl`/`en`)
 
-**Output (10 JSON-sleutels, 7 content-types):**
-1. `funda_tekst` — 600–800 woorden, Funda-regelset ingebakken
-2. `brochure_kort` — ~200 woorden
-3. `brochure_lang` — 500+ woorden
-4. `instagram_emotioneel` / `instagram_informatief` / `instagram_actie` — 3 losse varianten
-5. `linkedin_kantoor` / `linkedin_makelaar` — 2 varianten
-6. `koper_email`
-7. `buurtomschrijving`
+**Output (17 JSON-sleutels, 12 tabbladen):**
+- Vast: `funda_tekst` (600–800 woorden, Funda-regelset) · `brochure_kort`/`brochure_lang` · `instagram_emotioneel`/`_informatief`/`_actie` · `linkedin_kantoor`/`_makelaar` · `koper_email` · `buurtomschrijving`
+- Optioneel: `open_huis` · `bezichtiging_followup_positief`/`_negatief` · `video_script` · `energie_advies` · `kopersvragen_faq` · `marktanalyse`
+- Apart: prijswijziging-generator (`instagram_post`, `linkedin_post`, `email_geinteresseerden`)
 
-**UI-flow:** formulier → loading → 6 tabbladen → kopieer of exporteer PDF.
+**UI-flow:** formulier → loading → 12 tabbladen → kopieer, herschrijf, bewerk inline of exporteer/mail PDF.
+
+**Overige features (live):** data-verrijking (WOZ, CBS-buurtdata, Overpass-voorzieningen, PDOK/BAG — `lib/verrijking.ts`, faalt stilzwijgend) · foto-verbetering met AI-analyse · virtual staging (Gemini, 6 stijlen × 6 ruimtes) · documenten-assistent (upload + chat, Anthropic Files) · object-chatbot als embed-widget (`app/widget/chatbot.js`) · content-kalender + posts inplannen (publiceren nog handmatig) · Realworks-export (XML) · wijkpagina's (SEO) · referral · NPS · onboarding-checklist · admin/klantenbeheer met plan-gating.
+
+Concurrentiepositie en featurevergelijking met HousApp e.a.: `docs/concurrentieanalyse-housapp.md` (juli 2026).
 
 ## Stack
 
@@ -27,6 +28,7 @@ adres · woningtype + kamers · m² · bouwjaar · energielabel · vraagprijs ·
 | Frontend + API routes | Next.js 14 (App Router) |
 | Database + Auth + Storage | Supabase |
 | AI engine | Claude API — `claude-sonnet-4-6` |
+| Virtual staging | Gemini API — `gemini-2.0-flash-exp` (`GOOGLE_AI_API_KEY`) |
 | Payments | Stripe (magic links + subscriptions) |
 | PDF export | react-pdf |
 | Transactionele e-mail | Resend |
@@ -44,42 +46,43 @@ objecten:  id, kantoor_id, makelaar_id, address, input_json, outputs_json, creat
 
 ## Prijzen
 
-| Plan | Prijs | Limieten |
+| Plan | Prijs | Limieten (technisch, `lib/plans.ts`) |
 |------|-------|----------|
-| Starter | €60/mo (€600/jr) | 5 objecten/mo · 1 user |
-| Pro | €150/mo (€1.500/jr) | onbeperkt · 5 users · huisstijlgeheugen |
-| Kantoor | €500/mo (€5.000/jr) | onbeperkt users/kantoren · white-label · API |
+| Starter | €60/mo (€600/jr) | 5 objecten/mnd · 1 user |
+| Pro | €150/mo (€1.500/jr) | 15 objecten/mnd · 5 users · huisstijlgeheugen |
+| Kantoor | €500/mo (€5.000/jr) | 100 objecten/mnd (geadverteerd: onbeperkt) · white-label · API |
 
-14 dagen gratis proefperiode → automatische facturering via Stripe.
+Plan-gating: geen plan én geen lopende trial = geen toegang. Gratis periodes kent de platform-admin toe; Stripe-facturering staat klaar maar is uitgesteld tot na de testfase. ⚠️ Abonnementsstructuur wordt herzien (zie roadmap: per-makelaar-prijs adverteren, objectlimieten heroverwegen).
 
 ## Mappenstructuur
 
 ```
 VestaAI/
 ├── app/
-│   ├── object/new/        # 8-velden formulier + state machine
-│   ├── api/generate/      # POST: Claude API call → JSON
-│   └── page.tsx           # redirect → /object/new
-├── components/
-│   ├── PropertyForm.tsx   # formulier (react-hook-form + zod)
-│   ├── LoadingProgress.tsx
-│   ├── ResultTabs.tsx     # 6-tab weergave
-│   └── TabContent.tsx     # content + kopieerknop
+│   ├── page.tsx               # landingspagina (LandingPageClient)
+│   ├── (app)/                 # ingelogde route-group met vaste sidebar (AppShell)
+│   │                          #   → dashboard · object/new · object/[id] (werkruimte-tabs)
+│   │                          #   · kalender · huisstijl · chatbot · settings
+│   ├── admin/                 # platform-admin (eigen layout) · wijken/ · auth/ · login/ · prijzen/
+│   ├── widget/chatbot.js      # embed-widget voor externe makelaarssites
+│   └── api/                   # generate, chat, chatbot, fotos, documenten, export,
+│                              #   pdf, planning, verrijking, referral, nps, stats,
+│                              #   stripe, webhooks, cron, bag, wijken, object, auth
+├── components/                # ±25 componenten; kern: PropertyForm, ResultTabs, TabContent,
+│                              #   FotoVerbetering, VirtualStaging, DocumentenAssistent,
+│                              #   WoningdataPanel, PlanPostKnop, RealworksExportButton
 ├── lib/
-│   ├── schemas.ts         # Zod-schemas + TypeScript types (client-safe)
-│   ├── claude.ts          # Claude API wrapper, system prompt, retry
-│   ├── supabase.ts        # (Week 2)
-│   └── stripe.ts          # (Week 2)
+│   ├── schemas.ts             # Zod-schemas + TypeScript types (client-safe)
+│   ├── claude.ts              # Claude API wrapper, system prompt, retry
+│   ├── verrijking.ts          # WOZ/CBS/Overpass/PDOK-verrijking
+│   ├── plans.ts               # plan-gating + maandlimieten
+│   └── supabase.ts · stripe.ts · email.ts · admin.ts · ensureMakelaar.ts
 ├── docs/
-│   ├── roadmap.md             # open to-do's per fase (klaar = weg)
 │   ├── goals.md               # strategie & doelen (leidend)
+│   ├── roadmap.md             # open to-do's per fase (klaar = weg)
+│   ├── kostenschatting.md
+│   ├── concurrentieanalyse-housapp.md   # + .docx — analyse vs HousApp (juli 2026)
 │   └── data-integraties/      # API-referenties voor toekomstige data-koppelingen
-│       ├── bag-data.md
-│       ├── buurtanalyse-cbs.md
-│       ├── historisch-waarde.md
-│       ├── marktdynamiek.md
-│       ├── overpass-voorzieningen.md
-│       └── woz-vergelijking.md
 ```
 
 ## To-do-conventie

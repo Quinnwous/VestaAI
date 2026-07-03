@@ -36,7 +36,7 @@ export default function PrijzenPage() {
           Simpele, eerlijke prijzen
         </h1>
         <p className="text-lg text-gray-500">
-          14 dagen gratis proberen — geen creditcard nodig. Daarna kiest u pas.
+          30 dagen gratis proberen — geen creditcard nodig. Daarna kiest u pas.
         </p>
       </section>
 
@@ -67,7 +67,7 @@ export default function PrijzenPage() {
             {[
               {
                 v: 'Hoe werkt de gratis proefperiode?',
-                a: 'U maakt een account aan — geen creditcard nodig. U heeft 14 dagen lang volledige toegang tot alle functies van het Kantoor-plan. Daarna kiest u zelf welk abonnement u wilt.',
+                a: 'U maakt een account aan — geen creditcard nodig. U heeft 30 dagen lang volledige toegang tot alle functies van het Kantoor-plan. Daarna kiest u zelf welk abonnement u wilt.',
               },
               {
                 v: 'Kan ik tussentijds opzeggen?',
@@ -98,7 +98,7 @@ export default function PrijzenPage() {
       {/* CTA */}
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Begin vandaag nog</h2>
-        <p className="text-gray-500 mb-8">14 dagen gratis proberen · Geen creditcard · Altijd opzegbaar</p>
+        <p className="text-gray-500 mb-8">30 dagen gratis proberen · Geen creditcard · Altijd opzegbaar</p>
         <Link
           href="/login"
           className="inline-block rounded-xl bg-blue-600 px-10 py-4 text-base font-semibold text-white hover:bg-blue-700 transition-colors"

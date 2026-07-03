@@ -3,19 +3,26 @@ import Link from 'next/link'
 interface OnboardingChecklistProps {
   heeftObjecten: boolean
   heeftHuisstijl: boolean
+  heeftDocumenten: boolean
+  heeftPlanning: boolean
+  newestObjectId: string | null
 }
 
 const stappen = [
   { id: 'account', label: 'Account aangemaakt' },
-  { id: 'object', label: 'Eerste object gegenereerd' },
+  { id: 'object', label: 'Eerste woning gegenereerd' },
   { id: 'huisstijl', label: 'Huisstijl ingesteld' },
+  { id: 'document', label: 'Document geüpload (VvE, akte of meetrapport)' },
+  { id: 'post', label: 'Eerste social post ingepland' },
 ]
 
-export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl }: OnboardingChecklistProps) {
+export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocumenten, heeftPlanning, newestObjectId }: OnboardingChecklistProps) {
   const status = {
     account: true,
     object: heeftObjecten,
     huisstijl: heeftHuisstijl,
+    document: heeftDocumenten,
+    post: heeftPlanning,
   }
 
   const klaar = Object.values(status).every(Boolean)
@@ -23,6 +30,15 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl }: Onboardin
 
   const aantalKlaar = Object.values(status).filter(Boolean).length
   const voortgang = Math.round((aantalKlaar / stappen.length) * 100)
+
+  // Per-woning-stappen openen de werkruimte van de laatste woning (of het formulier).
+  const werkruimte = newestObjectId ? `/object/${newestObjectId}` : '/object/new'
+  const acties: Record<string, { href: string; label: string }> = {
+    object: { href: '/object/new', label: 'Nu aanmaken →' },
+    huisstijl: { href: '/huisstijl', label: 'Instellen →' },
+    document: { href: werkruimte, label: 'Uploaden →' },
+    post: { href: '/kalender', label: 'Inplannen →' },
+  }
 
   return (
     <div style={{ marginBottom: 28, borderRadius: 18, border: '1px solid #D5E8DD', background: '#F1F7F3', padding: '20px 22px' }}>
@@ -40,6 +56,7 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl }: Onboardin
       <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {stappen.map(stap => {
           const gedaan = status[stap.id as keyof typeof status]
+          const actie = acties[stap.id]
           return (
             <li key={stap.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: gedaan ? '#1A6B45' : '#fff', border: gedaan ? 'none' : '2px solid #A8D4BB' }}>
@@ -52,14 +69,9 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl }: Onboardin
               <span style={{ fontSize: 14, fontWeight: gedaan ? 400 : 600, color: gedaan ? '#2A8A5C' : '#0E3B27', textDecoration: gedaan ? 'line-through' : 'none' }}>
                 {stap.label}
               </span>
-              {!gedaan && stap.id === 'object' && (
-                <Link href="/object/new" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#1A6B45', textDecoration: 'underline' }}>
-                  Nu aanmaken →
-                </Link>
-              )}
-              {!gedaan && stap.id === 'huisstijl' && (
-                <Link href="/settings" style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#1A6B45', textDecoration: 'underline' }}>
-                  Instellen →
+              {!gedaan && actie && (
+                <Link href={actie.href} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#1A6B45', textDecoration: 'underline', whiteSpace: 'nowrap' }}>
+                  {actie.label}
                 </Link>
               )}
             </li>
