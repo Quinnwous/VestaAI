@@ -4,19 +4,18 @@
 
 ---
 
-## Openstaand — 2 juli 2026
+## Openstaand — 3 juli 2026
 
-> ✅ Klaar (2 juli): wachtwoord-reset, self-signup + e-mailbevestiging (beide button-gated token_hash), Resend-domein + `noreply@vestaai.nl`, RLS-recursie, self-heal + `handle_new_user`-trigger, platform-admin + klantenbeheer, plan-gating. Details in geheugen `[[auth-onboarding-architecture]]`.
+> ✅ Klaar (3 juli): proefperiode-model live (30 dagen / 5 objecten totaal, trigger + vangnet + verlopen-schermen), gratis-plan (5/mnd), activeringsmail + welkomstmail + registratiemelding (atomisch, nooit dubbel), maandverbruik op /admin, uitloggen → homepage, referral-trigger-fix (search_path — stille signup-breuk sinds 1 juli), reset- en registratie-flow live bewezen E2E, Stripe test-mode klaargezet (producten/prijzen/webhook). Details in geheugen `[[auth-onboarding-architecture]]`.
 
 ### Fase 1 — Product afronden
 
 - **Object-generatie time-out (HOOG — klant-hinder)** — `/api/generate` liep 1× 180s vast (Vercel 504); de client toont dan "The string did not match the expected pattern" (kapotte JSON-parse van de time-out-HTML). Onderzoek `generateContent` in `lib/claude.ts` (2 retries) + `fetchVerrijking` in `lib/verrijking.ts` (externe API's). Ook: client-side nette fout tonen i.p.v. `res.json()` op niet-JSON.
-- **Live end-to-end verifiëren (volgende sessie)** — gmail → `/admin`; wijs iCloud test een plan toe (Pro) → iCloud-dashboard werkt (max 15/mnd); account zónder plan → "niet geactiveerd"-melding; reset + self-signup nog eens live doorlopen.
+- **Stripe afmaken (actie Quinn + daarna checkout-smoke-test)** — 4 env-waarden in Vercel zetten (STRIPE_PRICE_STARTER/PRO/KANTOOR + STRIPE_WEBHOOK_SECRET, waarden staan in `.env.local`) en checken dat STRIPE_SECRET_KEY daar staat → redeploy → Claude test checkout-redirect. Let op: alles is **test-mode** (sk_test); vóór echte facturatie live-mode key + prices/webhook opnieuw + de prijsherziening hieronder.
+- **Proef-copy naar 30 dagen** — systeem staat al op 30 dagen / 5 objecten; de site zegt nog "14 dagen gratis" op ±12 plekken (landingspagina, /prijzen incl. FAQ-belofte "alle functies van het Kantoor-plan", login, over-ons, wijken, opengraph) + `docs/goals.md`. Framing: "30 dagen gratis, geen verplichtingen" (HousApp-norm).
+- **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (Supabase dashboard → Auth → Email Templates, alleen subject-veld; body's zijn al NL).
 - E2e smoke test op Vercel: registreer account → genereer object → exporteer PDF — volledig doorlopen
-- **Free trial wordt 30 dagen** (was 14) — overal doorvoeren: landingspagina- en prijzenpagina-copy, `docs/goals.md`, de standaard trial-periode die de admin toekent, en straks de Stripe-trial-instelling. Vrijblijvend framen ("30 dagen gratis, geen verplichtingen") — HousApp zet die norm.
-- **Abonnementen opnieuw uitdenken (vóór Stripe-activering)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/concurrentieanalyse-housapp.md` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee.
-- Stripe: Starter (€60/mo, €600/jr), Pro (€150/mo, €1.500/jr), Kantoor (€500/mo, €5.000/jr) price IDs aanmaken → in Vercel env — uitgesteld tot na gratis testfase én tot na de abonnements-herziening hierboven
-- Stripe webhook configureren op Vercel (`/api/webhooks/stripe`) — uitgesteld tot na gratis testfase
+- **Abonnementen opnieuw uitdenken (vóór livegang betalingen)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/concurrentieanalyse-housapp.md` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee; daarna Stripe-prices vervangen (price-swap).
 
 ---
 
