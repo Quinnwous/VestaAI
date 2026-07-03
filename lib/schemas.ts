@@ -4,7 +4,10 @@ export const HuisstijlSchema = z.object({
   schrijftoon: z.enum(['formeel', 'informeel', 'enthousiast']),
   slogan: z.string().max(100),
   primaire_kleur: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
-  voorbeelden: z.array(z.string().max(2000)).max(3),
+  voorbeelden: z.array(z.string().max(2000)).max(20),
+  // Uit de voorbeelden gedestilleerd, compact stijlprofiel (server-side gegenereerd).
+  // Wordt in de prompt gebruikt i.p.v. alle voorbeelden integraal → schaalt zonder promptkosten-explosie.
+  stijlprofiel: z.string().max(4000).optional(),
 })
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>

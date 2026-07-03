@@ -101,18 +101,74 @@ function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'
   const toonLabel = taal === 'en' ? 'Tone of voice' : 'Schrijftoon'
   const sloganLabel = taal === 'en' ? 'Slogan' : 'Slogan'
   const voorbeeldLabel = taal === 'en' ? 'Example texts (use as style reference)' : 'Voorbeeldteksten (gebruik als stijlreferentie)'
+  const profielLabel = taal === 'en' ? 'Agency style profile (follow closely)' : 'Stijlprofiel van het kantoor (volg dit nauwgezet)'
   const kantoorLabel = taal === 'en' ? "Agency's house style" : 'Huisstijl van het makelaarskantoor'
 
   let extra = `\n\n${kantoorLabel}:\n- ${toonLabel}: ${schrijftoonLabel}`
   if (huisstijl.slogan) extra += `\n- ${sloganLabel}: "${huisstijl.slogan}"`
-  if (huisstijl.voorbeelden.length > 0) {
+
+  // Het gedestilleerde stijlprofiel is leidend. In beide gevallen sturen we hooguit 3 integrale
+  // voorbeelden mee als concrete referentie — meer zou de prompt (en de kosten) onnodig opblazen.
+  if (huisstijl.stijlprofiel) {
+    extra += `\n\n${profielLabel}:\n${huisstijl.stijlprofiel}`
+  }
+  const topVoorbeelden = huisstijl.voorbeelden.filter(Boolean).slice(0, 3)
+  if (topVoorbeelden.length > 0) {
     extra += `\n\n${voorbeeldLabel}:\n`
-    huisstijl.voorbeelden.forEach((v, i) => {
+    topVoorbeelden.forEach((v, i) => {
       extra += `\n--- ${taal === 'en' ? 'Example' : 'Voorbeeld'} ${i + 1} ---\n${v}\n`
     })
   }
 
   return base + extra
+}
+
+// Destilleert uit (max 20) voorbeeldteksten één compact, herbruikbaar stijlprofiel.
+// Draait server-side bij het opslaan van de huisstijl, zodat generaties niet alle
+// voorbeelden integraal hoeven mee te sturen. Best-effort: de aanroeper vangt fouten af.
+export async function distilleerStijlprofiel(
+  voorbeelden: string[],
+  schrijftoon: HuisstijlConfig['schrijftoon'],
+  slogan: string,
+  client?: Anthropic,
+): Promise<string> {
+  const nietLeeg = voorbeelden.filter(Boolean)
+  if (nietLeeg.length === 0) return ''
+
+  const c = client ?? new Anthropic()
+  const toon = {
+    formeel: 'formeel en professioneel',
+    informeel: 'informeel en toegankelijk',
+    enthousiast: 'enthousiast en uitnodigend',
+  }[schrijftoon]
+
+  const voorbeeldBlok = nietLeeg.map((v, i) => `--- Voorbeeld ${i + 1} ---\n${v}`).join('\n\n')
+
+  const message = await c.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1200,
+    system:
+      'Je bent een redactioneel analist. Je destilleert uit voorbeeldteksten van één makelaarskantoor een compact, herbruikbaar stijlprofiel waarmee een AI-copywriter in exact díe huisstijl kan schrijven.',
+    messages: [
+      {
+        role: 'user',
+        content: `Basis-schrijftoon: ${toon}${slogan ? `\nSlogan: "${slogan}"` : ''}
+
+Hieronder ${nietLeeg.length} voorbeeldtekst(en) van dit kantoor. Destilleer één compact stijlprofiel (max ~350 woorden) met concrete, direct toepasbare kenmerken:
+- Toon & register
+- Zinslengte en ritme
+- Woordkeus, vaste termen en te vermijden woorden
+- Structuur en opbouw van een tekst
+- Do's en don'ts (korte opsomming)
+
+Schrijf het als directe instructie aan een copywriter, niet als analyse-essay. Geen inleiding of afsluiting — alléén het profiel.
+
+${voorbeeldBlok}`,
+      },
+    ],
+  })
+
+  return message.content[0].type === 'text' ? message.content[0].text.trim() : ''
 }
 
 function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): string {

@@ -3,6 +3,7 @@
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { HuisstijlSchema } from '@/lib/schemas'
+import { distilleerStijlprofiel } from '@/lib/claude'
 import { sendTeamInviteConfirmation } from '@/lib/email'
 
 export async function uploadLogo(formData: FormData) {
@@ -79,10 +80,20 @@ export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: strin
       return { ok: false, error: 'Geen rechten' }
     }
 
+    // Destilleer een compact stijlprofiel uit de voorbeelden (best-effort). Faalt dit,
+    // dan slaan we de huisstijl gewoon op zonder profiel — buildSystemPrompt valt dan
+    // terug op maximaal 3 integrale voorbeelden.
+    let stijlprofiel: string | undefined
+    try {
+      stijlprofiel = await distilleerStijlprofiel(huisstijl.voorbeelden, huisstijl.schrijftoon, huisstijl.slogan)
+    } catch {
+      stijlprofiel = undefined
+    }
+
     const serviceClient = createServiceSupabaseClient()
     const { error } = await serviceClient
       .from('kantoren')
-      .update({ huisstijl_json: huisstijl })
+      .update({ huisstijl_json: { ...huisstijl, ...(stijlprofiel ? { stijlprofiel } : {}) } })
       .eq('id', kantoor_id)
 
     if (error) return { ok: false, error: error.message }

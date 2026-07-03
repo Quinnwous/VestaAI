@@ -42,13 +42,16 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   const [slogan, setSlogan] = useState(huidig?.slogan ?? '')
   const [primaire_kleur, setPrimaireKleur] = useState(huidig?.primaire_kleur ?? '#1A6B45')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(
-    huidig?.voorbeelden ?? ['', '', '']
+    huidig?.voorbeelden?.length ? huidig.voorbeelden : ['']
   )
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   const updateVoorbeeld = (i: number, val: string) => {
     setVoorbeelden(prev => { const v = [...prev]; v[i] = val; return v })
   }
+  const addVoorbeeld = () => setVoorbeelden(prev => (prev.length >= 20 ? prev : [...prev, '']))
+  const removeVoorbeeld = (i: number) =>
+    setVoorbeelden(prev => (prev.length <= 1 ? [''] : prev.filter((_, idx) => idx !== i)))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -131,21 +134,47 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       {/* Voorbeeldteksten */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          Voorbeeldteksten <span className="text-gray-400 font-normal">(max 3 · VestaAI leert de schrijfstijl van uw kantoor)</span>
+          Voorbeeldteksten <span className="text-gray-400 font-normal">(tot 20)</span>
         </label>
+        <p className="text-xs text-gray-500 mb-3">
+          Plak Funda-teksten, brochures of social posts van uw kantoor. Bij opslaan destilleert VestaAI hier
+          automatisch één stijlprofiel uit — hoe meer representatieve voorbeelden, hoe scherper uw huisstijl wordt geleerd.
+        </p>
         <div className="space-y-3">
-          {[0, 1, 2].map(i => (
-            <textarea
-              key={i}
-              value={voorbeelden[i] ?? ''}
-              onChange={e => updateVoorbeeld(i, e.target.value)}
-              rows={4}
-              maxLength={2000}
-              placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure van uw kantoor`}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-            />
+          {voorbeelden.map((v, i) => (
+            <div key={i} className="relative">
+              <textarea
+                value={v}
+                onChange={e => updateVoorbeeld(i, e.target.value)}
+                rows={4}
+                maxLength={2000}
+                placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure van uw kantoor`}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              />
+              {voorbeelden.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeVoorbeeld(i)}
+                  aria-label={`Voorbeeld ${i + 1} verwijderen`}
+                  className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"
+                >
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
           ))}
         </div>
+        {voorbeelden.length < 20 && (
+          <button
+            type="button"
+            onClick={addVoorbeeld}
+            className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700"
+          >
+            + Voorbeeld toevoegen ({voorbeelden.length}/20)
+          </button>
+        )}
       </div>
 
       <button
@@ -153,7 +182,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
         disabled={status === 'saving'}
         className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
       >
-        {status === 'saving' ? 'Opslaan...' : status === 'saved' ? 'Opgeslagen!' : 'Sla huisstijl op'}
+        {status === 'saving' ? 'Stijlprofiel leren…' : status === 'saved' ? 'Opgeslagen!' : 'Sla huisstijl op'}
       </button>
 
       {status === 'error' && (
