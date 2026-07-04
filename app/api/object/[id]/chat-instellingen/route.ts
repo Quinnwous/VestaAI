@@ -31,20 +31,42 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const kantoorId = await kantoorVanUser(supabase)
   if (!kantoorId) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
-  let body: { chat_publiek?: boolean }
+  let body: { chat_publiek?: boolean; chat_foto_url?: string | null }
   try {
     body = await req.json()
   } catch {
     return NextResponse.json({ error: 'Ongeldig verzoek' }, { status: 400 })
   }
-  if (typeof body.chat_publiek !== 'boolean') {
-    return NextResponse.json({ error: 'chat_publiek (boolean) verplicht' }, { status: 400 })
-  }
 
   const serviceClient = createServiceSupabaseClient()
+  const update: { chat_publiek?: boolean; chat_foto_url?: string | null } = {}
+
+  if (typeof body.chat_publiek === 'boolean') update.chat_publiek = body.chat_publiek
+
+  if ('chat_foto_url' in body) {
+    if (body.chat_foto_url === null) {
+      update.chat_foto_url = null
+    } else if (typeof body.chat_foto_url === 'string') {
+      // Alleen een foto uit de eigen bibliotheek van dit object mag de cover worden.
+      const { data: foto } = await serviceClient
+        .from('object_fotos')
+        .select('id')
+        .eq('object_id', params.id)
+        .eq('kantoor_id', kantoorId)
+        .eq('url', body.chat_foto_url)
+        .maybeSingle()
+      if (!foto) return NextResponse.json({ error: 'Onbekende foto' }, { status: 400 })
+      update.chat_foto_url = body.chat_foto_url
+    }
+  }
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ error: 'Niets om bij te werken' }, { status: 400 })
+  }
+
   const { error } = await serviceClient
     .from('objecten')
-    .update({ chat_publiek: body.chat_publiek })
+    .update(update)
     .eq('id', params.id)
     .eq('kantoor_id', kantoorId)
 
