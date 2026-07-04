@@ -13,6 +13,7 @@ type Lead = {
   id: string
   naam: string | null
   email: string
+  telefoon: string | null
   bericht: string | null
   created_at: string
 }
@@ -282,7 +283,10 @@ Met vriendelijke groet`
                 <div className="flex items-start justify-between">
                   <div>
                     {lead.naam && <p className="text-sm font-medium text-gray-900">{lead.naam}</p>}
-                    <p className="text-sm text-blue-600">{lead.email}</p>
+                    <p className="text-sm text-blue-600">
+                      {lead.email}
+                      {lead.telefoon && <span className="text-gray-500"> · {lead.telefoon}</span>}
+                    </p>
                     {lead.bericht && <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{lead.bericht}</p>}
                   </div>
                   <p className="text-xs text-gray-400">

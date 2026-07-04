@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createServiceSupabaseClient } from '@/lib/supabase'
-import { sendNieuweLeadMelding } from '@/lib/email'
+import { sendNieuweLeadMelding, sendNieuweKantoorLeadMelding } from '@/lib/email'
 
 const LeadSchema = z
   .object({
@@ -57,9 +57,10 @@ export async function POST(req: NextRequest) {
   })
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // E-mailnotificatie naar de makelaar van het object (best-effort — mag de lead-opslag nooit blokkeren).
-  if (object) {
-    try {
+  // E-mailnotificatie (best-effort — mag de lead-opslag nooit blokkeren).
+  try {
+    if (object) {
+      // Object-lead → de makelaar van het object.
       const { data: makelaar } = await serviceClient
         .from('makelaars')
         .select('email')
@@ -75,9 +76,25 @@ export async function POST(req: NextRequest) {
           leadBericht: bericht,
         })
       }
-    } catch {
-      // Notificatie mislukt — lead is bewaard, makelaar ziet 'm alsnog in de werkruimte.
+    } else {
+      // Kantoorbrede (widget-)lead → de admins van het kantoor.
+      const [{ data: kantoor }, { data: admins }] = await Promise.all([
+        serviceClient.from('kantoren').select('name').eq('id', kantoorId).single(),
+        serviceClient.from('makelaars').select('email').eq('kantoor_id', kantoorId).eq('role', 'admin'),
+      ])
+      const ontvangers = (admins ?? []).map(a => a.email).filter((e): e is string => !!e)
+      if (ontvangers.length > 0) {
+        await sendNieuweKantoorLeadMelding(ontvangers, {
+          kantoorNaam: kantoor?.name ?? 'je kantoor',
+          leadNaam: naam,
+          leadEmail: email,
+          leadTelefoon: telefoon,
+          leadBericht: bericht,
+        })
+      }
     }
+  } catch {
+    // Notificatie mislukt — lead is bewaard, zichtbaar in de werkruimte / bij Chatbot.
   }
 
   return NextResponse.json({ ok: true }, { status: 201 })

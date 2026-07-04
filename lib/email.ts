@@ -293,6 +293,49 @@ export async function sendNieuweLeadMelding(
   })
 }
 
+export async function sendNieuweKantoorLeadMelding(
+  to: string[],
+  opts: { kantoorNaam: string; leadNaam?: string; leadEmail: string; leadTelefoon?: string; leadBericht?: string },
+) {
+  if (to.length === 0) return
+  const rij = (label: string, waarde: string, laatste = false) => `
+    <tr${laatste ? '' : ' style="background:#f9fafb;"'}>
+      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${label}</td>
+      <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${waarde}</td>
+    </tr>`
+
+  const rijen = [
+    opts.leadNaam ? rij('Naam', esc(opts.leadNaam)) : '',
+    rij('E-mail', `<a href="mailto:${esc(opts.leadEmail)}" style="color:#1A6B45;">${esc(opts.leadEmail)}</a>`, !opts.leadTelefoon),
+    opts.leadTelefoon ? rij('Telefoon', esc(opts.leadTelefoon), true) : '',
+  ].filter(Boolean).join('')
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    replyTo: opts.leadEmail,
+    subject: 'Nieuwe lead via de website-chatbot',
+    html: baseTemplate(`
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
+        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">💬 Nieuwe lead via de chatbot op jullie site</p>
+      </div>
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Iemand liet contactgegevens achter</h2>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        Via de chatbot op de website van ${esc(opts.kantoorNaam)} is een lead binnengekomen. Neem gerust snel contact op.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        ${rijen}
+      </table>
+      ${opts.leadBericht ? `
+        <p style="margin:20px 0 4px;font-size:13px;font-weight:600;color:#374151;">Context uit het gesprek</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;white-space:pre-wrap;">${esc(opts.leadBericht)}</p>
+      ` : ''}
+      ${btn(`${APP_URL}/chatbot`, 'Bekijk alle leads')}
+      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— VestaAI</p>
+    `),
+  })
+}
+
 export async function sendInvoiceConfirmationEmail(
   email: string,
   name: string,

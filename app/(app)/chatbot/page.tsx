@@ -22,7 +22,7 @@ export default async function ChatbotPage() {
   const [{ data: kantoor }, { data: faq }, { data: leads }] = await Promise.all([
     supabase.from('kantoren').select('id, name').eq('id', kantoorId).single(),
     supabase.from('chatbot_faq').select('id, vraag, antwoord, volgorde').eq('kantoor_id', kantoorId).order('volgorde'),
-    supabase.from('chatbot_leads').select('id, naam, email, bericht, created_at').eq('kantoor_id', kantoorId).order('created_at', { ascending: false }).limit(50),
+    supabase.from('chatbot_leads').select('id, naam, email, telefoon, bericht, created_at').eq('kantoor_id', kantoorId).order('created_at', { ascending: false }).limit(50),
   ])
 
   const k = kantoor as Pick<Kantoor, 'id' | 'name'>
@@ -39,7 +39,7 @@ export default async function ChatbotPage() {
         kantoorNaam={k.name}
         isAdmin={(makelaar as Makelaar).role === 'admin'}
         faqItems={(faq ?? []) as { id: string; vraag: string; antwoord: string; volgorde: number }[]}
-        leads={(leads ?? []) as { id: string; naam: string | null; email: string; bericht: string | null; created_at: string }[]}
+        leads={(leads ?? []) as { id: string; naam: string | null; email: string; telefoon: string | null; bericht: string | null; created_at: string }[]}
       />
     </main>
   )
