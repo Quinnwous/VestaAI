@@ -30,7 +30,7 @@ interface StagingResultaat {
   ruimte: string
 }
 
-export function VirtualStaging() {
+export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onBewaard?: () => void }) {
   const [stijl, setStijl] = useState<Stijl>('modern')
   const [ruimte, setRuimte] = useState<Ruimte>('woonkamer')
   const [resultaten, setResultaten] = useState<StagingResultaat[]>([])
@@ -38,7 +38,24 @@ export function VirtualStaging() {
   const [error, setError] = useState('')
   const [actief, setActief] = useState<number | null>(null)
   const [toonOrigineel, setToonOrigineel] = useState(false)
+  const [bewaardStatus, setBewaardStatus] = useState<Record<number, 'bezig' | 'klaar'>>({})
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function bewaarInBibliotheek(item: StagingResultaat, index: number) {
+    if (!objectId || bewaardStatus[index]) return
+    setBewaardStatus(s => ({ ...s, [index]: 'bezig' }))
+    const res = await fetch(`/api/object/${objectId}/fotos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl: item.gestaged, soort: 'gestaged', bestandsnaam: `staging_${item.ruimte}_${item.stijl}.jpg` }),
+    }).catch(() => null)
+    if (res?.ok) {
+      setBewaardStatus(s => ({ ...s, [index]: 'klaar' }))
+      onBewaard?.()
+    } else {
+      setBewaardStatus(s => { const n = { ...s }; delete n[index]; return n })
+    }
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const bestand = e.target.files?.[0]
@@ -215,6 +232,15 @@ export function VirtualStaging() {
               >
                 Download ↓
               </button>
+              {objectId && actief !== null && (
+                <button
+                  onClick={() => bewaarInBibliotheek(huidig, actief)}
+                  disabled={!!bewaardStatus[actief]}
+                  className="text-xs font-semibold text-[#1A6B45] hover:text-[#114230] transition-colors px-2 py-1.5 disabled:opacity-60"
+                >
+                  {bewaardStatus[actief] === 'klaar' ? 'Bewaard ✓' : bewaardStatus[actief] === 'bezig' ? 'Bewaren…' : 'Bewaar in bibliotheek'}
+                </button>
+              )}
             </div>
           </div>
           <div className="relative aspect-video bg-gray-900">

@@ -6,6 +6,7 @@ import { NotitieVeld } from '@/components/NotitieVeld'
 import { FotoVerbetering } from '@/components/FotoVerbetering'
 import { VirtualStaging } from '@/components/VirtualStaging'
 import { DocumentenAssistent } from '@/components/DocumentenAssistent'
+import { FotoBibliotheek } from '@/components/FotoBibliotheek'
 import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
@@ -46,6 +47,7 @@ export function ObjectWorkspace({
   userEmail?: string
 }) {
   const [active, setActive] = useState<SectionId>('content')
+  const [fotoRefresh, setFotoRefresh] = useState(0)
 
   return (
     <div>
@@ -82,11 +84,16 @@ export function ObjectWorkspace({
         <div style={card}>
           <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Foto verbeteren</h2>
           <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Upload een woning- of kamerfoto en ontvang een verbeterde versie (belichting, scherpte, perspectief).</p>
-          <FotoVerbetering objectId={objectId} />
+          <FotoVerbetering objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
           <div style={{ borderTop: '1px solid #E9EFEB', paddingTop: 24, marginTop: 24 }}>
             <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Virtual staging</h2>
             <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Upload een lege kamer en ontvang een gemeubileerde versie via AI.</p>
-            <VirtualStaging />
+            <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
+          </div>
+          <div style={{ borderTop: '1px solid #E9EFEB', paddingTop: 24, marginTop: 24 }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Foto-bibliotheek</h2>
+            <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Bewaarde verbeterde en gestagede foto&apos;s bij deze woning — blijven hier staan om te downloaden of hergebruiken.</p>
+            <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
           </div>
         </div>
       </div>

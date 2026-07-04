@@ -21,6 +21,7 @@ interface ResultItem {
 
 interface Props {
   objectId: string
+  onBewaard?: () => void
 }
 
 function ScoreBadge({ label, score }: { label: string; score: number }) {
@@ -34,13 +35,30 @@ function ScoreBadge({ label, score }: { label: string; score: number }) {
   )
 }
 
-export function FotoVerbetering({ objectId }: Props) {
+export function FotoVerbetering({ objectId, onBewaard }: Props) {
   const [resultaten, setResultaten] = useState<ResultItem[]>([])
   const [bezig, setBezig] = useState(false)
   const [error, setError] = useState('')
   const [actief, setActief] = useState<number | null>(null)
   const [toonVerbeterd, setToonVerbeterd] = useState(true)
+  const [bewaardStatus, setBewaardStatus] = useState<Record<number, 'bezig' | 'klaar'>>({})
   const fileRef = useRef<HTMLInputElement>(null)
+
+  async function bewaarInBibliotheek(item: ResultItem, index: number) {
+    if (bewaardStatus[index]) return
+    setBewaardStatus(s => ({ ...s, [index]: 'bezig' }))
+    const res = await fetch(`/api/object/${objectId}/fotos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl: item.verbeterd, soort: 'verbeterd', bestandsnaam: item.bestandsnaam }),
+    }).catch(() => null)
+    if (res?.ok) {
+      setBewaardStatus(s => ({ ...s, [index]: 'klaar' }))
+      onBewaard?.()
+    } else {
+      setBewaardStatus(s => { const n = { ...s }; delete n[index]; return n })
+    }
+  }
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const bestand = e.target.files?.[0]
@@ -179,6 +197,15 @@ export function FotoVerbetering({ objectId }: Props) {
               >
                 Download ↓
               </button>
+              {actief !== null && (
+                <button
+                  onClick={() => bewaarInBibliotheek(huidig, actief)}
+                  disabled={!!bewaardStatus[actief]}
+                  className="text-xs font-semibold text-[#1A6B45] hover:text-[#114230] transition-colors px-2 py-1.5 disabled:opacity-60"
+                >
+                  {bewaardStatus[actief] === 'klaar' ? 'Bewaard ✓' : bewaardStatus[actief] === 'bezig' ? 'Bewaren…' : 'Bewaar in bibliotheek'}
+                </button>
+              )}
             </div>
           </div>
 
