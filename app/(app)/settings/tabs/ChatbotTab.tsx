@@ -32,6 +32,7 @@ export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: P
   const [opslaan, setOpslaan] = useState(false)
   const [verwijderenId, setVerwijderenId] = useState<string | null>(null)
   const [embedGekopieerd, setEmbedGekopieerd] = useState(false)
+  const [webbouwerGekopieerd, setWebbouwerGekopieerd] = useState(false)
 
   const appUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const embedSnippet = `<!-- VestaAI Chatbot Widget -->
@@ -44,6 +45,20 @@ export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: P
     document.head.appendChild(s);
   })();
 </script>`
+
+  const webbouwerMail = `Onderwerp: Chatbot-widget plaatsen op onze website
+
+Hoi,
+
+Kun je onderstaand script toevoegen aan onze website? Het plaatst een chatbot rechtsonder in beeld waarmee bezoekers vragen over onze woningen kunnen stellen.
+
+Plaats de code vlak vóór de sluitende </head>-tag, of via de "custom code / header scripts"-instelling van ons platform:
+
+${embedSnippet}
+
+Dit werkt op elke website (WordPress, Wix, Squarespace of eigen bouw) en heeft verder geen aanpassingen nodig. Laat je het weten als het geplaatst is?
+
+Met vriendelijke groet`
 
   const handleToevoegen = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -80,6 +95,12 @@ export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: P
     setTimeout(() => setEmbedGekopieerd(false), 2500)
   }
 
+  const kopieerWebbouwer = async () => {
+    await navigator.clipboard.writeText(webbouwerMail)
+    setWebbouwerGekopieerd(true)
+    setTimeout(() => setWebbouwerGekopieerd(false), 2500)
+  }
+
   return (
     <div className="max-w-2xl space-y-10">
 
@@ -99,6 +120,71 @@ export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: P
           >
             {embedGekopieerd ? '✓ Gekopieerd' : 'Kopieer'}
           </button>
+        </div>
+      </section>
+
+      {/* Installatie-instructies */}
+      <section>
+        <h2 className="text-sm font-semibold text-gray-900 mb-1">Zo plaats je de widget</h2>
+        <p className="text-xs text-gray-500 mb-3">
+          Kies je platform voor een stap-voor-stap-uitleg. Bouwt iemand anders je site? Stuur dan de kant-en-klare mail onderaan.
+        </p>
+
+        <div className="rounded-xl border border-gray-200 divide-y divide-gray-100 overflow-hidden">
+          <details className="group">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-gray-900 flex items-center justify-between hover:bg-gray-50">
+              WordPress
+              <span className="text-gray-400 group-open:rotate-180 transition-transform">⌄</span>
+            </summary>
+            <ol className="px-4 pb-4 pt-1 text-xs text-gray-600 leading-relaxed list-decimal list-inside space-y-1">
+              <li>Installeer een gratis plugin als <span className="font-medium">&ldquo;WPCode&rdquo;</span> of <span className="font-medium">&ldquo;Insert Headers and Footers&rdquo;</span>.</li>
+              <li>Ga naar de instelling <span className="font-medium">Header / &lt;head&gt;-scripts</span>.</li>
+              <li>Plak daar het script hierboven en sla op.</li>
+              <li>Ververs je website — de chatbot-knop staat rechtsonder.</li>
+            </ol>
+          </details>
+
+          <details className="group">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-gray-900 flex items-center justify-between hover:bg-gray-50">
+              Wix
+              <span className="text-gray-400 group-open:rotate-180 transition-transform">⌄</span>
+            </summary>
+            <ol className="px-4 pb-4 pt-1 text-xs text-gray-600 leading-relaxed list-decimal list-inside space-y-1">
+              <li>Ga in het Wix-dashboard naar <span className="font-medium">Instellingen → Custom Code</span>.</li>
+              <li>Klik <span className="font-medium">+ Add Custom Code</span> en plak het script.</li>
+              <li>Kies bij &ldquo;Place Code in&rdquo; voor <span className="font-medium">Head</span> en bij &ldquo;Apply to&rdquo; voor <span className="font-medium">All pages</span>.</li>
+              <li>Publiceer je site opnieuw.</li>
+            </ol>
+          </details>
+
+          <details className="group">
+            <summary className="cursor-pointer list-none px-4 py-3 text-sm font-medium text-gray-900 flex items-center justify-between hover:bg-gray-50">
+              Eigen website of andere bouwer
+              <span className="text-gray-400 group-open:rotate-180 transition-transform">⌄</span>
+            </summary>
+            <ol className="px-4 pb-4 pt-1 text-xs text-gray-600 leading-relaxed list-decimal list-inside space-y-1">
+              <li>Open het HTML-bestand of het CMS-onderdeel waar de <code className="bg-gray-100 px-1 rounded">&lt;head&gt;</code> staat.</li>
+              <li>Plak het script vlak vóór de sluitende <code className="bg-gray-100 px-1 rounded">&lt;/head&gt;</code>-tag.</li>
+              <li>Zet de wijziging live. Het script laadt op elke pagina en toont de knop rechtsonder.</li>
+            </ol>
+          </details>
+        </div>
+
+        {/* Stuur naar je webbouwer */}
+        <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Stuur naar je webbouwer</h3>
+            <button
+              onClick={kopieerWebbouwer}
+              className="text-xs rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 transition-colors flex-shrink-0"
+            >
+              {webbouwerGekopieerd ? '✓ Gekopieerd' : 'Kopieer mailtekst'}
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mb-2">Kant-en-klaar mailtje inclusief het script — plak in een mail aan wie je site beheert.</p>
+          <pre className="rounded-lg bg-white border border-gray-200 text-gray-600 text-xs p-3 overflow-x-auto whitespace-pre-wrap leading-relaxed font-sans">
+            {webbouwerMail}
+          </pre>
         </div>
       </section>
 
