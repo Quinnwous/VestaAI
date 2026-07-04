@@ -83,11 +83,23 @@ export function NewObjectForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
       })
-      const json = await res.json()
-      if (!res.ok) {
+
+      // Bij een time-out (Vercel 504) komt HTML terug i.p.v. JSON — veilig parsen zodat
+      // de gebruiker geen rauwe parse-fout ("The string did not match...") ziet.
+      let json: { error?: string; output?: ContentOutput; object_id?: string | null } | null = null
+      try {
+        json = await res.json()
+      } catch {
+        json = null
+      }
+
+      if (!res.ok || !json) {
+        const timeout = [408, 502, 503, 504, 524].includes(res.status)
         setState({
           status: 'error',
-          message: json.error ?? 'Genereren mislukt',
+          message: json?.error ?? (timeout
+            ? 'Het genereren duurde te lang en is afgebroken. Dit gebeurt soms bij drukte — probeer het over een halve minuut opnieuw.'
+            : 'Genereren mislukt. Probeer het opnieuw.'),
           isLimitError: res.status === 402,
           isRateLimit: res.status === 429,
         })
@@ -100,13 +112,14 @@ export function NewObjectForm() {
       } catch { /* ignore */ }
       setState({
         status: 'success',
-        data: json.output ?? json,
+        data: (json.output ?? json) as ContentOutput,
         objectId: json.object_id ?? null,
       })
-    } catch (err) {
+    } catch {
+      // Netwerkfout of afgebroken verbinding — geen technische boodschap tonen.
       setState({
         status: 'error',
-        message: err instanceof Error ? err.message : 'Onbekende fout',
+        message: 'Er ging iets mis met de verbinding. Controleer je internet en probeer het opnieuw.',
       })
     }
   }
