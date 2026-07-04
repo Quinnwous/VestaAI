@@ -162,6 +162,7 @@ export default function PrivacyPage() {
           <span>© 2026 VestaAI</span>
           <div className="flex gap-6">
             <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
+            <Link href="/vertrouwen" className="hover:text-gray-600 transition-colors">Vertrouwen</Link>
             <Link href="/prijzen" className="hover:text-gray-600 transition-colors">Prijzen</Link>
             <Link href="/login" className="hover:text-gray-600 transition-colors">Inloggen</Link>
           </div>

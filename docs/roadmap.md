@@ -91,7 +91,7 @@
 ## Fase 3 — Groei & vertrouwen
 
 - 🔴 **Testimonial + casestudy pilotmakelaar** — naam, kantoor, quote + concrete tijdsbesparing op de landingspagina (placeholder staat klaar in `LandingPageClient.tsx`) + één uitgeschreven casestudy. HousApp toont 9 klantverhalen; wij 0 — belangrijkste marketingactie (concurrentieanalyse §6.2).
-- 🔴 **AVG-/vertrouwenspagina** — klantgegevens worden niet verkocht en niet voor andere doeleinden gebruikt, data in een beveiligde EU-database (Supabase), geen training van AI-modellen op klantdata, verwerkersovereenkomst als download. HousApp voert SOC 2 Type 2 + AVG prominent als verkoopargument (`docs/concurrentieanalyse-housapp.md` §6); kantoren (zeker franchise) vragen ernaar.
+- ✅ **AVG-/vertrouwenspagina** (4 juli, live) — scanbare `/vertrouwen` (verkoopgericht, on-brand): EU-database, geen dataverkoop, **geen AI-training op klantdata**, versleuteling + RLS, Stripe, DPA op aanvraag. Kruisgelinkt met `/privacy`. Bewust géén SOC 2-claim (niet gecertificeerd) en DPA "op aanvraag" i.p.v. een verzonnen download. *Rest (🟢, actie Quinn): prominente link vanaf landing/prijzen + juridische check van de teksten; eventueel een echt DPA-document klaarzetten.*
 - 🟠 **NVM PropTech-programma aanmelden.**
 - 🟠 **Klantverhalen-pagina** — naar HousApp-model: korte verhalen per kantoor met cijfers, niet alleen quotes. *Na eerste 3–5 klanten.*
 - 🟠 **Maandelijkse HousApp-check (10 min)** — changelog/release notes, vacatures (content/LLM-engineers), klantverhalen die over teksten beginnen, Kolibri-blog. Signaal = HousApp beweegt richting content → verdediging uit concurrentieanalyse §7 activeren.
