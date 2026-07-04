@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { ResultTabs } from '@/components/ResultTabs'
 import { NotitieVeld } from '@/components/NotitieVeld'
 import { FotoVerbetering } from '@/components/FotoVerbetering'
@@ -9,6 +9,7 @@ import { DocumentenAssistent } from '@/components/DocumentenAssistent'
 import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
+import { DeelChatbot } from '@/components/DeelChatbot'
 import type { ContentOutput } from '@/lib/schemas'
 
 type SectionId = 'content' | 'media' | 'documenten' | 'chat' | 'export'
@@ -45,16 +46,6 @@ export function ObjectWorkspace({
   userEmail?: string
 }) {
   const [active, setActive] = useState<SectionId>('content')
-  const [chatLink, setChatLink] = useState('')
-  const [gekopieerd, setGekopieerd] = useState(false)
-  useEffect(() => { setChatLink(`${window.location.origin}/chat/${objectId}`) }, [objectId])
-  const kopieerLink = () => {
-    if (!chatLink) return
-    navigator.clipboard.writeText(chatLink).then(() => {
-      setGekopieerd(true)
-      setTimeout(() => setGekopieerd(false), 2000)
-    })
-  }
 
   return (
     <div>
@@ -111,38 +102,7 @@ export function ObjectWorkspace({
 
       {/* Deel-chatbot */}
       <div style={{ display: active === 'chat' ? 'block' : 'none' }}>
-        <div style={card}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Deelbare object-chatbot</h2>
-          <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16, lineHeight: 1.6 }}>
-            Deel deze link met geïnteresseerden via e-mail, WhatsApp of je Funda-reactie. Zij kunnen vragen stellen
-            over déze woning — de chatbot antwoordt op basis van de woninggegevens. Geen aanpassing aan je eigen site nodig.
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <input
-              readOnly
-              value={chatLink}
-              onFocus={e => e.currentTarget.select()}
-              style={{ flex: '1 1 260px', borderRadius: 11, border: '1px solid #DCE5E0', padding: '10px 12px', fontSize: 13, color: '#5A6B61', fontFamily: 'monospace', background: '#F8FAF9' }}
-            />
-            <button
-              onClick={kopieerLink}
-              type="button"
-              style={{ borderRadius: 11, background: '#1A6B45', color: '#fff', border: 'none', padding: '10px 18px', fontSize: 14, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              {gekopieerd ? 'Gekopieerd ✓' : 'Kopieer link'}
-            </button>
-          </div>
-          {chatLink && (
-            <a
-              href={chatLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'inline-block', marginTop: 14, fontSize: 13, fontWeight: 700, color: '#1A6B45', textDecoration: 'underline' }}
-            >
-              Open voorbeeld →
-            </a>
-          )}
-        </div>
+        <DeelChatbot objectId={objectId} />
       </div>
 
       {/* Export & delen */}
