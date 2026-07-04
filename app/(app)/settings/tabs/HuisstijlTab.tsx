@@ -45,6 +45,8 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
     huidig?.voorbeelden?.length ? huidig.voorbeelden : ['']
   )
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [bezigUpload, setBezigUpload] = useState(false)
+  const [uploadFout, setUploadFout] = useState('')
 
   const updateVoorbeeld = (i: number, val: string) => {
     setVoorbeelden(prev => { const v = [...prev]; v[i] = val; return v })
@@ -52,6 +54,33 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   const addVoorbeeld = () => setVoorbeelden(prev => (prev.length >= 20 ? prev : [...prev, '']))
   const removeVoorbeeld = (i: number) =>
     setVoorbeelden(prev => (prev.length <= 1 ? [''] : prev.filter((_, idx) => idx !== i)))
+
+  // Voorbeeld uploaden (PDF/TXT) i.p.v. plakken — de tekst wordt server-side geëxtraheerd.
+  const uploadVoorbeeld = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const bestand = e.target.files?.[0]
+    if (!bestand) return
+    setBezigUpload(true)
+    setUploadFout('')
+    const fd = new FormData()
+    fd.append('bestand', bestand)
+    const res = await fetch('/api/huisstijl/extract', { method: 'POST', body: fd })
+    if (res.ok) {
+      const { tekst } = (await res.json()) as { tekst?: string }
+      if (tekst?.trim()) {
+        setVoorbeelden(prev => {
+          const schoon = prev.filter(Boolean)
+          return [...schoon, tekst.trim().slice(0, 2000)].slice(0, 20)
+        })
+      } else {
+        setUploadFout('Geen tekst gevonden in het bestand.')
+      }
+    } else {
+      const { error } = await res.json().catch(() => ({ error: 'Upload mislukt' }))
+      setUploadFout(error ?? 'Upload mislukt')
+    }
+    setBezigUpload(false)
+    e.target.value = ''
+  }
 
   // Brochure-huisstijl (apart van de schrijfstijl hierboven)
   const [brochureVoorbeelden, setBrochureVoorbeelden] = useState<string[]>(
@@ -181,15 +210,24 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
             </div>
           ))}
         </div>
-        {voorbeelden.length < 20 && (
-          <button
-            type="button"
-            onClick={addVoorbeeld}
-            className="mt-3 text-sm font-semibold text-blue-600 hover:text-blue-700"
-          >
-            + Voorbeeld toevoegen ({voorbeelden.length}/20)
-          </button>
-        )}
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          {voorbeelden.length < 20 && (
+            <button
+              type="button"
+              onClick={addVoorbeeld}
+              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            >
+              + Voorbeeld toevoegen ({voorbeelden.length}/20)
+            </button>
+          )}
+          {voorbeelden.length < 20 && (
+            <label className={`text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer ${bezigUpload ? 'opacity-50 cursor-not-allowed' : ''}`}>
+              <input type="file" accept=".pdf,.txt" onChange={uploadVoorbeeld} disabled={bezigUpload} className="hidden" />
+              {bezigUpload ? 'Bestand lezen…' : '↑ Uploaden (PDF/TXT)'}
+            </label>
+          )}
+        </div>
+        {uploadFout && <p className="text-xs text-red-600 mt-2">{uploadFout}</p>}
       </div>
 
       {/* Brochure-huisstijl */}
