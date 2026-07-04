@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 const NAV_LINKS = [
@@ -12,6 +12,16 @@ const NAV_LINKS = [
 
 export function PublicNav({ active }: { active?: string }) {
   const [open, setOpen] = useState(false)
+  const [ingelogd, setIngelogd] = useState(false)
+
+  // Lichtgewicht auth-check via /api/me zodat deze marketingpagina's statisch blijven
+  // (geen Supabase-client in de bundel). Ingelogd → "Naar dashboard" i.p.v. "Inloggen".
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.json())
+      .then((d: { ingelogd?: boolean }) => setIngelogd(!!d.ingelogd))
+      .catch(() => {})
+  }, [])
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(251,252,251,.9)', backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E4EAE6' }}>
@@ -46,15 +56,24 @@ export function PublicNav({ active }: { active?: string }) {
             ))}
           </div>
 
-          {/* Desktop: Inloggen */}
-          <Link href="/login" className="pnav-login" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>
-            Inloggen
-          </Link>
+          {ingelogd ? (
+            /* Ingelogd: rechtstreeks naar het dashboard */
+            <Link href="/dashboard" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
+              Naar dashboard
+            </Link>
+          ) : (
+            <>
+              {/* Desktop: Inloggen */}
+              <Link href="/login" className="pnav-login" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>
+                Inloggen
+              </Link>
 
-          {/* Desktop: CTA */}
-          <Link href="/prijzen" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
-            Gratis starten
-          </Link>
+              {/* Desktop: CTA */}
+              <Link href="/prijzen" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
+                Gratis starten
+              </Link>
+            </>
+          )}
 
           {/* Mobile hamburger */}
           <div className="pnav-ham" style={{ position: 'relative' }}>
@@ -69,7 +88,7 @@ export function PublicNav({ active }: { active?: string }) {
             </button>
             {open && (
               <div style={{ position: 'absolute', right: 0, top: 52, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 14, boxShadow: '0 18px 40px -20px rgba(14,26,19,.3)', padding: 10, width: 210, display: 'flex', flexDirection: 'column', gap: 2, zIndex: 60 }}>
-                {[...NAV_LINKS, { href: '/login', label: 'Inloggen' }].map(({ href, label }) => (
+                {[...NAV_LINKS, ingelogd ? { href: '/dashboard', label: 'Naar dashboard' } : { href: '/login', label: 'Inloggen' }].map(({ href, label }) => (
                   <Link key={href + label} href={href} onClick={() => setOpen(false)} style={{ padding: '11px 12px', borderRadius: 9, fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none', display: 'block' }}>
                     {label}
                   </Link>
