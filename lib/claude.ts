@@ -232,6 +232,7 @@ export async function generateContent(
   huisstijlOrClient?: HuisstijlConfig | Anthropic,
   clientArg?: Anthropic,
   verrijkingTekst?: string,
+  documentFileIds?: string[],
 ): Promise<ContentOutput> {
   let huisstijl: HuisstijlConfig | undefined
   let client: Anthropic
@@ -245,7 +246,16 @@ export async function generateContent(
     huisstijl = huisstijlOrClient as HuisstijlConfig | undefined
     client = clientArg ?? new Anthropic()
   }
-  const systemPrompt = buildSystemPrompt(huisstijl, input.taal ?? 'nl')
+  let systemPrompt = buildSystemPrompt(huisstijl, input.taal ?? 'nl')
+
+  // Bijgevoegde documenten (meetrapport, bouwkundige keuring, taxatie): feitelijke gegevens
+  // hieruit moeten de teksten aanscherpen — vooral de technische staat en de FAQ.
+  const docIds = documentFileIds?.filter(Boolean) ?? []
+  if (docIds.length > 0) {
+    systemPrompt += input.taal === 'en'
+      ? `\n\nATTACHED DOCUMENTS: one or more documents are attached (e.g. a survey, structural inspection or valuation). Use the factual data from them — exact floor areas, structural condition, defects found, installations and particularities — in the texts, especially funda_tekst (technical condition), brochure_lang, energie_advies and kopersvragen_faq. Only use what is actually stated in the documents; never invent facts.`
+      : `\n\nBIJGEVOEGDE DOCUMENTEN: er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — in de teksten, met name in funda_tekst (technische staat), brochure_lang, energie_advies en kopersvragen_faq. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.`
+  }
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const extra = attempt > 0
@@ -254,14 +264,29 @@ export async function generateContent(
         : '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.')
       : ''
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 16000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: buildUserMessage(input, verrijkingTekst) + extra }],
-    })
+    const userText = buildUserMessage(input, verrijkingTekst) + extra
 
-    const text = message.content[0].type === 'text' ? message.content[0].text : ''
+    let text = ''
+    if (docIds.length > 0) {
+      // Documenten aanwezig → Files API-beta; hang de document-blokken vóór de tekst.
+      const docBlocks = docIds.map(id => ({ type: 'document', source: { type: 'file', file_id: id } }))
+      const raw = await (client.beta.messages.create as unknown as (p: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 16000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
+        betas: ['files-api-2025-04-14'],
+      })
+      text = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
+    } else {
+      const message = await client.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 16000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userText }],
+      })
+      text = message.content[0].type === 'text' ? message.content[0].text : ''
+    }
 
     try {
       return parseClaudeResponse(text)

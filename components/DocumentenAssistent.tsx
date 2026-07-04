@@ -30,7 +30,31 @@ export function DocumentenAssistent({ objectId }: Props) {
   const [uploaden, setUploaden] = useState(false)
   const [beantwoorden, setBeantwoorden] = useState(false)
   const [uploadError, setUploadError] = useState('')
+  const [verwerken, setVerwerken] = useState(false)
+  const [verwerkFout, setVerwerkFout] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Alleen documenten met een Anthropic-file-id kunnen in de generatie mee.
+  const heeftBruikbaarDocument = documenten.some(d => d.anthropic_file_id)
+
+  const verwerkDocumenten = async () => {
+    if (verwerken) return
+    const ok = window.confirm(
+      'Dit genereert de woningteksten opnieuw op basis van je documenten en vervangt de huidige teksten. Eventuele handmatige bewerkingen gaan verloren. Doorgaan?',
+    )
+    if (!ok) return
+    setVerwerkFout('')
+    setVerwerken(true)
+    const res = await fetch(`/api/object/${objectId}/hergenereer`, { method: 'POST' })
+    if (res.ok) {
+      // Herladen zodat de Content-tab de nieuwe teksten toont.
+      window.location.reload()
+      return
+    }
+    const { error } = await res.json().catch(() => ({ error: 'Verwerken mislukt' }))
+    setVerwerkFout(error ?? 'Verwerken mislukt')
+    setVerwerken(false)
+  }
 
   // Bestaande documenten van dit object laden (bleven voorheen onzichtbaar bij heropenen).
   useEffect(() => {
@@ -145,6 +169,25 @@ export function DocumentenAssistent({ objectId }: Props) {
               <span className="text-gray-400">({formatGrootte(doc.grootte_bytes)})</span>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Documenten verwerken in de content */}
+      {heeftBruikbaarDocument && (
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <p className="text-sm font-medium text-gray-900 mb-1">Verwerk documenten in de woningteksten</p>
+          <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+            Genereer de teksten opnieuw en laat AI de feitelijke gegevens uit je documenten (meetrapport, bouwkundige keuring, taxatie) meenemen — exacte oppervlaktes, bouwkundige staat en bijzonderheden. Dit vervangt de huidige teksten.
+          </p>
+          <button
+            onClick={verwerkDocumenten}
+            disabled={verwerken}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60 transition-opacity"
+            style={{ background: '#1A6B45' }}
+          >
+            {verwerken ? 'Bezig met verwerken…' : 'Verwerk in de teksten'}
+          </button>
+          {verwerkFout && <p className="text-xs text-red-600 mt-2">{verwerkFout}</p>}
         </div>
       )}
 
