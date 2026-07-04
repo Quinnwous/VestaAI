@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 
 type Document = {
   id: string
   bestandsnaam: string
   grootte_bytes: number
   anthropic_file_id: string | null
+  publiek_chatbaar: boolean
 }
 
 type ChatBericht = { rol: 'user' | 'assistant'; tekst: string }
@@ -31,6 +32,25 @@ export function DocumentenAssistent({ objectId }: Props) {
   const [uploadError, setUploadError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
+  // Bestaande documenten van dit object laden (bleven voorheen onzichtbaar bij heropenen).
+  useEffect(() => {
+    fetch(`/api/documenten?object_id=${objectId}`)
+      .then(r => r.json())
+      .then((d: { documenten?: Document[] }) => setDocumenten(d.documenten ?? []))
+      .catch(() => {})
+  }, [objectId])
+
+  const togglePubliek = async (doc: Document) => {
+    const nieuw = !doc.publiek_chatbaar
+    setDocumenten(prev => prev.map(d => (d.id === doc.id ? { ...d, publiek_chatbaar: nieuw } : d)))
+    setGeselecteerd(prev => (prev && prev.id === doc.id ? { ...prev, publiek_chatbaar: nieuw } : prev))
+    await fetch(`/api/documenten/${doc.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publiek_chatbaar: nieuw }),
+    }).catch(() => {})
+  }
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const bestand = e.target.files?.[0]
     if (!bestand) return
@@ -44,8 +64,9 @@ export function DocumentenAssistent({ objectId }: Props) {
     const res = await fetch('/api/documenten/upload', { method: 'POST', body: fd })
     if (res.ok) {
       const doc = await res.json()
-      setDocumenten(prev => [...prev, doc])
-      setGeselecteerd(doc)
+      const nieuwDoc: Document = { ...doc, publiek_chatbaar: false }
+      setDocumenten(prev => [...prev, nieuwDoc])
+      setGeselecteerd(nieuwDoc)
       setChat([])
     } else {
       const { error } = await res.json()
@@ -130,13 +151,27 @@ export function DocumentenAssistent({ objectId }: Props) {
       {/* Chat-interface */}
       {geselecteerd && (
         <div className="rounded-xl border border-gray-200 bg-white overflow-hidden">
-          <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
+          <div className="px-4 py-2.5 border-b border-gray-100 bg-gray-50">
             <p className="text-xs font-medium text-gray-600">
               Vragen stellen over: <span className="text-gray-900">{geselecteerd.bestandsnaam}</span>
               {!geselecteerd.anthropic_file_id && (
                 <span className="ml-2 text-amber-600">(documentinhoud wordt per vraag meegestuurd)</span>
               )}
             </p>
+            <label className="mt-2 flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={geselecteerd.publiek_chatbaar}
+                onChange={() => togglePubliek(geselecteerd)}
+                className="mt-0.5 rounded border-gray-300"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                Zichtbaar in de <strong className="text-gray-700">publieke woning-chatbot</strong> — geïnteresseerden kunnen dan vragen over dit document stellen.
+                {geselecteerd.publiek_chatbaar
+                  ? <span className="text-green-600 font-semibold"> Staat aan.</span>
+                  : <span className="text-gray-400"> Staat uit (privé).</span>}
+              </span>
+            </label>
           </div>
 
           {/* Berichten */}

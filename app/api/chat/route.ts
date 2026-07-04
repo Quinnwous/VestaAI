@@ -59,12 +59,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ongeldig verzoek' }, { status: 400 })
   }
 
+  // Anthropic vereist dat het gesprek met een user-bericht begint. Strip een leidende
+  // assistant-greeting (de publieke chat toont die als eerste bubbel, maar stuurt hem mee).
+  let start = 0
+  while (start < berichten.length && berichten[start].rol === 'assistant') start++
+  const conversatie = berichten.slice(start)
+  if (conversatie.length === 0) {
+    return NextResponse.json({ error: 'Ongeldig verzoek' }, { status: 400 })
+  }
+
   const serviceClient = createServiceSupabaseClient()
 
-  // Object-context: bij een object_id halen we de woninggegevens op. Het kantoor van
-  // het object is leidend (voorkomt een mismatch met een meegestuurde kantoor_id).
+  // Object-context: bij een object_id halen we de woninggegevens + eventuele publiek-chatbare
+  // documenten op. Het kantoor van het object is leidend (voorkomt een mismatch).
   let objectContext = ''
   let objectAdres: string | null = null
+  let chatbareDocs: { anthropic_file_id: string; bestandsnaam: string }[] = []
   if (object_id) {
     const { data: object } = await serviceClient
       .from('objecten')
@@ -78,6 +88,18 @@ export async function POST(req: NextRequest) {
         object.address,
         (object.input_json ?? {}) as Record<string, unknown>,
         (object.outputs_json ?? null) as Record<string, unknown> | null,
+      )
+
+      // Alleen documenten die de makelaar expliciet als "publiek chatbaar" heeft aangezet.
+      const { data: docs } = await serviceClient
+        .from('object_documenten')
+        .select('anthropic_file_id, bestandsnaam')
+        .eq('object_id', object_id)
+        .eq('publiek_chatbaar', true)
+        .not('anthropic_file_id', 'is', null)
+        .limit(3)
+      chatbareDocs = (docs ?? []).filter(
+        (d): d is { anthropic_file_id: string; bestandsnaam: string } => !!d.anthropic_file_id,
       )
     }
   }
@@ -115,30 +137,54 @@ export async function POST(req: NextRequest) {
       : 'vriendelijk en toegankelijk — gebruik "je"'
 
   const taak = objectAdres
-    ? `Jouw taak: beantwoord vragen van geïnteresseerden over de woning aan ${objectAdres}. Baseer je uitsluitend op de woninggegevens hieronder en de kantoor-FAQ. Verzin geen feiten die er niet staan. Voor vragen over bezichtiging, beschikbaarheid, biedingen of onderhandeling verwijs je vriendelijk naar de makelaar.`
+    ? `Jouw taak: beantwoord vragen van geïnteresseerden over de woning aan ${objectAdres}. Baseer je uitsluitend op de woninggegevens hieronder, eventuele bijgevoegde documenten en de kantoor-FAQ. Verzin geen feiten die er niet staan. Voor vragen over bezichtiging, beschikbaarheid, biedingen of onderhandeling verwijs je vriendelijk naar de makelaar.`
     : 'Jouw taak: beantwoord vragen van potentiële kopers en verkopers over het kantoor en vastgoed in het algemeen.'
 
+  const docNote = chatbareDocs.length > 0
+    ? '\nEr zijn documenten bijgevoegd (bijvoorbeeld VvE-stukken of een akte). Gebruik die voor vragen over servicekosten, splitsing, reglementen, erfpacht en dergelijke. Citeer alleen wat er echt in staat.'
+    : ''
+
   const systemPrompt = `Je bent een vriendelijke chatbot-assistent voor ${kantoor.name}, een makelaarskantoor in Nederland.
-${taak}
+${taak}${docNote}
 Schrijftoon: ${toonBeschrijving}.
 Wees beknopt (max 4 zinnen per antwoord).
 Als je een vraag niet kunt beantwoorden, stel dan voor om contact op te nemen met het kantoor.
 Als de bezoeker interesse toont in een afspraak of bezichtiging, vraag dan vriendelijk om zijn/haar naam en e-mailadres zodat het kantoor contact kan opnemen.${objectContext}${faqTekst}`
 
   const client = new Anthropic()
+  const messages = conversatie.map(b => ({ role: b.rol as 'user' | 'assistant', content: b.tekst }))
 
-  const messages = berichten.map(b => ({
-    role: b.rol as 'user' | 'assistant',
-    content: b.tekst,
-  }))
+  let antwoord = ''
+  if (chatbareDocs.length > 0) {
+    // Documenten aanwezig → Sonnet + Files API. Hang de documenten aan het laatste user-bericht.
+    const docBlocks = chatbareDocs.map(d => ({
+      type: 'document',
+      source: { type: 'file', file_id: d.anthropic_file_id },
+      title: d.bestandsnaam,
+    }))
+    const laatste = messages.length - 1
+    const withDocs = messages.map((m, i) =>
+      i === laatste && m.role === 'user'
+        ? { role: 'user', content: [...docBlocks, { type: 'text', text: m.content }] }
+        : { role: m.role, content: m.content },
+    )
+    const raw = await (client.beta.messages.create as unknown as (p: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 600,
+      system: systemPrompt,
+      messages: withDocs,
+      betas: ['files-api-2025-04-14'],
+    })
+    antwoord = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
+  } else {
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 400,
+      system: systemPrompt,
+      messages,
+    })
+    antwoord = message.content[0].type === 'text' ? message.content[0].text : ''
+  }
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 400,
-    system: systemPrompt,
-    messages,
-  })
-
-  const antwoord = message.content[0].type === 'text' ? message.content[0].text : ''
   return NextResponse.json({ antwoord })
 }
