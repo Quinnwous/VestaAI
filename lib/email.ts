@@ -242,6 +242,57 @@ export async function sendNieuweKlantMelding(
   })
 }
 
+export async function sendNieuweLeadMelding(
+  to: string,
+  opts: {
+    objectAdres: string
+    objectId: string
+    leadNaam?: string
+    leadEmail: string
+    leadTelefoon?: string
+    leadBericht?: string
+  },
+) {
+  const rij = (label: string, waarde: string, laatste = false) => `
+    <tr${laatste ? '' : ' style="background:#f9fafb;"'}>
+      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${label}</td>
+      <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${waarde}</td>
+    </tr>`
+
+  const rijen = [
+    opts.leadNaam ? rij('Naam', esc(opts.leadNaam)) : '',
+    rij('E-mail', `<a href="mailto:${esc(opts.leadEmail)}" style="color:#1A6B45;">${esc(opts.leadEmail)}</a>`),
+    opts.leadTelefoon ? rij('Telefoon', esc(opts.leadTelefoon)) : '',
+    rij('Woning', esc(opts.objectAdres), true),
+  ].filter(Boolean).join('')
+
+  await getResend().emails.send({
+    from: FROM,
+    to,
+    // Zodat de makelaar direct kan terugmailen naar de geïnteresseerde.
+    replyTo: opts.leadEmail,
+    subject: `Nieuwe lead via de woning-chatbot — ${opts.objectAdres}`,
+    html: baseTemplate(`
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
+        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">🏡 Nieuwe lead via de deel-chatbot</p>
+      </div>
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Iemand toont interesse in ${esc(opts.objectAdres)}</h2>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
+        Via de chatbot bij deze woning heeft een geïnteresseerde contactgegevens achtergelaten. Neem gerust snel contact op.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
+        ${rijen}
+      </table>
+      ${opts.leadBericht ? `
+        <p style="margin:20px 0 4px;font-size:13px;font-weight:600;color:#374151;">Context uit het gesprek</p>
+        <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;white-space:pre-wrap;">${esc(opts.leadBericht)}</p>
+      ` : ''}
+      ${btn(`${APP_URL}/object/${opts.objectId}`, 'Bekijk de woning')}
+      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— VestaAI</p>
+    `),
+  })
+}
+
 export async function sendInvoiceConfirmationEmail(
   email: string,
   name: string,

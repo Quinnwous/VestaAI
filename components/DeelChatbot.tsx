@@ -10,6 +10,15 @@ const card: React.CSSProperties = {
   boxShadow: '0 2px 16px rgba(14,26,19,.05)',
 }
 
+type Lead = {
+  id: string
+  naam: string | null
+  email: string
+  telefoon: string | null
+  bericht: string | null
+  created_at: string
+}
+
 export function DeelChatbot({ objectId }: { objectId: string }) {
   const [chatLink, setChatLink] = useState('')
   const [gekopieerd, setGekopieerd] = useState(false)
@@ -17,6 +26,7 @@ export function DeelChatbot({ objectId }: { objectId: string }) {
   const [fotoUrl, setFotoUrl] = useState<string | null>(null)
   const [uploaden, setUploaden] = useState(false)
   const [fout, setFout] = useState('')
+  const [leads, setLeads] = useState<Lead[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -28,6 +38,10 @@ export function DeelChatbot({ objectId }: { objectId: string }) {
         setFotoUrl(d.chat_foto_url ?? null)
       })
       .catch(() => setPubliek(true))
+    fetch(`/api/object/${objectId}/leads`)
+      .then(r => r.json())
+      .then((d: { leads?: Lead[] }) => setLeads(d.leads ?? []))
+      .catch(() => {})
   }, [objectId])
 
   const kopieer = () => {
@@ -148,6 +162,38 @@ export function DeelChatbot({ objectId }: { objectId: string }) {
           )}
         </div>
         {fout && <p style={{ fontSize: 12.5, color: '#DC2626', marginTop: 8 }}>{fout}</p>}
+      </div>
+
+      {/* Leads */}
+      <div style={{ borderTop: '1px solid #E9EFEB', marginTop: 20, paddingTop: 20 }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 4 }}>
+          Leads {leads.length > 0 && <span style={{ color: '#1A6B45' }}>({leads.length})</span>}
+        </p>
+        <p style={{ fontSize: 12.5, color: '#9AA6A0', marginBottom: 12, lineHeight: 1.6 }}>
+          Geïnteresseerden die via de chatbot hun gegevens achterlieten. Je krijgt hiervan ook een e-mail.
+        </p>
+
+        {leads.length === 0 ? (
+          <p style={{ fontSize: 13, color: '#9AA6A0' }}>Nog geen leads binnengekomen.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {leads.map(lead => (
+              <div key={lead.id} style={{ border: '1px solid #E9EFEB', borderRadius: 12, padding: '12px 14px', background: '#fff' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#0E1A13' }}>{lead.naam || 'Onbekend'}</p>
+                  <span style={{ fontSize: 12, color: '#9AA6A0', flexShrink: 0 }}>
+                    {new Date(lead.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 14px', marginTop: 2 }}>
+                  <a href={`mailto:${lead.email}`} style={{ fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>{lead.email}</a>
+                  {lead.telefoon && <a href={`tel:${lead.telefoon}`} style={{ fontSize: 13, color: '#1A6B45', fontWeight: 600 }}>{lead.telefoon}</a>}
+                </div>
+                {lead.bericht && <p style={{ fontSize: 12.5, color: '#5A6B61', marginTop: 6, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{lead.bericht}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
