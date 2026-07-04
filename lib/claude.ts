@@ -112,6 +112,13 @@ function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'
   if (huisstijl.stijlprofiel) {
     extra += `\n\n${profielLabel}:\n${huisstijl.stijlprofiel}`
   }
+  // Geleerde regels uit eerdere handmatige bewerkingen (na review geaccepteerd) — leidend.
+  if (huisstijl.geleerde_regels) {
+    const geleerdLabel = taal === 'en'
+      ? "Learned rules from the agency's own edits (apply these)"
+      : 'Geleerde regels uit de eigen bewerkingen van het kantoor (pas deze toe)'
+    extra += `\n\n${geleerdLabel}:\n${huisstijl.geleerde_regels}`
+  }
   const topVoorbeelden = huisstijl.voorbeelden.filter(Boolean).slice(0, 3)
   if (topVoorbeelden.length > 0) {
     extra += `\n\n${voorbeeldLabel}:\n`
@@ -178,6 +185,45 @@ Hieronder ${nietLeeg.length} voorbeeldtekst(en) van dit kantoor. Destilleer éé
 Schrijf het als directe instructie aan een copywriter, niet als analyse-essay. Geen inleiding of afsluiting — alléén het profiel.
 
 ${voorbeeldBlok}`,
+      },
+    ],
+  })
+
+  return message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+}
+
+// Destilleert uit paren (origineel → bewerkt) de systematische stijlvoorkeuren van een
+// kantoor tot enkele concrete, herbruikbare regels. Draait bij de handmatige "leren"-actie;
+// het resultaat gaat pas na akkoord van de makelaar naar huisstijl_json.geleerde_regels.
+export async function distilleerBewerkingsregels(
+  bewerkingen: { sleutel: string; origineel: string; bewerkt: string }[],
+  bestaandeRegels?: string,
+  client?: Anthropic,
+): Promise<string> {
+  if (bewerkingen.length === 0) return ''
+  const c = client ?? new Anthropic()
+
+  const blok = bewerkingen
+    .map((b, i) => `#${i + 1} (${b.sleutel})\n--- ORIGINEEL ---\n${b.origineel}\n--- BEWERKT DOOR MAKELAAR ---\n${b.bewerkt}`)
+    .join('\n\n')
+
+  const bestaand = bestaandeRegels
+    ? `\n\nEr zijn al eerder geleerde regels. Vul aan/verfijn, spreek ze niet tegen:\n${bestaandeRegels}`
+    : ''
+
+  const message = await c.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 800,
+    system:
+      'Je bent een redactioneel analist. Een makelaar bewerkt door AI gegenereerde teksten handmatig. Uit de verschillen tussen origineel en bewerkte versie leid je de SYSTEMATISCHE voorkeuren van dit kantoor af.',
+    messages: [
+      {
+        role: 'user',
+        content: `Hieronder ${bewerkingen.length} paren van (origineel → door de makelaar bewerkt). Leid de terugkerende, systematische voorkeuren af — negeer eenmalige, woningspecifieke wijzigingen (adres, prijs, feiten).
+
+Geef maximaal 6 concrete, direct toepasbare stijlregels als korte bullets (met een streepje). Denk aan: voorkeurswoorden vs. vermeden woorden, aanspreekvorm, zinslengte, opening/afsluiting, opmaakvoorkeuren. Geen inleiding of analyse — alléén de bullets.${bestaand}
+
+${blok}`,
       },
     ],
   })

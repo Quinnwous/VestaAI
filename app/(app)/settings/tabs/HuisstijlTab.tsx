@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Kantoor } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { slaHuisstijlOp } from '../actions'
@@ -47,6 +47,52 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [bezigUpload, setBezigUpload] = useState(false)
   const [uploadFout, setUploadFout] = useState('')
+
+  // Leren van inline-bewerkingen
+  const [leerAantal, setLeerAantal] = useState(0)
+  const [leerMin, setLeerMin] = useState(4)
+  const [leerBezig, setLeerBezig] = useState(false)
+  const [leerRegels, setLeerRegels] = useState<string | null>(null)
+  const [leerIds, setLeerIds] = useState<string[]>([])
+  const [leerFout, setLeerFout] = useState('')
+  const [leerKlaar, setLeerKlaar] = useState<'toegepast' | 'genegeerd' | null>(null)
+
+  useEffect(() => {
+    fetch('/api/huisstijl/leren')
+      .then(r => r.json())
+      .then((d: { aantal?: number; minimum?: number }) => { setLeerAantal(d.aantal ?? 0); if (d.minimum) setLeerMin(d.minimum) })
+      .catch(() => {})
+  }, [])
+
+  const analyseerBewerkingen = async () => {
+    setLeerBezig(true); setLeerFout(''); setLeerKlaar(null)
+    const res = await fetch('/api/huisstijl/leren', { method: 'POST' })
+    if (res.ok) {
+      const { regels, ids } = (await res.json()) as { regels: string; ids: string[] }
+      setLeerRegels(regels); setLeerIds(ids)
+    } else {
+      const { error } = await res.json().catch(() => ({ error: 'Analyse mislukt' }))
+      setLeerFout(error ?? 'Analyse mislukt')
+    }
+    setLeerBezig(false)
+  }
+
+  const rondLerenAf = async (accepteer: boolean) => {
+    setLeerBezig(true); setLeerFout('')
+    const res = await fetch('/api/huisstijl/leren/toepassen', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ids: leerIds, ...(accepteer ? { regels: leerRegels } : {}) }),
+    })
+    if (res.ok) {
+      setLeerRegels(null); setLeerIds([]); setLeerAantal(0)
+      setLeerKlaar(accepteer ? 'toegepast' : 'genegeerd')
+    } else {
+      const { error } = await res.json().catch(() => ({ error: 'Mislukt' }))
+      setLeerFout(error ?? 'Mislukt')
+    }
+    setLeerBezig(false)
+  }
 
   const updateVoorbeeld = (i: number, val: string) => {
     setVoorbeelden(prev => { const v = [...prev]; v[i] = val; return v })
@@ -290,6 +336,75 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
           />
         </div>
       </div>
+
+      {/* Leren van inline-bewerkingen */}
+      {(leerAantal >= leerMin || leerRegels || leerKlaar) && (
+        <div className="border-t border-gray-100 pt-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Leren van je bewerkingen <span className="text-gray-400 font-normal">(automatisch)</span>
+          </label>
+          <p className="text-xs text-gray-500 mb-3">
+            Als je gegenereerde teksten handmatig aanpast, ziet VestaAI dat als voorbeeld. Laat er stijlregels uit destilleren — jij bepaalt of ze kloppen voordat ze worden toegepast.
+          </p>
+
+          {!leerRegels && leerKlaar !== 'toegepast' && (
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+              <p className="text-sm text-gray-700 mb-3">
+                {leerAantal >= leerMin
+                  ? `VestaAI verzamelde ${leerAantal} bewerking${leerAantal === 1 ? '' : 'en'} om van te leren.`
+                  : `Nog te weinig bewerkingen (minimaal ${leerMin}).`}
+              </p>
+              {leerAantal >= leerMin && (
+                <button
+                  type="button"
+                  onClick={analyseerBewerkingen}
+                  disabled={leerBezig}
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60"
+                  style={{ background: '#1A6B45' }}
+                >
+                  {leerBezig ? 'Analyseren…' : `Analyseer ${leerAantal} bewerking${leerAantal === 1 ? '' : 'en'}`}
+                </button>
+              )}
+              {leerKlaar === 'genegeerd' && <p className="text-xs text-gray-500 mt-2">Voorstel genegeerd.</p>}
+            </div>
+          )}
+
+          {leerRegels && (
+            <div className="rounded-xl border p-4" style={{ borderColor: '#BBE3CE', background: '#F1FAF5' }}>
+              <p className="text-sm font-semibold text-gray-900 mb-2">VestaAI heeft dit geleerd — kloppen deze regels?</p>
+              <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-sans mb-3">{leerRegels}</pre>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => rondLerenAf(true)}
+                  disabled={leerBezig}
+                  className="text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60"
+                  style={{ background: '#1A6B45' }}
+                >
+                  {leerBezig ? 'Bezig…' : 'Toevoegen aan mijn stijl'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => rondLerenAf(false)}
+                  disabled={leerBezig}
+                  className="text-sm font-semibold text-gray-600 rounded-lg px-4 py-2 border border-gray-300 hover:bg-gray-50 disabled:opacity-60"
+                >
+                  Negeren
+                </button>
+              </div>
+            </div>
+          )}
+
+          {leerKlaar === 'toegepast' && (
+            <div className="rounded-xl border p-4" style={{ borderColor: '#BBE3CE', background: '#F1FAF5' }}>
+              <p className="text-sm font-semibold" style={{ color: '#166534' }}>✓ Toegevoegd aan je huisstijl</p>
+              <p className="text-xs text-gray-600 mt-1">VestaAI past deze regels voortaan toe bij het genereren.</p>
+            </div>
+          )}
+
+          {leerFout && <p className="text-xs text-red-600 mt-2">{leerFout}</p>}
+        </div>
+      )}
 
       <button
         type="submit"

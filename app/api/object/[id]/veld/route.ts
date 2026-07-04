@@ -44,11 +44,27 @@ export async function PATCH(
 
   if (!object) return NextResponse.json({ error: 'Object niet gevonden' }, { status: 404 })
 
+  const origineel = (object.outputs_json as Record<string, string>)?.[sleutel] ?? ''
+
   const nieuweOutputs = { ...(object.outputs_json as Record<string, string>), [sleutel]: tekst }
   await serviceClient
     .from('objecten')
     .update({ outputs_json: nieuweOutputs })
     .eq('id', params.id)
+
+  // Bewerking vastleggen als trainingsdata voor huisstijl-leren (best-effort, niet-blokkerend).
+  // Alleen betekenisvolle wijzigingen op tekst van enige lengte — geen ruis van mini-edits.
+  const origSchoon = origineel.trim()
+  const nieuwSchoon = tekst.trim()
+  if (origSchoon.length >= 40 && origSchoon !== nieuwSchoon) {
+    void serviceClient.from('stijl_bewerkingen').insert({
+      kantoor_id: makelaar.kantoor_id,
+      object_id: params.id,
+      sleutel,
+      origineel: origSchoon.slice(0, 8000),
+      bewerkt: nieuwSchoon.slice(0, 8000),
+    })
+  }
 
   revalidatePath(`/object/${params.id}`)
   return NextResponse.json({ ok: true })

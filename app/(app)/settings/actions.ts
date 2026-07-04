@@ -99,12 +99,22 @@ export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: strin
       : undefined
 
     const serviceClient = createServiceSupabaseClient()
+
+    // Geleerde regels (uit inline-bewerkingen) staan niet in het formulier — behoud ze.
+    const { data: bestaand } = await serviceClient
+      .from('kantoren')
+      .select('huisstijl_json')
+      .eq('id', kantoor_id)
+      .single()
+    const geleerde_regels = (bestaand?.huisstijl_json as HuisstijlConfig | null)?.geleerde_regels
+
     const { error } = await serviceClient
       .from('kantoren')
       .update({
         huisstijl_json: {
           ...huisstijl,
           ...(stijlprofiel ? { stijlprofiel } : {}),
+          ...(geleerde_regels ? { geleerde_regels } : {}),
           ...(brochure_stijl ? { brochure_stijl } : {}),
         },
       })
