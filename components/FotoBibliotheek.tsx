@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 
 type Foto = {
   id: string
@@ -20,6 +20,9 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
   const [fotos, setFotos] = useState<Foto[]>([])
   const [geladen, setGeladen] = useState(false)
   const [coverId, setCoverId] = useState<string | null>(null)
+  const [uploaden, setUploaden] = useState(false)
+  const [uploadFout, setUploadFout] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const laad = useCallback(() => {
     fetch(`/api/object/${objectId}/fotos`)
@@ -34,6 +37,37 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
   const verwijder = async (id: string) => {
     setFotos(prev => prev.filter(f => f.id !== id))
     await fetch(`/api/object/${objectId}/fotos/${id}`, { method: 'DELETE' }).catch(() => {})
+  }
+
+  const uploadFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const bestand = e.target.files?.[0]
+    if (!bestand) return
+    setUploaden(true)
+    setUploadFout('')
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = () => reject(new Error('lezen mislukt'))
+      reader.readAsDataURL(bestand)
+    }).catch(() => '')
+
+    if (dataUrl) {
+      const res = await fetch(`/api/object/${objectId}/fotos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl, soort: 'origineel', bestandsnaam: bestand.name }),
+      }).catch(() => null)
+      if (res?.ok) {
+        laad()
+      } else {
+        const { error } = (await res?.json().catch(() => ({}))) ?? {}
+        setUploadFout(error ?? 'Upload mislukt (JPG/PNG/WebP, max 12 MB).')
+      }
+    } else {
+      setUploadFout('Kon het bestand niet lezen.')
+    }
+    setUploaden(false)
+    if (fileRef.current) fileRef.current.value = ''
   }
 
   const alsChatCover = async (foto: Foto) => {
@@ -53,17 +87,27 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
     a.click()
   }
 
-  if (geladen && fotos.length === 0) {
-    return (
-      <p style={{ fontSize: 13, color: '#9AA6A0' }}>
-        Nog geen bewaarde foto&apos;s. Gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een verbeterde of gestagede foto.
-      </p>
-    )
-  }
-
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
-      {fotos.map(foto => (
+    <div>
+      {/* Upload-balk */}
+      <div style={{ marginBottom: 14 }}>
+        <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadFoto} style={{ display: 'none' }} id={`bib-upload-${objectId}`} />
+        <label
+          htmlFor={`bib-upload-${objectId}`}
+          style={{ display: 'inline-block', borderRadius: 11, border: '1px solid #DCE5E0', padding: '8px 14px', fontSize: 13, fontWeight: 600, color: '#0E1A13', cursor: uploaden ? 'default' : 'pointer', background: '#fff', opacity: uploaden ? 0.6 : 1 }}
+        >
+          {uploaden ? 'Uploaden…' : '+ Foto uploaden'}
+        </label>
+        {uploadFout && <p style={{ fontSize: 12.5, color: '#B91C1C', marginTop: 8 }}>{uploadFout}</p>}
+      </div>
+
+      {geladen && fotos.length === 0 ? (
+        <p style={{ fontSize: 13, color: '#9AA6A0' }}>
+          Nog geen bewaarde foto&apos;s. Upload er een, of gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een verbeterde of gestagede foto.
+        </p>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
+          {fotos.map(foto => (
         <div key={foto.id} style={{ border: '1px solid #E9EFEB', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
           <div style={{ position: 'relative', aspectRatio: '4 / 3', background: '#0E1A13' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -90,7 +134,9 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
             </button>
           </div>
         </div>
-      ))}
+          ))}
+        </div>
+      )}
     </div>
   )
 }
