@@ -13,6 +13,7 @@ interface PdfTemplateProps {
   address: string
   output: ContentOutput
   kantoor: Pick<Kantoor, 'name' | 'logo_url' | 'huisstijl_json'>
+  fotos?: string[]
 }
 
 const PAGE_PADDING = 48
@@ -152,7 +153,7 @@ const ALLE_SECTIES: { badge: string; titel: string; key: keyof ContentOutput; op
   { badge: 'Marktanalyse', titel: 'Marktanalyse & verkoopstrategie', key: 'marktanalyse', optioneel: true },
 ]
 
-export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
+export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProps) {
   const kleur = kantoor.huisstijl_json?.primaire_kleur ?? '#1d4ed8'
   const s = makeStyles(kleur)
   const datum = new Date().toLocaleDateString('nl-NL', {
@@ -182,6 +183,37 @@ export function PdfTemplate({ address, output, kantoor }: PdfTemplateProps) {
           </View>
         </View>
       </Page>
+
+      {/* Fotopagina uit de foto-bibliotheek (indien aanwezig) */}
+      {fotos && fotos.length > 0 && (
+        <Page size="A4" style={s.contentPage}>
+          <View style={s.pageHeader}>
+            {kantoor.logo_url ? (
+              // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop
+              <Image src={kantoor.logo_url} style={s.pageHeaderLogoImg} />
+            ) : (
+              <Text style={s.pageHeaderBrand}>{kantoor.name}</Text>
+            )}
+            <Text style={s.pageHeaderAddress}>{address}</Text>
+          </View>
+          <View style={s.sectionBadge}>
+            <Text style={s.sectionBadgeText}>Foto&apos;s</Text>
+          </View>
+          <Text style={s.sectionTitle}>Foto&apos;s</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginTop: 8 }}>
+            {fotos.slice(0, 6).map((url, i) => (
+              // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image has no alt prop
+              <Image key={i} src={url} style={{ width: '48%', height: 150, objectFit: 'cover', marginBottom: 10 }} />
+            ))}
+          </View>
+          <View style={s.pageFooterFixed} fixed>
+            <Text style={s.pageFooterText}>
+              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `VestaAI · ${datum}`}
+            </Text>
+            <Text style={s.pageFooterText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
+          </View>
+        </Page>
+      )}
 
       {/* Eén pagina per content-sectie */}
       {ALLE_SECTIES.filter(s => !s.optioneel || !!output[s.key]).map(({ badge, titel, key }) => (

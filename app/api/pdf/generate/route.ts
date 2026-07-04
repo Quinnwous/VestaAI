@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import type * as ReactPDF from '@react-pdf/renderer'
 import { PdfTemplate } from '@/components/PdfTemplate'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
 import React from 'react'
@@ -36,10 +36,22 @@ export async function GET(req: NextRequest) {
 
   const kantoorData = object.kantoren as unknown as Pick<Kantoor, 'name' | 'logo_url' | 'huisstijl_json'> | null
 
+  // Bewaarde foto's uit de bibliotheek (service-client, expliciet object + kantoor gescoped).
+  const serviceClient = createServiceSupabaseClient()
+  const { data: fotoRows } = await serviceClient
+    .from('object_fotos')
+    .select('url')
+    .eq('object_id', objectId)
+    .eq('kantoor_id', object.kantoor_id)
+    .order('created_at', { ascending: true })
+    .limit(6)
+  const fotos = (fotoRows ?? []).map(f => f.url as string)
+
   const pdf = await renderToBuffer(React.createElement(PdfTemplate, {
     address: object.address,
     output: object.outputs_json as ContentOutput,
     kantoor: kantoorData ?? { name: 'VestaAI', logo_url: null, huisstijl_json: null },
+    fotos,
   }) as React.ReactElement<ReactPDF.DocumentProps>)
 
   const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`

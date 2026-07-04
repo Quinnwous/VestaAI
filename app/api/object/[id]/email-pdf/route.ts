@@ -49,10 +49,20 @@ export async function POST(
 
   const kantoorData = object.kantoren as unknown as Pick<Kantoor, 'name' | 'logo_url' | 'huisstijl_json'> | null
 
+  const { data: fotoRows } = await serviceClient
+    .from('object_fotos')
+    .select('url')
+    .eq('object_id', params.id)
+    .eq('kantoor_id', makelaar.kantoor_id)
+    .order('created_at', { ascending: true })
+    .limit(6)
+  const fotos = (fotoRows ?? []).map(f => f.url as string)
+
   const pdfBuffer = await renderToBuffer(React.createElement(PdfTemplate, {
     address: object.address,
     output: object.outputs_json as ContentOutput,
     kantoor: kantoorData ?? { name: 'VestaAI', logo_url: null, huisstijl_json: null },
+    fotos,
   }) as React.ReactElement<ReactPDF.DocumentProps>)
 
   const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`
