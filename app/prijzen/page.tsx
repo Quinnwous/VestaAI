@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PrijzenToggle } from './PrijzenToggle'
+import { PrijzenAuthCta } from '@/components/PrijzenAuthCta'
 
 export const metadata: Metadata = {
   title: 'Prijzen — VestaAI',
@@ -16,17 +17,7 @@ export default function PrijzenPage() {
           <Link href="/" className="text-lg font-bold text-gray-900 hover:text-blue-600 transition-colors">
             VestaAI
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 transition-colors">
-              Inloggen
-            </Link>
-            <Link
-              href="/login?aanmelden=1"
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors"
-            >
-              Aanmelden →
-            </Link>
-          </div>
+          <PrijzenAuthCta />
         </div>
       </header>
 
