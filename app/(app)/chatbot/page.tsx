@@ -37,6 +37,7 @@ export default async function ChatbotPage() {
       <ChatbotTab
         kantoorId={k.id}
         kantoorNaam={k.name}
+        isAdmin={(makelaar as Makelaar).role === 'admin'}
         faqItems={(faq ?? []) as { id: string; vraag: string; antwoord: string; volgorde: number }[]}
         leads={(leads ?? []) as { id: string; naam: string | null; email: string; bericht: string | null; created_at: string }[]}
       />

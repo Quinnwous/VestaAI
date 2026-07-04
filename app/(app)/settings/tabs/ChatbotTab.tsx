@@ -22,9 +22,10 @@ interface Props {
   kantoorNaam: string
   faqItems: FaqItem[]
   leads: Lead[]
+  isAdmin?: boolean
 }
 
-export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads }: Props) {
+export function ChatbotTab({ kantoorId, faqItems: initFaq, leads: initLeads, isAdmin = true }: Props) {
   const [faq, setFaq] = useState<FaqItem[]>(initFaq)
   const [leads] = useState<Lead[]>(initLeads)
   const [nieuwVraag, setNieuwVraag] = useState('')
@@ -196,7 +197,7 @@ Met vriendelijke groet`
         </p>
 
         {faq.length === 0 ? (
-          <p className="text-sm text-gray-400 mb-4">Nog geen FAQ-items. Voeg hieronder het eerste item toe.</p>
+          <p className="text-sm text-gray-400 mb-4">{isAdmin ? 'Nog geen FAQ-items. Voeg hieronder het eerste item toe.' : 'Nog geen FAQ-items. Een beheerder kan deze toevoegen.'}</p>
         ) : (
           <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 mb-4 overflow-hidden">
             {faq.map((item) => (
@@ -206,22 +207,29 @@ Met vriendelijke groet`
                     <p className="text-sm font-medium text-gray-900">{item.vraag}</p>
                     <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{item.antwoord}</p>
                   </div>
-                  <button
-                    onClick={() => handleVerwijder(item.id)}
-                    disabled={verwijderenId === item.id}
-                    className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 disabled:opacity-40"
-                    aria-label="Verwijder FAQ-item"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleVerwijder(item.id)}
+                      disabled={verwijderenId === item.id}
+                      className="text-gray-300 hover:text-red-500 transition-colors flex-shrink-0 disabled:opacity-40"
+                      aria-label="Verwijder FAQ-item"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
 
+        {!isAdmin && (
+          <p className="text-xs text-gray-400">Alleen een beheerder van je kantoor kan de FAQ-items bewerken.</p>
+        )}
+
+        {isAdmin && (
         <form onSubmit={handleToevoegen} className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
           <h3 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">Nieuw FAQ-item</h3>
           <div>
@@ -254,6 +262,7 @@ Met vriendelijke groet`
             {opslaan ? 'Opslaan...' : 'Toevoegen'}
           </button>
         </form>
+        )}
       </section>
 
       {/* Leads */}
