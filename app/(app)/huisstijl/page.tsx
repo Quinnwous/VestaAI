@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { HuisstijlTab } from '../settings/tabs/HuisstijlTab'
+import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 
 export const metadata = { title: 'Huisstijl — VestaAI' }
@@ -24,11 +25,11 @@ export default async function HuisstijlPage() {
     .single()
 
   return (
-    <main style={{ maxWidth: 820, margin: '0 auto', padding: '40px 28px 80px' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0E1A13', marginBottom: 6 }}>Huisstijl</h1>
-      <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 32, lineHeight: 1.6, maxWidth: 560 }}>
-        Leg de schrijftoon, slogan en voorbeeldteksten van je kantoor vast. VestaAI leert die stijl en past hem
-        automatisch toe bij elke generatie — zo klinkt alle content als jullie kantoor.
+    <main style={{ maxWidth: 760, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <Eyebrow>Merk</Eyebrow>
+      <SerifTitle accent="huisstijl" style={{ marginBottom: 8 }}>Uw</SerifTitle>
+      <p style={{ fontSize: 14.5, color: '#5A6B61', margin: '0 0 30px', lineHeight: 1.55, maxWidth: 560 }}>
+        Leg vast hoe uw kantoor klinkt — elke gegenereerde tekst neemt deze toon over.
       </p>
       <HuisstijlTab kantoor={kantoor as Kantoor} isAdmin={(makelaar as Makelaar).role === 'admin'} />
     </main>

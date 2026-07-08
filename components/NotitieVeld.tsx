@@ -46,22 +46,18 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
   }
 
   return (
-    <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6">
+    <div>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          <h2 className="text-sm font-semibold text-gray-900">Interne notitie</h2>
+          <h2 style={{ fontSize: 13.5, fontWeight: 700, color: '#0E1A13', margin: 0 }}>Interne notitie</h2>
           {status === 'saved' && <span className="text-xs text-green-600">✓ Opgeslagen</span>}
         </div>
         {!bewerkModus && (
           <button
             onClick={handleOpen}
-            className="text-xs text-blue-600 hover:text-blue-700"
+            style={{ fontSize: 12.5, fontWeight: 600, color: '#1A6B45', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            {notitie ? 'Bewerk' : 'Voeg toe'}
+            {notitie ? 'Bewerken' : 'Voeg toe'}
           </button>
         )}
       </div>
@@ -102,9 +98,9 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
           </div>
         </div>
       ) : notitie ? (
-        <p className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{notitie}</p>
+        <p style={{ fontSize: 13.5, color: '#5A6B61', lineHeight: 1.6, margin: 0, background: '#F8FAF8', borderRadius: 12, padding: '13px 15px', whiteSpace: 'pre-wrap' }}>{notitie}</p>
       ) : (
-        <p className="text-xs text-gray-400 italic">Geen notitie — alleen zichtbaar voor uw team.</p>
+        <p style={{ fontSize: 13, color: '#9AA6A0', fontStyle: 'italic', margin: 0, background: '#F8FAF8', borderRadius: 12, padding: '13px 15px' }}>Geen notitie — alleen zichtbaar voor uw team.</p>
       )}
     </div>
   )

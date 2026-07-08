@@ -9,6 +9,7 @@ import { DashboardClient } from './DashboardClient'
 import { WelkomBanner } from '@/components/WelkomBanner'
 import { OnboardingChecklist } from '@/components/OnboardingChecklist'
 import { FeatureKaarten } from '@/components/FeatureKaarten'
+import { Eyebrow, SerifTitle, buttonStyle } from '@/components/ui'
 import type { ObjectRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Overzicht — VestaAI' }
@@ -155,12 +156,13 @@ export default async function DashboardPage({
   const newestObjectId = objecten?.[0]?.id ?? null
 
   return (
-    <main style={{ maxWidth: 900, margin: '0 auto', padding: '40px 28px 80px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+    <main style={{ maxWidth: 920, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 30 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0E1A13', marginBottom: 2 }}>Objecten</h1>
+          <Eyebrow>Overzicht</Eyebrow>
+          <SerifTitle accent="objecten" style={{ marginBottom: 6 }}>Uw</SerifTitle>
           {maandLimiet !== null && (
-            <p style={{ fontSize: 13, color: maandCount >= maandLimiet ? '#DC2626' : maandCount >= maandLimiet * 0.8 ? '#D97706' : '#9AA6A0', fontWeight: maandCount >= maandLimiet ? 600 : 400 }}>
+            <p style={{ fontSize: 13.5, margin: 0, fontWeight: 500, color: maandCount >= maandLimiet ? '#DC2626' : maandCount >= maandLimiet * 0.8 ? '#D97706' : '#9AA6A0' }}>
               {maandCount}/{maandLimiet} objecten deze maand
               {maandCount >= maandLimiet && ' — limiet bereikt'}
             </p>
@@ -168,7 +170,8 @@ export default async function DashboardPage({
         </div>
         <Link
           href="/object/new"
-          style={{ borderRadius: 11, background: '#1A6B45', padding: '10px 20px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
+          className="vui-btn vui-btn-primary"
+          style={{ ...buttonStyle('primary', 'md'), padding: '11px 20px', fontSize: 14, textDecoration: 'none' }}
         >
           + Nieuw object
         </Link>

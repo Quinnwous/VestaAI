@@ -3,12 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-
-const PLAN_LABELS: Record<string, { label: string; bg: string; color: string }> = {
-  starter: { label: 'Starter', bg: '#F1F7F3', color: '#2A8A5C' },
-  pro:     { label: 'Pro',     bg: '#E3F0E8', color: '#1A6B45' },
-  kantoor: { label: 'Kantoor', bg: '#D5E8DD', color: '#114230' },
-}
+import { PLAN_BADGE } from '@/components/ui/tokens'
 
 type IconName = 'objecten' | 'kalender' | 'huisstijl' | 'chatbot' | 'instellingen'
 
@@ -58,7 +53,7 @@ export function AppShell({
 }) {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-  const planInfo = plan ? PLAN_LABELS[plan] : null
+  const planInfo = plan ? PLAN_BADGE[plan] : null
 
   const logo = logoUrl ? (
     // eslint-disable-next-line @next/next/no-img-element
@@ -84,6 +79,7 @@ export function AppShell({
             href={href}
             onClick={() => setMobileOpen(false)}
             aria-current={active ? 'page' : undefined}
+            className={active ? undefined : 'vui-navitem'}
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '10px 12px', borderRadius: 10,
@@ -145,8 +141,8 @@ export function AppShell({
   return (
     <div>
       <style>{`
-        .app-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 244px; background: #FBFCFB; border-right: 1px solid #E9EFEB; z-index: 40; }
-        .app-content { margin-left: 244px; min-height: 100vh; }
+        .app-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 248px; background: #FBFCFB; border-right: 1px solid #E9EFEB; z-index: 40; }
+        .app-content { margin-left: 248px; min-height: 100vh; }
         .app-topbar { display: none; }
         .app-backdrop { display: none; }
         @media (max-width: 880px) {

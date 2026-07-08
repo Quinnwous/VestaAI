@@ -16,7 +16,7 @@ export default async function NewObjectPage() {
 
   return (
     <main style={{ minHeight: '100vh' }}>
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '40px 28px 80px' }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: '44px 40px 80px' }}>
         <Betaalmuur>
           <NewObjectForm />
         </Betaalmuur>
