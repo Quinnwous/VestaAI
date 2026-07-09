@@ -290,7 +290,10 @@ export async function generateContent(
     client = huisstijlOrClient as unknown as Anthropic
   } else {
     huisstijl = huisstijlOrClient as HuisstijlConfig | undefined
-    client = clientArg ?? new Anthropic()
+    // maxRetries laag: een volledige suite duurt al 2–4 min; een SDK-retry (bij 429/5xx)
+    // zou de wandkloktijd verdubbelen en de Vercel-functie (maxDuration) alsnog laten
+    // aftikken. timeout ruim binnen maxDuration=300s.
+    client = clientArg ?? new Anthropic({ maxRetries: 1, timeout: 280_000 })
   }
   let systemPrompt = buildSystemPrompt(huisstijl, input.taal ?? 'nl')
 
@@ -312,25 +315,29 @@ export async function generateContent(
 
     const userText = buildUserMessage(input, verrijkingTekst) + extra
 
+    // Streamen i.p.v. één lange non-streaming call: bij max_tokens 16000 duurt de
+    // generatie minuten; streaming houdt de verbinding warm (geen idle-timeout/504)
+    // en is de door Anthropic aanbevolen aanpak voor hoge max_tokens.
     let text = ''
     if (docIds.length > 0) {
       // Documenten aanwezig → Files API-beta; hang de document-blokken vóór de tekst.
       const docBlocks = docIds.map(id => ({ type: 'document', source: { type: 'file', file_id: id } }))
-      const raw = await (client.beta.messages.create as unknown as (p: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
+      const stream = (client.beta.messages.stream as unknown as (p: Record<string, unknown>) => { finalMessage: () => Promise<Anthropic.Beta.Messages.BetaMessage> })({
         model: 'claude-sonnet-4-6',
         max_tokens: 16000,
         system: systemPrompt,
         messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
         betas: ['files-api-2025-04-14'],
       })
+      const raw = await stream.finalMessage()
       text = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
     } else {
-      const message = await client.messages.create({
+      const message = await client.messages.stream({
         model: 'claude-sonnet-4-6',
         max_tokens: 16000,
         system: systemPrompt,
         messages: [{ role: 'user', content: userText }],
-      })
+      }).finalMessage()
       text = message.content[0].type === 'text' ? message.content[0].text : ''
     }
 

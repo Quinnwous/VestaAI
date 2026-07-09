@@ -91,12 +91,16 @@ const validOutput = {
   video_script: '',
 }
 
+// generateContent streamt nu (client.messages.stream(...).finalMessage()) i.p.v. create().
+// Mock: stream() geeft een object met finalMessage() terug dat het bericht resolvet.
+function streamReturning(text: string) {
+  return { finalMessage: () => Promise.resolve({ content: [{ type: 'text', text }] }) }
+}
+
 describe('generateContent', () => {
   it('parses valid Claude response', async () => {
-    const mockCreate = vi.fn().mockResolvedValue({
-      content: [{ type: 'text', text: JSON.stringify(validOutput) }],
-    })
-    const mockClient = { messages: { create: mockCreate } } as unknown as Anthropic
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
 
     const { generateContent } = await import('./claude')
     const result = await generateContent(
@@ -112,10 +116,8 @@ describe('generateContent', () => {
   })
 
   it('strips markdown code fences', async () => {
-    const mockCreate = vi.fn().mockResolvedValue({
-      content: [{ type: 'text', text: '```json\n' + JSON.stringify(validOutput) + '\n```' }],
-    })
-    const mockClient = { messages: { create: mockCreate } } as unknown as Anthropic
+    const mockStream = vi.fn().mockReturnValue(streamReturning('```json\n' + JSON.stringify(validOutput) + '\n```'))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
 
     const { generateContent } = await import('./claude')
     const result = await generateContent(
@@ -130,10 +132,10 @@ describe('generateContent', () => {
   })
 
   it('retries once on invalid JSON', async () => {
-    const mockCreate = vi.fn()
-      .mockResolvedValueOnce({ content: [{ type: 'text', text: 'dit is geen json' }] })
-      .mockResolvedValueOnce({ content: [{ type: 'text', text: JSON.stringify(validOutput) }] })
-    const mockClient = { messages: { create: mockCreate } } as unknown as Anthropic
+    const mockStream = vi.fn()
+      .mockReturnValueOnce(streamReturning('dit is geen json'))
+      .mockReturnValueOnce(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
 
     const { generateContent } = await import('./claude')
     const result = await generateContent(
@@ -144,15 +146,13 @@ describe('generateContent', () => {
       },
       mockClient,
     )
-    expect(mockCreate).toHaveBeenCalledTimes(2)
+    expect(mockStream).toHaveBeenCalledTimes(2)
     expect(result.funda_tekst).toBeDefined()
   })
 
   it('throws after 2 failed attempts', async () => {
-    const mockCreate = vi.fn().mockResolvedValue({
-      content: [{ type: 'text', text: 'geen json' }],
-    })
-    const mockClient = { messages: { create: mockCreate } } as unknown as Anthropic
+    const mockStream = vi.fn().mockReturnValue(streamReturning('geen json'))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
 
     const { generateContent } = await import('./claude')
     await expect(
