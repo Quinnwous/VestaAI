@@ -2,30 +2,49 @@
 
 > Alleen open items staan hier. Klaar = weg.
 > Per item: **wat · waarom · waar in de code · afhankelijkheden**. Prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG.
-> Laatst herzien: 9 juli 2026 (volgende-stappen-prioritering: Fase 1 vóór alles — valideren > harden > eerste klant, zie "Nu oppakken").
+> Laatst herzien: 9 juli 2026 (launch-ready sessie — zie "Afgerond deze sessie" + "Nu oppakken").
 
 > ✅ Klaar (3 juli): proefperiode-model live (30 dagen / 5 objecten totaal, trigger + vangnet + verlopen-schermen), gratis-plan (5/mnd), activeringsmail + welkomstmail + registratiemelding (atomisch, nooit dubbel), maandverbruik op /admin, uitloggen → homepage, referral-trigger-fix (search_path — stille signup-breuk sinds 1 juli), reset- en registratie-flow live bewezen E2E, Stripe test-mode klaargezet (producten/prijzen/webhook). Details in geheugen `[[auth-onboarding-architecture]]`.
 
-**Kerninzicht uit de analyse van 3 juli:** veel features die "missen" bestáán al, maar zijn onvindbaar. Foto-verbetering, virtual staging en de documenten-assistent (VvE/kadaster-upload + chat) zitten verstopt onderaan de object-detailpagina; de chatbot zit alleen in een admin-tab van Instellingen. Fase 1b (vindbaarheid) verzilvert dus bestaand werk — hoogste rendement per bouwuur.
+---
+
+## ✅ Afgerond deze sessie (9 juli — niet opnieuw doen)
+
+Alles hieronder is **gemerged naar `main` en live op productie** (Vercel READY), met groene `typecheck`/`test`/`build`.
+
+- **Server-side generate-time-out (de 504) — OPGELOST** (PR #8). Root cause: de complete suite (17 teksten, `max_tokens 16000`) draaide als één **non-streaming** call van 2–4 min terwijl `maxDuration=180` de functie afkapte. Fix: streaming (`messages.stream` + `finalMessage`, ook het Files-API-pad), `maxDuration 180→300` in `/api/generate` én `/api/object/[id]/hergenereer`, `maxRetries:1` + `timeout 280s` op de generatie-client, duur-logging, en de in-memory rate-limit omgebouwd tot een **in-flight-lock** (release in `finally`, venster 300s) → geen dubbele generatie tijdens een trage run. *Verrijking (`lib/verrijking.ts`) was niet de boosdoener (8s/call, netjes begrensd).*
+- **Chatbot v3 — system prompt + guardrails** (PR #9). `app/api/chat/route.ts`: volwaardige agent-prompt met persona, harde guardrails (geen prijsonderhandeling, WWGB/discriminatie incl. positieve bewonersprofielen, geen juridisch/fiscaal advies, **prompt-injection-weerstand**), off-topic-terugleiding, taal-mirroring (NL/EN), gestructureerde lead-capture. **Getest tegen 14 scenario's → 14/14 correct** (incl. nep-`SYSTEM:`-prijswijziging en "vergeet je instructies").
+- **Virtual staging — model-upgrade** (PR #9). `app/api/fotos/staging/route.ts`: `gemini-2.0-flash-exp` (verouderd/experimenteel) → **`gemini-2.5-flash-image`** (huidig GA-beeldbewerkingsmodel), strengere architectuur-behoudende prompt, nette 429-melding. ⚠️ Zie Gemini-tier onder "Openstaand".
+- **Content-kwaliteit — Funda-lengte** (PR #10). Validatie op 2 echte woningen toonde dat `funda_tekst` structureel onder de norm zat (513/607 w vs. 700–800) en `buurtomschrijving` onder 130. Prompt in `lib/claude.ts` aangescherpt (700 w harde ondergrens + 6-alinea-structuur; buurt min. 130). Verse generatie na de fix: **funda 731 w, buurt 157 w** — norm gehaald. Overige Funda-regels (derde persoon, technische + duurzaamheidsalinea, CTA, geen prijs, WWGB, verrijkingsgebruik) waren al in orde.
+- **Repo-hygiëne** (PR #7): design-zip weg, dode `concurrentieanalyse-housapp.md`-verwijzing → `.docx` (roadmap + CLAUDE.md), oude branches opgeruimd.
+
+**Geverifieerd (naslag, niet opnieuw checken):**
+- **Prod-DB gezond** — álle eerder als "nog toe te passen" geflagde migraties zijn live: `object_fotos`, `stijl_bewerkingen`, `object_documenten`, `chatbot_leads`, `objecten.chat_publiek`/`chat_foto_url`.
+- **Onboarding live-flow werkt** (E2E op prod, tot en met dashboard): registratie → activatiemail (`noreply@vestaai.nl`) → button-gated `/auth/verify` ("Ga verder →") activeert + logt in → dashboard. Signup kent **automatisch een 30-daagse trial** toe (bevestigd: `trial_ends_at` gezet, `heeftToegang` = true).
+- **Site-infra al aanwezig:** volledige metadata + `opengraph-image`, `icon`, `sitemap`, `not-found`, `error`. Copy schoon van verboden claims ("90 seconden", "Founding Member").
 
 ---
 
-## Nu oppakken (start hier) — 9 juli 2026
+## Nu oppakken (start hier) — volgende sessie
 
-**Situatie:** op 3–4 juli is bijna heel Fase 1b/1c/1d/2 gebouwd. Het product is feature-rijk maar nog niet bewezen betrouwbaar of verkocht. **Niet méér bouwen — verzilveren wat er staat:** valideren > harden > eerste betalende klant. De roadmap zegt zelf dat Fase 1 vóór alles gaat.
+### 🔴 Eerste: de live-generatie bevestigen (enige open verificatie van de time-out-fix)
+De time-out-fix is code-correct, unit-getest en gedeployed, en het proefaccount bleek trial-toegang te hebben — maar één **volledige generatie end-to-end op prod** is nog niet bevestigd. Mijn automatisering strandde op de form-validatie (het adresveld is een verborgen RHF-veld gevoed door `AddressAutocomplete`; extern rechtstreeks `POST /api/generate` wordt door Vercel afgevangen — een browser-sessie is vereist). **Makkelijkste bewijs:** genereer één object handmatig op prod (adres → 8 velden → Genereer) en check dat het < ~2 min klaar is zonder 504 én dat de duur-log in de Vercel-logs verschijnt (`[generate] verrijking …ms · generatie …ms`). Duurt het onverhoopt > 300 s, dan is streamen naar de client (SSE) de structurele oplossing — dan pas bouwen.
 
-**Claude kan direct (in deze volgorde):**
-1. 🔴 **Output-kwaliteit valideren** — genereer 2–3 echte objecten, lees kritisch mee (Funda-regelset, buurtomschrijving-accuratesse, Instagram-varianten, huisstijl-toepassing). Gate vóór verdere huisstijl-investering én vóór demo aan pilotmakelaar. *Begin hiermee — neemt de meeste onzekerheid weg.*
-2. 🔴 **Server-side time-out root cause** — waaróm liep `/api/generate` 1× 180s vast (Vercel 504)? Client-side is al gepatcht. Verdenking: retries `lib/claude.ts` + trage externe API's `lib/verrijking.ts`. Overweeg hardere per-call timeouts / `Promise.allSettled` met budget.
-3. 🔴 **E2e smoke test op Vercel** — registreer → genereer → PDF, volledig op prod. Goed delegeerbaar naar een subagent/achtergrondtaak.
+### 🟠 Nog niet gedaan deze sessie (bewust, wegens tijd/tooling)
+- **`e2e/smoke.mjs`** (credential-vrije Playwright-rooktest: publieke pagina's + login-form + register-tab + publieke chatpagina) is toegevoegd. Draaien: `node e2e/smoke.mjs` (of met `BASE_URL=…`). Nog uit te breiden met een ingelogd generatie-pad (achter env-flag i.v.m. API-kosten).
+- **Documenten-assistent kwaliteitstest** — met een realistisch test-PDF: citeert de chat correct, en verwerkt "hergenereer" de feiten (exacte m², staat) aantoonbaar in de teksten? (Fase 2 hieronder.)
+- **Volledige feature-audit** — de meeste features zijn nooit één keer end-to-end op prod aangeklikt (foto-verbetering, staging, foto-bibliotheek, PDF-export, kalender/plannen, prijswijziging, Realworks-XML, wijkpagina's, referral, NPS, admin-klantenbeheer). Loop ze systematisch na met een ingelogd account.
+- **Site-polish (Fase 4-rest):** mobiel (375px) door de kernschermen, Lighthouse op de landing (>90 perf / >95 a11y), `/vertrouwen` prominenter linken vanaf landing/prijzen.
 
-**Blokkeert livegang — actie Quinn (niks te bouwen tot dit er is):**
-- **Stripe env-waarden in Vercel** (4 stuks, staan in `.env.local`) → redeploy → dan test Claude de checkout.
+### 🔴 Blokkeert livegang — actie Quinn (niks te bouwen tot dit er is)
+- **Gemini-tier ophogen (voor virtual staging).** De `GOOGLE_AI_API_KEY` zit op een krappe image-quota — bij het testen liep hij meteen tegen **429 Too Many Requests** aan. Zolang de tier niet omhoog gaat, faalt staging in productie bij enige drukte (de code toont nu een nette 429-melding, maar genereert geen beeld). Verhoog het quota/tier in Google AI Studio / Cloud, en doe daarna één **visuele eindcheck** van de staging-output op prod (nieuw model = `gemini-2.5-flash-image`; ik kon de beelden zelf niet beoordelen door de 429's).
+- **Stripe env-waarden in Vercel** (4 stuks, staan in `.env.local`) → redeploy → dan checkout testen. (Betaling hoeft nog niet te werken voor de testfase.)
 - **Abonnementen-besluit** (per-makelaar-prijs + objectlimieten) — strategische keuze die de Stripe-prices en `lib/plans.ts` bepaalt.
-- **Testimonial/casestudy pilotmakelaar** — dé marketingactie (placeholder staat in `LandingPageClient.tsx`); pilotkantoor Amsterdam beschikbaar.
+- **Testimonial/casestudy pilotmakelaar** — placeholder staat in `LandingPageClient.tsx`; pilotkantoor Amsterdam beschikbaar.
 - **Realworks developer-portaal registreren** (gratis) → beantwoordt de business-case-vraag: teksten schríjven via API of alleen lezen?
+- **1 Gmail-mail opruimen:** de "Confirm your email address"-testmail (aan `quinn.berkouwer+vestatest@gmail.com`) mag weg — het bijbehorende testaccount is al volledig uit de database verwijderd.
 
-**Daarna:** Fase 3 moat & distributie (Realworks-API, Kolibri AppXchange, social direct publiceren) — pas ná time-out-fix en outputvalidatie.
+**Daarna:** Fase 3 moat & distributie (Realworks-API, Kolibri AppXchange, social direct publiceren).
 
 ---
 
@@ -33,9 +52,8 @@
 
 *Zonder betrouwbaar kernproduct is elke feature-uitbreiding zinloos (concurrentieanalyse §6.1). Deze fase gaat vóór alles.*
 
-- 🔴 **Object-generatie time-out (klant-hinder)** — ✅ client-side afgevangen (4 juli): `NewObjectForm` parseert de generate-response nu veilig en toont bij een time-out (408/502/503/504/524) of niet-JSON een begrijpelijke melding i.p.v. de rauwe "The string did not match the expected pattern". **Rest (server-side, vergt prod-repro/logs):** waaróm liep `/api/generate` 1× 180s vast (Vercel 504)? Onderzoek `generateContent` in `lib/claude.ts` (2 retries) + `fetchVerrijking` in `lib/verrijking.ts` (externe API's, kan traag zijn).
-- 🔴 **E2e smoke test op Vercel** — registreer account → genereer object → exporteer PDF, volledig doorlopen.
-- 🔴 **Output-kwaliteit valideren** — buurtomschrijvingen accuraat? Instagram-varianten bruikbaar? Huisstijl correct toegepast? *Doe dit vóór de huisstijl-v2-bouw (Fase 1c): eerst weten wat de huidige 3 voorbeelden opleveren.*
+> Time-out-fix + output-kwaliteit zijn **afgerond deze sessie** (zie boven). Resteert alleen de live-generatie-bevestiging (zie "Nu oppakken") en de PDF-stap van de e2e-smoke.
+
 - 🔴 **Stripe afmaken (actie Quinn + daarna checkout-smoke-test)** — 4 env-waarden in Vercel zetten (STRIPE_PRICE_STARTER/PRO/KANTOOR + STRIPE_WEBHOOK_SECRET, waarden staan in `.env.local`) en checken dat STRIPE_SECRET_KEY daar staat → redeploy → Claude test checkout-redirect. Let op: alles is **test-mode** (sk_test); vóór echte facturatie live-mode key + prices/webhook opnieuw + de prijsherziening hieronder.
 - 🟠 **Abonnementen opnieuw uitdenken (vóór livegang betalingen)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/Concurrentieanalyse-HousApp.docx` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee; daarna Stripe-prices vervangen (price-swap). Neem hierin mee: (a) is 5 objecten genoeg om in 30 dagen overtuigd te raken? (b) huisstijl-v2-features (Fase 1c) als Pro/Kantoor-differentiator.
 - 🟢 **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (Supabase dashboard → Auth → Email Templates, alleen subject-veld; body's zijn al NL).
