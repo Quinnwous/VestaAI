@@ -2,11 +2,30 @@
 
 > Alleen open items staan hier. Klaar = weg.
 > Per item: **wat · waarom · waar in de code · afhankelijkheden**. Prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG.
-> Laatst herzien: 3 juli 2026 (productanalyse: dashboard-vindbaarheid, huisstijl v2, chatbot v2, media/documenten, integraties).
+> Laatst herzien: 9 juli 2026 (volgende-stappen-prioritering: Fase 1 vóór alles — valideren > harden > eerste klant, zie "Nu oppakken").
 
 > ✅ Klaar (3 juli): proefperiode-model live (30 dagen / 5 objecten totaal, trigger + vangnet + verlopen-schermen), gratis-plan (5/mnd), activeringsmail + welkomstmail + registratiemelding (atomisch, nooit dubbel), maandverbruik op /admin, uitloggen → homepage, referral-trigger-fix (search_path — stille signup-breuk sinds 1 juli), reset- en registratie-flow live bewezen E2E, Stripe test-mode klaargezet (producten/prijzen/webhook). Details in geheugen `[[auth-onboarding-architecture]]`.
 
 **Kerninzicht uit de analyse van 3 juli:** veel features die "missen" bestáán al, maar zijn onvindbaar. Foto-verbetering, virtual staging en de documenten-assistent (VvE/kadaster-upload + chat) zitten verstopt onderaan de object-detailpagina; de chatbot zit alleen in een admin-tab van Instellingen. Fase 1b (vindbaarheid) verzilvert dus bestaand werk — hoogste rendement per bouwuur.
+
+---
+
+## Nu oppakken (start hier) — 9 juli 2026
+
+**Situatie:** op 3–4 juli is bijna heel Fase 1b/1c/1d/2 gebouwd. Het product is feature-rijk maar nog niet bewezen betrouwbaar of verkocht. **Niet méér bouwen — verzilveren wat er staat:** valideren > harden > eerste betalende klant. De roadmap zegt zelf dat Fase 1 vóór alles gaat.
+
+**Claude kan direct (in deze volgorde):**
+1. 🔴 **Output-kwaliteit valideren** — genereer 2–3 echte objecten, lees kritisch mee (Funda-regelset, buurtomschrijving-accuratesse, Instagram-varianten, huisstijl-toepassing). Gate vóór verdere huisstijl-investering én vóór demo aan pilotmakelaar. *Begin hiermee — neemt de meeste onzekerheid weg.*
+2. 🔴 **Server-side time-out root cause** — waaróm liep `/api/generate` 1× 180s vast (Vercel 504)? Client-side is al gepatcht. Verdenking: retries `lib/claude.ts` + trage externe API's `lib/verrijking.ts`. Overweeg hardere per-call timeouts / `Promise.allSettled` met budget.
+3. 🔴 **E2e smoke test op Vercel** — registreer → genereer → PDF, volledig op prod. Goed delegeerbaar naar een subagent/achtergrondtaak.
+
+**Blokkeert livegang — actie Quinn (niks te bouwen tot dit er is):**
+- **Stripe env-waarden in Vercel** (4 stuks, staan in `.env.local`) → redeploy → dan test Claude de checkout.
+- **Abonnementen-besluit** (per-makelaar-prijs + objectlimieten) — strategische keuze die de Stripe-prices en `lib/plans.ts` bepaalt.
+- **Testimonial/casestudy pilotmakelaar** — dé marketingactie (placeholder staat in `LandingPageClient.tsx`); pilotkantoor Amsterdam beschikbaar.
+- **Realworks developer-portaal registreren** (gratis) → beantwoordt de business-case-vraag: teksten schríjven via API of alleen lezen?
+
+**Daarna:** Fase 3 moat & distributie (Realworks-API, Kolibri AppXchange, social direct publiceren) — pas ná time-out-fix en outputvalidatie.
 
 ---
 
@@ -18,7 +37,7 @@
 - 🔴 **E2e smoke test op Vercel** — registreer account → genereer object → exporteer PDF, volledig doorlopen.
 - 🔴 **Output-kwaliteit valideren** — buurtomschrijvingen accuraat? Instagram-varianten bruikbaar? Huisstijl correct toegepast? *Doe dit vóór de huisstijl-v2-bouw (Fase 1c): eerst weten wat de huidige 3 voorbeelden opleveren.*
 - 🔴 **Stripe afmaken (actie Quinn + daarna checkout-smoke-test)** — 4 env-waarden in Vercel zetten (STRIPE_PRICE_STARTER/PRO/KANTOOR + STRIPE_WEBHOOK_SECRET, waarden staan in `.env.local`) en checken dat STRIPE_SECRET_KEY daar staat → redeploy → Claude test checkout-redirect. Let op: alles is **test-mode** (sk_test); vóór echte facturatie live-mode key + prices/webhook opnieuw + de prijsherziening hieronder.
-- 🟠 **Abonnementen opnieuw uitdenken (vóór livegang betalingen)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/concurrentieanalyse-housapp.md` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee; daarna Stripe-prices vervangen (price-swap). Neem hierin mee: (a) is 5 objecten genoeg om in 30 dagen overtuigd te raken? (b) huisstijl-v2-features (Fase 1c) als Pro/Kantoor-differentiator.
+- 🟠 **Abonnementen opnieuw uitdenken (vóór livegang betalingen)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/Concurrentieanalyse-HousApp.docx` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee; daarna Stripe-prices vervangen (price-swap). Neem hierin mee: (a) is 5 objecten genoeg om in 30 dagen overtuigd te raken? (b) huisstijl-v2-features (Fase 1c) als Pro/Kantoor-differentiator.
 - 🟢 **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (Supabase dashboard → Auth → Email Templates, alleen subject-veld; body's zijn al NL).
 
 ---
