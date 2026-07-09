@@ -1,11 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import type { PropertyInput, ContentOutput } from '@/lib/schemas'
 import { PropertyForm, clearDraft } from '@/components/PropertyForm'
 import { LoadingProgress } from '@/components/LoadingProgress'
 import { ResultTabs } from '@/components/ResultTabs'
 import { NpsModal } from '@/components/NpsModal'
+import { Eyebrow, SerifTitle } from '@/components/ui'
 
 const RATE_LIMIT_SECONDS = 90
 
@@ -129,29 +131,38 @@ export function NewObjectForm() {
   return (
     <>
       {state.status === 'idle' && (
-        <div style={card}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, gap: 12, flexWrap: 'wrap' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: 0 }}>Object invoeren</h2>
-            <button
-              type="button"
-              onClick={fillDemo}
-              style={{ fontSize: 13, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 9, padding: '7px 13px', cursor: 'pointer', whiteSpace: 'nowrap' }}
-            >
-              Probeer met voorbeeldadres →
-            </button>
+        <div>
+          <Link
+            href="/dashboard"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#9AA6A0', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
+          >
+            ← Terug naar objecten
+          </Link>
+          <Eyebrow>Nieuw object</Eyebrow>
+          <SerifTitle accent="alle content" size={34} style={{ marginBottom: 8 }}>Genereer</SerifTitle>
+          <p style={{ fontSize: 14.5, color: '#5A6B61', margin: '0 0 30px', lineHeight: 1.55 }}>
+            Vul het adres en enkele kenmerken in — VestaAI schrijft de Funda-tekst, brochures, social posts en koper-e-mail in één keer.
+          </p>
+
+          <div style={card}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+              <button
+                type="button"
+                onClick={fillDemo}
+                style={{ fontSize: 12.5, fontWeight: 600, color: '#1A6B45', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+              >
+                Vul een voorbeeld in
+              </button>
+            </div>
+            <PropertyForm key={formKey} onSubmit={handleSubmit} />
           </div>
-          <PropertyForm key={formKey} onSubmit={handleSubmit} />
         </div>
       )}
 
-      {state.status === 'loading' && (
-        <div style={card}>
-          <LoadingProgress />
-        </div>
-      )}
+      {state.status === 'loading' && <LoadingProgress />}
 
       {state.status === 'success' && (
-        <div style={card}>
+        <div>
           <ResultTabs
             data={state.data}
             objectId={state.objectId}

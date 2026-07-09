@@ -9,7 +9,7 @@ const STATUS_CONFIG: Record<ObjectStatus, { label: string; kleur: string; punt: 
   draft: { label: 'Concept', kleur: 'bg-gray-100 text-gray-600 hover:bg-gray-200', punt: 'bg-gray-400' },
   published: { label: 'Gepubliceerd', kleur: 'bg-green-100 text-green-700 hover:bg-green-200', punt: 'bg-green-500' },
   onder_bod: { label: 'Onder bod', kleur: 'bg-amber-100 text-amber-700 hover:bg-amber-200', punt: 'bg-amber-500' },
-  verkocht: { label: 'Verkocht', kleur: 'bg-blue-100 text-blue-700 hover:bg-blue-200', punt: 'bg-blue-500' },
+  verkocht: { label: 'Verkocht', kleur: 'bg-slate-100 text-slate-600 hover:bg-slate-200', punt: 'bg-slate-500' },
 }
 
 interface Props {

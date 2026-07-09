@@ -12,11 +12,13 @@ type PlanItem = {
   notitie: string | null
 }
 
+// Onderscheidende platform-kleuren (arbitraire hex zodat LinkedIn écht blauw
+// blijft — de Tailwind `blue`-scale is projectbreed geremapt naar groen).
 const PLATFORM_KLEUREN: Record<PlanItem['platform'], string> = {
-  instagram: 'bg-pink-100 text-pink-800 border-pink-200',
-  linkedin: 'bg-blue-100 text-blue-800 border-blue-200',
-  email: 'bg-amber-100 text-amber-800 border-amber-200',
-  overig: 'bg-gray-100 text-gray-700 border-gray-200',
+  instagram: 'bg-[#F7E7EE] text-[#B25578] border-[#EBD0DC]',
+  linkedin: 'bg-[#E8EEF6] text-[#4A6FA5] border-[#D5E0EE]',
+  email: 'bg-[#FDF0D9] text-[#B4700C] border-[#F6E0B8]',
+  overig: 'bg-[#EEF1EF] text-[#5A6B61] border-[#E2E8E4]',
 }
 
 const PLATFORM_ICOON: Record<PlanItem['platform'], string> = {
@@ -140,94 +142,107 @@ export function KalenderClient({ initialPlanning }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Maand-navigatie */}
-      <div className="flex items-center gap-4">
-        <button onClick={vorigeMapand} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:border-gray-400 transition-colors">←</button>
-        <h2 className="text-base font-semibold text-gray-900 min-w-40 text-center">
-          {MAANDEN[maand]} {jaar}
-        </h2>
-        <button onClick={volgendeMapand} className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm hover:border-gray-400 transition-colors">→</button>
-        <button
-          onClick={() => { setJaar(nu.getFullYear()); setMaand(nu.getMonth()) }}
-          className="ml-auto text-xs text-blue-600 hover:underline"
-        >
-          Vandaag
-        </button>
+    <div>
+      {/* Legenda — rechtsboven, zoals in het ontwerp */}
+      <div className="flex flex-wrap justify-end gap-1.5 mb-4 text-xs">
+        {(['instagram', 'linkedin', 'email', 'overig'] as const).map(p => (
+          <span key={p} className={`px-2.5 py-1 rounded-full border font-semibold ${PLATFORM_KLEUREN[p]}`}>
+            {p.charAt(0).toUpperCase() + p.slice(1)}
+          </span>
+        ))}
       </div>
 
-      {/* Kalender grid */}
-      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-        {/* Weekdag-headers */}
-        <div className="grid grid-cols-7 border-b border-gray-100">
-          {DAGEN.map(d => (
-            <div key={d} className="py-2 text-center text-xs font-medium text-gray-400">{d}</div>
-          ))}
-        </div>
+      <div className="grid gap-5 items-start lg:grid-cols-[1fr,340px]">
+        {/* Kalender grid */}
+        <div className="rounded-[18px] border border-[#E9EFEB] bg-white shadow-sm overflow-hidden">
+          {/* Maand-navigatie in de kaartkop */}
+          <div className="flex items-center justify-between px-4 py-[15px] border-b border-[#F1F4F2]">
+            <div className="flex items-center gap-2.5">
+              <button onClick={vorigeMapand} aria-label="Vorige maand" className="w-[30px] h-[30px] rounded-lg border border-[#E4EAE6] bg-white text-[#5A6B61] text-base leading-none hover:border-[#C7E6D5] transition-colors">‹</button>
+              <span className="text-base font-bold text-[#0E1A13] min-w-[130px] text-center">{MAANDEN[maand]} {jaar}</span>
+              <button onClick={volgendeMapand} aria-label="Volgende maand" className="w-[30px] h-[30px] rounded-lg border border-[#E4EAE6] bg-white text-[#5A6B61] text-base leading-none hover:border-[#C7E6D5] transition-colors">›</button>
+            </div>
+            <button
+              onClick={() => { setJaar(nu.getFullYear()); setMaand(nu.getMonth()) }}
+              className="text-xs font-semibold text-[#1A6B45] bg-[#EAF5EE] rounded-lg px-3 py-1.5 hover:bg-[#D5E8DD] transition-colors"
+            >
+              Vandaag
+            </button>
+          </div>
 
-        {/* Dag-cellen */}
-        <div className="grid grid-cols-7">
-          {dagen.map((dag, i) => {
-            if (dag.getTime() === 0) {
-              return <div key={`leeg-${i}`} className="min-h-20 border-b border-r border-gray-50 p-1 bg-gray-50/30" />
-            }
-            const key = dag.toISOString().slice(0, 10)
-            const items = planningPerDag.get(key) ?? []
-            const isVandaag = dag.toDateString() === nu.toDateString()
-            const isGeselecteerd = geselecteerdeDag?.toDateString() === dag.toDateString()
+          {/* Weekdag-headers */}
+          <div className="grid grid-cols-7 bg-[#F8FAF8] border-b border-[#F1F4F2]">
+            {DAGEN.map(d => (
+              <div key={d} className="py-2 text-center text-[11px] font-bold text-[#9AA6A0] tracking-wide uppercase">{d}</div>
+            ))}
+          </div>
 
-            return (
-              <div
-                key={key}
-                onClick={() => { setGeselecteerdeDag(dag); setNieuwFormulier(false) }}
-                className={`min-h-20 border-b border-r border-gray-100 p-1.5 cursor-pointer transition-colors ${
-                  isGeselecteerd ? 'bg-blue-50 ring-2 ring-inset ring-blue-400' : 'hover:bg-gray-50'
-                }`}
-              >
-                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium mb-1 ${
-                  isVandaag ? 'bg-blue-600 text-white' : 'text-gray-700'
-                }`}>
-                  {dag.getDate()}
-                </span>
-                <div className="space-y-0.5">
-                  {items.slice(0, 3).map(item => (
-                    <div
-                      key={item.id}
-                      className={`text-xs px-1 py-0.5 rounded border truncate ${PLATFORM_KLEUREN[item.platform]} ${
-                        item.status === 'gepubliceerd' ? 'opacity-50 line-through' : ''
-                      }`}
-                    >
-                      {PLATFORM_ICOON[item.platform]} {item.content.slice(0, 20)}
-                    </div>
-                  ))}
-                  {items.length > 3 && (
-                    <div className="text-xs text-gray-400 pl-1">+{items.length - 3} meer</div>
-                  )}
+          {/* Dag-cellen */}
+          <div className="grid grid-cols-7">
+            {dagen.map((dag, i) => {
+              if (dag.getTime() === 0) {
+                return <div key={`leeg-${i}`} className="min-h-[76px] border-b border-r border-[#F1F4F2] bg-[#FBFCFB]/40" />
+              }
+              const key = dag.toISOString().slice(0, 10)
+              const items = planningPerDag.get(key) ?? []
+              const isVandaag = dag.toDateString() === nu.toDateString()
+              const isGeselecteerd = geselecteerdeDag?.toDateString() === dag.toDateString()
+
+              return (
+                <div
+                  key={key}
+                  onClick={() => { setGeselecteerdeDag(dag); setNieuwFormulier(false) }}
+                  className={`min-h-[76px] border-b border-r border-[#F1F4F2] p-1.5 cursor-pointer transition-colors ${
+                    isGeselecteerd ? 'bg-[#F1F7F3] ring-2 ring-inset ring-[#A8D4BB]' : 'hover:bg-[#F8FAF8]'
+                  }`}
+                >
+                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold mb-1 ${
+                    isVandaag ? 'bg-[#1A6B45] text-white' : 'text-[#5A6B61]'
+                  }`}>
+                    {dag.getDate()}
+                  </span>
+                  <div className="space-y-0.5">
+                    {items.slice(0, 3).map(item => (
+                      <div
+                        key={item.id}
+                        className={`text-[11px] px-1 py-0.5 rounded border truncate ${PLATFORM_KLEUREN[item.platform]} ${
+                          item.status === 'gepubliceerd' ? 'opacity-50 line-through' : ''
+                        }`}
+                      >
+                        {PLATFORM_ICOON[item.platform]} {item.content.slice(0, 20)}
+                      </div>
+                    ))}
+                    {items.length > 3 && (
+                      <div className="text-[11px] text-[#9AA6A0] pl-1">+{items.length - 3} meer</div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
-      </div>
 
-      {/* Zijpaneel: geselecteerde dag */}
-      {geselecteerdeDag && (
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+        {/* Zijpaneel: geselecteerde dag — altijd zichtbaar */}
+        <div className="rounded-[18px] border border-[#E9EFEB] bg-white shadow-sm p-5">
+          {geselecteerdeDag ? (
+          <>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-900">
+            <h3 className="text-sm font-bold text-[#0E1A13] capitalize">
               {geselecteerdeDag.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })}
             </h3>
-            <button
-              onClick={() => setNieuwFormulier(true)}
-              className="text-xs rounded-lg bg-blue-600 px-3 py-1.5 text-white font-medium hover:bg-blue-700 transition-colors"
-            >
-              + Nieuwe post
-            </button>
+            {!nieuwFormulier && (
+              <button
+                onClick={() => setNieuwFormulier(true)}
+                className="text-xs font-bold rounded-lg bg-[#EAF5EE] px-3 py-1.5 text-[#1A6B45] hover:bg-[#D5E8DD] transition-colors"
+              >
+                + Post
+              </button>
+            )}
           </div>
 
           {/* Items van deze dag */}
           {dagItems.length === 0 && !nieuwFormulier && (
-            <p className="text-sm text-gray-400">Geen geplande posts voor deze dag.</p>
+            <p className="text-sm text-[#9AA6A0] text-center py-6">Nog niets gepland op deze dag.</p>
           )}
 
           <div className="space-y-3">
@@ -340,16 +355,13 @@ export function KalenderClient({ initialPlanning }: Props) {
               </div>
             </form>
           )}
+          </>
+          ) : (
+            <p className="text-sm text-[#9AA6A0] text-center leading-relaxed py-10 px-2.5">
+              Selecteer een dag in de kalender om posts te bekijken of in te plannen.
+            </p>
+          )}
         </div>
-      )}
-
-      {/* Legenda */}
-      <div className="flex flex-wrap gap-3 text-xs text-gray-500">
-        {(['instagram', 'linkedin', 'email', 'overig'] as const).map(p => (
-          <span key={p} className={`px-2 py-0.5 rounded border ${PLATFORM_KLEUREN[p]}`}>
-            {p.charAt(0).toUpperCase() + p.slice(1)}
-          </span>
-        ))}
       </div>
     </div>
   )

@@ -122,10 +122,10 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
           ref={textareaRef}
           value={bewerkTekst}
           onChange={handleTextareaInput}
-          style={{ width: '100%', borderRadius: 12, border: `1px solid ${overLimit ? '#FCA5A5' : '#1A6B45'}`, background: '#fff', padding: '16px', fontSize: 14, color: '#0E1A13', lineHeight: 1.7, outline: 'none', resize: 'none', minHeight: 200, boxSizing: 'border-box' }}
+          style={{ width: '100%', borderRadius: 16, border: `1px solid ${overLimit ? '#FCA5A5' : '#1A6B45'}`, background: '#fff', padding: '22px 24px', fontSize: 14.5, color: '#0E1A13', lineHeight: 1.72, outline: 'none', resize: 'none', minHeight: 200, boxSizing: 'border-box' }}
         />
       ) : (
-        <div style={{ borderRadius: 12, border: `1px solid ${overLimit ? '#FCA5A5' : '#E9EFEB'}`, background: '#F8FAF8', padding: '16px', fontSize: 14, color: '#0E1A13', whiteSpace: 'pre-wrap', lineHeight: 1.7 }}>
+        <div style={{ borderRadius: 16, border: `1px solid ${overLimit ? '#FCA5A5' : '#E9EFEB'}`, background: '#fff', padding: '22px 24px', fontSize: 14.5, color: '#2A362D', whiteSpace: 'pre-wrap', lineHeight: 1.72, boxShadow: '0 2px 12px rgba(14,26,19,.04)' }}>
           {content}
         </div>
       )}

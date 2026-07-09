@@ -11,24 +11,25 @@ import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { DeelChatbot } from '@/components/DeelChatbot'
+import { TabBar } from '@/components/ui'
 import type { ContentOutput } from '@/lib/schemas'
 
 type SectionId = 'content' | 'media' | 'documenten' | 'chat' | 'export'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'content', label: 'Content' },
-  { id: 'media', label: "Foto's & staging" },
+  { id: 'media', label: 'Media' },
   { id: 'documenten', label: 'Documenten' },
-  { id: 'chat', label: 'Deel-chatbot' },
-  { id: 'export', label: 'Export & delen' },
+  { id: 'chat', label: 'Chatbot' },
+  { id: 'export', label: 'Export' },
 ]
 
 const card: React.CSSProperties = {
-  borderRadius: 20,
+  borderRadius: 18,
   background: '#fff',
   border: '1px solid #E9EFEB',
-  padding: '28px',
-  boxShadow: '0 2px 16px rgba(14,26,19,.05)',
+  padding: 22,
+  boxShadow: '0 2px 12px rgba(14,26,19,.04)',
 }
 
 export function ObjectWorkspace({
@@ -52,47 +53,37 @@ export function ObjectWorkspace({
   return (
     <div>
       {/* Sectie-navigatie */}
-      <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E9EFEB', marginBottom: 20, overflowX: 'auto' }}>
-        {SECTIONS.map(s => (
-          <button
-            key={s.id}
-            onClick={() => setActive(s.id)}
-            style={{
-              padding: '10px 16px', fontSize: 14, whiteSpace: 'nowrap',
-              fontWeight: active === s.id ? 700 : 500, cursor: 'pointer',
-              background: 'none', border: 'none',
-              borderBottom: active === s.id ? '2px solid #1A6B45' : '2px solid transparent',
-              color: active === s.id ? '#1A6B45' : '#9AA6A0',
-              transition: 'all .15s', marginBottom: -1,
-            }}
-          >
-            {s.label}
-          </button>
-        ))}
-      </div>
+      <TabBar
+        tabs={SECTIONS}
+        active={active}
+        onChange={(id) => setActive(id as SectionId)}
+        style={{ margin: '24px 0 26px' }}
+      />
 
       {/* Content — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>
-        <div style={{ ...card, marginBottom: 16 }}>
-          <ResultTabs data={outputs} objectId={objectId} onResetHref="/dashboard" />
+        <ResultTabs data={outputs} objectId={objectId} onResetHref="/dashboard" />
+        <div style={{ marginTop: 30, borderTop: '1px solid #EEF2F0', paddingTop: 22 }}>
+          <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
         </div>
-        <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
       </div>
 
-      {/* Foto's & staging */}
+      {/* Media — foto-verbetering + virtual staging + bibliotheek als losse kaarten */}
       <div style={{ display: active === 'media' ? 'block' : 'none' }}>
-        <div style={card}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Foto verbeteren</h2>
-          <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Upload een woning- of kamerfoto en ontvang een verbeterde versie (belichting, scherpte, perspectief).</p>
-          <FotoVerbetering objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
-          <div style={{ borderTop: '1px solid #E9EFEB', paddingTop: 24, marginTop: 24 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Virtual staging</h2>
-            <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Upload een lege kamer en ontvang een gemeubileerde versie via AI.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={card}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Foto-verbetering</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Licht, kleur en perspectief automatisch geoptimaliseerd.</p>
+            <FotoVerbetering objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
+          </div>
+          <div style={card}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Virtual staging</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
             <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
           </div>
-          <div style={{ borderTop: '1px solid #E9EFEB', paddingTop: 24, marginTop: 24 }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Foto-bibliotheek</h2>
-            <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Bewaarde verbeterde en gestagede foto&apos;s bij deze woning — blijven hier staan om te downloaden of hergebruiken.</p>
+          <div style={card}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Bewaarde verbeterde en gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
             <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
           </div>
         </div>
@@ -100,11 +91,7 @@ export function ObjectWorkspace({
 
       {/* Documenten */}
       <div style={{ display: active === 'documenten' ? 'block' : 'none' }}>
-        <div style={card}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Documenten-assistent</h2>
-          <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 16 }}>Upload VvE-notulen, een leveringsakte, koopakte of meetrapport en stel er vragen over via AI.</p>
-          <DocumentenAssistent objectId={objectId} />
-        </div>
+        <DocumentenAssistent objectId={objectId} />
       </div>
 
       {/* Deel-chatbot */}
@@ -114,12 +101,20 @@ export function ObjectWorkspace({
 
       {/* Export & delen */}
       <div style={{ display: active === 'export' ? 'block' : 'none' }}>
-        <div style={card}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 4 }}>Exporteren & delen</h2>
-          <p style={{ fontSize: 13, color: '#9AA6A0', marginBottom: 20 }}>Mail de content als PDF, exporteer naar Realworks of maak een prijswijziging-bericht.</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+          <div style={card}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Mail naar geïnteresseerde</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure + follow-up direct naar een koper.</p>
             <EmailPdfButton objectId={objectId} userEmail={userEmail} />
+          </div>
+          <div style={card}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Realworks-export</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de objectdata als XML voor Realworks.</p>
             <RealworksExportButton objectId={objectId} />
+          </div>
+          <div style={{ ...card, gridColumn: 'span 2' }}>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
+            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
             <PrijswijzigingModal objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
           </div>
         </div>

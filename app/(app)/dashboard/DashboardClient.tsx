@@ -110,9 +110,8 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
           value={zoekterm}
           onChange={e => handleZoekChange(e.target.value)}
           placeholder="Zoek op adres…"
+          className="vui-input"
           style={{ flex: 1, borderRadius: 11, border: '1px solid #E4EAE6', padding: '10px 14px', fontSize: 14, color: '#0E1A13', background: '#fff', outline: 'none' }}
-          onFocus={e => (e.target.style.borderColor = '#1A6B45')}
-          onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
         />
         {search && (
           <button
@@ -173,9 +172,8 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
             <Link
               key={obj.id}
               href={`/object/${obj.id}`}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 14, border: '1px solid #E9EFEB', background: '#fff', padding: '16px 20px', textDecoration: 'none', transition: 'border-color .15s, box-shadow .15s' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#C7E6D5'; (e.currentTarget as HTMLElement).style.boxShadow = '0 2px 12px rgba(26,107,69,.08)' }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#E9EFEB'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+              className="vui-card-hover"
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: 14, border: '1px solid #E9EFEB', background: '#fff', padding: '16px 20px', textDecoration: 'none' }}
             >
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

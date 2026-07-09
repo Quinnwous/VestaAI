@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { SettingsTabs } from './SettingsTabs'
+import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 
 export const metadata = { title: 'Instellingen — VestaAI' }
@@ -33,8 +34,9 @@ export default async function SettingsPage() {
   const isAdmin = (makelaar as Makelaar).role === 'admin'
 
   return (
-    <main style={{ maxWidth: 820, margin: '0 auto', padding: '40px 28px 80px' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0E1A13', marginBottom: 32 }}>Instellingen</h1>
+    <main style={{ maxWidth: 820, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <Eyebrow>Beheer</Eyebrow>
+      <SerifTitle style={{ marginBottom: 22 }}><span style={{ fontStyle: 'italic', color: '#1A6B45' }}>Instellingen</span></SerifTitle>
       <SettingsTabs
         makelaar={makelaar as Makelaar}
         kantoor={kantoor as Kantoor}

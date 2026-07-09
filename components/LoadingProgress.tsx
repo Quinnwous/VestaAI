@@ -53,19 +53,22 @@ export function LoadingProgress() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '48px 16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', paddingTop: 40 }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      <div style={{ marginBottom: 32, textAlign: 'center' }}>
-        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 6 }}>Content wordt gegenereerd</h2>
-        <p style={{ fontSize: 14, color: '#9AA6A0' }}>
+      <div style={{ marginBottom: 30, textAlign: 'center' }}>
+        <div style={{ width: 56, height: 56, margin: '0 auto 18px', border: '3px solid #E3F0E8', borderTopColor: '#1A6B45', borderRadius: '50%', animation: 'spin .8s linear infinite' }} />
+        <h1 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 28, letterSpacing: '-.01em', color: '#0E1A13', margin: '0 0 6px' }}>
+          Content wordt gegenereerd…
+        </h1>
+        <p style={{ fontSize: 14, color: '#9AA6A0', margin: 0 }}>
           {timedOut
-            ? 'Dit duurt wat langer dan normaal — bijna klaar...'
-            : 'Even geduld — VestaAI is aan het werk'}
+            ? 'Dit duurt wat langer dan normaal — bijna klaar…'
+            : 'Even geduld — VestaAI schrijft alles voor u.'}
         </p>
       </div>
 
-      <div style={{ width: '100%', maxWidth: 300, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ width: '100%', maxWidth: 460, background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {STEPS.map((step, index) => {
           const done = completed.has(index)
           const active = !done && (index === 0 || completed.has(index - 1))

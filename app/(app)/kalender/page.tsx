@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { KalenderClient } from './KalenderClient'
+import { Eyebrow, SerifTitle } from '@/components/ui'
 
 export const metadata = { title: 'Content kalender — VestaAI' }
 
@@ -34,12 +35,13 @@ export default async function KalenderPage() {
   const leeg = (planning ?? []).length === 0
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-6">
-        <h1 className="text-xl font-bold text-gray-900 mb-1">Content kalender</h1>
-        <p className="text-sm text-gray-500 max-w-2xl leading-relaxed">
+    <main style={{ maxWidth: 1120, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <div style={{ marginBottom: 24 }}>
+        <Eyebrow>Planning</Eyebrow>
+        <SerifTitle style={{ marginBottom: 8 }}>Content-<span style={{ fontStyle: 'italic', color: '#1A6B45' }}>kalender</span></SerifTitle>
+        <p style={{ fontSize: 13.5, color: '#9AA6A0', margin: 0, maxWidth: 620, lineHeight: 1.55 }}>
           Plan je social posts vooruit en houd overzicht. De flow: <strong>genereer content</strong> bij een woning →
-          <strong> plan hem in</strong> op een datum → <strong>publiceer</strong> op de dag zelf (kopieer de tekst naar je kanaal).
+          <strong> plan hem in</strong> op een datum → <strong>publiceer</strong> op de dag zelf.
         </p>
       </div>
 
