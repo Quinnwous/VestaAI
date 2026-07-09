@@ -57,20 +57,24 @@ export async function POST(req: NextRequest) {
   const base64 = buffer.toString('base64')
 
   const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY)
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+  // gemini-2.5-flash-image ("Nano Banana"): het huidige GA-model voor beeldbewerking —
+  // fotorealistisch meubels toevoegen met behoud van de architectuur. Vervangt het
+  // verouderde experimentele gemini-2.0-flash-exp.
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' })
 
-  const prompt = `You are a professional virtual staging designer for Dutch real estate.
+  const prompt = `You are a professional virtual staging designer for Dutch real estate. Furnish this ${RUIMTE_OMSCHRIJVING[ruimte]} in a ${STIJL_OMSCHRIJVING[stijl]} style.
 
-Transform this empty or sparsely furnished ${RUIMTE_OMSCHRIJVING[ruimte]} into a beautifully staged version with a ${STIJL_OMSCHRIJVING[stijl]} style.
+STRICT — preserve the property exactly:
+- Keep the EXACT same architecture: walls, windows, doors, floor, ceiling, radiators and built-in features must be unchanged.
+- Keep the same camera angle, perspective, lens and natural lighting as the original photo.
+- Do NOT move, remove or repaint any structural element; do NOT change the view through the windows.
 
-Requirements:
-- Keep the exact same room structure, walls, windows, doors, and architectural features
-- Keep the same lighting and perspective as the original photo
-- Add appropriate furniture and décor for a ${ruimte.replace('_', ' ')}
-- The staging should look realistic and professional, suitable for a Dutch real estate listing
-- Style: ${STIJL_OMSCHRIJVING[stijl]}
-- Make it aspirational but realistic — Dutch buyers want livable, not showroom
-- Generate a high-quality interior design image of this staged room`
+ADD only furniture and decor:
+- Appropriate, correctly-scaled furniture and décor for a ${ruimte.replace('_', ' ')}, in a ${STIJL_OMSCHRIJVING[stijl]} style.
+- Photorealistic materials, shadows and reflections consistent with the room's existing light.
+- Aspirational but livable — Dutch buyers want a realistic home, not a showroom.
+
+Output a single high-resolution, photorealistic interior photo of the staged room.`
 
   try {
     const result = await model.generateContent({
@@ -82,7 +86,7 @@ Requirements:
         ],
       }],
       generationConfig: {
-        // @ts-expect-error — responseModalities is available on gemini-2.0-flash-exp but not yet in type defs
+        // @ts-expect-error — responseModalities wordt door gemini-2.5-flash-image ondersteund maar staat nog niet in de type-defs
         responseModalities: ['IMAGE', 'TEXT'],
       },
     })
@@ -104,6 +108,15 @@ Requirements:
     return NextResponse.json({ error: 'Geen afbeelding ontvangen van Gemini — probeer opnieuw' }, { status: 502 })
   } catch (err) {
     console.error('Gemini staging fout:', err)
+    // Rate limit (te veel aanvragen op de Gemini-tier) apart benoemen zodat de makelaar
+    // een begrijpelijke melding krijgt i.p.v. een generieke fout.
+    const msg = err instanceof Error ? err.message : ''
+    if (/429|quota|rate/i.test(msg)) {
+      return NextResponse.json(
+        { error: 'De staging-dienst is even druk (limiet bereikt). Probeer het over een minuut opnieuw.' },
+        { status: 429 },
+      )
+    }
     return NextResponse.json({ error: 'Staging mislukt — probeer opnieuw' }, { status: 502 })
   }
 }
