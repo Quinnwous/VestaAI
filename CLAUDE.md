@@ -69,8 +69,10 @@ VestaAI/
 │                              #   pdf, planning, verrijking, referral, nps, stats,
 │                              #   stripe, webhooks, cron, bag, wijken, object, auth
 ├── components/                # ±25 componenten; kern: PropertyForm, ResultTabs, TabContent,
-│                              #   FotoVerbetering, VirtualStaging, DocumentenAssistent,
-│                              #   WoningdataPanel, PlanPostKnop, RealworksExportButton
+│   │                          #   FotoVerbetering, VirtualStaging, DocumentenAssistent,
+│   │                          #   WoningdataPanel, PlanPostKnop, RealworksExportButton
+│   └── ui/                    # design-system: tokens.ts + primitives (PageHeader/SerifTitle,
+│                              #   Eyebrow, Card, Button, Field, Switch, TabBar, Modal, Badge)
 ├── lib/
 │   ├── schemas.ts             # Zod-schemas + TypeScript types (client-safe)
 │   ├── claude.ts              # Claude API wrapper, system prompt, retry
@@ -97,6 +99,7 @@ VestaAI/
 - Zod-schemas en TypeScript-types in `lib/schemas.ts` — importeer die in client components (niet `lib/claude.ts`, want die bundelt de Anthropic SDK).
 - `.env.local` nooit committen; zie `.env.example` voor vereiste variabelen.
 - Kosten Claude API: ~€0,08 per content-set (Sonnet 4.6).
+- **UI/design-system** (Claude Design-redesign, juli 2026): herbruikbare primitives + tokens in `components/ui/` (kleuren/typografie in `tokens.ts`; Tailwind `forest`-scale + `font-serif`). Signatuur: Newsreader serif-koppen met cursief groen accentwoord + groene eyebrow-labels (`PageHeader`/`SerifTitle`/`Eyebrow`). Hover/focus die inline-styles moeten overrulen: `.vui-*`-classes in `globals.css` (met `!important`). ⚠️ De Tailwind `blue`-scale is projectbreed geremapt naar groen (`tailwind.config.ts`) — **niet verwijderen**; landing/auth/admin/publieke-chat/widget leunen erop.
 
 ## Commands
 
