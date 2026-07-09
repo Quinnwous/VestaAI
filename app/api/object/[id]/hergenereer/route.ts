@@ -6,7 +6,7 @@ import { heeftToegang } from '@/lib/plans'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 
-export const maxDuration = 180
+export const maxDuration = 300
 
 // Hergenereert de content van een bestaand object, nu mét de geüploade documenten
 // (meetrapport, keuring, taxatie) als extra feitelijke context. Overschrijft outputs_json.

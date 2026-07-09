@@ -7,11 +7,14 @@ import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConf
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import type { HuisstijlConfig } from '@/lib/schemas'
 
-export const maxDuration = 180
+export const maxDuration = 300
 
-// In-memory rate limit: 1 generate per 90 seconden per user
+// In-memory "in-flight"-lock per user: voorkomt dat een tweede generatie start terwijl
+// de eerste nog loopt (een suite duurt minuten → dubbele generatie = dubbele kosten).
+// De lock wordt in `finally` vrijgegeven; het venster moet daarom minstens de max
+// generatieduur (maxDuration) dekken zodat een gelijktijdig verzoek geblokkeerd blijft.
 const rateLimitMap = new Map<string, number>()
-const RATE_LIMIT_MS = 90_000
+const RATE_LIMIT_MS = 300_000
 
 // Periodiek stale entries verwijderen (ouder dan 2× RATE_LIMIT_MS)
 setInterval(() => {
@@ -141,10 +144,14 @@ export async function POST(req: NextRequest) {
           }
         }
 
+        const tVerrijkStart = Date.now()
         const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
         const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
+        const verrijkMs = Date.now() - tVerrijkStart
 
+        const tGenStart = Date.now()
         const output = await generateContent(input, huisstijl, undefined, verrijkingTekst)
+        console.log(`[generate] verrijking ${verrijkMs}ms · generatie ${Date.now() - tGenStart}ms · kantoor ${makelaar.kantoor_id}`)
 
         const serviceClient = createServiceSupabaseClient()
         const { data: savedObject } = await serviceClient
@@ -185,7 +192,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ output, object_id: null })
 
   } catch (error) {
-    if (rateLimitedUserId) releaseRateLimit(rateLimitedUserId)
     if (error instanceof ZodError) {
       return NextResponse.json(
         { error: 'Ongeldige invoer', details: error.issues },
@@ -194,5 +200,9 @@ export async function POST(req: NextRequest) {
     }
     const message = error instanceof Error ? error.message : 'Onbekende fout'
     return NextResponse.json({ error: message }, { status: 500 })
+  } finally {
+    // In-flight-lock altijd vrijgeven (succes én fout). De inline-releases hierboven
+    // (cache-hit, geen toegang, limiet) zijn nu overbodig maar onschadelijk.
+    if (rateLimitedUserId) releaseRateLimit(rateLimitedUserId)
   }
 }
