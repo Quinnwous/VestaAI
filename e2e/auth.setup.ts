@@ -61,7 +61,7 @@ setup('authenticate', async ({ page }) => {
     throw new Error(`Magic link genereren mislukt: ${await linkRes.text()}`)
   }
 
-  const { action_link } = await linkRes.json()
+  const { action_link } = (await linkRes.json()) as { action_link: string }
 
   // Bezoek de magic link — Supabase redirect naar de app + zet een cookie
   await page.goto(action_link)

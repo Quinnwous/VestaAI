@@ -5,7 +5,7 @@ export type Plan = 'starter' | 'pro' | 'kantoor' | 'gratis'
 
 export const PLAN_MAANDLIMIET: Record<Plan, number> = {
   starter: 5,
-  pro: 15,
+  pro: 25,
   kantoor: 100,
   gratis: 5,
 }

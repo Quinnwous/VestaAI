@@ -66,7 +66,7 @@ export default function PrijzenPage() {
               },
               {
                 v: 'Wat is het verschil tussen Starter en Pro?',
-                a: 'Starter is voor één gebruiker met een limiet van 5 objecten per maand (±€12 per object). Pro heeft geen limieten, ondersteuning voor meerdere gebruikers en het huisstijlgeheugen: VestaAI leert de schrijfstijl, het logo en de toon van uw kantoor.',
+                a: 'Starter is voor één gebruiker met een limiet van 5 objecten per maand (±€12 per object). Pro biedt 25 objecten per maand, tot 5 gebruikers en het huisstijlgeheugen: VestaAI leert de schrijfstijl, het logo en de toon van uw kantoor.',
               },
               {
                 v: 'Wordt er Nederlands gegenereerd?',
@@ -74,7 +74,7 @@ export default function PrijzenPage() {
               },
               {
                 v: 'Wat kost het per gegenereerd object?',
-                a: 'Bij het Starter-plan: €60 / 5 = €12 per object. Bij Pro en Kantoor is het onbeperkt. De achterliggende API-kosten zijn voor ons rekening.',
+                a: 'Bij het Starter-plan: €60 / 5 = €12 per object. Bij Pro: €150 / 25 = €6 per object. Bij Kantoor onbeperkt. De achterliggende API-kosten zijn voor ons rekening.',
               },
             ].map(({ v, a }) => (
               <div key={v}>

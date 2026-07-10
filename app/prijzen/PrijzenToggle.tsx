@@ -27,8 +27,8 @@ const PLANS = [
     prijs_jaar: 1500,
     desc: 'Voor de makelaar die alles wil',
     features: [
-      'Onbeperkt objecten',
-      '1 gebruiker',
+      '25 objecten per maand',
+      '5 gebruikers',
       'Alle woningteksten',
       'Huisstijlgeheugen (logo, schrijftoon, voorbeeldteksten)',
       'Virtual staging, kalender & chatbot',

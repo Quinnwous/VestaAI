@@ -28,7 +28,7 @@ const PLAN_PRIJZEN: Record<NonNullable<Kantoor['plan']>, string> = {
 
 const PLAN_FEATURES: Record<NonNullable<Kantoor['plan']>, string[]> = {
   starter: ['5 objecten per maand', '1 gebruiker'],
-  pro: ['15 objecten per maand', '5 gebruikers', 'Huisstijlgeheugen'],
+  pro: ['25 objecten per maand', '5 gebruikers', 'Huisstijlgeheugen'],
   kantoor: ['Onbeperkt gebruikers & vestigingen', 'White-label', 'API-toegang'],
   gratis: ['5 objecten per maand', 'Toegewezen door VestaAI'],
 }
