@@ -145,7 +145,7 @@ const PLAN_DEFS = [
   {
     naam: 'Pro', desc: 'Voor de makelaar die alles wil',
     maand: '€150', jaarMnd: '€125', jaarTot: '€1.500 per jaar', highlighted: true,
-    features: ['Onbeperkt objecten', '1 gebruiker', 'Huisstijlgeheugen', 'Virtual staging, kalender & chatbot'],
+    features: ['25 objecten per maand', '5 gebruikers', 'Huisstijlgeheugen', 'Virtual staging, kalender & chatbot'],
   },
   {
     naam: 'Kantoor', desc: 'Voor kantoren die consistentie willen in elke woningpresentatie',
@@ -1015,7 +1015,7 @@ export function LandingPageClient() {
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Juridisch</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[{ href: '/privacy', label: 'Privacy & AVG' }, { href: '/voorwaarden', label: 'Voorwaarden' }].map(({ href, label }) => (
+                {[{ href: '/vertrouwen', label: 'Vertrouwen & beveiliging' }, { href: '/privacy', label: 'Privacy & AVG' }, { href: '/voorwaarden', label: 'Voorwaarden' }].map(({ href, label }) => (
                   <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>

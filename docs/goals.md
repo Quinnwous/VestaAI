@@ -56,9 +56,9 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 | Plan | Prijs | Limieten | Kernwaarde |
 |------|-------|----------|-----------|
-| Starter | €60/mo (€600/jr) | 40 objecten · 1 user | ZZP-makelaars |
-| Pro | €150/mo (€1.500/jr) | Onbeperkt · 5 users · huisstijlgeheugen | Meest gekozen |
-| Kantoor | €500/mo (€5.000/jr) | Onbeperkt users/kantoren · white-label · API | ERA, E&V, Makelaarsland |
+| Starter | €60/mo (€600/jr) | 5 objecten/mnd · 1 user | ZZP-makelaars |
+| Pro | €150/mo (€1.500/jr) | 25 objecten/mnd · 5 users · huisstijlgeheugen | Meest gekozen |
+| Kantoor | €500/mo (€5.000/jr) | Onbeperkt objecten (soft-cap 100) · onbeperkt users/kantoren · white-label · API | ERA, E&V, Makelaarsland |
 
 **Waarom €150 en niet goedkoper:** Eén extra bezichtiging door een betere Funda-tekst = ROI van 15×+. Te goedkoop prijzen verlaagt perceived value en verhoogt churn.
 

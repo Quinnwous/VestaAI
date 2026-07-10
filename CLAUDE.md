@@ -49,10 +49,10 @@ objecten:  id, kantoor_id, makelaar_id, address, input_json, outputs_json, creat
 | Plan | Prijs | Limieten (technisch, `lib/plans.ts`) |
 |------|-------|----------|
 | Starter | €60/mo (€600/jr) | 5 objecten/mnd · 1 user |
-| Pro | €150/mo (€1.500/jr) | 15 objecten/mnd · 5 users · huisstijlgeheugen |
+| Pro | €150/mo (€1.500/jr) | 25 objecten/mnd · 5 users · huisstijlgeheugen |
 | Kantoor | €500/mo (€5.000/jr) | 100 objecten/mnd (geadverteerd: onbeperkt) · white-label · API |
 
-Plan-gating: geen plan én geen lopende trial = geen toegang. Gratis periodes kent de platform-admin toe; Stripe-facturering staat klaar maar is uitgesteld tot na de testfase. ⚠️ Abonnementsstructuur wordt herzien (zie roadmap: per-makelaar-prijs adverteren, objectlimieten heroverwegen).
+Plan-gating: geen plan én geen lopende trial = geen toegang. Gratis periodes kent de platform-admin toe; Stripe-facturering staat klaar maar is uitgesteld tot na de testfase. Abonnementsstructuur (besloten 10 juli 2026): per-kantoor-prijs blijft leidend (géén per-makelaar-advertentie); objectlimieten 5 / 25 / onbeperkt (Kantoor soft-cap 100); de "onbeperkt op Pro"-claim is bewust geschrapt.
 
 ## Mappenstructuur
 
