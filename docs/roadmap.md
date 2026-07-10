@@ -1,154 +1,83 @@
 # VestaAI — Roadmap
 
-> Alleen open items staan hier. Klaar = weg.
-> Per item: **wat · waarom · waar in de code · afhankelijkheden**. Prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG.
-> Laatst herzien: 9 juli 2026 (launch-ready sessie — zie "Afgerond deze sessie" + "Nu oppakken").
-
-> ✅ Klaar (3 juli): proefperiode-model live (30 dagen / 5 objecten totaal, trigger + vangnet + verlopen-schermen), gratis-plan (5/mnd), activeringsmail + welkomstmail + registratiemelding (atomisch, nooit dubbel), maandverbruik op /admin, uitloggen → homepage, referral-trigger-fix (search_path — stille signup-breuk sinds 1 juli), reset- en registratie-flow live bewezen E2E, Stripe test-mode klaargezet (producten/prijzen/webhook). Details in geheugen `[[auth-onboarding-architecture]]`.
+> Werklijst, geen logboek. Alleen open items — **klaar = weg**.
+> Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
+> Laatst herzien: 10 juli 2026.
 
 ---
 
-## ✅ Afgerond deze sessie (9 juli — niet opnieuw doen)
+## Al gebouwd & live (t/m 10 juli — niet opnieuw doen/checken)
 
-Alles hieronder is **gemerged naar `main` en live op productie** (Vercel READY), met groene `typecheck`/`test`/`build`.
-
-- **Server-side generate-time-out (de 504) — OPGELOST** (PR #8). Root cause: de complete suite (17 teksten, `max_tokens 16000`) draaide als één **non-streaming** call van 2–4 min terwijl `maxDuration=180` de functie afkapte. Fix: streaming (`messages.stream` + `finalMessage`, ook het Files-API-pad), `maxDuration 180→300` in `/api/generate` én `/api/object/[id]/hergenereer`, `maxRetries:1` + `timeout 280s` op de generatie-client, duur-logging, en de in-memory rate-limit omgebouwd tot een **in-flight-lock** (release in `finally`, venster 300s) → geen dubbele generatie tijdens een trage run. *Verrijking (`lib/verrijking.ts`) was niet de boosdoener (8s/call, netjes begrensd).*
-- **Chatbot v3 — system prompt + guardrails** (PR #9). `app/api/chat/route.ts`: volwaardige agent-prompt met persona, harde guardrails (geen prijsonderhandeling, WWGB/discriminatie incl. positieve bewonersprofielen, geen juridisch/fiscaal advies, **prompt-injection-weerstand**), off-topic-terugleiding, taal-mirroring (NL/EN), gestructureerde lead-capture. **Getest tegen 14 scenario's → 14/14 correct** (incl. nep-`SYSTEM:`-prijswijziging en "vergeet je instructies").
-- **Virtual staging — model-upgrade** (PR #9). `app/api/fotos/staging/route.ts`: `gemini-2.0-flash-exp` (verouderd/experimenteel) → **`gemini-2.5-flash-image`** (huidig GA-beeldbewerkingsmodel), strengere architectuur-behoudende prompt, nette 429-melding. ⚠️ Zie Gemini-tier onder "Openstaand".
-- **Content-kwaliteit — Funda-lengte** (PR #10). Validatie op 2 echte woningen toonde dat `funda_tekst` structureel onder de norm zat (513/607 w vs. 700–800) en `buurtomschrijving` onder 130. Prompt in `lib/claude.ts` aangescherpt (700 w harde ondergrens + 6-alinea-structuur; buurt min. 130). Verse generatie na de fix: **funda 731 w, buurt 157 w** — norm gehaald. Overige Funda-regels (derde persoon, technische + duurzaamheidsalinea, CTA, geen prijs, WWGB, verrijkingsgebruik) waren al in orde.
-- **Repo-hygiëne** (PR #7): design-zip weg, dode `concurrentieanalyse-housapp.md`-verwijzing → `.docx` (roadmap + CLAUDE.md), oude branches opgeruimd.
-
-**Geverifieerd (naslag, niet opnieuw checken):**
-- **Prod-DB gezond** — álle eerder als "nog toe te passen" geflagde migraties zijn live: `object_fotos`, `stijl_bewerkingen`, `object_documenten`, `chatbot_leads`, `objecten.chat_publiek`/`chat_foto_url`.
-- **Onboarding live-flow werkt** (E2E op prod, tot en met dashboard): registratie → activatiemail (`noreply@vestaai.nl`) → button-gated `/auth/verify` ("Ga verder →") activeert + logt in → dashboard. Signup kent **automatisch een 30-daagse trial** toe (bevestigd: `trial_ends_at` gezet, `heeftToegang` = true).
-- **Site-infra al aanwezig:** volledige metadata + `opengraph-image`, `icon`, `sitemap`, `not-found`, `error`. Copy schoon van verboden claims ("90 seconden", "Founding Member").
+- **Kern & accounts:** proefmodel (30d / 5 obj) + gratis-plan (5/mnd), activerings-/welkomst-/meldingsmails (atomisch), `/admin` v2 met maandverbruik, onboarding-checklist, referral, NPS. Onboarding-flow E2E bewezen op prod t/m dashboard.
+- **Generatie:** 504-time-out opgelost via streaming (`messages.stream`) + `maxDuration 300` + in-flight-lock tegen dubbele runs (`/api/generate`, `/api/object/[id]/hergenereer`). Funda-lengte-fix (700+ w, 6-alinea-structuur) in `lib/claude.ts`. ⚠️ *nog niet 1× volledig E2E op prod bevestigd → zie 🔴.*
+- **UI:** sidebar-appshell + object-werkruimte met tabs (`AppShell`, `ObjectWorkspace`), dashboard-featurekaarten, losse huisstijl-/chatbot-pagina's.
+- **Huisstijl v2:** 20 voorbeeldteksten, stijlprofiel-destillatie, `.txt/.pdf`-upload, aparte brochure-stijl, leren-van-inline-bewerkingen (review-flow via `stijl_bewerkingen`).
+- **Chatbot v2/v3:** object-kennis, deelbare publieke chatpagina (aan/uit + cover-foto), documenten-koppeling (opt-in per doc), lead-capture + mail naar makelaar, embed-installatie-instructies, agent-prompt met guardrails (14/14 scenario's, incl. prompt-injection).
+- **Media & documenten:** foto-bibliotheek per object (`object_fotos` + Storage), documenten → content-hergeneratie (Files API), PDF-brochure met foto's.
+- **Virtual staging:** model → `gemini-2.5-flash-image`. ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
+- **Site & infra:** volledige metadata/OG/sitemap/404, `/vertrouwen`-pagina, `e2e/smoke.mjs` (credential-vrije rooktest), prod-DB-migraties allemaal live, copy schoon van verboden claims. Stripe test-mode klaargezet (producten/prijzen/webhook).
 
 ---
 
-## Nu oppakken (start hier) — volgende sessie
+## 🔴 Kritiek pad — vóór livegang
 
-### 🔴 Eerste: de live-generatie bevestigen (enige open verificatie van de time-out-fix)
-De time-out-fix is code-correct, unit-getest en gedeployed, en het proefaccount bleek trial-toegang te hebben — maar één **volledige generatie end-to-end op prod** is nog niet bevestigd. Mijn automatisering strandde op de form-validatie (het adresveld is een verborgen RHF-veld gevoed door `AddressAutocomplete`; extern rechtstreeks `POST /api/generate` wordt door Vercel afgevangen — een browser-sessie is vereist). **Makkelijkste bewijs:** genereer één object handmatig op prod (adres → 8 velden → Genereer) en check dat het < ~2 min klaar is zonder 504 én dat de duur-log in de Vercel-logs verschijnt (`[generate] verrijking …ms · generatie …ms`). Duurt het onverhoopt > 300 s, dan is streamen naar de client (SSE) de structurele oplossing — dan pas bouwen.
+### Actie Quinn (blokkeert livegang — niks te bouwen tot dit er is)
+- **Gemini-tier ophogen** (virtual staging) — `GOOGLE_AI_API_KEY` zit op krappe image-quota, sloeg bij testen meteen op **429**. Verhoog quota in Google AI Studio/Cloud → daarna één **visuele eindcheck** van de staging-output op prod (nieuw model, kon zelf niet beoordelen door 429's).
+- **Stripe env in Vercel** — 4 waarden zetten (`STRIPE_PRICE_STARTER/PRO/KANTOOR` + `STRIPE_WEBHOOK_SECRET`, staan in `.env.local`) + check dat `STRIPE_SECRET_KEY` er staat → redeploy. Alles test-mode; betaling hoeft in de testfase nog niet te werken.
+- **Testimonial + casestudy pilotmakelaar** — naam/kantoor/quote + concrete tijdsbesparing (placeholder staat klaar in `LandingPageClient.tsx`, pilotkantoor Amsterdam beschikbaar). Belangrijkste marketingactie: HousApp toont 9 verhalen, wij 0.
+- **Realworks developer-portaal registreren** (gratis) — beantwoordt de business-case-vraag: teksten schríjven via API of alleen lezen?
+- **Gmail opruimen** — de "Confirm your email address"-testmail (`quinn.berkouwer+vestatest@gmail.com`); bijbehorend testaccount is al uit de DB.
 
-### 🟠 Nog niet gedaan deze sessie (bewust, wegens tijd/tooling)
-- **`e2e/smoke.mjs`** (credential-vrije Playwright-rooktest: publieke pagina's + login-form + register-tab + publieke chatpagina) is toegevoegd. Draaien: `node e2e/smoke.mjs` (of met `BASE_URL=…`). Nog uit te breiden met een ingelogd generatie-pad (achter env-flag i.v.m. API-kosten).
-- **Documenten-assistent kwaliteitstest** — met een realistisch test-PDF: citeert de chat correct, en verwerkt "hergenereer" de feiten (exacte m², staat) aantoonbaar in de teksten? (Fase 2 hieronder.)
-- **Volledige feature-audit** — de meeste features zijn nooit één keer end-to-end op prod aangeklikt (foto-verbetering, staging, foto-bibliotheek, PDF-export, kalender/plannen, prijswijziging, Realworks-XML, wijkpagina's, referral, NPS, admin-klantenbeheer). Loop ze systematisch na met een ingelogd account.
-- **Site-polish (Fase 4-rest):** mobiel (375px) door de kernschermen, Lighthouse op de landing (>90 perf / >95 a11y), `/vertrouwen` prominenter linken vanaf landing/prijzen.
+### Te doen (Claude)
+- **Live-generatie 1× volledig E2E op prod bevestigen** — enige open verificatie van de time-out-fix. Handmatig één object genereren (adres → 8 velden → Genereer), check < ~2 min zonder 504 én dat de duur-log verschijnt (`[generate] verrijking …ms · generatie …ms`). Externe `POST /api/generate` wordt geblokt (adresveld is verborgen RHF, gevoed door `AddressAutocomplete`) → browser-sessie vereist. Duurt het > 300 s → pas dán SSE-streaming naar de client bouwen.
+- **Volledige feature-audit met ingelogd account** — de meeste features zijn nooit 1× E2E op prod aangeklikt: foto-verbetering, staging, foto-bibliotheek, PDF-export, kalender/plannen, prijswijziging, Realworks-XML, wijkpagina's, referral, NPS, admin-klantenbeheer.
 
-### 🔴 Blokkeert livegang — actie Quinn (niks te bouwen tot dit er is)
-- **Gemini-tier ophogen (voor virtual staging).** De `GOOGLE_AI_API_KEY` zit op een krappe image-quota — bij het testen liep hij meteen tegen **429 Too Many Requests** aan. Zolang de tier niet omhoog gaat, faalt staging in productie bij enige drukte (de code toont nu een nette 429-melding, maar genereert geen beeld). Verhoog het quota/tier in Google AI Studio / Cloud, en doe daarna één **visuele eindcheck** van de staging-output op prod (nieuw model = `gemini-2.5-flash-image`; ik kon de beelden zelf niet beoordelen door de 429's).
-- **Stripe env-waarden in Vercel** (4 stuks, staan in `.env.local`) → redeploy → dan checkout testen. (Betaling hoeft nog niet te werken voor de testfase.)
-- **Abonnementen-besluit** (per-makelaar-prijs + objectlimieten) — strategische keuze die de Stripe-prices en `lib/plans.ts` bepaalt.
-- **Testimonial/casestudy pilotmakelaar** — placeholder staat in `LandingPageClient.tsx`; pilotkantoor Amsterdam beschikbaar.
-- **Realworks developer-portaal registreren** (gratis) → beantwoordt de business-case-vraag: teksten schríjven via API of alleen lezen?
-- **1 Gmail-mail opruimen:** de "Confirm your email address"-testmail (aan `quinn.berkouwer+vestatest@gmail.com`) mag weg — het bijbehorende testaccount is al volledig uit de database verwijderd.
-
-**Daarna:** Fase 3 moat & distributie (Realworks-API, Kolibri AppXchange, social direct publiceren).
+### Na livegang — moat & distributie
+- **Realworks-API-koppeling** (i.p.v. XML-download) — via Realworks CRM Marketplace + developer-ID. Wonen API: objecten exporteren, leads importeren. Plan B als schrijven niet kan: objectdata inlezen als autofill van de 8 velden. Let op: oude CasaXML-export (`app/api/export/realworks/route.ts`) faseert uit richting API v3. *Bouwen pas na portaal-registratie (zie Quinn).*
+- **Kolibri-koppeling (AppXchange)** — aanmelden via contactformulier (app-store, 1.200+ makelaars). Er zit al een generieke "ChatGPT Advertentieteksten"-app; ons verhaal: suite + Funda-regelset + huisstijl + NL-buurtdata. Aanmelding starten direct na livegang, bouwen daarna.
 
 ---
 
-## Fase 1 — Betrouwbaarheid & basis
+## 🟠 Belangrijk (na livegang)
 
-*Zonder betrouwbaar kernproduct is elke feature-uitbreiding zinloos (concurrentieanalyse §6.1). Deze fase gaat vóór alles.*
-
-> Time-out-fix + output-kwaliteit zijn **afgerond deze sessie** (zie boven). Resteert alleen de live-generatie-bevestiging (zie "Nu oppakken") en de PDF-stap van de e2e-smoke.
-
-- 🔴 **Stripe afmaken (actie Quinn + daarna checkout-smoke-test)** — 4 env-waarden in Vercel zetten (STRIPE_PRICE_STARTER/PRO/KANTOOR + STRIPE_WEBHOOK_SECRET, waarden staan in `.env.local`) en checken dat STRIPE_SECRET_KEY daar staat → redeploy → Claude test checkout-redirect. Let op: alles is **test-mode** (sk_test); vóór echte facturatie live-mode key + prices/webhook opnieuw + de prijsherziening hieronder.
-- 🟠 **Abonnementen opnieuw uitdenken (vóór livegang betalingen)** — welke plannen met hoeveel objecten/maand? En de prijscommunicatie omgooien naar HousApp-model: **prijs per makelaar adverteren** (excl. btw publiceren) voor het aanvankelijke aantal makelaars — oogt goedkoper dan één kantoorprijs, terwijl per-kantoor als "hele kantoor voor één prijs" het onderscheidend voordeel blijft. Input: `docs/Concurrentieanalyse-HousApp.docx` §5 (HousApp: €29–167 per makelaar/mnd). Let op: `lib/plans.ts`-limieten (5/15/100) en prijzenpagina moeten mee; daarna Stripe-prices vervangen (price-swap). Neem hierin mee: (a) is 5 objecten genoeg om in 30 dagen overtuigd te raken? (b) huisstijl-v2-features (Fase 1c) als Pro/Kantoor-differentiator.
-- 🟢 **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (Supabase dashboard → Auth → Email Templates, alleen subject-veld; body's zijn al NL).
-
----
-
-## Fase 1b — Dashboard & vindbaarheid 🔴
-
-*✅ Gebouwd (3 juli): route-group `app/(app)/` met vaste **sidebar** (`components/AppShell.tsx`) i.p.v. de 3-links-header; **object-werkruimte** met tabs Content · Foto's & staging · Documenten · Export & delen (`components/ObjectWorkspace.tsx`); **dashboard-feature-kaarten** "Dit kan VestaAI" (`components/FeatureKaarten.tsx`); losse `/huisstijl`- en `/chatbot`-pagina's; admin kreeg `app/admin/layout.tsx`, `NavHeader`/`NavLinks` weg. **Tweede wave:** Huisstijl- & Chatbot-tab uit `/settings` gehaald (ontdubbeld), referral zichtbaar voor alle rollen (`ReferralPanel` ontgated), onboarding-checklist +document/+post-stap met completion-detectie, kalender-landingspagina (uitleg + lege-staat), proef-copy overal 14→30 dagen. Typecheck + build groen.*
-
-- ✅ **Chatbot-rolgating** (4 juli, live) — besluit: **FAQ bewerken = alleen admin**, FAQ lezen + leads bekijken = iedere makelaar. De API-routes (`/api/chatbot/faq` POST/DELETE) enforced admin al server-side (403); de UI volgt nu: `ChatbotTab` krijgt `isAdmin` mee, verbergt voor niet-admins het toevoegformulier + verwijderknoppen en toont een leesnotitie. De object-chatpagina-tab in de werkruimte (Deel-chatbot) is er al (Fase 1d).
-- 🟢 **Onboarding-stappen foto & chatbot** — de checklist heeft nu account/object/huisstijl/document/post mét completion-detectie. "Verbeter een foto" en "bekijk je object-chatbot" ontbreken nog omdat er geen betrouwbaar completion-signaal is (foto-resultaten worden niet bewaard → Fase 2; chatbot-bezoek wordt niet getrackt). Toevoegen zodra dat signaal bestaat.
-- 🟢 **Documenten-ingang in de sidebar** — bewust nog niet toegevoegd; per-woning-documenten leven in de werkruimte. Komt met de kantoorbrede documenten-pagina in Fase 2.
-- ✅ **Publieke/marketing-pagina's voor ingelogde bezoekers** (4 juli, live) — `/` redirect ingelogde gebruikers al naar `/dashboard`/`/admin`. `PublicNav` (contact/over-ons/voorwaarden) én `/prijzen` (eigen header, via `PrijzenAuthCta`) tonen ingelogd nu "Naar dashboard" via een lichtgewicht `GET /api/me`-check — pagina's blijven statisch, bewust géén Supabase-client in de bundel.
+- **Site-polish** — mobiel (375px) door de kernschermen, Lighthouse landing (>90 perf / >95 a11y) + juridische check van de `/vertrouwen`-teksten. *(Linken van `/vertrouwen` is gedaan; publieke routes stonden achter de middleware-login-redirect — gefixt.)*
+- **Documenten-assistent kwaliteitstest** — met realistisch test-PDF: citeert de chat correct, en verwerkt "hergenereer" de feiten (exacte m², staat) aantoonbaar in de teksten?
+- **e2e/smoke uitbreiden** — ingelogd generatie-pad toevoegen achter een env-flag (i.v.m. API-kosten).
+- **Embed-widget bewijzen** (actie Quinn) — de widget één keer daadwerkelijk op een externe makelaarssite plaatsen en testen; instructies + snippet staan al in `ChatbotTab`.
+- **Social media direct publiceren** — Meta/IG + LinkedIn OAuth als sluitstuk van de kalender: `post_planning.status` → cron op de geplande datum. Verhoogt gebruiksfrequentie → lagere churn.
+- **Documenten-assistent verbreden** — kantoorbrede documenten (algemene voorwaarden, koopakte-uitleg) naast object-documenten. *(DOCX naast PDF/TXT is gedaan.)*
+- **NVM PropTech-programma aanmelden.**
+- **Klantverhalen-pagina** — HousApp-model: korte verhalen per kantoor mét cijfers. Na eerste 3–5 klanten.
+- **Maandelijkse HousApp-check** (10 min) — changelog/release notes, vacatures (content/LLM), klantverhalen over teksten, Kolibri-blog. Signaal = HousApp beweegt richting content → verdediging §7 activeren.
 
 ---
 
-## Fase 1c — Huisstijl-systeem v2 🔴
+## 🟢 Later / nice-to-have
 
-*Huisstijlgeheugen is de belangrijkste retention-driver en lock-in (goals.md). Gekozen richting: volwaardig systeem.*
-
-*✅ Gebouwd (3 juli): **voorbeeldteksten 3 → 20** — `lib/schemas.ts` `.max(20)`, `HuisstijlTab.tsx` dynamische lijst (toevoegen/verwijderen). **Stijlprofiel-destillatie** — bij opslaan genereert `distilleerStijlprofiel()` in `lib/claude.ts` één compact profiel uit de voorbeelden (Sonnet, best-effort), opgeslagen in `huisstijl_json.stijlprofiel`; `buildSystemPrompt()` gebruikt het profiel + max 3 integrale voorbeelden i.p.v. alle 20 → geen promptkosten-explosie. Typecheck + build groen.*
-
-- 🟢 **Label per voorbeeld (Funda / brochure / social)** — nog niet gedaan; nu zijn voorbeelden ongelabeld. Zou het stijlprofiel per content-type kunnen laten differentiëren. (✅ 4 juli: **.txt/.pdf-upload** van voorbeelden i.p.v. alleen plakken — `POST /api/huisstijl/extract`, TXT direct + PDF via Files API/Haiku, upload-knop in `HuisstijlTab`.)
-- 🟢 **Brochure-huisstijl — restpunten** — ✅ gebouwd (3 juli): aparte brochure-voorbeelden + gedestilleerd `brochure_stijl.stijlprofiel` (alleen sturend voor `brochure_kort`/`brochure_lang` in `buildSystemPrompt`) + kantoorgegevens-slotpagina in de PDF (`PdfTemplate.tsx`). De PDF thematiseert al met primaire kleur + logo + slogan. Rest: lettertype-voorkeur (react-pdf font-registratie) en foto's in de brochure — dat laatste valt samen met de Fase 2-item 'PDF-brochure met foto's'.
-- ✅ **Leren van inline-bewerkingen** (4 juli, live) — inline-bewerkingen (`PATCH /api/object/[id]/veld`) worden als {origineel → bewerkt} vastgelegd in de nieuwe tabel `stijl_bewerkingen` (alleen betekenisvolle wijzigingen ≥40 tekens). In de huisstijl-tab: bij ≥4 onverwerkte bewerkingen een **"Analyseer"-knop** → `distilleerBewerkingsregels` (Sonnet) maakt een voorstel (`POST /api/huisstijl/leren`), dat de admin **reviewt en accepteert of negeert** (`/toepassen`). Geaccepteerde regels gaan naar `huisstijl_json.geleerde_regels`, worden in `buildSystemPrompt` meegestuurd en blijven behouden bij opnieuw opslaan van de huisstijl. *Keuze: handmatige trigger + expliciete review i.p.v. cron/auto-toepassen. Rest (🟢): later evt. automatisch attenderen bij n bewerkingen.*
-- 🟠 **Huisstijl-gating meebewegen met abonnements-herziening** — huisstijl is nu Starter-geblokkeerd (`HuisstijlUpgradeBanner`). Bepaal in de nieuwe plannen wat Starter krijgt (bijv. toon+slogan wél, voorbeeldteksten/brochure-stijl Pro+) — huisstijl-diepte is het natuurlijke upsell-argument.
-
----
-
-## Fase 1d — Chatbot v2 🔴
-
-*De widget-chatbot kende alléén kantoor-FAQ's. Gekozen richting: beide sporen — deelbare link (quick win) + embed.*
-
-*✅ Gebouwd (3 juli): **object-kennis** — `/api/chat` accepteert een `object_id` en bouwt server-side een kennisbasis uit `input_json` (8 velden + USP's) + relevante `outputs_json` (buurt, energie-advies, kopersvragen-FAQ); antwoorden blijven binnen die data, bezichtiging/bod → doorverwijzen naar de makelaar. **Deelbare publieke chatpagina** — `app/chat/[objectId]/page.tsx` (publiek, geen login, `noindex`, huisstijl-kleur + logo), te delen via de nieuwe "Deel-chatbot"-tab in de object-werkruimte (`components/ObjectChat.tsx`). De onraadbare UUID fungeert als unlisted link. Typecheck + build groen.*
-
-- ✅ **Aan/uit-schakelaar + cover-foto op de chatpagina** (4 juli, live) — `objecten.chat_publiek` (default true) + `chat_foto_url` (prod-migratie + repo-bestand). Toggle + foto-upload in de "Deel-chatbot"-tab (`components/DeelChatbot.tsx`) via `/api/object/[id]/chat-instellingen` (GET/PATCH) en `/api/object/[id]/foto` (POST/DELETE); de publieke pagina respecteert de toggle en toont de foto. NB: losse cover-foto per woning — de volledige foto-bibliotheek (Fase 2) kan die later automatisch vullen.
-- ✅ **Documenten-koppeling** (4 juli, live) — opt-in per document (`object_documenten.publiek_chatbaar`, default privé; prod-migratie toegepast + repo-migratiebestand). Publiek-chatbare docs gaan als `type:'document'`-blokken mee in `/api/chat` (Sonnet + `files-api-2025-04-14`-beta; zonder docs blijft het Haiku). Toggle + laden van bestaande docs in `DocumentenAssistent`; nieuwe routes `/api/documenten` (GET-lijst) en `/api/documenten/[id]` (PATCH-toggle). Meegenomen fix: `/api/chat` stript een leidende assistant-greeting (Anthropic vereist start met een user-bericht).
-- ✅ **Lead-capture uitbouwen** (4 juli, live) — `chatbot_leads` kreeg `object_id` (nullable FK) + `telefoon` (prod-migratie + repo-bestand). Publieke `ObjectChat` toont een interesse-/bezichtigingsformulier (naam/e-mail/telefoon/bericht), dat automatisch opduikt na ≥2 vragen; `/api/chat/lead` accepteert `object_id`, leidt kantoor+makelaar server-side af en mailt de makelaar (Resend, reply-to = lead). Leads per woning zichtbaar in de "Deel-chatbot"-tab (`components/DeelChatbot.tsx` via GET `/api/object/[id]/leads`). Kantoorbrede widget-leads mailen nu de kantoor-admins (`sendNieuweKantoorLeadMelding`); de `/chatbot`-leadlijst toont telefoon. *Rest (🟢, optioneel): objectkolom in de kantoorbrede leadlijst.*
-- 🟠 **Embed-widget spoor afmaken** — ✅ gebouwd (4 juli): installatie-instructies in `ChatbotTab` (stappenplan per site-type WordPress/Wix/eigen bouwer, uitklapbaar) + kant-en-klare "stuur naar je webbouwer"-mailtekst mét snippet en kopieerknop. **Rest (actie Quinn):** de widget één keer daadwerkelijk op een externe makelaarssite plaatsen en testen — pas dan is dit spoor bewezen.
-- 🟢 **FAQ-limiet en beheer** — LIMIT 30 in `/api/chat` heroverwegen zodra object-kennis er is; FAQ-suggesties genereren uit veelgestelde chatvragen.
-
----
-
-## Fase 2 — Media & documenten verdiepen 🟠
-
-*Nu zijn foto's en documenten vluchtig of los: verbeterde/gestagede foto's komen als base64 terug en verdwijnen bij het wegklikken (alleen analyse-scores landen in `outputs_json.fotos_analyse`); documenten hangen per object maar doen niets voor de content-generatie.*
-
-- ✅ **Foto-bibliotheek per object** (4 juli, live) — verbeterde en gestagede foto's kunnen met "Bewaar in bibliotheek" naar Supabase Storage (`kantoor-assets/[kantoor]/object-fotos/[object]/lib/`) + tabel `object_fotos` (prod-migratie + repo-bestand). Galerij per woning in de media-tab (`components/FotoBibliotheek.tsx`) met download + verwijderen; routes `GET/POST /api/object/[id]/fotos` en `DELETE /api/object/[id]/fotos/[fotoId]`. Zo verdwijnen resultaten niet meer bij het wegklikken. Je kunt ook een foto **rechtstreeks uploaden** (buiten verbeter/staging om). Een bibliotheekfoto wordt met één klik de **chat-cover** (`chat-instellingen` PATCH valideert dat de URL uit de eigen bibliotheek komt) en verschijnt in de **PDF-brochure** (zie onder).
-- ✅ **Documenten → content-generatie** (4 juli, live) — in de werkruimte kan de makelaar geüploade documenten (meetrapport/keuring/taxatie) in de teksten laten verwerken: `POST /api/object/[id]/hergenereer` hangt de document-file-id's via de Files API-beta aan een nieuwe `generateContent`-call (extra `documentFileIds`-param + system-prompt-instructie: exacte m², bouwkundige staat, gebreken overnemen, niets verzinnen) en overschrijft `outputs_json`. Knop + expliciete bevestiging in `DocumentenAssistent` (waarschuwt dat handmatige bewerkingen verloren gaan). *Rest (🟢): bij de eerste generatie in `object/new` zijn er nog geen documenten — pas beschikbaar ná upload in de werkruimte. Optioneel later: document-upload in het nieuwe-object-formulier zelf.*
-- 🟢 **Documenten-assistent verbreden** — meer bestandstypen (DOCX; nu alleen PDF/TXT, max 10 MB per bestand in `api/documenten/upload`), kantoorbrede documenten (algemene voorwaarden, standaard koopakte-uitleg) naast object-documenten.
-- ✅ **PDF-brochure met foto's** (4 juli, live) — de PDF-export (`/api/pdf/generate` én de e-mail-PDF) neemt nu tot 6 bewaarde foto's uit de bibliotheek op als een fotopagina (`PdfTemplate`, `fotos`-prop), in de huisstijlkleur. Foto's worden via de service-client object+kantoor-gescoped opgehaald.
-
----
-
-## Fase 3 — Koppelingen & distributie
-
-*Strategisch belang: workflow-lock-in + distributie (concurrentieanalyse §6.3). HousApp gebruikt CRM-integraties als gracht; Kolibri's AppXchange is tegelijk distributiekanaal naar precies onze doelgroep.*
-
-- 🔴 **Echte Realworks-koppeling (API i.p.v. XML-download)** — verkenning 3 juli 2026:
-  - Makelaar koopt de API via de Realworks CRM Marketplace; wij koppelen met een developer-ID via developers.realworks.nl. Relevante API: **Wonen API** (objecten exporteren, leads importeren).
-  - **Open vraag die de business case bepaalt:** kunnen aanbiedingsteksten via de API ook geschréven worden, of alleen gelezen? → registreren op het developer-portaal (gratis) en docs checken. Plan B als schrijven niet kan: objectdata inlezen als autofill van de 8 velden — ook al een sterk verkoopargument (adres intypen → alles vooringevuld). Kosten marketplace-API's nog onbekend.
-  - *Let op:* Realworks faseert oude XML/endpoints uit richting API v3 — huidige CasaXML-export (`app/api/export/realworks/route.ts`) hierop controleren.
-  - *Volgorde:* (1) nu developer-portaal registreren + schrijfvraag beantwoorden, (2) pas bouwen ná de time-out-fix en outputvalidatie.
-- 🔴 **Kolibri-koppeling (AppXchange)** — aanmelden voor de AppXchange (hun app-store, 1.200+ makelaars) via contactformulier; API-first architectuur. Daar zit al een "ChatGPT Advertentieteksten"-app — de route bestaat bewezen, maar er zit dus ook al een generieke concurrent; ons verhaal: suite + Funda-regelset + huisstijl + NL-buurtdata. *Doorlooptijd onbekend — aanmelding starten direct na livegang, bouwen daarna.*
-- 🟠 **Social media direct publiceren** — Meta Business API (Instagram) + LinkedIn OAuth, als sluitstuk van de content-kalender: "publiceren nog handmatig" wordt automatisch op de geplande datum (`post_planning.status` → cron). Verhoogt dagelijkse gebruiksfrequentie → lagere churn (concurrentieanalyse §6.6). *Na Fase 1b (kalender-landing) — eerst de flow duidelijk, dan automatiseren.*
-- 🟢 **NVM-contact voor formele Funda-partneraccess** — lange termijn; Funda-koppeling is het eindspel van "genereer → staat live".
-
----
-
-## Fase 3 — Groei & vertrouwen
-
-- 🔴 **Testimonial + casestudy pilotmakelaar** — naam, kantoor, quote + concrete tijdsbesparing op de landingspagina (placeholder staat klaar in `LandingPageClient.tsx`) + één uitgeschreven casestudy. HousApp toont 9 klantverhalen; wij 0 — belangrijkste marketingactie (concurrentieanalyse §6.2).
-- ✅ **AVG-/vertrouwenspagina** (4 juli, live) — scanbare `/vertrouwen` (verkoopgericht, on-brand): EU-database, geen dataverkoop, **geen AI-training op klantdata**, versleuteling + RLS, Stripe, DPA op aanvraag. Kruisgelinkt met `/privacy`. Bewust géén SOC 2-claim (niet gecertificeerd) en DPA "op aanvraag" i.p.v. een verzonnen download. *Rest (🟢, actie Quinn): prominente link vanaf landing/prijzen + juridische check van de teksten; eventueel een echt DPA-document klaarzetten.*
-- 🟠 **NVM PropTech-programma aanmelden.**
-- 🟠 **Klantverhalen-pagina** — naar HousApp-model: korte verhalen per kantoor met cijfers, niet alleen quotes. *Na eerste 3–5 klanten.*
-- 🟠 **Maandelijkse HousApp-check (10 min)** — changelog/release notes, vacatures (content/LLM-engineers), klantverhalen die over teksten beginnen, Kolibri-blog. Signaal = HousApp beweegt richting content → verdediging uit concurrentieanalyse §7 activeren.
-- 🟢 **Google Ads activeren bij €5K MRR** (€500/mnd budget).
-- 🟢 **Vercel AI Gateway activeren** — per-gebruiker kostentracking, rate limiting en budget alerts (loont pas bij 10+ actieve klanten).
+- **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates, alleen subject; body's zijn al NL).
+- **Onboarding-stappen foto & chatbot** — toevoegen zodra er een betrouwbaar completion-signaal is (foto-resultaten/chatbot-bezoek worden nu niet getrackt).
+- **Documenten-ingang in de sidebar** — komt samen met de kantoorbrede documenten-pagina.
+- **Huisstijl: label per voorbeeld** (Funda/brochure/social) — laat het stijlprofiel per content-type differentiëren.
+- **Brochure: lettertype-voorkeur** — react-pdf font-registratie.
+- **FAQ-limiet heroverwegen** — `LIMIT 30` in `/api/chat` nu object-kennis er is; FAQ-suggesties genereren uit veelgestelde chatvragen.
+- **NVM-contact Funda-partneraccess** — lange termijn; "genereer → staat live" is het eindspel.
+- **Google Ads activeren bij €5K MRR** (€500/mnd).
+- **Vercel AI Gateway** — per-gebruiker kostentracking + budget alerts; loont pas bij 10+ actieve klanten.
 
 ---
 
 ## Bewust níet doen
 
-*Focusbewaking (concurrentieanalyse §6.8/§9): complementair aan workflow-tools zijn is een feature, geen zwakte.*
+*Focusbewaking (concurrentieanalyse §6.8/§9): complementair aan workflow-tools zijn is een feature.*
 
-- ❌ Geen AI-inbox (e-mail/WhatsApp) — kernproduct van HousApp, jaar voorsprong + funding.
+- ❌ Geen AI-inbox (e-mail/WhatsApp) — kernproduct HousApp, jaar voorsprong + funding.
 - ❌ Geen bezichtigingsplanner.
-- ❌ Geen leadgen-widgets/woningwaardering als leadmagneet (Grow-terrein van HousApp; chatbot-leads per object zijn ons antwoord).
+- ❌ Geen leadgen-widgets/woningwaardering als leadmagneet — chatbot-leads per object zijn ons antwoord.
 
 ---
 
 ## Permanente kwaliteit
 
-- `npm run typecheck` altijd groen voor elke commit
-- `npm run test` altijd groen
-- Lighthouse landingspagina: >90 performance, >95 accessibility
-- Mobile-responsive: check elk nieuw scherm
+- `npm run typecheck` + `npm run test` altijd groen vóór elke commit.
+- Lighthouse landing: >90 performance, >95 accessibility.
+- Elk nieuw scherm mobile-responsive checken.
