@@ -131,7 +131,7 @@ export function DocumentenAssistent({ objectId }: Props) {
         <input
           ref={fileRef}
           type="file"
-          accept=".pdf,.txt"
+          accept=".pdf,.txt,.docx"
           onChange={handleUpload}
           className="hidden"
           id="doc-upload"
@@ -143,7 +143,7 @@ export function DocumentenAssistent({ objectId }: Props) {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
           </svg>
-          {uploaden ? 'Uploaden...' : 'Document uploaden (PDF/TXT, max 10 MB)'}
+          {uploaden ? 'Uploaden...' : 'Document uploaden (PDF/TXT/Word, max 10 MB)'}
         </label>
       </div>
 
@@ -276,7 +276,7 @@ export function DocumentenAssistent({ objectId }: Props) {
       {documenten.length === 0 && (
         <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
           <p className="text-sm text-gray-500">Upload een VVE-notulen, leveringsakte of ander juridisch document om vragen te stellen via AI.</p>
-          <p className="text-xs text-gray-400 mt-1">Ondersteunde formaten: PDF, TXT — max 10 MB</p>
+          <p className="text-xs text-gray-400 mt-1">Ondersteunde formaten: PDF, TXT, Word (.docx) — max 10 MB</p>
         </div>
       )}
     </div>
