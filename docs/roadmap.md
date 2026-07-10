@@ -3,6 +3,8 @@
 > Werklijst, geen logboek. Alleen open items — **klaar = weg**.
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
 > Laatst herzien: 10 juli 2026.
+>
+> **Hervat-pointer (Claude-oppakbaar):** Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen — daarna social auto-publiceren (🟠, wacht op Meta/LinkedIn-secrets). Volledige E2E-generatie-run zodra testaccount-creds er zijn (zie 🔴). PR #12 (prijzen + middleware + DOCX + e2e) is deze sessie gemerged.
 
 ---
 
@@ -16,6 +18,7 @@
 - **Media & documenten:** foto-bibliotheek per object (`object_fotos` + Storage), documenten → content-hergeneratie (Files API), PDF-brochure met foto's.
 - **Virtual staging:** model → `gemini-2.5-flash-image`. ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
 - **Site & infra:** volledige metadata/OG/sitemap/404, `/vertrouwen`-pagina, `e2e/smoke.mjs` (credential-vrije rooktest), prod-DB-migraties allemaal live, copy schoon van verboden claims. Stripe test-mode klaargezet (producten/prijzen/webhook).
+- **Prijzen & publieke routes (PR #12, 10 juli):** plan-limieten **Starter 5 / Pro 25 / Kantoor onbeperkt** (soft-cap 100), per-kantoor als hoofdboodschap, "onbeperkt op Pro" overal geschrapt, Pro-kaart-bug (1→5 gebruikers) gefixt — consistent in `lib/plans.ts` + copy + `goals.md`. **Middleware-fix:** alle publieke routes (`/vertrouwen`·`/over-ons`·`/contact`·`/privacy`·`/voorwaarden`, SEO-`/wijken/*`, deelbare `/chat/*`, embed-API's `/api/chat`+`/api/me`+`/api/chatbot`) stonden achter een login-redirect → nu publiek (beveiligde routes ongewijzigd, geverifieerd). `/vertrouwen` gelinkt in nav+footer. **DOCX-upload** in documenten-assistent (`lib/docx.ts`, mammoth-tekstextractie, unit-getest). Authenticated generate-e2e herschreven + kostengate.
 
 ---
 
@@ -29,7 +32,7 @@
 - **Gmail opruimen** — de "Confirm your email address"-testmail (`quinn.berkouwer+vestatest@gmail.com`); bijbehorend testaccount is al uit de DB.
 
 ### Te doen (Claude)
-- **Live-generatie 1× volledig E2E op prod bevestigen** — enige open verificatie van de time-out-fix. Handmatig één object genereren (adres → 8 velden → Genereer), check < ~2 min zonder 504 én dat de duur-log verschijnt (`[generate] verrijking …ms · generatie …ms`). Externe `POST /api/generate` wordt geblokt (adresveld is verborgen RHF, gevoed door `AddressAutocomplete`) → browser-sessie vereist. Duurt het > 300 s → pas dán SSE-streaming naar de client bouwen.
+- **Live-generatie 1× E2E bevestigen** — de authenticated Playwright-test staat nu klaar (`e2e/smoke.spec.ts`: vult via de demo-knop, assert expliciet geen 504, achter `E2E_GENERATE=1`). Draaien: zet `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `E2E_TEST_EMAIL` in de env en run `E2E_GENERATE=1 npm run e2e` (~€0,08/run). Of handmatig één object op prod genereren (< ~2 min, geen 504, duur-log `[generate] verrijking …ms · generatie …ms`). Duurt het > 300 s → pas dán SSE-streaming naar de client bouwen.
 - **Volledige feature-audit met ingelogd account** — de meeste features zijn nooit 1× E2E op prod aangeklikt: foto-verbetering, staging, foto-bibliotheek, PDF-export, kalender/plannen, prijswijziging, Realworks-XML, wijkpagina's, referral, NPS, admin-klantenbeheer.
 
 ### Na livegang — moat & distributie
@@ -42,7 +45,6 @@
 
 - **Site-polish** — mobiel (375px) door de kernschermen, Lighthouse landing (>90 perf / >95 a11y) + juridische check van de `/vertrouwen`-teksten. *(Linken van `/vertrouwen` is gedaan; publieke routes stonden achter de middleware-login-redirect — gefixt.)*
 - **Documenten-assistent kwaliteitstest** — met realistisch test-PDF: citeert de chat correct, en verwerkt "hergenereer" de feiten (exacte m², staat) aantoonbaar in de teksten?
-- **e2e/smoke uitbreiden** — ingelogd generatie-pad toevoegen achter een env-flag (i.v.m. API-kosten).
 - **Embed-widget bewijzen** (actie Quinn) — de widget één keer daadwerkelijk op een externe makelaarssite plaatsen en testen; instructies + snippet staan al in `ChatbotTab`.
 - **Social media direct publiceren** — Meta/IG + LinkedIn OAuth als sluitstuk van de kalender: `post_planning.status` → cron op de geplande datum. Verhoogt gebruiksfrequentie → lagere churn.
 - **Documenten-assistent verbreden** — kantoorbrede documenten (algemene voorwaarden, koopakte-uitleg) naast object-documenten. *(DOCX naast PDF/TXT is gedaan.)*
@@ -57,7 +59,7 @@
 - **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates, alleen subject; body's zijn al NL).
 - **Onboarding-stappen foto & chatbot** — toevoegen zodra er een betrouwbaar completion-signaal is (foto-resultaten/chatbot-bezoek worden nu niet getrackt).
 - **Documenten-ingang in de sidebar** — komt samen met de kantoorbrede documenten-pagina.
-- **Huisstijl: label per voorbeeld** (Funda/brochure/social) — laat het stijlprofiel per content-type differentiëren.
+- **Huisstijl: label per voorbeeld** (Funda/brochure/social) — laat het stijlprofiel per content-type differentiëren. ⚠️ Vereist DB-migratie (label-kolom op stijl-voorbeelden) + prompt-aanpassing.
 - **Brochure: lettertype-voorkeur** — react-pdf font-registratie.
 - **FAQ-limiet heroverwegen** — `LIMIT 30` in `/api/chat` nu object-kennis er is; FAQ-suggesties genereren uit veelgestelde chatvragen.
 - **NVM-contact Funda-partneraccess** — lange termijn; "genereer → staat live" is het eindspel.
