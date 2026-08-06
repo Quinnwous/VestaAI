@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { VerrijkingData } from '@/lib/verrijking'
+import type { CbsMetriek, CbsNiveau, VerrijkingData } from '@/lib/verrijking'
 
 interface Props {
   data: VerrijkingData
@@ -53,6 +53,23 @@ function Sectie({ titel, children }: { titel: string; children: React.ReactNode 
 function Toelichting({ children }: { children: React.ReactNode }) {
   return (
     <p style={{ fontSize: 10, color: '#9AA6A0', lineHeight: 1.4, margin: 0 }}>{children}</p>
+  )
+}
+
+const NIVEAU_LABEL: Record<CbsNiveau, string> = {
+  buurt: 'buurt',
+  wijk: 'wijk',
+  gemeente: 'gemeente',
+  nederland: 'landelijk',
+}
+
+/** Toont een CBS-cijfer met het gebiedsniveau waar het vandaan komt. */
+function CbsWaarde({ m, toon }: { m: CbsMetriek; toon: (w: number) => string }) {
+  return (
+    <>
+      {toon(m.waarde)}
+      <span style={{ marginLeft: 5, fontSize: 10, fontWeight: 500, color: '#9AA6A0' }}>{NIVEAU_LABEL[m.niveau]}</span>
+    </>
   )
 }
 
@@ -142,16 +159,30 @@ export function WoningdataPanel({ data, bezig }: Props) {
 
           {/* CBS */}
           {data.cbs && (
-            <Sectie titel="Buurtprofiel">
+            <Sectie titel={data.cbs.buurtnaam ? `Buurtprofiel · ${data.cbs.buurtnaam}` : 'Buurtprofiel'}>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <Chip label={data.cbs.buurtprofiel} kleur={PROFIEL_KLEUR[data.cbs.buurtprofiel]} />
-                <Chip label={`${data.cbs.pct_koop}% koop`} />
+                {data.cbs.pct_koop && <Chip label={`${data.cbs.pct_koop.waarde}% koop`} />}
               </div>
-              <Rij label="Gem. inkomen" waarde={`€ ${data.cbs.inkomen.toLocaleString('nl-NL')}/inw.`} />
-              <Rij label="Gem. WOZ gemeente" waarde={`€ ${data.cbs.woz_gem.toLocaleString('nl-NL')}`} />
-              {data.cbs.data_niveau === 'nationaal' && (
-                <Toelichting>Geen specifiek cijfer voor {data.cbs.gemeente} beschikbaar — dit is het nationaal gemiddelde.</Toelichting>
+              {data.cbs.woz_gem && (
+                <Rij label="Gem. WOZ" waarde={<CbsWaarde m={data.cbs.woz_gem} toon={w => `€ ${w.toLocaleString('nl-NL')}`} />} />
               )}
+              {data.cbs.inkomen && (
+                <Rij label="Gem. inkomen" waarde={<CbsWaarde m={data.cbs.inkomen} toon={w => `€ ${w.toLocaleString('nl-NL')}/inw.`} />} />
+              )}
+              {data.cbs.pct_hoog_opgeleid && (
+                <Rij label="Hbo/wo-opgeleid" waarde={<CbsWaarde m={data.cbs.pct_hoog_opgeleid} toon={w => `${w}%`} />} />
+              )}
+              {data.cbs.pct_eengezins && (
+                <Rij label="Eengezinswoningen" waarde={<CbsWaarde m={data.cbs.pct_eengezins} toon={w => `${w}%`} />} />
+              )}
+              {data.cbs.pct_met_kinderen && (
+                <Rij label="Huish. met kinderen" waarde={<CbsWaarde m={data.cbs.pct_met_kinderen} toon={w => `${w}%`} />} />
+              )}
+              <Toelichting>
+                {data.cbs.bron}. Het label achter een cijfer geeft aan op welk gebiedsniveau CBS het publiceert —
+                voor kleine buurten worden cijfers onderdrukt, dan tonen we het wijk- of gemeentecijfer.
+              </Toelichting>
             </Sectie>
           )}
 

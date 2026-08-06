@@ -1,137 +1,93 @@
 ---
 name: buurtanalyse-cbs
-description: Haal demografische buurtdata op via CBS — gemiddeld inkomen, bevolkingsdichtheid, verhouding huur/koop, woningvoorraad en opleidingsniveau. Gebruik buurt- en wijkcode uit de GEVERIFIEERDE DATA als ingang. Als buurtcode niet beschikbaar is, gebruik dan de gemeente-niveau CBS-referentietabel als fallback. Markeer alles als [indicatief] wanneer CBS-filter niet beschikbaar was.
+description: Live CBS-buurtdata via de open OData-API — gemiddelde WOZ, inkomen, opleidingsniveau, woningtypen, huishoudens en bevolkingsdichtheid. Geïmplementeerd in lib/verrijking.ts. Per indicator wordt naar buurt-, wijk- of gemeenteniveau gezakt, en het gebruikte niveau reist altijd mee.
 ---
 
-# Buurtanalyse (CBS)
+# Buurtanalyse (CBS) — live koppeling
 
-Analyseer de demografische en sociaaleconomische context van de buurt op basis van CBS kerncijfers wijken en buurten. De buurtcode en wijkcode zijn geverifieerd via PDOK. Wanneer geen buurtcode beschikbaar is, wordt altijd de gemeente-niveau CBS-referentietabel als fallback gebruikt zodat er altijd een buurtprofiel geproduceerd kan worden.
+**Status: geïmplementeerd** in `lib/verrijking.ts` (`fetchCbs`). Dit document beschrijft
+de werkende koppeling, geen toekomstplan. De vroegere hardgecodeerde referentietabel
+met 19 gemeentes is verwijderd: die cijfers stamden uit 2022 en waren aantoonbaar
+achterhaald (Amsterdam stond op een gemiddelde WOZ van €389.000 waar CBS €498.000 meet).
 
-## Databronnen
-- **PDOK Locatieserver** (geverifieerd) → buurtcode (BU...), wijkcode (WK...), gemeentecode (GM...)
-- **CBS Statline OData** [geverifieerd indien beschikbaar — via `cbs_buurt` in geverifieerde data; dataset 85039NED Kerncijfers wijken en buurten 2023]
-- **CBS gemeente-niveau referentietabel** [indicatief — Kerncijfers 2022, gemeente-niveau fallback als `cbs_buurt` null is]
+## Bron
 
-**Actuele buurtdata:** https://www.cbs.nl/nl-nl/reeksen/kerncijfers-wijken-en-buurten
+| | |
+|---|---|
+| API | `https://opendata.cbs.nl/ODataApi/odata/{dataset}/TypedDataSet` |
+| Dataset | `85984NED` — Kerncijfers wijken en buurten **2024** |
+| Kosten | gratis, geen sleutel, geen registratie |
+| Dekking | alle ~14.000 buurten, ~3.300 wijken, 342 gemeentes + landelijke referentierij |
 
-## Instructies
+**Waarom 2024 en niet de nieuwste jaargang?** `86165NED` (2025) bestaat, maar het veld
+`GemiddeldInkomenPerInwoner_78` is daar nog leeg — zelfs op gemeenteniveau. 2024 is de
+meest recente jaargang die alle indicatoren die wij gebruiken daadwerkelijk vult.
+Controleer bij een jaarlijkse update dus eerst of inkomen gevuld is, niet alleen of de
+dataset bestaat.
 
-### 1. Bepaal beschikbaarheid buurtcode
+## Twee valkuilen in de API
 
-Controleer of `adres_verificatie.buurtcode` beschikbaar is:
-- **Buurtcode beschikbaar**: volg instructies onder stap 2 (buurtspecifiek)
-- **Buurtcode null of niet beschikbaar**: volg instructies onder stap 3 (gemeente-niveau fallback)
+1. **Regiocodes zijn rechts opgevuld tot 10 tekens.** `WijkenEnBuurten eq 'GM0363'`
+   levert niets op; `'GM0363    '` wel. Buurtcodes zijn toevallig al 10 tekens, waardoor
+   dit probleem pas opvalt zodra je wijk of gemeente opvraagt. Zie `cbsRegioCode()`.
+2. **Filteren kan alleen op de dimensie `WijkenEnBuurten`.** Een `$filter` op een
+   topic-veld (zoals `SoortRegio_2`) geeft geen foutmelding over het veld, maar
+   `HTTP 500: query returns more than 10000 records`. Gebruik `startswith()` op de
+   dimensie als je een heel niveau wilt ophalen.
 
-### 2. Als buurtcode beschikbaar (buurtspecifieke analyse)
+## Cascade per indicator
 
-Gebruik `adres_verificatie.buurtcode` als ingang:
-- Buurtcode: bijv. BU06290110 (Weteringpark, Wassenaar)
-- Wijkcode: bijv. WK062901
-- Gemeentecode: bijv. GM0629 (Wassenaar)
+CBS onderdrukt cijfers zodra een gebied te klein wordt — inkomen ontbreekt daardoor in
+veel buurten, ook in grote steden. We vragen daarom **buurt, wijk, gemeente én `NL00`
+in één call** op en zakken *per losse indicator* naar het eerstvolgende niveau dat een
+cijfer heeft. Elk cijfer draagt zijn eigen `niveau` mee (`CbsMetriek`), zodat de UI en
+de Claude-prompt nooit een gemeentecijfer als buurtfeit kunnen tonen.
 
-**CBS-data interpreteren** (gebaseerd op gemeente/wijk gemiddelden):
-- Gemiddeld inkomen per inwoner (×1.000 euro)
-- % koopwoningen vs. huurwoningen
-- % eengezinswoningen vs. meergezinswoningen
-- Gemiddelde WOZ-waarde gemeente (×1.000 euro)
-- Bevolkingsdichtheid (per km²)
-- Bouwjaarklasse woningvoorraad (% voor/na 2000)
-- Opleidingsniveau (% hoog opgeleid)
+Voorbeeld (Prinsengracht 263, Amsterdam): WOZ €900.000 is een **buurt**cijfer,
+inkomen €65.800 een **wijk**cijfer. Beide worden als zodanig gelabeld.
 
-Geef ook een **vergelijking met het gemeenteniveau** (gebruik onderstaande referentietabel) en met het **nationaal gemiddelde**.
+De ingang komt uit PDOK (`buurtcode`, `wijkcode`, `gemeentecode`), die al in de
+verrijkingslaag zat. PDOK levert ook de buurt- en wijknáám; CBS doet dat niet bruikbaar.
 
-### 3. Als buurtcode null (gemeente-niveau fallback)
+## Gebruikte velden
 
-Gebruik de onderstaande CBS gemeente-referentietabel. Markeer alle uitkomsten expliciet als **[gemeente-niveau CBS 2022 — buurtspecifieke data niet beschikbaar]**.
+| Veld | Betekenis | Bewerking |
+|---|---|---|
+| `GemiddeldeWOZWaardeVanWoningen_39` | gemiddelde WOZ | × 1.000 |
+| `GemiddeldInkomenPerInwoner_78` | inkomen per inwoner | × 1.000 |
+| `Koopwoningen_47` | % koopwoningen | — |
+| `BasisonderwijsVmboMbo1_67` · `HavoVwoMbo24_68` · `HboWo_69` | opleidingsniveau | aandeel hbo/wo binnen het totaal van de drie, alle drie op hetzelfde gebiedsniveau |
+| `PercentageEengezinswoning_40` | % eengezinswoningen | — |
+| `Bevolkingsdichtheid_34` | inwoners/km² | — |
+| `k_65JaarOfOuder_12` ÷ `AantalInwoners_5` | % 65-plussers | afgeleid |
+| `HuishoudensMetKinderen_32` ÷ `HuishoudensTotaal_29` | % huishoudens met kinderen | afgeleid |
+| `GemiddeldeHuishoudensgrootte_33` | huishoudensgrootte | — |
 
-**CBS Referentietabel grote gemeentes (CBS Kerncijfers 2022, gemeente-niveau):**
+## Buurtprofiel
 
-| Gemeente | Gem. inkomen | % Koop | Gem. WOZ | % Hoog opgeleid | Bevolkingsdichtheid |
-|----------|-------------|--------|---------|----------------|---------------------|
-| Wassenaar | €62.800 | 74% | €624.000 | 68% | laag (ca. 1.200/km²) |
-| Bloemendaal | €68.500 | 78% | €712.000 | 72% | laag (ca. 900/km²) |
-| Blaricum | €71.200 | 80% | €748.000 | 74% | laag (ca. 700/km²) |
-| Heemstede | €52.400 | 71% | €542.000 | 65% | gemiddeld (ca. 2.200/km²) |
-| Amsterdam | €37.200 | 28% | €389.000 | 55% | hoog (ca. 5.200/km²) |
-| Utrecht | €38.100 | 42% | €358.000 | 58% | hoog (ca. 3.400/km²) |
-| Den Haag | €33.400 | 46% | €298.000 | 44% | hoog (ca. 3.200/km²) |
-| Rotterdam | €30.200 | 40% | €264.000 | 38% | hoog (ca. 3.100/km²) |
-| Haarlem | €38.800 | 46% | €368.000 | 52% | hoog (ca. 2.800/km²) |
-| Leiden | €35.600 | 44% | €338.000 | 55% | hoog (ca. 2.700/km²) |
-| Delft | €32.800 | 43% | €312.000 | 56% | hoog (ca. 2.600/km²) |
-| Amstelveen | €42.600 | 55% | €412.000 | 62% | gemiddeld (ca. 2.000/km²) |
-| Eindhoven | €33.600 | 51% | €298.000 | 46% | gemiddeld (ca. 1.800/km²) |
-| Breda | €32.400 | 56% | €286.000 | 42% | gemiddeld (ca. 1.400/km²) |
-| Tilburg | €30.800 | 52% | €268.000 | 39% | gemiddeld (ca. 1.500/km²) |
-| Groningen | €29.800 | 38% | €248.000 | 52% | hoog (ca. 2.400/km²) |
-| Nijmegen | €30.400 | 46% | €268.000 | 50% | hoog (ca. 2.200/km²) |
-| Arnhem | €29.600 | 50% | €254.000 | 42% | gemiddeld (ca. 1.600/km²) |
-| Zwolle | €33.200 | 58% | €292.000 | 44% | gemiddeld (ca. 1.200/km²) |
-| **Landelijk NL** | **€30.800** | **57%** | **€317.000** | **41%** | **gemiddeld** |
+Premium / Bovengemiddeld / Gemiddeld / Ondergemiddeld, gescoord op WOZ, inkomen en
+opleidingsniveau ten opzichte van de **landelijke rij uit dezelfde jaargang** (`NL00`) —
+dus niet tegen hardgecodeerde referentiewaarden. Indicatoren die zelf al op landelijk
+niveau zijn teruggevallen tellen niet mee: anders vergelijkt een gebied met zichzelf en
+valt alles op 'Gemiddeld'.
 
-Als de gemeente niet in de tabel staat: gebruik het nationaal gemiddelde als proxy en markeer als **[nationaal gemiddelde als proxy — gemeente-specifieke CBS-data niet beschikbaar]**.
+## Markttype-fallback
 
-### 4. Vergelijk altijd met nationaal gemiddelde
+`marktProfielOpzoeken()` houdt de expliciete `GEMEENTE_TYPE_MAP` leidend. Gemeentes die
+daar niet in staan belandden voorheen allemaal op `landelijk`; ze worden nu geclassificeerd
+op echte cijfers: WOZ ≥ 1,45× landelijk → `premium`, anders dichtheid ≥ 1.200/km² →
+`middelgroot`. Die drempel isoleert 8 van de 342 gemeentes (Laren, De Bilt, Gooise Meren,
+Landsmeer, Bergen NH, Oegstgeest, Wijdemeren, Ouder-Amstel).
 
-Vergelijk bij elke output (zowel buurt- als gemeente-niveau) met de volgende nationale referentiewaarden:
-- Nationaal gemiddeld inkomen per inwoner: **€30.800**
-- Nationaal % koopwoningen: **57%**
-- Nationaal gemiddelde WOZ-waarde: **€317.000**
-- Nationaal % hoog opgeleid: **41%**
+Bewust **niet** afgeleid: de typen `randstadcentrum` en `randstadbuiten`. Dat is een
+marktoordeel dat niet uit demografie volgt; afleiden zou schijnprecisie zijn.
 
-### 5. Geef een profiel-kwalificatie per indicator
+Belangrijk: deze classificatie leest `cbs.gemeente_niveau` — de ongecascadeerde
+gemeentecijfers. De gewone velden bevatten meestal het buurtcijfer, en een dure buurt
+maakt de gemeente nog niet duur.
 
-Beoordeel elke indicator afzonderlijk als:
-- **Bovengemiddeld**: significant hoger dan nationaal gemiddelde (>10% afwijking)
-- **Gemiddeld**: rondom nationaal gemiddelde (±10%)
-- **Ondergemiddeld**: significant lager dan nationaal gemiddelde (>10% afwijking)
+## Foutgedrag
 
-Geef ook een **overkoepelend buurtprofiel**: Premium / Bovengemiddeld / Gemiddeld / Ondergemiddeld
-
-### 6. Relevantie voor verkoopstrategie
-
-Vertaal het buurtprofiel naar verkoopadvies:
-- Doelgroep omschrijving (bijv. tweeverdieners, gezinnen, internationale kopers)
-- Verwacht prijsniveau op basis van buurtprofiel
-- Positionering aanbeveling
-
-## Markeringsregels
-- Buurtcode en wijkcode: **geverifieerd via PDOK**
-- Buurtspecifieke CBS-statistieken: **[indicatief — geaggregeerde buurt/wijk data, niet per woning]**
-- Gemeente-niveau fallback: **[gemeente-niveau CBS 2022 — buurtspecifieke data niet beschikbaar]**
-- Nationaal gemiddelde als proxy: **[nationaal gemiddelde als proxy — gemeente-specifieke CBS-data niet beschikbaar]**
-
-## JSON Output
-
-```json
-"buurtanalyse_cbs": {
-  "buurt": "[naam buurt of 'gemeente-niveau fallback']",
-  "buurtcode": "[BU... of null]",
-  "wijk": "[naam wijk of null]",
-  "gemeente": "[gemeente uit adres_verificatie]",
-  "gemeentecode": "[GM...]",
-  "data_niveau": "[buurtspecifiek / gemeente-niveau fallback / nationaal gemiddelde als proxy]",
-  "cbs_data": {
-    "gemiddeld_inkomen_per_inwoner_1000eur": "[waarde] [indicatief]",
-    "kwalificatie_inkomen": "[bovengemiddeld / gemiddeld / ondergemiddeld]",
-    "pct_koopwoningen": "[waarde] [indicatief]",
-    "kwalificatie_koop": "[bovengemiddeld / gemiddeld / ondergemiddeld]",
-    "pct_eengezinswoningen": "[waarde of n.v.t.] [indicatief]",
-    "gemiddelde_woz_1000eur": "[waarde] [indicatief]",
-    "kwalificatie_woz": "[bovengemiddeld / gemiddeld / ondergemiddeld]",
-    "bevolkingsdichtheid_per_km2": "[waarde of omschrijving] [indicatief]",
-    "pct_hoog_opgeleid": "[waarde] [indicatief]",
-    "kwalificatie_opleiding": "[bovengemiddeld / gemiddeld / ondergemiddeld]"
-  },
-  "vergelijking_landelijk": {
-    "inkomen_vs_nationaal": "[+X% / -X% / rondom gemiddelde] [indicatief]",
-    "woz_vs_nationaal": "[+X% / -X% / rondom gemiddelde] [indicatief]",
-    "koop_pct_vs_nationaal": "[+X% / -X% / rondom gemiddelde] [indicatief]"
-  },
-  "buurtprofiel": "[Premium / Bovengemiddeld / Gemiddeld / Ondergemiddeld] [indicatief]",
-  "doelgroep_omschrijving": "[indicatief]",
-  "relevantie_verkoop": "[indicatief]",
-  "cbs_link": "https://www.cbs.nl/nl-nl/reeksen/kerncijfers-wijken-en-buurten",
-  "databron_toelichting": "CBS Kerncijfers Wijken en Buurten 2022 — gemeente/wijk niveau, niet per adres. Voor actuele buurtdata: https://www.cbs.nl/nl-nl/reeksen/kerncijfers-wijken-en-buurten"
-}
-```
+Valt CBS uit, dan is `verrijking.cbs` `null` en gaat de generatie gewoon door zonder
+buurtprofiel. Er wordt bewust **geen** statische fallback meer geserveerd: verouderde
+cijfers tonen als "landelijk gemiddelde" was precies het probleem dat deze koppeling oplost.
