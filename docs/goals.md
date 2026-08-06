@@ -22,11 +22,13 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 |---------|--------|--------|
 | NL actieve kantoren | ~9.000 (CBS) | Primaire markt |
 | NVM-leden | ~5.500 | Meest solvabel, 74% transacties |
-| Belgische makelaars (Vlaanderen) | ~8.000 | Fase 2 |
+| Belgische makelaars (Vlaanderen) | ~8.000 | Fase 3 |
 | Duitse Makler | ~40.000 | Fase 3+ |
 
 **TAM:** ~€247M/jaar (NL + BE + DE)  
 **Doel NL:** €1M+ ARR bij 10% penetratie
+
+**Distributie-gatekeeper:** Realworks heeft ~80% marktaandeel onder NL-makelaars en is daarmee de facto poortwachter — zonder koppeling is Vesta voor de meeste kantoren een los tool i.p.v. ingebakken workflow. HousApp koppelt al met zowel Realworks als Kolibri. Een echte Realworks-API-koppeling (i.p.v. de huidige XML-export) en Kolibri/AppXchange-aanmelding staan daarom in `roadmap.md` als post-livegang-prioriteit onder "moat & distributie".
 
 ---
 
@@ -72,7 +74,7 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 **Fase 2 — Lancering:** Testers converteren naar betaald. LinkedIn-lancering met persoonlijk verhaal. NVM PropTech-programma aanmelden. Doel: 30 kantoren.
 
-**Fase 3 — België:** CIB Vlaanderen. Casestudy met echte tijdsbesparing. Doel: 80 NL + 30 BE.
+**Fase 3 — België:** CIB Vlaanderen. Casestudy met echte tijdsbesparing. Doel: 80 NL + 30 BE. *(Extern marktonderzoek aug 2026 bevestigt: geen dominante Belgische speler doet vandaag AI-contentgeneratie voor makelaars — eerste-mover kans, deze fase mag naar voren zodra Fase 1/2 staan.)*
 
 **Fase 4 — Franchise:** Directe outreach ERA, Engel & Völkers NL, Makelaarsland. Affiliate-programma. Doel: 5 franchise-deals, 250 kantoren.
 
@@ -85,8 +87,9 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 **Huisstijlgeheugen is de belangrijkste retention-driver.** Kantoren die weggaan verliezen hun opgebouwde stijlprofiel — dat kost maanden om elders opnieuw op te bouwen. Verwachte churn: ~3%/maand vs. branche-gemiddelde 5–7%.
 
 **Verdediging per dreiging:**
-- *Funda bouwt eigen tool:* Snel loyale user-base opbouwen voor ze starten. Klanten zijn dan al afhankelijk van Vesta's stijlprofielen.
+- *Funda bouwt eigen tool:* Snel loyale user-base opbouwen voor ze starten. Klanten zijn dan al afhankelijk van Vesta's stijlprofielen. *(Signaal: Funda lanceerde al een eigen AI-virtual-stagingtool, 2025/2026 — geen volledig platform, wel een eerste stap.)*
 - *CRM-spelers voegen AI toe:* 12–18 maanden reactietijd. Vesta heeft dan 500+ klanten en branchereputatie.
+- *HousApp voegt contentmodule toe:* vandaag géén overlap (zij = workflow/inbox/planner/leadgen, wij = content), maar goed gefund (€4,3M, juli 2026) en consolideert via overnames (Friva-overname jan 2026, ~2.200 makelaars). Extern marktonderzoek schat de reactietijd eerder op 6–24 maanden dan de 12–18 hierboven — sneller dan gehoopt. Verdediging: huisstijl-lock-in (diepste gracht, content is bij hen feature #4, bij ons het bestaansrecht), suite-diepte, per-kantoor-prijs (structureel goedkoper voor grotere kantoren dan hun per-seat-model €69/€69/€29 per makelaar), en desnoods een niet-vijandig partnerschapsspoor als hun module er toch komt. Vroege-waarschuwing: maandelijkse concurrentie-scan (zie `roadmap.md`).
 - *Internationale spelers doen NL:* Funda-kennis en NL buurtcultuur kosten jaren om te bouwen.
 
 ---
@@ -108,7 +111,9 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 | Risico | Ernst | Mitigatie |
 |--------|-------|-----------|
 | Funda bouwt eigen tool | Medium | Snel user-base + huisstijl lock-in opbouwen |
+| HousApp lanceert contentmodule | Medium–Hoog | Zie "Verdediging per dreiging" hierboven; maandelijkse concurrentie-scan als vroege waarschuwing |
 | Trage adoptie (conservatieve markt) | Medium | Resultaten bewijzen via testimonials, niet pitchen |
+| AI-transparantieverplichting (EU AI Act / BE deontologische code) | Laag–Medium | AI-content-labeling ingebouwd in virtual staging (aug 2026); compliance-pagina volgt (zie `roadmap.md`) |
 | Claude API afhankelijkheid | Medium | Model-agnostische architectuur; kan switchen |
 | Oprichter-capaciteit | Beheersbaar | Bij €5K MRR eerste part-time hire |
 | Tech risico | Laag | Bewezen API-architectuur, geen custom ML |

@@ -2,13 +2,13 @@
 
 > Werklijst, geen logboek. Alleen open items — **klaar = weg**.
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
-> Laatst herzien: 10 juli 2026.
+> Laatst herzien: 6 augustus 2026.
 >
 > **Hervat-pointer (Claude-oppakbaar):** Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen — daarna social auto-publiceren (🟠, wacht op Meta/LinkedIn-secrets). Volledige E2E-generatie-run zodra testaccount-creds er zijn (zie 🔴). PR #12 (prijzen + middleware + DOCX + e2e) is deze sessie gemerged.
 
 ---
 
-## Al gebouwd & live (t/m 10 juli — niet opnieuw doen/checken)
+## Al gebouwd & live (t/m 6 augustus — niet opnieuw doen/checken)
 
 - **Kern & accounts:** proefmodel (30d / 5 obj) + gratis-plan (5/mnd), activerings-/welkomst-/meldingsmails (atomisch), `/admin` v2 met maandverbruik, onboarding-checklist, referral, NPS. Onboarding-flow E2E bewezen op prod t/m dashboard.
 - **Generatie:** 504-time-out opgelost via streaming (`messages.stream`) + `maxDuration 300` + in-flight-lock tegen dubbele runs (`/api/generate`, `/api/object/[id]/hergenereer`). Funda-lengte-fix (700+ w, 6-alinea-structuur) in `lib/claude.ts`. ⚠️ *nog niet 1× volledig E2E op prod bevestigd → zie 🔴.*
@@ -16,7 +16,8 @@
 - **Huisstijl v2:** 20 voorbeeldteksten, stijlprofiel-destillatie, `.txt/.pdf`-upload, aparte brochure-stijl, leren-van-inline-bewerkingen (review-flow via `stijl_bewerkingen`).
 - **Chatbot v2/v3:** object-kennis, deelbare publieke chatpagina (aan/uit + cover-foto), documenten-koppeling (opt-in per doc), lead-capture + mail naar makelaar, embed-installatie-instructies, agent-prompt met guardrails (14/14 scenario's, incl. prompt-injection).
 - **Media & documenten:** foto-bibliotheek per object (`object_fotos` + Storage), documenten → content-hergeneratie (Files API), PDF-brochure met foto's.
-- **Virtual staging:** model → `gemini-2.5-flash-image`. ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
+- **Virtual staging:** model → `gemini-2.5-flash-image`, output krijgt ingebakken "AI-gegenereerd interieur"-label (compliance BE deontologische code / EU AI Act, 6 aug). ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
+- **Data-eerlijkheid verrijkingslaag (6 aug):** CBS-buurtdata en marktdynamiek in `lib/verrijking.ts` waren grotendeels statische fallback-cijfers (19 gemeenten hardgecodeerd, nationaal gemiddelde voor de rest) die als specifiek buurtprofiel oogden. Nu expliciet gelabeld als "nationaal gemiddelde" resp. "regionale typering, geen actuele meting" in zowel UI (`WoningdataPanel.tsx`) als Claude-prompt. Een échte CBS Statline-koppeling (zie 🟠) maakt dit op termijn een reële differentiator i.p.v. gelabelde schatting.
 - **Site & infra:** volledige metadata/OG/sitemap/404, `/vertrouwen`-pagina, `e2e/smoke.mjs` (credential-vrije rooktest), prod-DB-migraties allemaal live, copy schoon van verboden claims. Stripe test-mode klaargezet (producten/prijzen/webhook).
 - **Prijzen & publieke routes (PR #12, 10 juli):** plan-limieten **Starter 5 / Pro 25 / Kantoor onbeperkt** (soft-cap 100), per-kantoor als hoofdboodschap, "onbeperkt op Pro" overal geschrapt, Pro-kaart-bug (1→5 gebruikers) gefixt — consistent in `lib/plans.ts` + copy + `goals.md`. **Middleware-fix:** alle publieke routes (`/vertrouwen`·`/over-ons`·`/contact`·`/privacy`·`/voorwaarden`, SEO-`/wijken/*`, deelbare `/chat/*`, embed-API's `/api/chat`+`/api/me`+`/api/chatbot`) stonden achter een login-redirect → nu publiek (beveiligde routes ongewijzigd, geverifieerd). `/vertrouwen` gelinkt in nav+footer. **DOCX-upload** in documenten-assistent (`lib/docx.ts`, mammoth-tekstextractie, unit-getest). Authenticated generate-e2e herschreven + kostengate.
 
@@ -50,7 +51,11 @@
 - **Documenten-assistent verbreden** — kantoorbrede documenten (algemene voorwaarden, koopakte-uitleg) naast object-documenten. *(DOCX naast PDF/TXT is gedaan.)*
 - **NVM PropTech-programma aanmelden.**
 - **Klantverhalen-pagina** — HousApp-model: korte verhalen per kantoor mét cijfers. Na eerste 3–5 klanten.
-- **Maandelijkse HousApp-check** (10 min) — changelog/release notes, vacatures (content/LLM), klantverhalen over teksten, Kolibri-blog. Signaal = HousApp beweegt richting content → verdediging §7 activeren.
+- **Maandelijkse concurrentie-scan** (10 min, verbreed 6 aug) — HousApp (changelog, vacatures, klantverhalen, Kolibri-blog), Funda's eigen AI-staging-tool, Immoweb (BE). Signaal = concurrent beweegt richting content → verdediging in `goals.md` activeren.
+- **Zelfservice-monetisatie daadwerkelijk aanzetten** (6 aug) — Stripe-checkout live voor nieuwe aanmeldingen zodra de testimonial er is, in plaats van voor onbepaalde tijd handmatige activering door de platform-admin (`heeftToegang()`) te blijven doen. Zonder dit kan Vesta niet sneller groeien dan Quinn zelf kan bijhouden.
+- **Gedeelde rate-limiter** (6 aug) — Upstash Redis (Vercel Marketplace) i.p.v. de huidige in-memory `Map` in `app/api/generate/route.ts` en `app/api/chat/route.ts`. Werkt niet betrouwbaar zodra Vercel meerdere instanties/regio's gebruikt, wat bij groei vanzelf gebeurt.
+- **Echte CBS Statline-koppeling** (6 aug) — dataset 85039NED (zie `docs/data-integraties/buurtanalyse-cbs.md`) heeft een gratis open API; vervangt de nu gelabelde statische fallback in `lib/verrijking.ts` door reële data voor alle ~9.000 gemeenten. Maakt "NL-buurtcultuur begrijpen" een bewezen differentiator i.p.v. een schatting.
+- **Compliance-pagina** (6 aug) — AVG-verwerkersovereenkomst, dataverwerking. HousApp claimt een SOC 2/AVG-verhaal, Vesta nog niet; `/vertrouwen` bestaat al maar mist dit stuk.
 
 ---
 
@@ -65,6 +70,8 @@
 - **NVM-contact Funda-partneraccess** — lange termijn; "genereer → staat live" is het eindspel.
 - **Google Ads activeren bij €5K MRR** (€500/mnd).
 - **Vercel AI Gateway** — per-gebruiker kostentracking + budget alerts; loont pas bij 10+ actieve klanten.
+- **Freemium-instapproduct** (6 aug) — bv. één gratis Funda-tekst/maand, gericht op klanten van goedkope tekst-only-concurrenten (Huistekst.nl, Makelaartoolkit.nl). Pas ná zelfservice-monetisatie staat, anders alleen handmatig werk zonder opvolging.
+- **België naar voren halen** (6 aug) — extern marktonderzoek bevestigt: geen dominante Belgische speler doet vandaag AI-contentgeneratie voor makelaars. Fase 3 uit `goals.md` (CIB Vlaanderen) kan sneller dan gepland zodra testimonial + zelfservice-monetisatie staan.
 
 ---
 

@@ -406,7 +406,10 @@ export function verrijkingNaarPrompt(v: VerrijkingData): string {
   }
 
   if (v.cbs) {
-    regels.push(`Gemeente ${v.cbs.gemeente}: gemiddeld inkomen €${v.cbs.inkomen.toLocaleString('nl-NL')}/inwoner · ${v.cbs.pct_koop}% koopwoningen · buurtprofiel: ${v.cbs.buurtprofiel}`)
+    const bron = v.cbs.data_niveau === 'gemeente'
+      ? ''
+      : ' [nationaal gemiddelde — geen specifiek cijfer voor deze gemeente beschikbaar, gebruik dit niet als exact buurtfeit]'
+    regels.push(`Gemeente ${v.cbs.gemeente}: gemiddeld inkomen €${v.cbs.inkomen.toLocaleString('nl-NL')}/inwoner · ${v.cbs.pct_koop}% koopwoningen · buurtprofiel: ${v.cbs.buurtprofiel}${bron}`)
   }
 
   if (v.voorzieningen) {
@@ -422,10 +425,10 @@ export function verrijkingNaarPrompt(v: VerrijkingData): string {
 
   if (v.markt) {
     const m = v.markt
-    regels.push(`Markttype: ${m.label} · Verkooptijd: ${m.verkooptijd_weken} · Overbiedingskans: ${m.overbiedingskans_pct} (gem. ${m.overbod_pct}) · Marktomstandigheid: ${m.marktomstandigheid}`)
+    regels.push(`Markttype: ${m.label} · Verkooptijd: ${m.verkooptijd_weken} · Overbiedingskans: ${m.overbiedingskans_pct} (gem. ${m.overbod_pct}) · Marktomstandigheid: ${m.marktomstandigheid} [regionale typering op basis van gemeentecategorie, geen actuele meting voor dit specifieke object]`)
     regels.push(`Verkoopstrategie-advies: ${m.strategie}`)
     regels.push(`Seizoensadvies: ${m.seizoen_advies}`)
-    regels.push(`WOZ-waardeontwikkeling gemeente 2019–2024: ${m.woz_trend_2019_2024} [indicatief — CBS]`)
+    regels.push(`WOZ-waardeontwikkeling gemeente 2019–2024: ${m.woz_trend_2019_2024} [indicatief — regionale schatting]`)
   }
 
   return regels.length > 0

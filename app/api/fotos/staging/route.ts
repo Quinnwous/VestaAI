@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import sharp from 'sharp'
 import { createServerSupabaseClient } from '@/lib/supabase'
 
 export const maxDuration = 120
@@ -25,6 +26,37 @@ const RUIMTE_OMSCHRIJVING: Record<RuimteType, string> = {
   keuken: 'kitchen with organized countertops, bar stools at island if present, and decorative items',
   badkamer: 'bathroom with towels, bath accessories, plants, and organized vanity',
   werkkamer: 'home office with desk, ergonomic chair, bookshelf, and focused lighting',
+}
+
+// Virtual staging vervangt het interieur volledig door AI-fictie — anders dan foto-verbetering
+// (kleurcorrectie) is dit precies het soort AI-gegenereerde beeld dat de Belgische
+// deontologische code voor makelaars en de EU AI Act-transparantieplicht verplicht labelen.
+async function labelAlsAiGegenereerd(imageBase64: string): Promise<{ base64: string; mimeType: string }> {
+  const buffer = Buffer.from(imageBase64, 'base64')
+  const image = sharp(buffer)
+  const meta = await image.metadata()
+  const breedte = meta.width ?? 1024
+  const hoogte = meta.height ?? 768
+
+  const label = 'AI-gegenereerd interieur'
+  const badgeBreedte = Math.min(breedte - 32, Math.round(label.length * (breedte * 0.017) + breedte * 0.04))
+  const badgeHoogte = Math.round(breedte * 0.045)
+  const fontSize = Math.round(badgeHoogte * 0.42)
+
+  const svg = `<svg width="${breedte}" height="${hoogte}" xmlns="http://www.w3.org/2000/svg">
+    <rect x="16" y="${hoogte - badgeHoogte - 16}" rx="${badgeHoogte / 2}" ry="${badgeHoogte / 2}"
+      width="${badgeBreedte}" height="${badgeHoogte}" fill="black" fill-opacity="0.6" />
+    <text x="${16 + badgeBreedte / 2}" y="${hoogte - badgeHoogte / 2 - 16 + fontSize * 0.35}"
+      font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700"
+      fill="white" text-anchor="middle">${label}</text>
+  </svg>`
+
+  const gelabeld = await image
+    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
+    .jpeg({ quality: 92 })
+    .toBuffer()
+
+  return { base64: gelabeld.toString('base64'), mimeType: 'image/jpeg' }
 }
 
 export async function POST(req: NextRequest) {
@@ -96,12 +128,25 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
 
     for (const part of parts) {
       if (part.inlineData?.mimeType?.startsWith('image/')) {
-        return NextResponse.json({
-          image_base64: part.inlineData.data,
-          mime_type: part.inlineData.mimeType,
-          stijl,
-          ruimte,
-        })
+        try {
+          const gelabeld = await labelAlsAiGegenereerd(part.inlineData.data)
+          return NextResponse.json({
+            image_base64: gelabeld.base64,
+            mime_type: gelabeld.mimeType,
+            stijl,
+            ruimte,
+          })
+        } catch (labelErr) {
+          // Labeling is compliance-verrijking, geen kernfunctie — een gelukte generatie
+          // mag niet mislukken omdat het watermerk niet kon worden toegepast.
+          console.error('AI-label toepassen mislukt, val terug op ongelabeld beeld:', labelErr)
+          return NextResponse.json({
+            image_base64: part.inlineData.data,
+            mime_type: part.inlineData.mimeType,
+            stijl,
+            ruimte,
+          })
+        }
       }
     }
 

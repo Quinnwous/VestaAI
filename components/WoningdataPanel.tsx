@@ -50,6 +50,12 @@ function Sectie({ titel, children }: { titel: string; children: React.ReactNode 
   )
 }
 
+function Toelichting({ children }: { children: React.ReactNode }) {
+  return (
+    <p style={{ fontSize: 10, color: '#9AA6A0', lineHeight: 1.4, margin: 0 }}>{children}</p>
+  )
+}
+
 export function WoningdataPanel({ data, bezig }: Props) {
   const [open, setOpen] = useState(true)
 
@@ -143,6 +149,9 @@ export function WoningdataPanel({ data, bezig }: Props) {
               </div>
               <Rij label="Gem. inkomen" waarde={`€ ${data.cbs.inkomen.toLocaleString('nl-NL')}/inw.`} />
               <Rij label="Gem. WOZ gemeente" waarde={`€ ${data.cbs.woz_gem.toLocaleString('nl-NL')}`} />
+              {data.cbs.data_niveau === 'nationaal' && (
+                <Toelichting>Geen specifiek cijfer voor {data.cbs.gemeente} beschikbaar — dit is het nationaal gemiddelde.</Toelichting>
+              )}
             </Sectie>
           )}
 
@@ -153,6 +162,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
               <Rij label="Verkooptijd" waarde={data.markt.verkooptijd_weken} />
               <Rij label="Overbiedingskans" waarde={data.markt.overbiedingskans_pct} />
               <Rij label="Gem. overbod" waarde={data.markt.overbod_pct} />
+              <Toelichting>Regionale typering op basis van gemeentecategorie, geen actuele meting voor dit object.</Toelichting>
             </Sectie>
           )}
 
