@@ -4,7 +4,11 @@
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
 > Laatst herzien: 6 augustus 2026.
 >
-> **Hervat-pointer (Claude-oppakbaar):** CBS-buurtdata is live (zie hieronder). Volgende zonder blokkade: gedeelde rate-limiter (🟠, Upstash) of compliance-pagina (🟠). Daarna Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen. Social auto-publiceren wacht op Meta/LinkedIn-secrets; volledige E2E-generatie-run wacht op testaccount-creds (zie 🔴).
+> **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
+> Laatst afgerond: echte CBS-buurtdata live (PR #13, gemerged 6 aug) — zie "Al gebouwd & live" hieronder.
+> **Volgende zonder blokkade, in deze volgorde:** (1) gedeelde rate-limiter 🟠 — Upstash Redis via Vercel Marketplace, vervangt de in-memory `Map` in `app/api/generate/route.ts` + `app/api/chat/route.ts`; (2) compliance-pagina 🟠 — AVG-verwerkersovereenkomst op `/vertrouwen`; (3) Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen.
+> **Geblokkeerd, niet oppakken:** social auto-publiceren (wacht op Meta/LinkedIn-secrets) · volledige E2E-generatie-run (wacht op testaccount-creds) · Realworks-API (wacht op portaal-registratie) — alle blokkades staan onder 🔴 "Actie Quinn".
+> **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
 
 ---
 
@@ -60,6 +64,7 @@
 
 ## 🟢 Later / nice-to-have
 
+- **CBS-jaargang jaarlijks bijwerken** (nieuw 6 aug) — `lib/verrijking.ts` staat op `85984NED` (2024). CBS publiceert elk voorjaar een nieuwe jaargang, maar **niet alle velden zijn meteen gevuld**: `86165NED` (2025) bestaat al en heeft WOZ, maar `GemiddeldInkomenPerInwoner_78` is daar nog leeg — zelfs op gemeenteniveau. Check bij het ophogen dus of inkomen gevuld is, niet alleen of de dataset bestaat. Nieuwe ID's opzoeken: `https://opendata.cbs.nl/ODataCatalog/Tables?$filter=substringof('Kerncijfers wijken en buurten',Title)&$format=json`.
 - **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates, alleen subject; body's zijn al NL).
 - **Onboarding-stappen foto & chatbot** — toevoegen zodra er een betrouwbaar completion-signaal is (foto-resultaten/chatbot-bezoek worden nu niet getrackt).
 - **Documenten-ingang in de sidebar** — komt samen met de kantoorbrede documenten-pagina.
