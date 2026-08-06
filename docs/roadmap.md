@@ -5,7 +5,8 @@
 > Laatst herzien: 6 augustus 2026.
 >
 > **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
-> Laatst afgerond: echte CBS-buurtdata live (PR #13, gemerged 6 aug) — zie "Al gebouwd & live" hieronder.
+> Laatst afgerond: echte CBS-buurtdata (6 aug) — zie "Al gebouwd & live" hieronder.
+> ⚠️ **Eerst controleren:** staat op branch `feat/cbs-buurtdata-live` in **PR #13, nog niet gemerged** (de merge werd door de permissie-classifier geblokkeerd, niet door een inhoudelijk probleem — code is groen en `MERGEABLE`). Check `gh pr view 13 --json state`; is hij gemerged, haal deze waarschuwing dan weg.
 > **Volgende zonder blokkade, in deze volgorde:** (1) gedeelde rate-limiter 🟠 — Upstash Redis via Vercel Marketplace, vervangt de in-memory `Map` in `app/api/generate/route.ts` + `app/api/chat/route.ts`; (2) compliance-pagina 🟠 — AVG-verwerkersovereenkomst op `/vertrouwen`; (3) Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen.
 > **Geblokkeerd, niet oppakken:** social auto-publiceren (wacht op Meta/LinkedIn-secrets) · volledige E2E-generatie-run (wacht op testaccount-creds) · Realworks-API (wacht op portaal-registratie) — alle blokkades staan onder 🔴 "Actie Quinn".
 > **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
@@ -13,6 +14,8 @@
 ---
 
 ## Al gebouwd & live (t/m 6 augustus — niet opnieuw doen/checken)
+
+> Uitzondering: het CBS-item hieronder zit in PR #13 en staat nog niet op `main` — zie de waarschuwing bovenaan.
 
 - **Kern & accounts:** proefmodel (30d / 5 obj) + gratis-plan (5/mnd), activerings-/welkomst-/meldingsmails (atomisch), `/admin` v2 met maandverbruik, onboarding-checklist, referral, NPS. Onboarding-flow E2E bewezen op prod t/m dashboard.
 - **Generatie:** 504-time-out opgelost via streaming (`messages.stream`) + `maxDuration 300` + in-flight-lock tegen dubbele runs (`/api/generate`, `/api/object/[id]/hergenereer`). Funda-lengte-fix (700+ w, 6-alinea-structuur) in `lib/claude.ts`. ⚠️ *nog niet 1× volledig E2E op prod bevestigd → zie 🔴.*
