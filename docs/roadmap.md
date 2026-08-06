@@ -4,11 +4,18 @@
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
 > Laatst herzien: 6 augustus 2026.
 >
-> **Hervat-pointer (Claude-oppakbaar):** Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen — daarna social auto-publiceren (🟠, wacht op Meta/LinkedIn-secrets). Volledige E2E-generatie-run zodra testaccount-creds er zijn (zie 🔴). PR #12 (prijzen + middleware + DOCX + e2e) is deze sessie gemerged.
+> **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
+> Laatst afgerond: echte CBS-buurtdata (6 aug) — zie "Al gebouwd & live" hieronder.
+> ⚠️ **Eerst controleren:** staat op branch `feat/cbs-buurtdata-live` in **PR #13, nog niet gemerged** (de merge werd door de permissie-classifier geblokkeerd, niet door een inhoudelijk probleem — code is groen en `MERGEABLE`). Check `gh pr view 13 --json state`; is hij gemerged, haal deze waarschuwing dan weg.
+> **Volgende zonder blokkade, in deze volgorde:** (1) gedeelde rate-limiter 🟠 — Upstash Redis via Vercel Marketplace, vervangt de in-memory `Map` in `app/api/generate/route.ts` + `app/api/chat/route.ts`; (2) compliance-pagina 🟠 — AVG-verwerkersovereenkomst op `/vertrouwen`; (3) Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen.
+> **Geblokkeerd, niet oppakken:** social auto-publiceren (wacht op Meta/LinkedIn-secrets) · volledige E2E-generatie-run (wacht op testaccount-creds) · Realworks-API (wacht op portaal-registratie) — alle blokkades staan onder 🔴 "Actie Quinn".
+> **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
 
 ---
 
 ## Al gebouwd & live (t/m 6 augustus — niet opnieuw doen/checken)
+
+> Uitzondering: het CBS-item hieronder zit in PR #13 en staat nog niet op `main` — zie de waarschuwing bovenaan.
 
 - **Kern & accounts:** proefmodel (30d / 5 obj) + gratis-plan (5/mnd), activerings-/welkomst-/meldingsmails (atomisch), `/admin` v2 met maandverbruik, onboarding-checklist, referral, NPS. Onboarding-flow E2E bewezen op prod t/m dashboard.
 - **Generatie:** 504-time-out opgelost via streaming (`messages.stream`) + `maxDuration 300` + in-flight-lock tegen dubbele runs (`/api/generate`, `/api/object/[id]/hergenereer`). Funda-lengte-fix (700+ w, 6-alinea-structuur) in `lib/claude.ts`. ⚠️ *nog niet 1× volledig E2E op prod bevestigd → zie 🔴.*
@@ -17,7 +24,7 @@
 - **Chatbot v2/v3:** object-kennis, deelbare publieke chatpagina (aan/uit + cover-foto), documenten-koppeling (opt-in per doc), lead-capture + mail naar makelaar, embed-installatie-instructies, agent-prompt met guardrails (14/14 scenario's, incl. prompt-injection).
 - **Media & documenten:** foto-bibliotheek per object (`object_fotos` + Storage), documenten → content-hergeneratie (Files API), PDF-brochure met foto's.
 - **Virtual staging:** model → `gemini-2.5-flash-image`, output krijgt ingebakken "AI-gegenereerd interieur"-label (compliance BE deontologische code / EU AI Act, 6 aug). ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
-- **Data-eerlijkheid verrijkingslaag (6 aug):** CBS-buurtdata en marktdynamiek in `lib/verrijking.ts` waren grotendeels statische fallback-cijfers (19 gemeenten hardgecodeerd, nationaal gemiddelde voor de rest) die als specifiek buurtprofiel oogden. Nu expliciet gelabeld als "nationaal gemiddelde" resp. "regionale typering, geen actuele meting" in zowel UI (`WoningdataPanel.tsx`) als Claude-prompt. Een échte CBS Statline-koppeling (zie 🟠) maakt dit op termijn een reële differentiator i.p.v. gelabelde schatting.
+- **Echte CBS-buurtdata (6 aug):** de statische tabel van 19 gemeenten is wég; `lib/verrijking.ts` haalt nu live data op uit CBS Kerncijfers wijken en buurten 2024 (`85984NED`, gratis open OData, geen sleutel) voor alle ~14.000 buurten. Per indicator zakt de code naar buurt-, wijk- of gemeenteniveau (CBS onderdrukt cijfers voor kleine gebieden) en het gebruikte niveau reist mee tot in UI én prompt, zodat een gemeentecijfer nooit als buurtfeit kan worden gepresenteerd. Landelijke referentie komt uit dezelfde jaargang. Meetbaar beter: de oude tabel gaf Amsterdam een gemiddelde WOZ van €389k, CBS meet €498k, en buurt Leliegracht €900k. Ook markttype-fallback op echte cijfers (de ~310 niet-gemapte gemeenten belandden voorheen allemaal op "landelijk"). Valt CBS uit → geen buurtprofiel i.p.v. verouderde cijfers. 11 unit-tests + live geverifieerd op 5 adressen. Details en API-valkuilen: `docs/data-integraties/buurtanalyse-cbs.md`.
 - **Site & infra:** volledige metadata/OG/sitemap/404, `/vertrouwen`-pagina, `e2e/smoke.mjs` (credential-vrije rooktest), prod-DB-migraties allemaal live, copy schoon van verboden claims. Stripe test-mode klaargezet (producten/prijzen/webhook).
 - **Prijzen & publieke routes (PR #12, 10 juli):** plan-limieten **Starter 5 / Pro 25 / Kantoor onbeperkt** (soft-cap 100), per-kantoor als hoofdboodschap, "onbeperkt op Pro" overal geschrapt, Pro-kaart-bug (1→5 gebruikers) gefixt — consistent in `lib/plans.ts` + copy + `goals.md`. **Middleware-fix:** alle publieke routes (`/vertrouwen`·`/over-ons`·`/contact`·`/privacy`·`/voorwaarden`, SEO-`/wijken/*`, deelbare `/chat/*`, embed-API's `/api/chat`+`/api/me`+`/api/chatbot`) stonden achter een login-redirect → nu publiek (beveiligde routes ongewijzigd, geverifieerd). `/vertrouwen` gelinkt in nav+footer. **DOCX-upload** in documenten-assistent (`lib/docx.ts`, mammoth-tekstextractie, unit-getest). Authenticated generate-e2e herschreven + kostengate.
 
@@ -54,13 +61,13 @@
 - **Maandelijkse concurrentie-scan** (10 min, verbreed 6 aug) — HousApp (changelog, vacatures, klantverhalen, Kolibri-blog), Funda's eigen AI-staging-tool, Immoweb (BE). Signaal = concurrent beweegt richting content → verdediging in `goals.md` activeren.
 - **Zelfservice-monetisatie daadwerkelijk aanzetten** (6 aug) — Stripe-checkout live voor nieuwe aanmeldingen zodra de testimonial er is, in plaats van voor onbepaalde tijd handmatige activering door de platform-admin (`heeftToegang()`) te blijven doen. Zonder dit kan Vesta niet sneller groeien dan Quinn zelf kan bijhouden.
 - **Gedeelde rate-limiter** (6 aug) — Upstash Redis (Vercel Marketplace) i.p.v. de huidige in-memory `Map` in `app/api/generate/route.ts` en `app/api/chat/route.ts`. Werkt niet betrouwbaar zodra Vercel meerdere instanties/regio's gebruikt, wat bij groei vanzelf gebeurt.
-- **Echte CBS Statline-koppeling** (6 aug) — dataset 85039NED (zie `docs/data-integraties/buurtanalyse-cbs.md`) heeft een gratis open API; vervangt de nu gelabelde statische fallback in `lib/verrijking.ts` door reële data voor alle ~9.000 gemeenten. Maakt "NL-buurtcultuur begrijpen" een bewezen differentiator i.p.v. een schatting.
 - **Compliance-pagina** (6 aug) — AVG-verwerkersovereenkomst, dataverwerking. HousApp claimt een SOC 2/AVG-verhaal, Vesta nog niet; `/vertrouwen` bestaat al maar mist dit stuk.
 
 ---
 
 ## 🟢 Later / nice-to-have
 
+- **CBS-jaargang jaarlijks bijwerken** (nieuw 6 aug) — `lib/verrijking.ts` staat op `85984NED` (2024). CBS publiceert elk voorjaar een nieuwe jaargang, maar **niet alle velden zijn meteen gevuld**: `86165NED` (2025) bestaat al en heeft WOZ, maar `GemiddeldInkomenPerInwoner_78` is daar nog leeg — zelfs op gemeenteniveau. Check bij het ophogen dus of inkomen gevuld is, niet alleen of de dataset bestaat. Nieuwe ID's opzoeken: `https://opendata.cbs.nl/ODataCatalog/Tables?$filter=substringof('Kerncijfers wijken en buurten',Title)&$format=json`.
 - **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates, alleen subject; body's zijn al NL).
 - **Onboarding-stappen foto & chatbot** — toevoegen zodra er een betrouwbaar completion-signaal is (foto-resultaten/chatbot-bezoek worden nu niet getrackt).
 - **Documenten-ingang in de sidebar** — komt samen met de kantoorbrede documenten-pagina.
