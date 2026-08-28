@@ -17,7 +17,7 @@ Optioneel: open-huis-datum/-tijd · taal (`nl`/`en`)
 
 **UI-flow:** formulier → loading → 12 tabbladen → kopieer, herschrijf, bewerk inline of exporteer/mail PDF.
 
-**Overige features (live):** data-verrijking (WOZ, CBS-buurtdata, Overpass-voorzieningen, PDOK/BAG — `lib/verrijking.ts`, faalt stilzwijgend) · foto-verbetering met AI-analyse · virtual staging (Gemini, 6 stijlen × 6 ruimtes) · documenten-assistent (upload + chat, Anthropic Files) · object-chatbot als embed-widget (`app/widget/chatbot.js`) · content-kalender + posts inplannen (publiceren nog handmatig) · Realworks-export (XML) · wijkpagina's (SEO) · referral · NPS · onboarding-checklist · admin/klantenbeheer met plan-gating.
+**Overige features (live):** data-verrijking (WOZ, live CBS-buurtdata, Overpass-voorzieningen, PDOK/BAG — `lib/verrijking.ts`, faalt stilzwijgend; elk CBS-cijfer draagt zijn gebiedsniveau mee — zie `docs/data-integraties/buurtanalyse-cbs.md` vóór je die laag aanraakt) · foto-verbetering met AI-analyse · virtual staging (Gemini, 6 stijlen × 6 ruimtes) · documenten-assistent (upload + chat, Anthropic Files) · object-chatbot als embed-widget (`app/widget/chatbot.js`) · content-kalender + posts inplannen (publiceren nog handmatig) · Realworks-export (XML) · wijkpagina's (SEO) · referral · NPS · onboarding-checklist · admin/klantenbeheer met plan-gating.
 
 Concurrentiepositie en featurevergelijking met HousApp e.a.: `docs/Concurrentieanalyse-HousApp.docx` (juli 2026).
 
