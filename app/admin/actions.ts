@@ -3,9 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
-import { moetActiveringsmailSturen, PLAN_LABELS } from '@/lib/plans'
-import type { Plan } from '@/lib/plans'
-import { sendAccountGeactiveerdEmail } from '@/lib/email'
+import { sendAccountToegevoegdEmail } from '@/lib/email'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -13,59 +11,6 @@ async function vereisPlatformAdmin(): Promise<boolean> {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   return isPlatformAdmin(user?.email)
-}
-
-/**
- * Mailt de kantoor-admin dat het account actief is. Een mailfout mag een
- * toewijzing nooit laten falen — daarom try/catch zonder foutpropagatie.
- */
-async function stuurActiveringsmail(
-  service: ReturnType<typeof createServiceSupabaseClient>,
-  kantoorId: string,
-  planLabel: string,
-): Promise<void> {
-  try {
-    const { data: leden } = await service
-      .from('makelaars')
-      .select('name, email, role')
-      .eq('kantoor_id', kantoorId)
-    const ontvanger = leden?.find(l => l.role === 'admin') ?? leden?.[0]
-    if (ontvanger) await sendAccountGeactiveerdEmail(ontvanger.email, ontvanger.name, planLabel)
-  } catch {
-    // best-effort
-  }
-}
-
-/**
- * Wijs een plan toe ('gratis' incluis) of zet terug naar proef-/verlopen-status
- * met null. Bij de overgang géén toegang → wél toegang gaat er automatisch een
- * activeringsmail naar de kantoor-admin; planwissels blijven stil.
- */
-export async function setPlan(kantoorId: string, plan: Plan | null): Promise<Result> {
-  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
-  const service = createServiceSupabaseClient()
-
-  const { data: voor } = await service
-    .from('kantoren')
-    .select('plan, trial_ends_at')
-    .eq('id', kantoorId)
-    .single()
-
-  // Plan gezet → proefdatum wissen (het plan bepaalt de toegang); terug naar
-  // null laat een eventueel lopende proefperiode ongemoeid.
-  const update = plan ? { plan, trial_ends_at: null } : { plan: null }
-  const { error } = await service.from('kantoren').update(update).eq('id', kantoorId)
-  if (error) return { ok: false, error: error.message }
-
-  if (voor && plan && moetActiveringsmailSturen(
-    { plan: voor.plan, trialEndsAt: voor.trial_ends_at },
-    { plan, trialEndsAt: null },
-  )) {
-    await stuurActiveringsmail(service, kantoorId, PLAN_LABELS[plan])
-  }
-
-  revalidatePath('/admin')
-  return { ok: true }
 }
 
 /** Activeert/deactiveert een kantoor door alle gebruikers te (de)bannen. Omkeerbaar. */
@@ -83,6 +28,115 @@ export async function setActief(kantoorId: string, actief: boolean): Promise<Res
     const { error } = await service.auth.admin.updateUserById(lid.id, { ban_duration: banDuration })
     if (error) return { ok: false, error: error.message }
   }
+  revalidatePath('/admin')
+  return { ok: true }
+}
+
+/** Nieuw kantoor aanmaken. Toegang is verder puur admin-beheerd: geen plan, geen proefperiode. */
+export async function createKantoor(naam: string): Promise<Result & { kantoorId?: string }> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  const schoneNaam = naam.trim()
+  if (!schoneNaam) return { ok: false, error: 'Naam is verplicht' }
+
+  const service = createServiceSupabaseClient()
+  const { data, error } = await service
+    .from('kantoren')
+    .insert({ name: schoneNaam })
+    .select('id')
+    .single()
+  if (error || !data) return { ok: false, error: error?.message ?? 'Aanmaken mislukt' }
+
+  revalidatePath('/admin')
+  return { ok: true, kantoorId: data.id }
+}
+
+/**
+ * Koppelt een net aangemaakte auth-user aan het juiste kantoor. De DB-trigger
+ * `handle_new_user()` reageert op élke nieuwe auth-user door een eigen kantoor
+ * met proefperiode aan te maken (hij kent `user_metadata.kantoor_id` niet) —
+ * dat zetten we hier terug: de makelaar-rij verhuist naar het bedoelde kantoor
+ * en het stray-kantoor dat de trigger aanmaakte wordt (indien leeg) opgeruimd.
+ */
+async function plaatsInKantoor(
+  service: ReturnType<typeof createServiceSupabaseClient>,
+  userId: string,
+  kantoorId: string,
+  naam: string,
+  email: string,
+  rol: 'admin' | 'makelaar',
+): Promise<Result> {
+  const { data: bestaand } = await service
+    .from('makelaars')
+    .select('kantoor_id')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (bestaand) {
+    const strayKantoorId = bestaand.kantoor_id !== kantoorId ? bestaand.kantoor_id : null
+    const { error } = await service
+      .from('makelaars')
+      .update({ kantoor_id: kantoorId, name: naam, role: rol })
+      .eq('id', userId)
+    if (error) return { ok: false, error: error.message }
+
+    if (strayKantoorId) {
+      const { count } = await service
+        .from('makelaars')
+        .select('id', { count: 'exact', head: true })
+        .eq('kantoor_id', strayKantoorId)
+      if ((count ?? 0) === 0) {
+        await service.from('kantoren').delete().eq('id', strayKantoorId)
+      }
+    }
+  } else {
+    const { error } = await service.from('makelaars').insert({
+      id: userId,
+      kantoor_id: kantoorId,
+      name: naam,
+      email,
+      role: rol,
+    })
+    if (error) return { ok: false, error: error.message }
+  }
+
+  return { ok: true }
+}
+
+/**
+ * Zet direct een actief account klaar met een zelfgekozen wachtwoord (geen
+ * bevestigingsmail-omweg) — voor de platform-admin zelf of wie anders al een
+ * afgesproken wachtwoord heeft. Voor teamleden binnen je eigen kantoor bestaat
+ * al `nodigTeamlidUit` (settings/actions.ts, via magic link).
+ */
+export async function addMakelaarAccount(data: {
+  email: string
+  naam: string
+  wachtwoord: string
+  kantoorId: string
+  rol: 'admin' | 'makelaar'
+}): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  if (data.wachtwoord.length < 8) return { ok: false, error: 'Wachtwoord moet minimaal 8 tekens zijn' }
+
+  const service = createServiceSupabaseClient()
+  const { data: created, error } = await service.auth.admin.createUser({
+    email: data.email,
+    password: data.wachtwoord,
+    email_confirm: true,
+    user_metadata: { kantoor_id: data.kantoorId, role: data.rol },
+  })
+  if (error || !created.user) return { ok: false, error: error?.message ?? 'Aanmaken mislukt' }
+
+  const plaatsing = await plaatsInKantoor(service, created.user.id, data.kantoorId, data.naam, data.email, data.rol)
+  if (!plaatsing.ok) return plaatsing
+
+  const { data: kantoor } = await service.from('kantoren').select('name').eq('id', data.kantoorId).single()
+  try {
+    await sendAccountToegevoegdEmail(data.email, data.naam, kantoor?.name ?? 'VestaAI')
+  } catch {
+    // best-effort
+  }
+
   revalidatePath('/admin')
   return { ok: true }
 }

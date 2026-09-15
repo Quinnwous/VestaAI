@@ -4,7 +4,6 @@ interface OnboardingChecklistProps {
   heeftObjecten: boolean
   heeftHuisstijl: boolean
   heeftDocumenten: boolean
-  heeftPlanning: boolean
   newestObjectId: string | null
 }
 
@@ -13,16 +12,14 @@ const stappen = [
   { id: 'object', label: 'Eerste woning gegenereerd' },
   { id: 'huisstijl', label: 'Huisstijl ingesteld' },
   { id: 'document', label: 'Document geüpload (VvE, akte of meetrapport)' },
-  { id: 'post', label: 'Eerste social post ingepland' },
 ]
 
-export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocumenten, heeftPlanning, newestObjectId }: OnboardingChecklistProps) {
+export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocumenten, newestObjectId }: OnboardingChecklistProps) {
   const status = {
     account: true,
     object: heeftObjecten,
     huisstijl: heeftHuisstijl,
     document: heeftDocumenten,
-    post: heeftPlanning,
   }
 
   const klaar = Object.values(status).every(Boolean)
@@ -37,7 +34,6 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocume
     object: { href: '/object/new', label: 'Nu aanmaken →' },
     huisstijl: { href: '/huisstijl', label: 'Instellen →' },
     document: { href: werkruimte, label: 'Uploaden →' },
-    post: { href: '/kalender', label: 'Inplannen →' },
   }
 
   return (

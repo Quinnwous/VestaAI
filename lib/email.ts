@@ -89,70 +89,6 @@ export async function sendWelcomeEmail(email: string, name: string) {
   })
 }
 
-export async function sendTrialWarningEmail(email: string, name: string, trialEndsAt: Date) {
-  const daysLeft = Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-  const dagLabel = daysLeft === 1 ? 'dag' : 'dagen'
-
-  await getResend().emails.send({
-    from: FROM,
-    to: email,
-    subject: `VestaAI — je proefperiode verloopt over ${daysLeft} ${dagLabel}`,
-    html: baseTemplate(`
-      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#92400e;">
-          ⏰ Nog ${daysLeft} ${dagLabel} proefperiode
-        </p>
-      </div>
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Hoi ${name},</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Je proefperiode van VestaAI verloopt over <strong>${daysLeft} ${dagLabel}</strong>.
-        Kies nu een abonnement om toegang te houden tot alle gegenereerde content en toekomstige objecten.
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td width="48%" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Starter</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">5 objecten/maand · 1 gebruiker</p>
-            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€60<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
-          </td>
-          <td width="4%"></td>
-          <td width="48%" style="background:#f0fdf4;border:2px solid #1A6B45;border-radius:10px;padding:16px;vertical-align:top;">
-            <p style="margin:0 0 4px;font-size:16px;font-weight:700;color:#111827;">Pro</p>
-            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">15 objecten/maand · 5 gebruikers · Huisstijl</p>
-            <p style="margin:0;font-size:22px;font-weight:800;color:#111827;">€150<span style="font-size:13px;font-weight:400;color:#9ca3af;">/maand</span></p>
-          </td>
-        </tr>
-      </table>
-      ${btn(`${APP_URL}/settings`, 'Kies een abonnement')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
-    `),
-  })
-}
-
-export async function sendCancellationEmail(email: string, name: string) {
-  await getResend().emails.send({
-    from: FROM,
-    to: email,
-    subject: 'VestaAI — uw abonnement is opgezegd',
-    html: baseTemplate(`
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Abonnement opgezegd</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Hoi ${name}, uw VestaAI-abonnement is opgezegd. U heeft nog toegang tot het einde van uw huidige betaalperiode.
-      </p>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Alle eerder gegenereerde content blijft bewaard in uw account. U kunt uw abonnement op elk moment hervatten.
-      </p>
-      <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:13px;color:#991b1b;">
-          Na het verlopen van uw betaalperiode heeft u geen toegang meer tot het genereren van nieuwe content.
-        </p>
-      </div>
-      ${btn(`${APP_URL}/settings`, 'Abonnement hervatten')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
-    `),
-  })
-}
-
 export async function sendTeamInviteConfirmation(adminEmail: string, uitgenodigdEmail: string) {
   await getResend().emails.send({
     from: FROM,
@@ -185,23 +121,22 @@ function esc(s: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export async function sendAccountGeactiveerdEmail(email: string, name: string, planLabel: string) {
+export async function sendAccountToegevoegdEmail(email: string, name: string, kantoorNaam: string) {
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: 'VestaAI — je account is geactiveerd',
+    subject: 'VestaAI — uw account is klaargezet',
     html: baseTemplate(`
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">✓ Je account is geactiveerd</p>
+        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">✓ Uw account is klaargezet</p>
       </div>
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${esc(name)}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Je VestaAI-account is geactiveerd met <strong>${esc(planLabel)}</strong>.
-        Je kunt nu direct aan de slag: vul 8 velden in en ontvang je complete content-suite.
+        Uw VestaAI-account is toegevoegd aan <strong>${esc(kantoorNaam)}</strong>. U kunt nu inloggen.
       </p>
-      ${btn(`${APP_URL}/dashboard`, 'Ga naar je dashboard')}
+      ${btn(`${APP_URL}/login`, 'Naar inloggen')}
       <p style="margin:28px 0 0;font-size:13px;color:#6b7280;">
-        Vragen? Reageer gewoon op deze mail — ik help je graag.
+        Vragen? Reageer gewoon op deze mail — ik help u graag.
       </p>
       <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
     `),
@@ -217,11 +152,11 @@ export async function sendNieuweKlantMelding(
   await getResend().emails.send({
     from: FROM,
     to,
-    subject: 'VestaAI — nieuwe klant gestart met proefperiode',
+    subject: 'VestaAI — nieuw kantoor aangemaakt',
     html: baseTemplate(`
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Nieuwe klant gestart met proefperiode</h2>
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Nieuw kantoor aangemaakt</h2>
       <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Er heeft zich een nieuwe klant aangemeld; de proefperiode van 30 dagen loopt:
+        Er is een nieuw kantoor aangemaakt. Toegang is puur admin-beheerd — controleer of dit klopt:
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
         <tr style="background:#f9fafb;">
@@ -237,142 +172,7 @@ export async function sendNieuweKlantMelding(
           <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;">${esc(kantoorNaam)}</td>
         </tr>
       </table>
-      ${btn(`${APP_URL}/admin`, 'Wijs een plan toe')}
-    `),
-  })
-}
-
-export async function sendNieuweLeadMelding(
-  to: string,
-  opts: {
-    objectAdres: string
-    objectId: string
-    leadNaam?: string
-    leadEmail: string
-    leadTelefoon?: string
-    leadBericht?: string
-  },
-) {
-  const rij = (label: string, waarde: string, laatste = false) => `
-    <tr${laatste ? '' : ' style="background:#f9fafb;"'}>
-      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${label}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${waarde}</td>
-    </tr>`
-
-  const rijen = [
-    opts.leadNaam ? rij('Naam', esc(opts.leadNaam)) : '',
-    rij('E-mail', `<a href="mailto:${esc(opts.leadEmail)}" style="color:#1A6B45;">${esc(opts.leadEmail)}</a>`),
-    opts.leadTelefoon ? rij('Telefoon', esc(opts.leadTelefoon)) : '',
-    rij('Woning', esc(opts.objectAdres), true),
-  ].filter(Boolean).join('')
-
-  await getResend().emails.send({
-    from: FROM,
-    to,
-    // Zodat de makelaar direct kan terugmailen naar de geïnteresseerde.
-    replyTo: opts.leadEmail,
-    subject: `Nieuwe lead via de woning-chatbot — ${opts.objectAdres}`,
-    html: baseTemplate(`
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">🏡 Nieuwe lead via de deel-chatbot</p>
-      </div>
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Iemand toont interesse in ${esc(opts.objectAdres)}</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Via de chatbot bij deze woning heeft een geïnteresseerde contactgegevens achtergelaten. Neem gerust snel contact op.
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
-        ${rijen}
-      </table>
-      ${opts.leadBericht ? `
-        <p style="margin:20px 0 4px;font-size:13px;font-weight:600;color:#374151;">Context uit het gesprek</p>
-        <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;white-space:pre-wrap;">${esc(opts.leadBericht)}</p>
-      ` : ''}
-      ${btn(`${APP_URL}/object/${opts.objectId}`, 'Bekijk de woning')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— VestaAI</p>
-    `),
-  })
-}
-
-export async function sendNieuweKantoorLeadMelding(
-  to: string[],
-  opts: { kantoorNaam: string; leadNaam?: string; leadEmail: string; leadTelefoon?: string; leadBericht?: string },
-) {
-  if (to.length === 0) return
-  const rij = (label: string, waarde: string, laatste = false) => `
-    <tr${laatste ? '' : ' style="background:#f9fafb;"'}>
-      <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${label}</td>
-      <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;${laatste ? '' : 'border-bottom:1px solid #e5e7eb;'}">${waarde}</td>
-    </tr>`
-
-  const rijen = [
-    opts.leadNaam ? rij('Naam', esc(opts.leadNaam)) : '',
-    rij('E-mail', `<a href="mailto:${esc(opts.leadEmail)}" style="color:#1A6B45;">${esc(opts.leadEmail)}</a>`, !opts.leadTelefoon),
-    opts.leadTelefoon ? rij('Telefoon', esc(opts.leadTelefoon), true) : '',
-  ].filter(Boolean).join('')
-
-  await getResend().emails.send({
-    from: FROM,
-    to,
-    replyTo: opts.leadEmail,
-    subject: 'Nieuwe lead via de website-chatbot',
-    html: baseTemplate(`
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">💬 Nieuwe lead via de chatbot op jullie site</p>
-      </div>
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Iemand liet contactgegevens achter</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Via de chatbot op de website van ${esc(opts.kantoorNaam)} is een lead binnengekomen. Neem gerust snel contact op.
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;">
-        ${rijen}
-      </table>
-      ${opts.leadBericht ? `
-        <p style="margin:20px 0 4px;font-size:13px;font-weight:600;color:#374151;">Context uit het gesprek</p>
-        <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;white-space:pre-wrap;">${esc(opts.leadBericht)}</p>
-      ` : ''}
-      ${btn(`${APP_URL}/chatbot`, 'Bekijk alle leads')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— VestaAI</p>
-    `),
-  })
-}
-
-export async function sendInvoiceConfirmationEmail(
-  email: string,
-  name: string,
-  planName: string,
-  amount: number,
-) {
-  const formatted = new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR' }).format(amount / 100)
-
-  await getResend().emails.send({
-    from: FROM,
-    to: email,
-    subject: `VestaAI — betaling ontvangen (${formatted})`,
-    html: baseTemplate(`
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">
-          ✓ Betaling van ${formatted} ontvangen
-        </p>
-      </div>
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Bedankt, ${name}!</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        Je <strong>${planName}</strong>-abonnement is actief. Je kunt nu onbeperkt aan de slag.
-      </p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-top:8px;">
-        <tr style="background:#f9fafb;">
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Abonnement</td>
-          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;border-bottom:1px solid #e5e7eb;">${planName}</td>
-        </tr>
-        <tr>
-          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;">Bedrag</td>
-          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;">${formatted}</td>
-        </tr>
-      </table>
-      ${btn(`${APP_URL}/object/new`, 'Ga aan de slag')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">
-        Bewaar deze mail als betalingsbewijs. Voor facturen neem contact op via quinn.berkouwer@gmail.com.
-      </p>
-      <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
+      ${btn(`${APP_URL}/admin`, 'Bekijk in beheer')}
     `),
   })
 }

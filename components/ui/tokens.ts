@@ -65,8 +65,3 @@ export const STATUS_CFG: Record<string, { label: string; color: string }> = {
 }
 
 /** Plan → badge-kleuren (sidebar + account). */
-export const PLAN_BADGE: Record<string, { bg: string; color: string; label: string }> = {
-  starter: { bg: '#F1F7F3', color: '#2A8A5C', label: 'Starter' },
-  pro: { bg: '#E3F0E8', color: '#1A6B45', label: 'Pro' },
-  kantoor: { bg: '#D5E8DD', color: '#114230', label: 'Kantoor' },
-}

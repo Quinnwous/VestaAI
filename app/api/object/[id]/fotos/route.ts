@@ -29,7 +29,8 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   return NextResponse.json({ fotos: data ?? [] })
 }
 
-// Een (verbeterde/gestagede) foto uit de tools bewaren in de bibliotheek.
+// Een geüploade of gestagede foto bewaren in de bibliotheek.
+// 'verbeterd' blijft toegestaan voor bestaande rijen uit de verwijderde foto-verbetering.
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient()
   const kantoorId = await kantoorVanUser(supabase)
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (bytes.byteLength === 0 || bytes.byteLength > MAX_BYTES) {
     return NextResponse.json({ error: 'Afbeelding te groot of leeg' }, { status: 400 })
   }
-  const soort = SOORTEN.has(body.soort ?? '') ? body.soort! : 'verbeterd'
+  const soort = SOORTEN.has(body.soort ?? '') ? body.soort! : 'origineel'
 
   const serviceClient = createServiceSupabaseClient()
 

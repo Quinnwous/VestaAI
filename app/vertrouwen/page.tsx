@@ -30,11 +30,6 @@ const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [
     tekst: 'Alle verbindingen via HTTPS (TLS), data in rust versleuteld (AES-256). Row Level Security zorgt dat elk kantoor uitsluitend bij zijn eigen gegevens kan.',
   },
   {
-    icoon: '💳',
-    titel: 'Betalingen via Stripe',
-    tekst: 'Facturatie loopt via Stripe (PCI-DSS Level 1). We slaan zelf geen betaal- of creditcardgegevens op.',
-  },
-  {
     icoon: '📄',
     titel: 'Verwerkersovereenkomst',
     tekst: 'Werk je voor een kantoor of franchise dat een verwerkersovereenkomst (AVG) vereist? Die stellen we op aanvraag beschikbaar.',
@@ -109,7 +104,6 @@ export default function VertrouwenPage() {
           <span>© 2026 VestaAI</span>
           <div style={{ display: 'flex', gap: 22 }}>
             <Link href="/" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Home</Link>
-            <Link href="/prijzen" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Prijzen</Link>
             <Link href="/privacy" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Privacy</Link>
           </div>
         </div>

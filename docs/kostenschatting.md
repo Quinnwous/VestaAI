@@ -1,7 +1,8 @@
 # VestaAI — Kostenschatting
 
-> Doel: inzicht in de variabele kosten per pand, de break-even per plan en de infrastructuurkosten bij 100 klanten.
-> Prijzen zijn indicatief en gebaseerd op tarieven medio 2026. Controleer actuele tarieven vóór financiële beslissingen.
+> Doel: inzicht in de variabele API-kosten per pand en de infrastructuurkosten bij 100 klanten.
+> Gaat over kosten die VestaAI zelf maakt, niet over wat klanten betalen — zie `goals.md` § Prijzen.
+> Tarieven zijn indicatief en gebaseerd op prijzen medio 2026. Controleer actuele tarieven vóór financiële beslissingen.
 
 ---
 
@@ -10,15 +11,13 @@
 Eén volledige run = alles wat VestaAI kan doen voor één pand:
 
 1. **Hoofdgeneratie** — 17 content-types via Claude Sonnet 4.6
-2. **Foto-analyse × 10** — Claude Vision beoordeelt elke foto (kwaliteitscore + Funda-geschiktheid); Sharp past correcties lokaal toe (gratis)
-3. **Virtual staging × 10** — Gemini genereert een gestylede kamer per lege kamerfoto
-4. **Document-assistent** — 1 PDF uploaden + 5 vragen stellen via Claude (juridische documenten)
-5. **Prijswijziging** — 1 extra Claude-call voor VERKOCHT of PRIJSREDUCTIE social content
+2. **Virtual staging × 10** — Gemini genereert een gestylede kamer per lege kamerfoto
+3. **Document-assistent** — 1 PDF uploaden + 5 vragen stellen via Claude (juridische documenten)
+4. **Prijswijziging** — 1 extra Claude-call voor VERKOCHT of PRIJSREDUCTIE social content
 
 Niet meegenomen als "basisrun" (incidenteel gebruik):
 - Per-veld herschrijven (~€0,01 per rewrite)
 - Wijk-SEO-tekst (~€0,01 per tekst)
-- Chatbot (bezoekers op externe makelaarsite — kosten afhankelijk van bezoekersvolume)
 
 ---
 
@@ -29,7 +28,6 @@ Niet meegenomen als "basisrun" (incidenteel gebruik):
 |---|---|
 | Input tokens | $3,00 per 1M |
 | Output tokens | $15,00 per 1M |
-| Image input (Vision) | $3,00 per 1M tokens (~1.500–2.500 tk per foto, afhankelijk van resolutie) |
 
 ### Tarieven Gemini 2.0 Flash (Google)
 | | Prijs |
@@ -55,20 +53,7 @@ Pro/Kantoor-klanten sturen ook huisstijl-voorbeeldteksten mee: +~1.000 input tok
 
 ---
 
-### 2. Foto-analyse × 10 (Claude Vision — Sonnet 4.6)
-
-| | Per foto | × 10 foto's |
-|---|---|---|
-| Input (afbeelding + systeem + tekst) | ~2.350 tk → $0,007 | |
-| Output (JSON analyse + aanbevelingen) | ~400 tk → $0,006 | |
-| **Per foto** | **~€0,012** | |
-| **Subtotaal 10 foto's** | | **~€0,12** |
-
-Sharp (lokale bildverwerking, correcties toepassen) kost niks — draait op Vercel zonder externe API.
-
----
-
-### 3. Virtual staging × 10 (Gemini 2.0 Flash)
+### 2. Virtual staging × 10 (Gemini 2.0 Flash)
 
 | | Nu | Na productierelease |
 |---|---|---|
@@ -79,7 +64,7 @@ Sharp (lokale bildverwerking, correcties toepassen) kost niks — draait op Verc
 
 ---
 
-### 4. Document-assistent (1 PDF + 5 vragen)
+### 3. Document-assistent (1 PDF + 5 vragen)
 
 De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opgeslagen bij Anthropic. Bij elke vraag stuurt de app de `file_id` mee — maar de PDF-tokens worden wél per call in rekening gebracht.
 
@@ -93,7 +78,7 @@ De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opges
 
 ---
 
-### 5. Prijswijziging (VERKOCHT / PRIJSREDUCTIE)
+### 4. Prijswijziging (VERKOCHT / PRIJSREDUCTIE)
 
 | | Tokens | Kosten |
 |---|---|---|
@@ -108,31 +93,19 @@ De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opges
 | Feature | Kosten nu | Kosten na Gemini-betaling |
 |---------|-----------|--------------------------|
 | Hoofdgeneratie (Claude) | €0,12 | €0,12 |
-| Foto-analyse × 10 (Claude Vision) | €0,12 | €0,12 |
 | Virtual staging × 10 (Gemini) | **€0,00** | **€0,37** |
 | Document-assistent (1 PDF + 5 vragen) | €0,11 | €0,11 |
 | Prijswijziging (Claude) | €0,01 | €0,01 |
-| **TOTAAL** | **~€0,36** | **~€0,73** |
+| **TOTAAL** | **~€0,24** | **~€0,61** |
 
-> **Vuistregel:** zonder staging ~€0,35/pand; met staging (betaald) ~€0,75/pand.
-
----
-
-## Break-even per plan
-
-Aanname: gemiddeld 20 objecten per kantoor per maand (mix van Starter-max en Pro-gemiddeld).
-
-| Plan | Prijs/mo | Objecten/mo | API-kosten (nu) | Brutowinst |
-|------|----------|-------------|-----------------|------------|
-| Starter | €60 | 40 | 40 × €0,36 = €14 | **€46 (77%)** |
-| Pro | €150 | ~20 | 20 × €0,36 = €7 | **€143 (95%)** |
-| Kantoor | €500 | ~30 | 30 × €0,36 = €11 | **€489 (98%)** |
-
-Break-even op API-kosten alleen: **1 klant betaalt 40× genereren voor €14** — tegenover €60 abonnement. Marge is comfortabel, zelfs bij Gemini-betaling.
+> **Vuistregel:** zonder staging ~€0,24/pand; met staging (betaald) ~€0,61/pand.
 
 ---
 
 ## Infrastructuurkosten bij 100 klanten
+
+> Abonnementsprijzen zijn op 15 sep 2026 uit het product gehaald (zie `goals.md` § Prijzen) —
+> deze sectie gaat dus alleen nog over de kale infra-/API-kosten, niet over marge of omzet.
 
 ### Variabele kosten (API)
 
@@ -140,9 +113,9 @@ Aanname: 100 kantoren × gem. 20 objecten/mo = **2.000 runs/mo**
 
 | Scenario | Kosten/run | Totaal/mo |
 |----------|-----------|-----------|
-| Nu (Gemini gratis) | €0,36 | **€720/mo** |
-| Na Gemini-betaling (alle objecten gestaged) | €0,73 | €1.460/mo |
-| Realistisch (50% gebruikt staging) | ~€0,55 | **€1.090/mo** |
+| Nu (Gemini gratis) | €0,24 | **€480/mo** |
+| Na Gemini-betaling (alle objecten gestaged) | €0,61 | €1.220/mo |
+| Realistisch (50% gebruikt staging) | ~€0,43 | **€860/mo** |
 
 ### Vaste infra-kosten
 
@@ -152,29 +125,18 @@ Aanname: 100 kantoren × gem. 20 objecten/mo = **2.000 runs/mo**
 | **Supabase** | Pro | $25 (~€23) | Aanbevolen. Free tier is technisch genoeg voor 100 klanten (500MB database, 1GB storage — alles past ruim), maar Pro geeft Point-in-Time Recovery, geen sleep-mode en SLA. |
 | **Resend** | Free | €0 | Voldoende voor 100 klanten (~500 e-mails/mo, limiet is 3.000/mo). Pro ($20) nodig bij 300+ klanten. |
 | **Plausible** | Starter | $9 (~€8) | Optioneel. Verifieer welk plan nu actief is. |
-| **Stripe** | — | transactiekosten | 1,4% + €0,25 per betaling (EU-kaarten). Bij 100 klanten gem. €150/mo: **~€235/mo**. Geen API-credits storten — Stripe int dit automatisch. |
 
-**Vaste infra totaal: ~€49/mo** (excl. Stripe-transactiekosten)
+**Vaste infra totaal: ~€49/mo**
 
 ### Totale kostenstructuur bij 100 klanten
 
 | Post | /mo |
 |------|-----|
-| Variabele API-kosten (Gemini gratis) | €720 |
+| Variabele API-kosten (Gemini gratis) | €480 |
 | Vaste infra | €49 |
-| Stripe transactiekosten | €235 |
-| **Totale kosten** | **€1.004/mo** |
+| **Totale kosten** | **€529/mo** |
 
-Verwachte omzet bij 100 klanten (indicatief: 60 Starter + 30 Pro + 10 Kantoor):
-
-| | MRR |
-|---|---|
-| 60 × €60 | €3.600 |
-| 30 × €150 | €4.500 |
-| 10 × €500 | €5.000 |
-| **Totaal** | **€13.100/mo** |
-
-**Nettomarge: ~92%** (veronderstelt dat Gemini gratis blijft)
+Geen omzet-/margeberekening meer — er is geen abonnementsprijs meer om tegenover te zetten.
 
 ---
 
@@ -184,7 +146,7 @@ Verwachte omzet bij 100 klanten (indicatief: 60 Starter + 30 Pro + 10 Kantoor):
 
 | Waar | Voor wat | Actie |
 |------|----------|-------|
-| **Anthropic (console.anthropic.com)** | Alle Claude-calls: hoofdgeneratie, foto-analyse, document-assistent, prijswijziging, herschrijven | Credits storten of maandelijkse automatische afschrijving instellen. **Dit is de grootste kostenpost.** |
+| **Anthropic (console.anthropic.com)** | Alle Claude-calls: hoofdgeneratie, document-assistent, prijswijziging, herschrijven | Credits storten of maandelijkse automatische afschrijving instellen. **Dit is de grootste kostenpost.** |
 
 ### Nu gratis → straks betaald
 

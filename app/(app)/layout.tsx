@@ -1,8 +1,8 @@
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
-import { AppShell } from '@/components/AppShell'
+import { AppTopbar } from '@/components/AppTopbar'
+import { bouwBranding, brandingCssVars, VESTA_MERK } from '@/lib/branding'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   // Zonder Supabase-config kunnen we niet authenticeren — render kaal door.
@@ -17,41 +17,35 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, kantoren(name, logo_url, plan, trial_ends_at)')
+    .select('kantoor_id, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', user.id)
     .single()
 
   const kantoor = makelaar?.kantoren as unknown as {
     name: string
     logo_url: string | null
-    plan: string | null
-    trial_ends_at: string | null
+    huisstijl_json: Record<string, unknown> | null
   } | null
 
-  const trialEndsAt = kantoor?.trial_ends_at ? new Date(kantoor.trial_ends_at) : null
-  const daysLeft = trialEndsAt
-    ? Math.ceil((trialEndsAt.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null
-  const toonTrialBanner = daysLeft !== null && daysLeft <= 3 && daysLeft > 0 && !kantoor?.plan
+  // Vanaf de ingelogde omgeving is de hele app van het kantoor: logo, kleuren,
+  // en straks ook het waarderingsrapport. Zie lib/branding.ts.
+  const branding = bouwBranding(kantoor)
 
   return (
-    <AppShell
-      kantoorNaam={kantoor?.name ?? null}
-      logoUrl={kantoor?.logo_url ?? null}
-      plan={kantoor?.plan ?? null}
-      userEmail={user.email ?? null}
-    >
-      {toonTrialBanner && (
-        <div style={{ background: '#FFFBEB', borderBottom: '1px solid #FDE68A', padding: '8px 16px', textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: '#92400E' }}>
-            Uw proefperiode verloopt over <strong>{daysLeft} dag{daysLeft === 1 ? '' : 'en'}</strong>.{' '}
-            <Link href="/prijzen" style={{ textDecoration: 'underline', fontWeight: 600, color: '#78350F' }}>
-              Kies nu een abonnement →
-            </Link>
-          </p>
-        </div>
-      )}
-      {children}
-    </AppShell>
+    <div style={{ ...brandingCssVars(branding), minHeight: '100vh', background: '#FBFCFB' }}>
+      <AppTopbar branding={branding} userEmail={user.email ?? null}>
+        {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
+          <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px 22px', textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
+              Deze omgeving draait nog op de standaardstijl.{' '}
+              <a href="/huisstijl" style={{ color: 'var(--merk)', fontWeight: 700, textDecoration: 'underline' }}>
+                Stel uw logo en kleuren in →
+              </a>
+            </p>
+          </div>
+        )}
+        {children}
+      </AppTopbar>
+    </div>
   )
 }

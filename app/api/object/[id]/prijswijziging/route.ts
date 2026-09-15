@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { generatePrijswijzigingContent } from '@/lib/claude'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 const BodySchema = z.object({
   nieuweprijs: z.number().int().min(1).optional(),
@@ -14,6 +15,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } },
 ) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })

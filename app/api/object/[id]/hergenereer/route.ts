@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { generateContent } from '@/lib/claude'
 import { PropertyInputSchema, type HuisstijlConfig } from '@/lib/schemas'
-import { heeftToegang } from '@/lib/plans'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 300
 
 // Hergenereert de content van een bestaand object, nu mét de geüploade documenten
 // (meetrapport, keuring, taxatie) als extra feitelijke context. Overschrijft outputs_json.
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
@@ -24,10 +27,10 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
   const serviceClient = createServiceSupabaseClient()
 
-  // Object binnen het eigen kantoor + huisstijl + toegangsstatus ophalen.
+  // Object binnen het eigen kantoor + huisstijl ophalen.
   const { data: object } = await serviceClient
     .from('objecten')
-    .select('id, address, input_json, kantoor_id, kantoren(huisstijl_json, plan, trial_ends_at)')
+    .select('id, address, input_json, kantoor_id, kantoren(huisstijl_json)')
     .eq('id', params.id)
     .eq('kantoor_id', makelaar.kantoor_id)
     .single()
@@ -35,13 +38,9 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
 
   const kantoorData = object.kantoren as unknown as {
     huisstijl_json: HuisstijlConfig | null
-    plan: string | null
-    trial_ends_at: string | null
   } | null
 
-  if (!heeftToegang(kantoorData?.plan ?? null, kantoorData?.trial_ends_at ?? null)) {
-    return NextResponse.json({ error: 'Je proefperiode is afgelopen. Kies een abonnement om verder te gaan.' }, { status: 402 })
-  }
+  // Toegang is puur admin-beheerd (geen plan-/proefcheck meer, zie CLAUDE.md).
 
   // Documenten van dit object met een Anthropic-file-id (heel het kantoor mag hier op sturen).
   const { data: docs } = await serviceClient

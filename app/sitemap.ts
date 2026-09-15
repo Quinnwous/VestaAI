@@ -11,12 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly',
       priority: 1,
     },
-    {
-      url: `${APP_URL}/prijzen`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
+    
     {
       url: `${APP_URL}/login`,
       lastModified: new Date(),

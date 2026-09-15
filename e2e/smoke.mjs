@@ -41,9 +41,9 @@ try {
     ok(/aanmaken|account/i.test(cta), `register tab shows account-create CTA ("${cta.trim()}")`)
   }
 
-  // 4. A public object-chat page for a non-existent id degrades gracefully (no 500)
-  const chat = await page.goto(`${BASE}/chat/00000000-0000-0000-0000-000000000000`, { waitUntil: 'domcontentloaded' })
-  ok(chat && chat.status() < 500, `public chat page non-500 (${chat?.status()})`)
+  // 4. A public wijk page for a non-existent slug degrades gracefully (no 500)
+  const wijk = await page.goto(`${BASE}/wijken/bestaat-niet-xyz`, { waitUntil: 'domcontentloaded' })
+  ok(wijk && wijk.status() < 500, `public wijk page non-500 (${wijk?.status()})`)
 } catch (e) {
   console.log('✗ smoke run threw:', e.message)
   failures++

@@ -72,7 +72,7 @@ export async function GET() {
   eersteVanDeMaand.setDate(1)
   eersteVanDeMaand.setHours(0, 0, 0, 0)
 
-  const [totaalResult, gepubliceerdResult, npsResult, dezeMaandResult, kantoorResult] = await Promise.all([
+  const [totaalResult, gepubliceerdResult, npsResult, dezeMaandResult] = await Promise.all([
     serviceClient
       .from('objecten')
       .select('id', { count: 'exact', head: true })
@@ -92,11 +92,6 @@ export async function GET() {
       .select('id', { count: 'exact', head: true })
       .eq('kantoor_id', makelaar.kantoor_id)
       .gte('created_at', eersteVanDeMaand.toISOString()),
-    serviceClient
-      .from('kantoren')
-      .select('plan, trial_ends_at')
-      .eq('id', makelaar.kantoor_id)
-      .single(),
   ])
 
   const npsScores = (npsResult.data ?? []).map(r => r.score)
@@ -111,19 +106,13 @@ export async function GET() {
     ? Math.round(((promotors - detractors) / npsScores.length) * 100)
     : null
 
-  const kantoor = kantoorResult.data
-  const plan = kantoor?.plan ?? 'starter'
-  const trialEndsAt = kantoor?.trial_ends_at ?? null
-  const isTrialActief = trialEndsAt ? new Date(trialEndsAt) > new Date() : false
   const dezeMaand = dezeMaandResult.count ?? 0
-  const maandLimiet = plan === 'starter' ? 40 : null
 
-  // API-kosten schatting (€0,08 per content-set op Sonnet 4.6)
+  // API-kosten schatting (€0,08 per content-set op Sonnet 4.6) — intern
+  // referentiecijfer, geen abonnementsprijs of -budget meer aan gekoppeld.
   const KOSTEN_PER_OBJECT = 0.08
-  const KOSTEN_BUDGET: Record<string, number> = { starter: 8, pro: 20, kantoor: 60 }
   const kostenschatting = {
     deze_maand: Math.round(dezeMaand * KOSTEN_PER_OBJECT * 100) / 100,
-    budget_maand: KOSTEN_BUDGET[plan] ?? 20,
     per_maand: Object.fromEntries(
       Object.entries(perMaand).map(([k, v]) => [k, Math.round(v * KOSTEN_PER_OBJECT * 100) / 100])
     ),
@@ -135,11 +124,7 @@ export async function GET() {
     makelaarStats,
     totaalAltijd: totaalResult.count ?? 0,
     gepubliceerd: gepubliceerdResult.count ?? 0,
-    plan,
-    trialEndsAt,
-    isTrialActief,
     dezeMaand,
-    maandLimiet,
     kostenschatting,
     nps: {
       gemiddeld: npsGemiddeld,

@@ -17,7 +17,6 @@ interface NpsFeedback {
 
 interface KostenSchatting {
   deze_maand: number
-  budget_maand: number
   per_maand: Record<string, number>
   prijs_per_object: number
 }
@@ -27,11 +26,7 @@ interface StatsData {
   makelaarStats: MakelaarStat[]
   totaalAltijd: number
   gepubliceerd: number
-  plan: string
-  trialEndsAt: string | null
-  isTrialActief: boolean
   dezeMaand: number
-  maandLimiet: number | null
   kostenschatting: KostenSchatting
   nps: {
     gemiddeld: number | null
@@ -78,7 +73,6 @@ export function StatistiekenTab() {
     ? Math.round(maandEntries.reduce((s, [, v]) => s + v, 0) / maandEntries.length)
     : 0
 
-  const planLabels: Record<string, string> = { starter: 'Starter', pro: 'Pro', kantoor: 'Kantoor' }
   const tijdBespaard = Math.round(stats.totaalAltijd * 45)
   const tijdLabel = tijdBespaard >= 60
     ? `${Math.floor(tijdBespaard / 60)}u ${tijdBespaard % 60}min`
@@ -86,39 +80,6 @@ export function StatistiekenTab() {
 
   return (
     <div className="space-y-8 max-w-xl">
-      {/* Abonnement & gebruik */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-700">Abonnement</span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="text-sm font-semibold text-gray-900">{planLabels[stats.plan] ?? stats.plan}</span>
-            {stats.isTrialActief && stats.trialEndsAt && (
-              <span className="text-xs bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">
-                Proefperiode tot {new Date(stats.trialEndsAt).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}
-              </span>
-            )}
-          </span>
-        </div>
-        {stats.maandLimiet !== null && (
-          <div>
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-              <span>Objecten deze maand</span>
-              <span className={stats.dezeMaand >= stats.maandLimiet ? 'text-red-600 font-semibold' : ''}>
-                {stats.dezeMaand} / {stats.maandLimiet}
-              </span>
-            </div>
-            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all ${
-                  stats.dezeMaand >= stats.maandLimiet ? 'bg-red-500' : 'bg-blue-500'
-                }`}
-                style={{ width: `${Math.min((stats.dezeMaand / stats.maandLimiet) * 100, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
       {/* Samenvatting */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -169,39 +130,21 @@ export function StatistiekenTab() {
         </div>
       </div>
 
-      {/* API-kosten */}
-      {stats.kostenschatting && (() => {
-        const k = stats.kostenschatting
-        const pct = Math.min((k.deze_maand / k.budget_maand) * 100, 100)
-        const overschreden = k.deze_maand >= k.budget_maand * 0.9
-        return (
-          <div>
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">API-kosten (schatting)</h3>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Claude API — deze maand</span>
-                <span className={`text-sm font-bold ${overschreden ? 'text-amber-600' : 'text-gray-900'}`}>
-                  €{k.deze_maand.toFixed(2)} / €{k.budget_maand.toFixed(0)}
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${overschreden ? 'bg-amber-500' : 'bg-[#1A6B45]'}`}
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              {overschreden && (
-                <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
-                  API-kosten naderen het maandbudget voor dit plan (€{k.budget_maand}/mo). Overweeg het plan te upgraden.
-                </p>
-              )}
-              <p className="text-xs text-gray-400">
-                Schatting op basis van €{k.prijs_per_object.toFixed(2)} per content-set (Claude Sonnet 4.6). Werkelijke kosten kunnen afwijken.
-              </p>
+      {/* API-kosten — intern referentiecijfer, geen abonnementsbudget */}
+      {stats.kostenschatting && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">API-kosten (schatting)</h3>
+          <div className="rounded-xl border border-gray-200 bg-white p-4 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">Claude API — deze maand</span>
+              <span className="text-sm font-bold text-gray-900">€{stats.kostenschatting.deze_maand.toFixed(2)}</span>
             </div>
+            <p className="text-xs text-gray-400">
+              Schatting op basis van €{stats.kostenschatting.prijs_per_object.toFixed(2)} per content-set (Claude Sonnet 4.6). Werkelijke kosten kunnen afwijken.
+            </p>
           </div>
-        )
-      })()}
+        </div>
+      )}
 
       {/* NPS */}
       {stats.nps.totaal > 0 && (

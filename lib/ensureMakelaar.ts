@@ -1,14 +1,18 @@
 import type { User } from '@supabase/supabase-js'
 import { createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
-import { PROEF_DAGEN } from '@/lib/plans'
 
 /**
- * Zorgt dat de ingelogde gebruiker een makelaar-record (en kantoor) heeft.
- * Vangnet voor het geval de DB-trigger handle_new_user() niet liep. Maakt —
- * identiek aan de trigger — aan met een lopende proefperiode (PROEF_DAGEN);
- * de welkomstmail en admin-melding verstuurt lib/nieuweKlant.ts bij het
- * eerste dashboard-bezoek.
+ * Zorgt dat een uitgenodigd account zijn makelaar-record krijgt. Vangnet voor
+ * het geval de DB-trigger handle_new_user() niet liep (bv. een tijdelijke
+ * search_path-bug, zie migratiegeschiedenis).
+ *
+ * Toegang is sinds 15 sep 2026 puur admin-beheerd (zie CLAUDE.md): dit vangnet
+ * koppelt een gebruiker alléén aan het kantoor waarvoor de platform-admin hem
+ * heeft uitgenodigd (`user_metadata.kantoor_id`, gezet door
+ * `auth.admin.createUser`/`inviteUserByEmail`). Zonder die uitnodiging wordt
+ * er — anders dan vroeger — geen nieuw kantoor met proefperiode aangemaakt;
+ * zo'n account blijft "wordt klaargezet" tonen totdat een admin het koppelt.
  *
  * @returns true als er (nu) een makelaar-record bestaat.
  */
@@ -26,44 +30,19 @@ export async function ensureMakelaar(user: User): Promise<boolean> {
 
   if (bestaand) return true
 
+  const uitgenodigdVoorKantoorId = user.user_metadata?.kantoor_id as string | undefined
+  if (!uitgenodigdVoorKantoorId) return false
+
   const emailNaam = user.email?.split('@')[0] ?? 'Makelaar'
   const naam = emailNaam.charAt(0).toUpperCase() + emailNaam.slice(1)
-  const uitgenodigdVoorKantoorId = user.user_metadata?.kantoor_id as string | undefined
+  const rol = (user.user_metadata?.role as 'admin' | 'makelaar' | undefined) ?? 'makelaar'
 
-  // Uitgenodigd bij een bestaand kantoor → als teamlid toevoegen.
-  if (uitgenodigdVoorKantoorId) {
-    const { error } = await service.from('makelaars').insert({
-      id: user.id,
-      kantoor_id: uitgenodigdVoorKantoorId,
-      name: naam,
-      email: user.email!,
-      role: 'makelaar',
-    })
-    return !error
-  }
-
-  // Nieuw kantoor met lopende proefperiode aanmaken.
-  const kantoorNaam = user.email?.split('@')[1]?.split('.')[0] ?? 'Kantoor'
-  const trialEndsAt = new Date(Date.now() + PROEF_DAGEN * 24 * 60 * 60 * 1000).toISOString()
-
-  const { data: nieuwKantoor, error: kantoorError } = await service
-    .from('kantoren')
-    .insert({
-      name: kantoorNaam.charAt(0).toUpperCase() + kantoorNaam.slice(1),
-      trial_ends_at: trialEndsAt,
-    })
-    .select('id')
-    .single()
-
-  if (kantoorError || !nieuwKantoor) return false
-
-  const { error: makelaarError } = await service.from('makelaars').insert({
+  const { error } = await service.from('makelaars').insert({
     id: user.id,
-    kantoor_id: nieuwKantoor.id,
+    kantoor_id: uitgenodigdVoorKantoorId,
     name: naam,
     email: user.email!,
-    role: 'admin',
+    role: rol,
   })
-
-  return !makelaarError
+  return !error
 }

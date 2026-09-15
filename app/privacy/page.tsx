@@ -65,13 +65,6 @@ export default function PrivacyPage() {
                   Opgeslagen in Supabase Storage, alleen toegankelijk voor uw kantoor.
                 </p>
               </div>
-              <div>
-                <p className="font-medium text-gray-800 mb-1">Betaalgegevens</p>
-                <p className="text-gray-600 leading-relaxed">
-                  Factuur- en betaalgegevens worden verwerkt door Stripe Inc. VestaAI slaat geen
-                  creditcardgegevens op. Stripe is PCI-DSS Level 1 gecertificeerd.
-                </p>
-              </div>
             </div>
           </section>
 
@@ -79,8 +72,7 @@ export default function PrivacyPage() {
             <h2 className="text-lg font-bold text-gray-900 mb-3">3. Waarvoor gebruiken wij uw gegevens?</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600 leading-relaxed">
               <li>Het uitvoeren van de dienst (content genereren via Claude AI)</li>
-              <li>Verwerking van abonnementen en facturen via Stripe</li>
-              <li>Transactionele e-mails (welkomst, trial-waarschuwing, factuurbevestiging) via Resend</li>
+              <li>Transactionele e-mails (accountmeldingen, teamuitnodigingen) via Resend</li>
               <li>Klantenservice en technische ondersteuning</li>
               <li>Verbetering van de dienst op basis van anonieme gebruiksstatistieken</li>
             </ul>
@@ -92,10 +84,8 @@ export default function PrivacyPage() {
               {[
                 ['Supabase', 'Database, authenticatie en opslag — EU-servers, GDPR-compliant'],
                 ['Anthropic (Claude API)', 'AI-generatie — uw objectdata wordt per request verstuurd, niet permanent opgeslagen bij Anthropic'],
-                ['Stripe', 'Betalingen en abonnementsbeheer — PCI-DSS Level 1'],
                 ['Resend', 'Transactionele e-mails — GDPR-compliant'],
                 ['Vercel', 'Hosting en edge functions — EU-regio beschikbaar'],
-                ['Sentry', 'Foutregistratie voor technische monitoring — geen persoonsgegevens in logs'],
               ].map(([partij, beschrijving]) => (
                 <div key={partij} className="flex gap-3">
                   <span className="font-medium text-gray-800 w-32 flex-shrink-0">{partij}</span>
@@ -163,7 +153,6 @@ export default function PrivacyPage() {
           <div className="flex gap-6">
             <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
             <Link href="/vertrouwen" className="hover:text-gray-600 transition-colors">Vertrouwen</Link>
-            <Link href="/prijzen" className="hover:text-gray-600 transition-colors">Prijzen</Link>
             <Link href="/login" className="hover:text-gray-600 transition-colors">Inloggen</Link>
           </div>
         </div>

@@ -26,38 +26,34 @@ export default function VoorwaardenPage() {
             },
             {
               nr: '2', titel: 'Gebruik van het platform',
-              tekst: 'De Gebruiker krijgt een niet-exclusieve, niet-overdraagbare toegang tot het Platform voor de duur van het gekozen abonnement. U bent zelf verantwoordelijk voor de juistheid van de ingevoerde woninggegevens en het eindresultaat dat wordt gepubliceerd. Gebruik van de gegenereerde content voor misleiding, oplichting of overtreding van Funda-richtlijnen is niet toegestaan.',
+              tekst: 'De Gebruiker krijgt een niet-exclusieve, niet-overdraagbare toegang tot het Platform, verleend door de platform-admin aan een specifiek kantoor. U bent zelf verantwoordelijk voor de juistheid van de ingevoerde woninggegevens en het eindresultaat dat wordt gepubliceerd. Gebruik van het Platform voor misleiding, oplichting of overtreding van Funda-richtlijnen is niet toegestaan.',
             },
             {
-              nr: '3', titel: 'Abonnement en betaling',
-              tekst: 'Abonnementen worden maandelijks of jaarlijks vooruit gefactureerd via Stripe. De proefperiode duurt 30 kalenderdagen vanaf aanmelding. Na afloop van de proefperiode start automatisch facturering op het gekozen plan, tenzij u vóór afloop opzegt. Prijswijzigingen worden minimaal 30 dagen van tevoren aangekondigd per e-mail.',
+              nr: '3', titel: 'Toegang en beëindiging',
+              tekst: 'Toegang tot het Platform wordt per kantoor beheerd door de platform-admin en kan op elk moment worden ingetrokken. Er is geen abonnementsstructuur of automatische facturering aan het Platform verbonden.',
             },
             {
-              nr: '4', titel: 'Opzegging',
-              tekst: 'Bij een maandabonnement kunt u maandelijks opzeggen via uw accountpagina; uw toegang loopt door tot het einde van de lopende betaalperiode. Bij een jaarabonnement loopt het door tot het einde van het betaalde jaar. Restitutie van vooruitbetaalde bedragen is niet van toepassing, tenzij wettelijk verplicht.',
-            },
-            {
-              nr: '5', titel: 'Intellectueel eigendom',
+              nr: '4', titel: 'Intellectueel eigendom',
               tekst: 'De door VestaAI gegenereerde teksten worden eigendom van de Gebruiker op het moment van generatie. VestaAI behoudt alle rechten op de software, algoritmen, interfaces en documentatie. U mag de door u gegenereerde content vrijelijk gebruiken voor professionele makelaarsdoeleinden.',
             },
             {
-              nr: '6', titel: 'Beschikbaarheid en aansprakelijkheid',
-              tekst: 'VestaAI streeft naar een beschikbaarheid van 99,5% per jaar. Bij gepland onderhoud wordt u minimaal 24 uur van tevoren geïnformeerd. VestaAI is niet aansprakelijk voor gevolgschade, gederfde inkomsten of indirecte schade. De aansprakelijkheid is beperkt tot het door u betaalde abonnementsgeld in de afgelopen 3 maanden.',
+              nr: '5', titel: 'Beschikbaarheid en aansprakelijkheid',
+              tekst: 'VestaAI streeft naar een beschikbaarheid van 99,5% per jaar. Bij gepland onderhoud wordt u minimaal 24 uur van tevoren geïnformeerd. VestaAI is niet aansprakelijk voor gevolgschade, gederfde inkomsten of indirecte schade. De aansprakelijkheid is beperkt conform de wettelijke grenzen die voor deze dienst gelden.',
             },
             {
-              nr: '7', titel: 'Privacy en gegevensbescherming',
+              nr: '6', titel: 'Privacy en gegevensbescherming',
               tekst: 'De verwerking van persoonsgegevens is beschreven in de Privacyverklaring op vestaai.nl/privacy. VestaAI is de verwerkingsverantwoordelijke. Alle data wordt versleuteld opgeslagen op servers in de EU en is AVG-proof.',
             },
             {
-              nr: '8', titel: 'Toepasselijk recht',
+              nr: '7', titel: 'Toepasselijk recht',
               tekst: 'Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in het arrondissement waar VestaAI is gevestigd.',
             },
             {
-              nr: '9', titel: 'Wijzigingen',
+              nr: '8', titel: 'Wijzigingen',
               tekst: 'VestaAI behoudt het recht deze voorwaarden te wijzigen. Wijzigingen worden minimaal 14 dagen van tevoren per e-mail aangekondigd. Bij voortgezet gebruik na de ingangsdatum gaat u akkoord met de nieuwe voorwaarden.',
             },
             {
-              nr: '10', titel: 'Contact',
+              nr: '9', titel: 'Contact',
               tekst: 'Voor vragen over deze voorwaarden kunt u contact opnemen via quinn.berkouwer@gmail.com.',
             },
           ].map(({ nr, titel, tekst }) => (

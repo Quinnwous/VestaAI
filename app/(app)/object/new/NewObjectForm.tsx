@@ -30,7 +30,7 @@ type PageState =
   | { status: 'idle' }
   | { status: 'loading' }
   | { status: 'success'; data: ContentOutput; objectId: string | null }
-  | { status: 'error'; message: string; isLimitError?: boolean; isRateLimit?: boolean }
+  | { status: 'error'; message: string; isRateLimit?: boolean }
 
 const card: React.CSSProperties = {
   borderRadius: 20,
@@ -102,7 +102,6 @@ export function NewObjectForm() {
           message: json?.error ?? (timeout
             ? 'Het genereren duurde te lang en is afgebroken. Dit gebeurt soms bij drukte — probeer het over een halve minuut opnieuw.'
             : 'Genereren mislukt. Probeer het opnieuw.'),
-          isLimitError: res.status === 402,
           isRateLimit: res.status === 429,
         })
         return
@@ -200,21 +199,12 @@ export function NewObjectForm() {
             <>
               <p style={{ fontSize: 14, color: '#DC2626', marginBottom: 20 }}>{state.message}</p>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
-                {state.isLimitError ? (
-                  <a
-                    href="/api/stripe/checkout?plan=starter"
-                    style={{ borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
-                  >
-                    Kies abonnement →
-                  </a>
-                ) : (
-                  <button
-                    onClick={handleReset}
-                    style={{ borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
-                  >
-                    Probeer opnieuw
-                  </button>
-                )}
+                <button
+                  onClick={handleReset}
+                  style={{ borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
+                >
+                  Probeer opnieuw
+                </button>
               </div>
             </>
           )}

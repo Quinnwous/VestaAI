@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { PropertyInput, ContentOutput } from '@/lib/schemas'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 10
 
@@ -150,6 +151,9 @@ ${openHuisRegel}    </Object>
 // ─── Route ───────────────────────────────────────────────────────────────────
 
 export async function GET(req: NextRequest) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   const objectId = req.nextUrl.searchParams.get('id')
   if (!objectId) {
     return NextResponse.json({ error: 'id ontbreekt' }, { status: 400 })

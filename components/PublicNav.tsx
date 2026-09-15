@@ -5,7 +5,6 @@ import Link from 'next/link'
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
-  { href: '/prijzen', label: 'Prijzen' },
   { href: '/vertrouwen', label: 'Vertrouwen' },
   { href: '/over-ons', label: 'Over ons' },
   { href: '/contact', label: 'Contact' },
@@ -69,9 +68,9 @@ export function PublicNav({ active }: { active?: string }) {
                 Inloggen
               </Link>
 
-              {/* Desktop: CTA */}
-              <Link href="/prijzen" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
-                Gratis starten
+              {/* Desktop: CTA — gesloten platform, dus contact i.p.v. zelf aanmelden */}
+              <Link href="/contact" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
+                Toegang aanvragen
               </Link>
             </>
           )}

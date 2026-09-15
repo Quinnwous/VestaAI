@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const serviceClient = createServiceSupabaseClient()
   const { data } = await serviceClient
     .from('object_documenten')
-    .select('id, bestandsnaam, grootte_bytes, anthropic_file_id, publiek_chatbaar')
+    .select('id, bestandsnaam, grootte_bytes, anthropic_file_id')
     .eq('object_id', objectId)
     .eq('kantoor_id', makelaar.kantoor_id)
 

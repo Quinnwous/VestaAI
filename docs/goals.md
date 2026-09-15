@@ -6,13 +6,30 @@
 
 ## Wat we bouwen
 
-**VestaAI is het eerste AI-contentplatform gebouwd voor de Nederlandse vastgoedmarkt.**
+> **Koerswijziging 15 september 2026.** VestaAI was een AI-contentplatform. Het wordt een
+> waarderingsplatform. De contentsuite is niet weggegooid maar vergrendeld (zie
+> `lib/features.ts`) en komt later terug als tweede pijler, niet als kern.
 
-Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete content-suite (Funda-tekst, brochures, Instagram, LinkedIn, koper-e-mail, buurtomschrijving) — afgestemd op Funda-richtlijnen, NVM-stijlregels en de huisstijl van het kantoor.
+**VestaAI is het waarderingsplatform voor Nederlandse makelaars — in hun eigen huisstijl.**
 
-**Het probleem dat we oplossen:** Een goede woningomschrijving kost een makelaar 45 minuten. Bij 20 objecten per maand voor een kantoor van drie is dat 15 uur schrijfwerk — maand na maand. Er bestaat geen betaalbare, Nederlandstalige SaaS-tool voor dit probleem. Engelse tools kennen Funda niet. Maatwerk kost €2.500–10.000. ChatGPT kost alsnog 15–20 minuten per object.
+De woning is de kern. Per adres bouwt de makelaar een dossier op met een onderbouwde
+waarde, vergelijkbare verkopen en scenario's waarmee hij aan de keukentafel kan rekenen.
+Daarnaast staat marktanalyse: vrije vragen aan de transactiedata, los van één woning.
 
-**Ons voordeel in één zin:** De enige betaalbare tool die tegelijk Funda-richtlijnen kent, huisstijl leert, alle formats genereert en NL buurtcultuur begrijpt.
+**Het probleem dat we oplossen:** een waardebepaling is het moment waarop een makelaar de
+opdracht wint of verliest. Vandaag gebeurt dat met een onderbuikgevoel, een handvol
+referenties uit het hoofd en een rapport uit Word. De makelaar kan niet laten zien wat een
+beter energielabel, een dakkapel of een garage met de waarde doet — terwijl dat precies de
+vraag van de verkoper is.
+
+**Ons voordeel in één zin:** de enige tool die een waardebepaling van onderbuikgevoel naar
+navolgbare onderbouwing tilt, en die onderbouwing aflevert als rapport in de huisstijl van
+het kantoor zelf.
+
+**De drie beloften:**
+1. *Waarde met onderbouwing* — een bandbreedte, gedragen door echte transacties in de buurt, niet door een black box.
+2. *Scenario's* — wat doet een label-sprong, een extra kamer, een garage of een aanbouw met de waarde?
+3. *Het is hun platform* — vanaf het inloggen draagt de omgeving het logo en de kleuren van het kantoor, tot in het rapport.
 
 ---
 
@@ -32,37 +49,14 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 ---
 
-## Financiële doelen
-
-| Mijlpaal | MRR | Klanten |
-|----------|-----|---------|
-| Pilot (eerste klant live) | €495 | ~5 |
-| Lancering NL | €12.000 | ~80 kantoren |
-| Groei NL | €42.000 | ~250 kantoren |
-| Schaal NL | €74.000 | ~400 kantoren |
-| **Doorbraak NL + NL enterprise** | **€116.000** | **525 + 25 Kantoor** |
-| **ARR-target** | **€1.392.000** | |
-
-**Samenstelling bij doorbraak (indicatief):**
-- 180 Starter × €60 = €10.800
-- 320 Pro × €150 = €48.000
-- 25 Kantoor × €500 = €12.500
-- Overig (jaarplannen, upsells) = €19.525
-
-**Nettomarge:** ~85% (API + infra < 8% van MRR)  
-**Break-even:** 2 Starter-klanten of 1 Pro-klant
-
----
-
 ## Prijzen
 
-| Plan | Prijs | Limieten | Kernwaarde |
-|------|-------|----------|-----------|
-| Starter | €60/mo (€600/jr) | 5 objecten/mnd · 1 user | ZZP-makelaars |
-| Pro | €150/mo (€1.500/jr) | 25 objecten/mnd · 5 users · huisstijlgeheugen | Meest gekozen |
-| Kantoor | €500/mo (€5.000/jr) | Onbeperkt objecten (soft-cap 100) · onbeperkt users/kantoren · white-label · API | ERA, E&V, Makelaarsland |
-
-**Waarom €150 en niet goedkoper:** Eén extra bezichtiging door een betere Funda-tekst = ROI van 15×+. Te goedkoop prijzen verlaagt perceived value en verhoogt churn.
+> **Volledig verwijderd op 15 sep 2026** (op verzoek van Quinn — "kom ik later op terug").
+> Geen abonnementen, geen Stripe, geen plan-gating meer in de code (`lib/plans.ts`, alle
+> Stripe-routes en de bijbehorende UI zijn verwijderd — zie `CLAUDE.md`). Toegang is nu puur
+> admin-beheerd: de platform-admin zet een kantoor en de bijbehorende accounts klaar in
+> `/admin`, zonder plan of proefperiode. Nieuwe prijslogica volgt pas als daar opnieuw over
+> besloten wordt — dit document bevat bewust geen cijfers meer totdat dat gebeurt.
 
 ---
 
@@ -84,7 +78,14 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 ## Lock-in strategie
 
-**Huisstijlgeheugen is de belangrijkste retention-driver.** Kantoren die weggaan verliezen hun opgebouwde stijlprofiel — dat kost maanden om elders opnieuw op te bouwen. Verwachte churn: ~3%/maand vs. branche-gemiddelde 5–7%.
+**De portefeuille is de belangrijkste retention-driver.** Een kantoor dat weggaat verliest zijn
+woningdossiers: de waarderingen, de gekozen referenties en de rapporten die het aan klanten
+heeft afgegeven. Dat is zwaarder om elders opnieuw op te bouwen dan een stijlprofiel, en het
+raakt bovendien de verantwoording richting de verkoper.
+
+**De huisstijl-laag versterkt dat.** Doordat de hele omgeving en elk rapport het logo en de
+kleuren van het kantoor dragen, voelt VestaAI niet als een ingehuurd hulpmiddel maar als hun
+eigen systeem. Wisselen betekent dan ook een zichtbare stap terug richting de klant.
 
 **Verdediging per dreiging:**
 - *Funda bouwt eigen tool:* Snel loyale user-base opbouwen voor ze starten. Klanten zijn dan al afhankelijk van Vesta's stijlprofielen. *(Signaal: Funda lanceerde al een eigen AI-virtual-stagingtool, 2025/2026 — geen volledig platform, wel een eerste stap.)*
@@ -114,6 +115,8 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 | HousApp lanceert contentmodule | Medium–Hoog | Zie "Verdediging per dreiging" hierboven; maandelijkse concurrentie-scan als vroege waarschuwing |
 | Trage adoptie (conservatieve markt) | Medium | Resultaten bewijzen via testimonials, niet pitchen |
 | AI-transparantieverplichting (EU AI Act / BE deontologische code) | Laag–Medium | AI-content-labeling ingebouwd in virtual staging (aug 2026); compliance-pagina volgt (zie `roadmap.md`) |
+| **Licentie op de transactiedata** | **Hoog** | **Openstaand.** De waardering staat of valt met de geïmporteerde dataset van verkochte woningen. Kadaster-, NVM/brainbay- en Funda-data zijn licentieplichtig; scrapen is in strijd met de voorwaarden. Vóór livegang moet vaststaan wélke bron met wélke licentie wordt gebruikt en of commerciële doorlevering aan makelaars is toegestaan. |
+| Waarderingsclaim (aansprakelijkheid) | Medium | De uitkomst is een onderbouwde indicatie, geen taxatie in de zin van het NRVT. Rapport en UI moeten dat expliciet benoemen. |
 | Claude API afhankelijkheid | Medium | Model-agnostische architectuur; kan switchen |
 | Oprichter-capaciteit | Beheersbaar | Bij €5K MRR eerste part-time hire |
 | Tech risico | Laag | Bewezen API-architectuur, geen custom ML |
@@ -123,7 +126,10 @@ Een makelaar vult 8 velden in → VestaAI genereert in 90 seconden een complete 
 
 ## Strategisch voordeel
 
-Quinn heeft directe toegang tot een actief makelaarskantoor in Amsterdam als eerste pilotpartner. Dit elimineert de koude acquisitie-fase en biedt:
+Eerste pilotpartner is **i4 Housing** (Molenplein 2, Wassenaar — NVM, sterk op de
+expat-markt rond Den Haag). VestaAI wordt in eerste instantie voor hen gebouwd: hun
+huisstijl (blauw `#0089D0`, accent rood `#C81E46`) is de eerste white-label-implementatie.
+Dit elimineert de koude acquisitie-fase en biedt:
 - Gratis testomgeving en directe productfeedback
 - Eerste referentieklant met testimonial
 - Directe entree tot het NVM-netwerk

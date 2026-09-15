@@ -6,10 +6,9 @@ import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
 import { DeleteButton } from './DeleteButton'
-import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { Eyebrow, SerifTitle } from '@/components/ui'
-import type { ContentOutput, PropertyInput } from '@/lib/schemas'
+import type { PropertyInput } from '@/lib/schemas'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
@@ -57,34 +56,24 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         href="/dashboard"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#9AA6A0', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
       >
-        ← Terug naar objecten
+        ← Terug naar de portefeuille
       </Link>
 
       <div style={{ marginBottom: 24 }}>
-        <Eyebrow>Object</Eyebrow>
+        <Eyebrow>Woning</Eyebrow>
         <SerifTitle size={32} accent={stad} style={{ marginBottom: 12 }}>{stad ? `${straat},` : straat}</SerifTitle>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
             <span style={{ fontSize: 13, color: '#9AA6A0' }}>{formatDatum(object.created_at)}</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <RegenereerButton invoer={object.input_json as PropertyInput} />
-            <DeleteButton objectId={object.id} adres={object.address} />
-          </div>
+          <DeleteButton objectId={object.id} adres={object.address} />
         </div>
       </div>
 
       <InvoerToggle invoer={object.input_json as PropertyInput} />
 
-      <ObjectWorkspace
-        objectId={object.id}
-        address={object.address}
-        outputs={object.outputs_json as ContentOutput}
-        vraagprijs={(object.input_json as PropertyInput).vraagprijs ?? 0}
-        notitie={(object as unknown as { notitie: string | null }).notitie ?? null}
-        userEmail={user.email ?? undefined}
-      />
+      <ObjectWorkspace address={object.address} />
     </main>
   )
 }

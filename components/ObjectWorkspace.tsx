@@ -1,58 +1,35 @@
 'use client'
 
 import { useState } from 'react'
-import { ResultTabs } from '@/components/ResultTabs'
-import { NotitieVeld } from '@/components/NotitieVeld'
-import { FotoVerbetering } from '@/components/FotoVerbetering'
-import { VirtualStaging } from '@/components/VirtualStaging'
-import { DocumentenAssistent } from '@/components/DocumentenAssistent'
-import { FotoBibliotheek } from '@/components/FotoBibliotheek'
-import { EmailPdfButton } from '@/components/EmailPdfButton'
-import { RealworksExportButton } from '@/components/RealworksExportButton'
-import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
-import { DeelChatbot } from '@/components/DeelChatbot'
+import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
-import type { ContentOutput } from '@/lib/schemas'
+import { CONTENT_SLOT_TEKST } from '@/lib/features'
 
-type SectionId = 'content' | 'media' | 'documenten' | 'chat' | 'export'
+/**
+ * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
+ * Alle modules hieronder renderen op basis van dit ene geselecteerde adres:
+ *
+ * - Module A "Content en media" — vergrendeld, zie lib/features.ts.
+ * - Module B "Waardering" — reken- en datamodule, in aanbouw.
+ *
+ * De oude content-onderdelen (ResultTabs, VirtualStaging, DocumentenAssistent,
+ * FotoBibliotheek, EmailPdfButton, RealworksExportButton, PrijswijzigingModal,
+ * NotitieVeld) staan geparkeerd in components/ en worden hier bewust niet meer
+ * gemount. Ze komen terug zodra de contentsuite weer opengaat.
+ */
+
+type SectionId = 'waardering' | 'content'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
-  { id: 'content', label: 'Content' },
-  { id: 'media', label: 'Media' },
-  { id: 'documenten', label: 'Documenten' },
-  { id: 'chat', label: 'Chatbot' },
-  { id: 'export', label: 'Export' },
+  { id: 'waardering', label: 'Waardering' },
+  { id: 'content', label: 'Content en media 🔒' },
 ]
 
-const card: React.CSSProperties = {
-  borderRadius: 18,
-  background: '#fff',
-  border: '1px solid #E9EFEB',
-  padding: 22,
-  boxShadow: '0 2px 12px rgba(14,26,19,.04)',
-}
-
-export function ObjectWorkspace({
-  objectId,
-  address,
-  outputs,
-  vraagprijs,
-  notitie,
-  userEmail,
-}: {
-  objectId: string
-  address: string
-  outputs: ContentOutput
-  vraagprijs: number
-  notitie: string | null
-  userEmail?: string
-}) {
-  const [active, setActive] = useState<SectionId>('content')
-  const [fotoRefresh, setFotoRefresh] = useState(0)
+export function ObjectWorkspace({ address }: { address: string }) {
+  const [active, setActive] = useState<SectionId>('waardering')
 
   return (
     <div>
-      {/* Sectie-navigatie */}
       <TabBar
         tabs={SECTIONS}
         active={active}
@@ -60,64 +37,35 @@ export function ObjectWorkspace({
         style={{ margin: '24px 0 26px' }}
       />
 
-      {/* Content — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
+      <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
+        <InAanbouw
+          eyebrow="Module B — in aanbouw"
+          titel={`Waardering van ${address}`}
+          uitleg="Een reken- en datamodule: modulaire variabelen die u zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
+          punten={[
+            'Modulaire variabelen als losse blokken: kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud',
+            'AI USP-extractor: typ een bijzonderheid in ("heeft een mooie garage", "nieuw dakkapel") — de AI vertaalt dit naar USP\'s die de waardering en marketing beïnvloeden',
+            'Waarde met bandbreedte, onderbouwd met vergelijkbare verkochte woningen',
+            'Eén klik naar een waarderingsrapport als PDF, in de huisstijl van uw kantoor',
+          ]}
+        />
+      </div>
+
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>
-        <ResultTabs data={outputs} objectId={objectId} onResetHref="/dashboard" />
-        <div style={{ marginTop: 30, borderTop: '1px solid #EEF2F0', paddingTop: 22 }}>
-          <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
-        </div>
-      </div>
-
-      {/* Media — foto-verbetering + virtual staging + bibliotheek als losse kaarten */}
-      <div style={{ display: active === 'media' ? 'block' : 'none' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={card}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Foto-verbetering</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Licht, kleur en perspectief automatisch geoptimaliseerd.</p>
-            <FotoVerbetering objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
-          </div>
-          <div style={card}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Virtual staging</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
-            <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
-          </div>
-          <div style={card}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Bewaarde verbeterde en gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
-            <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
-          </div>
-        </div>
-      </div>
-
-      {/* Documenten */}
-      <div style={{ display: active === 'documenten' ? 'block' : 'none' }}>
-        <DocumentenAssistent objectId={objectId} />
-      </div>
-
-      {/* Deel-chatbot */}
-      <div style={{ display: active === 'chat' ? 'block' : 'none' }}>
-        <DeelChatbot objectId={objectId} />
-      </div>
-
-      {/* Export & delen */}
-      <div style={{ display: active === 'export' ? 'block' : 'none' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-          <div style={card}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Mail naar geïnteresseerde</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure + follow-up direct naar een koper.</p>
-            <EmailPdfButton objectId={objectId} userEmail={userEmail} />
-          </div>
-          <div style={card}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Realworks-export</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de objectdata als XML voor Realworks.</p>
-            <RealworksExportButton objectId={objectId} />
-          </div>
-          <div style={{ ...card, gridColumn: 'span 2' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
-            <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
-            <PrijswijzigingModal objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
-          </div>
-        </div>
+        <InAanbouw
+          slot
+          eyebrow="Module A — tijdelijk gesloten"
+          titel={CONTENT_SLOT_TEKST.titel}
+          uitleg={CONTENT_SLOT_TEKST.uitleg}
+          punten={[
+            'Brochure en Funda-tekst',
+            'Social media-teksten (bv. Instagram-captions)',
+            'Verkoopadvies voor de verkopende partij',
+            'Buurtrapport — omgevingsdata en demografie van de wijk',
+            'i4housing Map — kaart met kantoor-vlaggetjes op historische verkopen binnen 500 m van dit adres',
+            'Virtual staging en documentenassistent',
+          ]}
+        />
       </div>
     </div>
   )

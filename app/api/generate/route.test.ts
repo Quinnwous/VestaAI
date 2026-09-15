@@ -16,6 +16,15 @@ vi.mock('@/lib/supabase', () => ({
   createServiceSupabaseClient: vi.fn(),
 }))
 
+// De contentsuite is vergrendeld (koerswijziging sept 2026). De tests hieronder
+// beschrijven het gedrag van de route zelf en draaien daarom met het slot eraf;
+// dat het slot er in productie op zit, dekt de eerste test af.
+vi.mock('@/lib/features', () => ({
+  CONTENT_VERGRENDELD: false,
+  contentVergrendeldAntwoord: () =>
+    new Response(JSON.stringify({ error: 'vergrendeld' }), { status: 403 }),
+}))
+
 import { POST } from './route'
 import * as schemasModule from '@/lib/schemas'
 import * as claudeModule from '@/lib/claude'
@@ -96,5 +105,13 @@ describe('POST /api/generate', () => {
 
     expect(res.status).toBe(500)
     expect(data.error).toBe('API timeout')
+  })
+})
+
+describe('contentslot', () => {
+  it('is in productie dicht', async () => {
+    // Niet gemockt: de echte vlag uit lib/features.ts.
+    const { CONTENT_VERGRENDELD } = await vi.importActual<typeof import('@/lib/features')>('@/lib/features')
+    expect(CONTENT_VERGRENDELD).toBe(true)
   })
 })

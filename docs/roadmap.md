@@ -2,93 +2,127 @@
 
 > Werklijst, geen logboek. Alleen open items — **klaar = weg**.
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
-> Laatst herzien: 6 augustus 2026.
->
+> Laatst herzien: 15 september 2026 — koerswijziging naar waardering, zie `goals.md`.
+
 > **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
-> Laatst afgerond: echte CBS-buurtdata (6 aug) — zie "Al gebouwd & live" hieronder.
-> ⚠️ **Eerst controleren:** staat op branch `feat/cbs-buurtdata-live` in **PR #13, nog niet gemerged** (de merge werd door de permissie-classifier geblokkeerd, niet door een inhoudelijk probleem — code is groen en `MERGEABLE`). Check `gh pr view 13 --json state`; is hij gemerged, haal deze waarschuwing dan weg.
-> **Volgende zonder blokkade, in deze volgorde:** (1) gedeelde rate-limiter 🟠 — Upstash Redis via Vercel Marketplace, vervangt de in-memory `Map` in `app/api/generate/route.ts` + `app/api/chat/route.ts`; (2) compliance-pagina 🟠 — AVG-verwerkersovereenkomst op `/vertrouwen`; (3) Track 4 uit 🟢 — huisstijl-label per voorbeeld (⚠️ DB-migratie), brochure-lettertype, FAQ-uit-chatvragen.
-> **Geblokkeerd, niet oppakken:** social auto-publiceren (wacht op Meta/LinkedIn-secrets) · volledige E2E-generatie-run (wacht op testaccount-creds) · Realworks-API (wacht op portaal-registratie) — alle blokkades staan onder 🔴 "Actie Quinn".
-> **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
+> Laatst afgerond: (1) scope + shell van de koerswijziging — gesloten landingspagina zonder
+> prijzen, topbar met Woningdossier/Marktinzichten/Content(🔒)/Kantoorinstellingen,
+> kantoorbranding via CSS-variabelen; (2) alle prijzen/abonnementen/Stripe volledig uit de
+> code (niet alleen bevroren); toegang is nu puur admin-beheerd; (3) hoofdstructuur herzien
+> naar het micro/macro-model (Woningdossier vs. Marktinzichten) met de gedetailleerde
+> module-spec hieronder. Zie "Al gebouwd & live" voor het volledige lijstje.
+> ⚠️ **Bekend probleem, actie Quinn:** `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` wijst naar
+> `uvpcjpejocjmlxxyhqyz.supabase.co`, wat **NXDOMAIN** geeft (host bestaat niet / project weg).
+> Hierdoor kon Quinn's eigen inlog + het i4housing-kantoor niet worden aangemaakt en kan lokaal
+> niets tegen de database draaien. Controleer of dit de juiste project-ref is (Supabase
+> dashboard → Settings → API) en werk `.env.local` bij. Het klaarstaande script staat in de
+> sessie-scratchpad (`setup-i4housing.mjs`) — opnieuw te draaien zodra de URL klopt: maakt het
+> kantoor "i4 Housing" (met het al opgezochte palet) en het account
+> `quinn.berkouwer@icloud.com` (wachtwoord `Quinn123!vesta`) in één keer aan.
+> **Volgende zonder blokkade, in deze volgorde:** (1) Supabase-URL fixen 🔴 (actie Quinn,
+> blokkeert de rest); (2) Quinn's login + i4housing-kantoor aanmaken (script staat klaar);
+> (3) importformaat voor de transactiedataset vastleggen 🔴 — blokkeert het waarderingsmodel;
+> (4) waarderingsmodel ontwerpen 🔴 (referentieselectie + kenmerk-effecten + modulaire
+> variabelen + AI USP-extractor, zie spec hieronder).
+> **Geblokkeerd, niet oppakken:** waarderingsmodel bouwen (wacht op eerste import) ·
+> concurrentieanalyse (wacht op makelaarsnaam in de dataset) · i4housing Map (wacht op
+> transactiedataset mét coördinaten) · Realworks-API, social-auto-publiceren (content is
+> vergrendeld).
+> **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een
+> feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
 
 ---
 
-## Al gebouwd & live (t/m 6 augustus — niet opnieuw doen/checken)
+## Hoofdstructuur (vastgelegd 15 sep 2026)
 
-> Uitzondering: het CBS-item hieronder zit in PR #13 en staat nog niet op `main` — zie de waarschuwing bovenaan.
+Micro/macro-knip. Alles onder **Woningdossier** hangt aan één geselecteerd adres; **Marktinzichten**
+is regionaal en staat los van een specifieke woning; **Kantoorinstellingen** is losstaande configuratie.
 
-- **Kern & accounts:** proefmodel (30d / 5 obj) + gratis-plan (5/mnd), activerings-/welkomst-/meldingsmails (atomisch), `/admin` v2 met maandverbruik, onboarding-checklist, referral, NPS. Onboarding-flow E2E bewezen op prod t/m dashboard.
-- **Generatie:** 504-time-out opgelost via streaming (`messages.stream`) + `maxDuration 300` + in-flight-lock tegen dubbele runs (`/api/generate`, `/api/object/[id]/hergenereer`). Funda-lengte-fix (700+ w, 6-alinea-structuur) in `lib/claude.ts`. ⚠️ *nog niet 1× volledig E2E op prod bevestigd → zie 🔴.*
-- **UI:** sidebar-appshell + object-werkruimte met tabs (`AppShell`, `ObjectWorkspace`), dashboard-featurekaarten, losse huisstijl-/chatbot-pagina's.
-- **Huisstijl v2:** 20 voorbeeldteksten, stijlprofiel-destillatie, `.txt/.pdf`-upload, aparte brochure-stijl, leren-van-inline-bewerkingen (review-flow via `stijl_bewerkingen`).
-- **Chatbot v2/v3:** object-kennis, deelbare publieke chatpagina (aan/uit + cover-foto), documenten-koppeling (opt-in per doc), lead-capture + mail naar makelaar, embed-installatie-instructies, agent-prompt met guardrails (14/14 scenario's, incl. prompt-injection).
-- **Media & documenten:** foto-bibliotheek per object (`object_fotos` + Storage), documenten → content-hergeneratie (Files API), PDF-brochure met foto's.
-- **Virtual staging:** model → `gemini-2.5-flash-image`, output krijgt ingebakken "AI-gegenereerd interieur"-label (compliance BE deontologische code / EU AI Act, 6 aug). ⚠️ *Gemini-quota moet omhoog → zie 🔴.*
-- **Echte CBS-buurtdata (6 aug):** de statische tabel van 19 gemeenten is wég; `lib/verrijking.ts` haalt nu live data op uit CBS Kerncijfers wijken en buurten 2024 (`85984NED`, gratis open OData, geen sleutel) voor alle ~14.000 buurten. Per indicator zakt de code naar buurt-, wijk- of gemeenteniveau (CBS onderdrukt cijfers voor kleine gebieden) en het gebruikte niveau reist mee tot in UI én prompt, zodat een gemeentecijfer nooit als buurtfeit kan worden gepresenteerd. Landelijke referentie komt uit dezelfde jaargang. Meetbaar beter: de oude tabel gaf Amsterdam een gemiddelde WOZ van €389k, CBS meet €498k, en buurt Leliegracht €900k. Ook markttype-fallback op echte cijfers (de ~310 niet-gemapte gemeenten belandden voorheen allemaal op "landelijk"). Valt CBS uit → geen buurtprofiel i.p.v. verouderde cijfers. 11 unit-tests + live geverifieerd op 5 adressen. Details en API-valkuilen: `docs/data-integraties/buurtanalyse-cbs.md`.
-- **Site & infra:** volledige metadata/OG/sitemap/404, `/vertrouwen`-pagina, `e2e/smoke.mjs` (credential-vrije rooktest), prod-DB-migraties allemaal live, copy schoon van verboden claims. Stripe test-mode klaargezet (producten/prijzen/webhook).
-- **Prijzen & publieke routes (PR #12, 10 juli):** plan-limieten **Starter 5 / Pro 25 / Kantoor onbeperkt** (soft-cap 100), per-kantoor als hoofdboodschap, "onbeperkt op Pro" overal geschrapt, Pro-kaart-bug (1→5 gebruikers) gefixt — consistent in `lib/plans.ts` + copy + `goals.md`. **Middleware-fix:** alle publieke routes (`/vertrouwen`·`/over-ons`·`/contact`·`/privacy`·`/voorwaarden`, SEO-`/wijken/*`, deelbare `/chat/*`, embed-API's `/api/chat`+`/api/me`+`/api/chatbot`) stonden achter een login-redirect → nu publiek (beveiligde routes ongewijzigd, geverifieerd). `/vertrouwen` gelinkt in nav+footer. **DOCX-upload** in documenten-assistent (`lib/docx.ts`, mammoth-tekstextractie, unit-getest). Authenticated generate-e2e herschreven + kostengate.
+### Woningdossier (micro) — `components/ObjectWorkspace.tsx`
 
----
+**Module A — Content en media** (🔒 vergrendeld, zie `lib/features.ts`):
+- Brochure · Funda-tekst · Social media-teksten (bv. Instagram-captions) · Verkoopadvies · Buurtrapport
+- **i4housing Map** (nieuw, nog te bouwen): interactieve kaart met een straal van **exact 500 meter**
+  rondom het actieve adres, met kantoor-vlaggetjes op alle historische transacties van het eigen
+  kantoor binnen die straal. Vereist: (a) coördinaten (lat/lng) in de transactiedataset — zie
+  "Databron" hieronder, (b) een kaartlibrary (nog te kiezen — Leaflet/Mapbox), (c) een geo-query
+  (PostGIS `ST_DWithin` of een eenvoudige haversine-filter in Postgres/Supabase).
 
-## 🔴 Kritiek pad — vóór livegang
+**Module B — Waardering** (reken- en datamodule, in aanbouw):
+- **Modulaire variabelen als losse blokken**: de makelaar moet kamers, WOZ, oppervlakte, kavelgrootte,
+  energielabel en staat van onderhoud individueel kunnen toevoegen, in- of uitschakelen voor de
+  berekening. UI-implicatie: dit is geen vast formulier maar een blokken-canvas — ontwerp dit als
+  aparte `WaarderingBlok`-componenten die elk hun eigen aan/uit-state en effect-op-waarde dragen.
+- **AI USP-extractor**: vrij tekstveld waar de makelaar bijzonderheden intypt (bv. "heeft een mooie
+  garage", "nieuw dakkapel") — een Claude-call vertaalt dit naar gestructureerde USP's die de
+  waardering en/of marketingtekst beïnvloeden. Aparte, kleine prompt naast de hoofdwaardering.
+- Waarde met bandbreedte, referentietransacties, PDF-rapport in kantoorhuisstijl.
 
-### Actie Quinn (blokkeert livegang — niks te bouwen tot dit er is)
-- **Gemini-tier ophogen** (virtual staging) — `GOOGLE_AI_API_KEY` zit op krappe image-quota, sloeg bij testen meteen op **429**. Verhoog quota in Google AI Studio/Cloud → daarna één **visuele eindcheck** van de staging-output op prod (nieuw model, kon zelf niet beoordelen door 429's).
-- **Stripe env in Vercel** — 4 waarden zetten (`STRIPE_PRICE_STARTER/PRO/KANTOOR` + `STRIPE_WEBHOOK_SECRET`, staan in `.env.local`) + check dat `STRIPE_SECRET_KEY` er staat → redeploy. Alles test-mode; betaling hoeft in de testfase nog niet te werken.
-- **Testimonial + casestudy pilotmakelaar** — naam/kantoor/quote + concrete tijdsbesparing (placeholder staat klaar in `LandingPageClient.tsx`, pilotkantoor Amsterdam beschikbaar). Belangrijkste marketingactie: HousApp toont 9 verhalen, wij 0.
-- **Realworks developer-portaal registreren** (gratis) — beantwoordt de business-case-vraag: teksten schríjven via API of alleen lezen?
-- **Gmail opruimen** — de "Confirm your email address"-testmail (`quinn.berkouwer+vestatest@gmail.com`); bijbehorend testaccount is al uit de DB.
+### Marktinzichten (macro) — `app/(app)/marktanalyse/`
 
-### Te doen (Claude)
-- **Live-generatie 1× E2E bevestigen** — de authenticated Playwright-test staat nu klaar (`e2e/smoke.spec.ts`: vult via de demo-knop, assert expliciet geen 504, achter `E2E_GENERATE=1`). Draaien: zet `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `E2E_TEST_EMAIL` in de env en run `E2E_GENERATE=1 npm run e2e` (~€0,08/run). Of handmatig één object op prod genereren (< ~2 min, geen 504, duur-log `[generate] verrijking …ms · generatie …ms`). Duurt het > 300 s → pas dán SSE-streaming naar de client bouwen.
-- **Volledige feature-audit met ingelogd account** — de meeste features zijn nooit 1× E2E op prod aangeklikt: foto-verbetering, staging, foto-bibliotheek, PDF-export, kalender/plannen, prijswijziging, Realworks-XML, wijkpagina's, referral, NPS, admin-klantenbeheer.
+- **Marktanalyse**: datagrafieken over macro-trends — prijsontwikkeling, vraag naar woningtype
+  (bv. hoekwoning vs. tussenwoning), doorlooptijd, per type/wijk/periode.
+- **Concurrentieanalyse**: dashboards die verkoopresultaten en marktaandeel van het eigen kantoor
+  afzetten tegen concurrenten in de regio. Architectuur moet ruimte laten voor toekomstige
+  uitbreiding (dit hoeft niet in v1 compleet te zijn, maar het datamodel moet er niet voor op de
+  schop hoeven).
 
-### Na livegang — moat & distributie
-- **Realworks-API-koppeling** (i.p.v. XML-download) — via Realworks CRM Marketplace + developer-ID. Wonen API: objecten exporteren, leads importeren. Plan B als schrijven niet kan: objectdata inlezen als autofill van de 8 velden. Let op: oude CasaXML-export (`app/api/export/realworks/route.ts`) faseert uit richting API v3. *Bouwen pas na portaal-registratie (zie Quinn).*
-- **Kolibri-koppeling (AppXchange)** — aanmelden via contactformulier (app-store, 1.200+ makelaars). Er zit al een generieke "ChatGPT Advertentieteksten"-app; ons verhaal: suite + Funda-regelset + huisstijl + NL-buurtdata. Aanmelding starten direct na livegang, bouwen daarna.
+### Kantoorinstellingen — `app/(app)/huisstijl/`, `app/(app)/settings/`
 
----
-
-## 🟠 Belangrijk (na livegang)
-
-- **Site-polish** — mobiel (375px) door de kernschermen, Lighthouse landing (>90 perf / >95 a11y) + juridische check van de `/vertrouwen`-teksten. *(Linken van `/vertrouwen` is gedaan; publieke routes stonden achter de middleware-login-redirect — gefixt.)*
-- **Documenten-assistent kwaliteitstest** — met realistisch test-PDF: citeert de chat correct, en verwerkt "hergenereer" de feiten (exacte m², staat) aantoonbaar in de teksten?
-- **Embed-widget bewijzen** (actie Quinn) — de widget één keer daadwerkelijk op een externe makelaarssite plaatsen en testen; instructies + snippet staan al in `ChatbotTab`.
-- **Social media direct publiceren** — Meta/IG + LinkedIn OAuth als sluitstuk van de kalender: `post_planning.status` → cron op de geplande datum. Verhoogt gebruiksfrequentie → lagere churn.
-- **Documenten-assistent verbreden** — kantoorbrede documenten (algemene voorwaarden, koopakte-uitleg) naast object-documenten. *(DOCX naast PDF/TXT is gedaan.)*
-- **NVM PropTech-programma aanmelden.**
-- **Klantverhalen-pagina** — HousApp-model: korte verhalen per kantoor mét cijfers. Na eerste 3–5 klanten.
-- **Maandelijkse concurrentie-scan** (10 min, verbreed 6 aug) — HousApp (changelog, vacatures, klantverhalen, Kolibri-blog), Funda's eigen AI-staging-tool, Immoweb (BE). Signaal = concurrent beweegt richting content → verdediging in `goals.md` activeren.
-- **Zelfservice-monetisatie daadwerkelijk aanzetten** (6 aug) — Stripe-checkout live voor nieuwe aanmeldingen zodra de testimonial er is, in plaats van voor onbepaalde tijd handmatige activering door de platform-admin (`heeftToegang()`) te blijven doen. Zonder dit kan Vesta niet sneller groeien dan Quinn zelf kan bijhouden.
-- **Gedeelde rate-limiter** (6 aug) — Upstash Redis (Vercel Marketplace) i.p.v. de huidige in-memory `Map` in `app/api/generate/route.ts` en `app/api/chat/route.ts`. Werkt niet betrouwbaar zodra Vercel meerdere instanties/regio's gebruikt, wat bij groei vanzelf gebeurt.
-- **Compliance-pagina** (6 aug) — AVG-verwerkersovereenkomst, dataverwerking. HousApp claimt een SOC 2/AVG-verhaal, Vesta nog niet; `/vertrouwen` bestaat al maar mist dit stuk.
+Huisstijl, logo, tone-of-voice voor alle AI-content. Al gebouwd (`lib/branding.ts` + `HuisstijlTab`).
 
 ---
 
-## 🟢 Later / nice-to-have
+## 🔴 Nu — fundament voor waardering
 
-- **CBS-jaargang jaarlijks bijwerken** (nieuw 6 aug) — `lib/verrijking.ts` staat op `85984NED` (2024). CBS publiceert elk voorjaar een nieuwe jaargang, maar **niet alle velden zijn meteen gevuld**: `86165NED` (2025) bestaat al en heeft WOZ, maar `GemiddeldInkomenPerInwoner_78` is daar nog leeg — zelfs op gemeenteniveau. Check bij het ophogen dus of inkomen gevuld is, niet alleen of de dataset bestaat. Nieuwe ID's opzoeken: `https://opendata.cbs.nl/ODataCatalog/Tables?$filter=substringof('Kerncijfers wijken en buurten',Title)&$format=json`.
-- **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates, alleen subject; body's zijn al NL).
-- **Onboarding-stappen foto & chatbot** — toevoegen zodra er een betrouwbaar completion-signaal is (foto-resultaten/chatbot-bezoek worden nu niet getrackt).
-- **Documenten-ingang in de sidebar** — komt samen met de kantoorbrede documenten-pagina.
-- **Huisstijl: label per voorbeeld** (Funda/brochure/social) — laat het stijlprofiel per content-type differentiëren. ⚠️ Vereist DB-migratie (label-kolom op stijl-voorbeelden) + prompt-aanpassing.
-- **Brochure: lettertype-voorkeur** — react-pdf font-registratie.
-- **FAQ-limiet heroverwegen** — `LIMIT 30` in `/api/chat` nu object-kennis er is; FAQ-suggesties genereren uit veelgestelde chatvragen.
-- **NVM-contact Funda-partneraccess** — lange termijn; "genereer → staat live" is het eindspel.
-- **Google Ads activeren bij €5K MRR** (€500/mnd).
-- **Vercel AI Gateway** — per-gebruiker kostentracking + budget alerts; loont pas bij 10+ actieve klanten.
-- **Freemium-instapproduct** (6 aug) — bv. één gratis Funda-tekst/maand, gericht op klanten van goedkope tekst-only-concurrenten (Huistekst.nl, Makelaartoolkit.nl). Pas ná zelfservice-monetisatie staat, anders alleen handmatig werk zonder opvolging.
-- **België naar voren halen** (6 aug) — extern marktonderzoek bevestigt: geen dominante Belgische speler doet vandaag AI-contentgeneratie voor makelaars. Fase 3 uit `goals.md` (CIB Vlaanderen) kan sneller dan gepland zodra testimonial + zelfservice-monetisatie staan.
+- **Supabase-URL herstellen** (actie Quinn) — zie de waarschuwing in de hervat-pointer hierboven. Blokkeert letterlijk alles wat met de database praat, inclusief lokaal ontwikkelen.
+- **Databron vastleggen** (actie Quinn) — combinatie van Altum AI (adres → woningkenmerken, zoals in Dealwijs) en een eigen, regelmatig te importeren dataset van verkochte woningen (transacties, heel Nederland). Blokkeert het waarderingsmodel én de i4housing Map. Nodig om te bepalen:
+  - Importformaat van de eigen dataset (kolommen, frequentie, bestandstype) — **inclusief coördinaten (lat/lng)**, anders kan de 500m-radiuskaart niet gebouwd worden.
+  - Licentiestatus — zie de waarschuwing in `goals.md` § Risico's: Kadaster/NVM-brainbay/Funda-data is licentieplichtig, scrapen mag niet. Dit moet zeker staan vóórdat er een import gebouwd wordt, niet erna.
+  - Of Altum AI hetzelfde werkgebied dekt als de eigen dataset (heel Nederland, gekozen 15 sep) of dat de dekking per gebied verschilt.
+- **Importpijplijn eigen transactiedata** — CSV/Excel → Supabase-tabel met adres, coördinaten, verkoopprijs, verkoopdatum, kenmerken (type, m², bouwjaar, energielabel, kamers, garage, etc.). Ontwerp het schema generiek genoeg voor makelaarsnaam als optioneel veld (nu leeg, later gevuld voor concurrentieanalyse).
+- **Waarderingsmodel — referentieselectie** — bij een adres de meest vergelijkbare verkochte woningen vinden (afstand, type, oppervlak, bouwperiode). Combineert Altum-kenmerken van het te waarderen adres met de eigen referentiedataset.
+- **Waarderingsmodel — kenmerk-effecten** — het "wat-als"-stuk achter de modulaire variabelen: wat doet een extra kamer, een beter energielabel, een garage of een aanbouw met de waarde? Uit de data zelf afleiden (regressie of vergelijkbare-paren-methode), niet hardcoderen — anders klopt het niet per regio.
+- **Woningdossier: waarderingsscherm bouwen (Module B)** — vervangt de placeholder in `components/ObjectWorkspace.tsx`. Bouwvolgorde: (1) modulaire variabele-blokken UI, (2) referentieselectie + kenmerk-effecten eronder, (3) AI USP-extractor, (4) PDF-rapport in kantoorhuisstijl.
+- **Adres toevoegen aan het woningdossier** — vervangt de placeholder in `app/(app)/object/new/page.tsx`. Korte flow: adres → Altum-kenmerken ophalen → opslaan. Geen 8-veldenformulier meer (dat hoorde bij contentgeneratie).
+
+## 🟠 Middel — marktinzichten & afwerking
+
+- **`/marktanalyse` van mockup naar werkend scherm** — nu `InAanbouw`-placeholders (`app/(app)/marktanalyse/page.tsx`). Marktanalyse: filter op type/wijk/periode, marktbeeld (prijsontwikkeling, m²-prijs, doorlooptijd). Concurrentieanalyse: zie hieronder.
+- **Concurrentieanalyse** — pas oppakken zodra de verkopende makelaar in de dataset zit (actie Quinn, zie "Databron"). Marktaandeel per kantoor, segment, doorlooptijd. Houd het datamodel uitbreidbaar (zie Hoofdstructuur hierboven).
+- **i4housing Map (Module A)** — kaart met 500m-radius en kantoor-vlaggetjes op historische transacties, zie spec hierboven. Wacht op coördinaten in de transactiedataset.
+- **AI USP-extractor (Module B)** — los, klein Claude-prompt-ontwerp: vrije tekst → gestructureerde USP's. Kan grotendeels los van het waarderingsmodel gebouwd worden zodra de invoer-UI er is.
+- **Huisstijl: accentkleur echt gebruiken in de rapportlaag** — `accent_kleur` staat sinds 15 sep in `HuisstijlSchema` (`lib/schemas.ts`) en wordt al getoond in `HuisstijlTab`, maar het waarderingsrapport (nog te bouwen) moet 'm ook echt toepassen naast `primaire_kleur`.
+- **`lib/plans.ts`-vervanger als er ooit weer geprijsd wordt** — de oude object-limieten zijn volledig verwijderd (zie "Al gebouwd & live"). Mocht er weer een prijsmodel komen, dan is dat een nieuw ontwerp vanaf nul — niet de oude Starter/Pro/Kantoor-structuur terugzetten zonder expliciet besluit van Quinn.
+
+## 🟢 Laag — opruimen, niet blokkerend
+
+- **Content-tabellen/kolommen uit de contentsuite van vóór 15 aug** — `post_planning`, `chatbot_leads`, `chatbot_faq` en de kolommen `objecten.chat_publiek`/`chat_foto_url` + `object_documenten.publiek_chatbaar` staan nog ongebruikt in Supabase. Los op te ruimen, geen haast.
+- **`kantoren.plan`/`trial_ends_at`/`stripe_id`-kolommen** — sinds 15 sep nergens meer gelezen of geschreven (zie "Al gebouwd & live"). Kunnen weg via een migratie zodra dat rustig uitkomt; geen functionele impact zolang ze blijven staan.
+- **CBS-jaargang jaarlijks bijwerken** — `lib/verrijking.ts` staat op `85984NED` (2024). CBS publiceert elk voorjaar een nieuwe jaargang, maar niet alle velden zijn meteen gevuld — check bij het ophogen of inkomen gevuld is. Nieuwe ID's: `https://opendata.cbs.nl/ODataCatalog/Tables?$filter=substringof('Kerncijfers wijken en buurten',Title)&$format=json`.
+- **Supabase-mailonderwerpen vernederlandsen** — "Reset your password" / "Confirm your email address" → NL (dashboard → Auth → Email Templates).
+- **Supabase Auth: self-signup uitzetten** (aanbevolen) — `/login` heeft geen "Aanmelden"-formulier meer, maar `supabase.auth.signUp` staat op projectniveau mogelijk nog open (dashboard → Auth → Providers → Email → "Allow new users to sign up" uitzetten). Zonder die toggle kan iemand die de open Supabase REST-endpoint direct aanroept alsnog een eigen kantoor laten aanmaken via de DB-trigger `handle_new_user()`, wat tegen het "puur admin-beheerd"-besluit van 15 sep ingaat.
+
+---
+
+## Al gebouwd & live (koerswijziging 15 sep — niet opnieuw doen/checken)
+
+- **Landingspagina** — gesloten platform, geen prijzen, alleen inloggen (`components/LandingHero.tsx`). `/prijzen` is verwijderd.
+- **Topbar met nieuwe hoofdstructuur** — `components/AppTopbar.tsx`: Woningdossier · Marktinzichten (Marktanalyse + Concurrentieanalyse) · Content (🔒) · Kantoorinstellingen.
+- **Kantoorbranding na login** — `lib/branding.ts` bouwt uit `kantoren.huisstijl_json` een volledig palet en zet dat als CSS-variabelen (`--merk*`) in `app/(app)/layout.tsx`. `accent_kleur` toegevoegd aan `HuisstijlSchema` en de huisstijl-instellingen.
+- **Contentsuite vergrendeld** — `lib/features.ts` (`CONTENT_VERGRENDELD = true`) blokkeert op API- én UI-niveau. Geldt voor iedereen, ook i4 Housing.
+- **Alle prijzen/abonnementen/Stripe volledig verwijderd (niet alleen bevroren)** — `lib/plans.ts`, alle Stripe-routes (`checkout`, `customer-portal`, `webhooks/stripe`), de `stripe`-npm-dependency, `vercel.json`-cron voor trial-waarschuwing, en alle bijbehorende UI (plan-badges, upgrade-CTA's, trial-banners, referral "1 maand gratis") zijn weg. Toegang is nu **puur admin-beheerd**: geen plan, geen proefperiode — alleen (de)activeren via `/admin`.
+- **`/login` self-signup gesloten** — het "Aanmelden"-tabblad is verwijderd; alleen inloggen + wachtwoord-reset. Teamleden binnen een kantoor uitnodigen loopt via de bestaande `nodigTeamlidUit` (magic link, `Instellingen → Team`).
+- **Admin: kantoor/account-beheer** — `/admin` heeft nu `createKantoor` en `addMakelaarAccount` (`app/admin/actions.ts` + `AccountBeheer.tsx`): een kantoor aanmaken, en een account met zelfgekozen wachtwoord direct koppelen aan een kantoor (incl. opruimen van het kantoor dat de DB-trigger er per ongeluk bij aanmaakt).
 
 ---
 
 ## Bewust níet doen
 
-*Focusbewaking (concurrentieanalyse §6.8/§9): complementair aan workflow-tools zijn is een feature.*
-
+- ❌ **Content-kalender, foto-verbetering en object-chatbot** — op 15 sep 2026 volledig verwijderd. Niet opnieuw bouwen zonder expliciet besluit van Quinn.
+- ❌ **Zelf aanmelden / publiek geprijsde site / abonnementen** — bewust geschrapt 15 sep. Nieuwe kantoren worden handmatig klaargezet via `/admin`. Niet terugzetten zonder besluit van Quinn.
 - ❌ Geen AI-inbox (e-mail/WhatsApp) — kernproduct HousApp, jaar voorsprong + funding.
 - ❌ Geen bezichtigingsplanner.
-- ❌ Geen leadgen-widgets/woningwaardering als leadmagneet — chatbot-leads per object zijn ons antwoord.
 
 ---
 

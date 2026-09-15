@@ -61,7 +61,7 @@ export function SettingsTabs({ makelaar, kantoor, teamleden, isAdmin }: Props) {
       </div>
 
       {active === 'account' && <AccountTab makelaar={makelaar} kantoor={kantoor} />}
-      {active === 'team' && <TeamTab teamleden={teamleden} kantoorId={kantoor.id} isAdmin={isAdmin} kantoorPlan={kantoor.plan} huidigeMakelaarsId={makelaar.id} />}
+      {active === 'team' && <TeamTab teamleden={teamleden} kantoorId={kantoor.id} isAdmin={isAdmin} huidigeMakelaarsId={makelaar.id} />}
       {active === 'wijken' && isAdmin && <WijkenTab />}
       {active === 'statistieken' && isAdmin && <StatistiekenTab />}
     </div>

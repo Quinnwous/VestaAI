@@ -4,6 +4,9 @@ export const HuisstijlSchema = z.object({
   schrijftoon: z.enum(['formeel', 'informeel', 'enthousiast']),
   slogan: z.string().max(100),
   primaire_kleur: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
+  // Tweede merkkleur. Samen met primaire_kleur kleurt deze de hele ingelogde
+  // omgeving en het waarderingsrapport — zie lib/branding.ts.
+  accent_kleur: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
   voorbeelden: z.array(z.string().max(2000)).max(20),
   // Uit de voorbeelden gedestilleerd, compact stijlprofiel (server-side gegenereerd).
   // Wordt in de prompt gebruikt i.p.v. alle voorbeelden integraal → schaalt zonder promptkosten-explosie.

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { Makelaar, Kantoor } from '@/lib/supabase'
+import type { Makelaar } from '@/lib/supabase'
 import { nodigTeamlidUit, verwijderTeamlid } from '../actions'
 
 function OnboardingBadge({ createdAt, firstGeneratedAt }: { createdAt: string; firstGeneratedAt: string | null }) {
@@ -32,19 +32,16 @@ interface Props {
   teamleden: Makelaar[]
   kantoorId: string
   isAdmin: boolean
-  kantoorPlan: Kantoor['plan']
   huidigeMakelaarsId: string
 }
 
-export function TeamTab({ teamleden, kantoorId, isAdmin, kantoorPlan, huidigeMakelaarsId }: Props) {
+export function TeamTab({ teamleden, kantoorId, isAdmin, huidigeMakelaarsId }: Props) {
   const router = useRouter()
   const [uitnodigEmail, setUitnodigEmail] = useState('')
   const [uitnodigStatus, setUitnodigStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [uitnodigError, setUitnodigError] = useState('')
   const [verwijderenId, setVerwijderenId] = useState<string | null>(null)
   const [verwijderError, setVerwijderError] = useState('')
-
-  const kanTeamGebruiken = kantoorPlan === 'pro' || kantoorPlan === 'kantoor'
 
   const handleUitnodig = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -138,31 +135,23 @@ export function TeamTab({ teamleden, kantoorId, isAdmin, kantoorPlan, huidigeMak
         <div>
           <h2 className="text-sm font-semibold text-gray-900 mb-1">Collega uitnodigen</h2>
 
-          {!kanTeamGebruiken ? (
-            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-              <p className="text-sm text-gray-600">
-                Teamleden toevoegen is beschikbaar vanaf het Pro-plan (€150/maand).
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleUitnodig} className="flex gap-2 mt-3">
-              <input
-                type="email"
-                value={uitnodigEmail}
-                onChange={e => setUitnodigEmail(e.target.value)}
-                required
-                placeholder="collega@kantoor.nl"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="submit"
-                disabled={uitnodigStatus === 'sending'}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
-              >
-                {uitnodigStatus === 'sending' ? '...' : uitnodigStatus === 'sent' ? 'Verzonden!' : 'Uitnodigen'}
-              </button>
-            </form>
-          )}
+          <form onSubmit={handleUitnodig} className="flex gap-2 mt-3">
+            <input
+              type="email"
+              value={uitnodigEmail}
+              onChange={e => setUitnodigEmail(e.target.value)}
+              required
+              placeholder="collega@kantoor.nl"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <button
+              type="submit"
+              disabled={uitnodigStatus === 'sending'}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+            >
+              {uitnodigStatus === 'sending' ? '...' : uitnodigStatus === 'sent' ? 'Verzonden!' : 'Uitnodigen'}
+            </button>
+          </form>
 
           {uitnodigStatus === 'error' && (
             <p className="mt-2 text-xs text-red-600">{uitnodigError}</p>

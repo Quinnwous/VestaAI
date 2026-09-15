@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { extractDocxText, DOCX_MIME } from '@/lib/docx'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 60
 
@@ -9,6 +10,9 @@ const TOEGESTANE_TYPES = ['application/pdf', 'text/plain', DOCX_MIME]
 const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 
 export async function POST(req: NextRequest) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })

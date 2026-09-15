@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
 import { generateContent } from '@/lib/claude'
 import { PropertyInputSchema } from '@/lib/schemas'
-import { heeftToegang, maandLimietVoor, PROEF_LIMIET } from '@/lib/plans'
 import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import type { HuisstijlConfig } from '@/lib/schemas'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 300
 
@@ -37,6 +37,9 @@ function releaseRateLimit(userId: string) {
 }
 
 export async function POST(req: NextRequest) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   let rateLimitedUserId: string | null = null
 
   try {
@@ -64,15 +67,13 @@ export async function POST(req: NextRequest) {
 
       const { data: makelaar } = await supabase
         .from('makelaars')
-        .select('id, kantoor_id, kantoren(huisstijl_json, plan, trial_ends_at)')
+        .select('id, kantoor_id, kantoren(huisstijl_json)')
         .eq('id', user.id)
         .single()
 
       if (makelaar) {
         const kantoorData = makelaar.kantoren as unknown as {
           huisstijl_json: HuisstijlConfig | null
-          plan: string | null
-          trial_ends_at: string | null
         } | null
 
         if (kantoorData?.huisstijl_json) {
@@ -99,50 +100,8 @@ export async function POST(req: NextRequest) {
           })
         }
 
-        // Toegang controleren: geen plan én geen lopende gratis-periode = geblokkeerd
-        const plan = kantoorData?.plan ?? null
-        const trialEndsAt = kantoorData?.trial_ends_at ?? null
-
-        if (!heeftToegang(plan, trialEndsAt)) {
-          releaseRateLimit(user.id)
-          return NextResponse.json(
-            { error: 'Je proefperiode is afgelopen. Kies een abonnement om verder te gaan.' },
-            { status: 402 },
-          )
-        }
-
-        if (plan === null) {
-          // Lopende proef: harde limiet over de hele proefperiode (geen maandgrens).
-          const { count } = await supabase
-            .from('objecten')
-            .select('id', { count: 'exact', head: true })
-            .eq('kantoor_id', makelaar.kantoor_id)
-          if ((count ?? 0) >= PROEF_LIMIET) {
-            releaseRateLimit(user.id)
-            return NextResponse.json(
-              { error: `Proeflimiet bereikt: tijdens de proefperiode kun je ${PROEF_LIMIET} objecten aanmaken. Kies een abonnement om verder te gaan.` },
-              { status: 402 },
-            )
-          }
-        } else {
-          // Maandlimiet per plan (Starter 5 · Pro 15 · Kantoor 100 · Gratis 5)
-          const startOfMonth = new Date()
-          startOfMonth.setDate(1)
-          startOfMonth.setHours(0, 0, 0, 0)
-          const { count } = await supabase
-            .from('objecten')
-            .select('id', { count: 'exact', head: true })
-            .eq('kantoor_id', makelaar.kantoor_id)
-            .gte('created_at', startOfMonth.toISOString())
-          const maandLimiet = maandLimietVoor(plan)
-          if ((count ?? 0) >= maandLimiet) {
-            releaseRateLimit(user.id)
-            return NextResponse.json(
-              { error: `Maandlimiet bereikt: je plan staat ${maandLimiet} objecten per maand toe.` },
-              { status: 402 },
-            )
-          }
-        }
+        // Toegang is puur admin-beheerd (geen plan-/proeflimiet meer, zie CLAUDE.md):
+        // wie een makelaar-record heeft, mag genereren.
 
         const tVerrijkStart = Date.now()
         const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)

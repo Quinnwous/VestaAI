@@ -11,23 +11,6 @@ interface Props {
   isAdmin: boolean
 }
 
-function HuisstijlUpgradeBanner() {
-  return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 max-w-lg">
-      <p className="text-sm font-semibold text-amber-900 mb-1">Huisstijlgeheugen — Pro-functie</p>
-      <p className="text-sm text-amber-800 mb-4">
-        Stel uw schrijftoon, slogan en voorbeeldteksten in. VestaAI leert de stijl van uw kantoor en past die automatisch toe bij elke generatie.
-      </p>
-      <a
-        href="/api/stripe/checkout?plan=pro"
-        className="inline-block rounded-lg bg-amber-600 px-5 py-2 text-sm font-semibold text-white hover:bg-amber-700 transition-colors"
-      >
-        Upgrade naar Pro — €150/maand
-      </a>
-    </div>
-  )
-}
-
 const SCHRIJFTONEN: { value: HuisstijlConfig['schrijftoon']; label: string; desc: string }[] = [
   { value: 'formeel', label: 'Formeel', desc: 'Professioneel en zakelijk' },
   { value: 'informeel', label: 'Informeel', desc: 'Toegankelijk en persoonlijk' },
@@ -41,6 +24,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   )
   const [slogan, setSlogan] = useState(huidig?.slogan ?? '')
   const [primaire_kleur, setPrimaireKleur] = useState(huidig?.primaire_kleur ?? '#1A6B45')
+  const [accent_kleur, setAccentKleur] = useState(huidig?.accent_kleur ?? '#2A8A5C')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(
     huidig?.voorbeelden?.length ? huidig.voorbeelden : ['']
   )
@@ -147,6 +131,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       schrijftoon,
       slogan,
       primaire_kleur,
+      accent_kleur,
       voorbeelden: voorbeelden.filter(Boolean),
       brochure_stijl: broVb.length || slotTekst.trim()
         ? { voorbeelden: broVb, ...(slotTekst.trim() ? { slot_tekst: slotTekst.trim() } : {}) }
@@ -155,10 +140,6 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
     })
     setStatus(result.ok ? 'saved' : 'error')
     if (result.ok) setTimeout(() => setStatus('idle'), 2000)
-  }
-
-  if (kantoor.plan === 'starter') {
-    return <HuisstijlUpgradeBanner />
   }
 
   if (!isAdmin) {
@@ -207,17 +188,37 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
         />
       </div>
 
-      {/* Primaire kleur */}
+      {/* Merkkleuren — deze kleuren de hele ingelogde omgeving, zie lib/branding.ts */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Primaire kleur</label>
-        <div className="flex items-center gap-3">
-          <input
-            type="color"
-            value={primaire_kleur}
-            onChange={e => setPrimaireKleur(e.target.value)}
-            className="h-9 w-16 rounded-lg border border-gray-300 cursor-pointer"
-          />
-          <span className="text-sm text-gray-500 font-mono">{primaire_kleur}</span>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Merkkleuren</label>
+        <p className="text-xs text-gray-500 mb-3">
+          Deze kleuren gelden voor uw hele omgeving: navigatie, knoppen en straks het waarderingsrapport.
+        </p>
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={primaire_kleur}
+              onChange={e => setPrimaireKleur(e.target.value)}
+              aria-label="Primaire kleur"
+              className="h-9 w-16 rounded-lg border border-gray-300 cursor-pointer"
+            />
+            <span className="text-sm text-gray-500">
+              Primair <span className="font-mono">{primaire_kleur}</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={accent_kleur}
+              onChange={e => setAccentKleur(e.target.value)}
+              aria-label="Accentkleur"
+              className="h-9 w-16 rounded-lg border border-gray-300 cursor-pointer"
+            />
+            <span className="text-sm text-gray-500">
+              Accent <span className="font-mono">{accent_kleur}</span>
+            </span>
+          </div>
         </div>
       </div>
 

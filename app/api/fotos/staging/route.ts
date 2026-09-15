@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import sharp from 'sharp'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 120
 
@@ -28,9 +29,9 @@ const RUIMTE_OMSCHRIJVING: Record<RuimteType, string> = {
   werkkamer: 'home office with desk, ergonomic chair, bookshelf, and focused lighting',
 }
 
-// Virtual staging vervangt het interieur volledig door AI-fictie — anders dan foto-verbetering
-// (kleurcorrectie) is dit precies het soort AI-gegenereerde beeld dat de Belgische
-// deontologische code voor makelaars en de EU AI Act-transparantieplicht verplicht labelen.
+// Virtual staging vervangt het interieur volledig door AI-fictie. Dit is precies het soort
+// AI-gegenereerd beeld dat de Belgische deontologische code voor makelaars en de
+// EU AI Act-transparantieplicht verplicht labelen.
 async function labelAlsAiGegenereerd(imageBase64: string): Promise<{ base64: string; mimeType: string }> {
   const buffer = Buffer.from(imageBase64, 'base64')
   const image = sharp(buffer)
@@ -60,6 +61,9 @@ async function labelAlsAiGegenereerd(imageBase64: string): Promise<{ base64: str
 }
 
 export async function POST(req: NextRequest) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   if (!GOOGLE_AI_API_KEY) {
     return NextResponse.json(
       { error: 'Virtual staging vereist GOOGLE_AI_API_KEY in de Vercel-omgevingsvariabelen.' },

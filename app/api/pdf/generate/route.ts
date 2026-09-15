@@ -6,10 +6,14 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
 import React from 'react'
+import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const runtime = 'nodejs'
 
 export async function GET(req: NextRequest) {
+  // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
+  if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
+
   const { searchParams } = new URL(req.url)
   const objectId = searchParams.get('object_id')
 

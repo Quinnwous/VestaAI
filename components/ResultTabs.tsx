@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ContentOutput } from '@/lib/schemas'
 import { TabContent } from './TabContent'
-import { PlanPostKnop } from './PlanPostKnop'
 import { HerschrijfKnop } from './HerschrijfKnop'
 
 type Tab = 'funda' | 'brochure' | 'instagram' | 'linkedin' | 'email' | 'buurt' | 'openhuis' | 'followup' | 'video' | 'energieadvies' | 'kopersvragen' | 'marktanalyse'
@@ -281,12 +280,9 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
         </div>
 
         <div role="tabpanel" id="panel-instagram" aria-labelledby="tab-instagram" hidden={activeTab !== 'instagram'}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-gray-400">
-              {isEn ? 'Instagram limit: 2,200 characters per post' : 'Instagram-limiet: 2.200 tekens per post'}
-            </p>
-            <PlanPostKnop content={localData.instagram_emotioneel} platform="instagram" objectId={objectId} />
-          </div>
+          <p className="text-xs text-gray-400 mb-4">
+            {isEn ? 'Instagram limit: 2,200 characters per post' : 'Instagram-limiet: 2.200 tekens per post'}
+          </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
               <TabContent label={isEn ? 'Emotional' : 'Emotioneel'} content={localData.instagram_emotioneel} charLimit={2200} onSave={saveField('instagram_emotioneel')} />
@@ -304,12 +300,9 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
         </div>
 
         <div role="tabpanel" id="panel-linkedin" aria-labelledby="tab-linkedin" hidden={activeTab !== 'linkedin'}>
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-gray-400">
-              {isEn ? 'LinkedIn limit: 3,000 characters per post' : 'LinkedIn-limiet: 3.000 tekens per post'}
-            </p>
-            <PlanPostKnop content={localData.linkedin_kantoor} platform="linkedin" objectId={objectId} />
-          </div>
+          <p className="text-xs text-gray-400 mb-4">
+            {isEn ? 'LinkedIn limit: 3,000 characters per post' : 'LinkedIn-limiet: 3.000 tekens per post'}
+          </p>
           <div className="space-y-4">
             <div className="space-y-2">
               <TabContent label={isEn ? 'Agency variant' : 'Kantoor-variant'} content={localData.linkedin_kantoor} charLimit={3000} onSave={saveField('linkedin_kantoor')} />

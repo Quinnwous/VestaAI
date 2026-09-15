@@ -52,7 +52,7 @@ export default function OverOnsPage() {
               { titel: 'Nederlands door en door', tekst: 'Geen vertaalde tool. Funda-richtlijnen, NVM-stijlregels en de cultuur van de Nederlandse huizenmarkt zitten in elk algoritme ingebakken.' },
               { titel: 'Uw stem, niet de onze', tekst: 'Vesta leert de schrijftoon, het logo en de stijl van uw kantoor. Elke tekst klinkt als u — niet als een robot.' },
               { titel: 'Privacy boven alles', tekst: "Objectdata wordt uitsluitend gebruikt voor uw eigen generaties. Versleuteld op Nederlandse servers, volledig AVG-proof. We verkopen nooit uw data." },
-              { titel: 'Eén platform, niet tien tools', tekst: "Tekst, foto, staging, documenten, kalender en chatbot samengebracht in één werkplek. Minder logins, meer overzicht." },
+              { titel: 'Eén platform, niet tien tools', tekst: 'Tekst, virtual staging, documenten en export samengebracht in één werkplek. Minder logins, meer overzicht.' },
             ].map(({ titel, tekst }) => (
               <div key={titel} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '26px 28px' }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: '0 0 10px' }}>{titel}</h3>
@@ -87,7 +87,7 @@ export default function OverOnsPage() {
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ fontSize: 13, color: '#9AA6A0' }}>© 2026 Vesta&nbsp;AI · De AI-assistent voor de makelaardij</span>
           <div style={{ display: 'flex', gap: 20 }}>
-            {[{ href: '/', label: 'Home' }, { href: '/prijzen', label: 'Prijzen' }, { href: '/contact', label: 'Contact' }, { href: '/privacy', label: 'Privacy' }].map(({ href, label }) => (
+            {[{ href: '/', label: 'Home' }, { href: '/contact', label: 'Contact' }, { href: '/privacy', label: 'Privacy' }].map(({ href, label }) => (
               <Link key={label} href={href} style={{ fontSize: 13, color: '#9AA6A0', textDecoration: 'none' }}>{label}</Link>
             ))}
           </div>

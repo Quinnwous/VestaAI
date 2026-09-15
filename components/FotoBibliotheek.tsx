@@ -19,7 +19,6 @@ const SOORT_LABEL: Record<string, string> = {
 export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string; refreshSignal: number }) {
   const [fotos, setFotos] = useState<Foto[]>([])
   const [geladen, setGeladen] = useState(false)
-  const [coverId, setCoverId] = useState<string | null>(null)
   const [uploaden, setUploaden] = useState(false)
   const [uploadFout, setUploadFout] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -70,15 +69,6 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
     if (fileRef.current) fileRef.current.value = ''
   }
 
-  const alsChatCover = async (foto: Foto) => {
-    setCoverId(foto.id)
-    await fetch(`/api/object/${objectId}/chat-instellingen`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_foto_url: foto.url }),
-    }).catch(() => setCoverId(null))
-  }
-
   const download = (foto: Foto) => {
     const a = document.createElement('a')
     a.href = foto.url
@@ -103,7 +93,7 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
 
       {geladen && fotos.length === 0 ? (
         <p style={{ fontSize: 13, color: '#9AA6A0' }}>
-          Nog geen bewaarde foto&apos;s. Upload er een, of gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een verbeterde of gestagede foto.
+          Nog geen bewaarde foto&apos;s. Upload er een, of gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een gestagede foto.
         </p>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
@@ -122,15 +112,6 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
             </button>
             <button onClick={() => verwijder(foto.id)} aria-label="Verwijderen" style={{ background: 'none', border: 'none', color: '#B91C1C', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>
               Verwijder
-            </button>
-          </div>
-          <div style={{ borderTop: '1px solid #F1F4F2', padding: '6px 9px' }}>
-            <button
-              onClick={() => alsChatCover(foto)}
-              disabled={coverId === foto.id}
-              style={{ background: 'none', border: 'none', color: coverId === foto.id ? '#166534' : '#5A6B61', fontSize: 12, fontWeight: 600, cursor: coverId === foto.id ? 'default' : 'pointer' }}
-            >
-              {coverId === foto.id ? 'Chat-cover ✓' : 'Als chat-cover'}
             </button>
           </div>
         </div>

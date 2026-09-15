@@ -22,7 +22,7 @@ export default function ContactPage() {
             Laten we kennismaken.
           </h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: '#445249', margin: 0, maxWidth: 560 }}>
-            Wilt u een demo plannen, heeft u een vraag over uw abonnement of wilt u samenwerken? Stuur een e-mail — we reageren binnen één werkdag.
+            Wilt u toegang aanvragen, een demo plannen of wilt u samenwerken? Stuur een e-mail — we reageren binnen één werkdag.
           </p>
         </div>
 
@@ -35,9 +35,9 @@ export default function ContactPage() {
               cta: 'Plan een demo →',
             },
             {
-              label: 'Vraag over een abonnement',
-              desc: 'Twijfelt u over het juiste plan of heeft u een maatwerkvraag voor een groot kantoor?',
-              href: 'mailto:quinn.berkouwer@gmail.com?subject=VestaAI%20vraag%20abonnement',
+              label: 'Toegang aanvragen',
+              desc: 'VestaAI is een gesloten platform — wij zetten uw kantoor klaar.',
+              href: 'mailto:quinn.berkouwer@gmail.com?subject=VestaAI%20toegang%20aanvragen',
               cta: 'Stuur een e-mail →',
             },
             {
@@ -72,7 +72,7 @@ export default function ContactPage() {
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
           <span style={{ fontSize: 13, color: '#9AA6A0' }}>© 2026 Vesta&nbsp;AI · De AI-assistent voor de makelaardij</span>
           <div style={{ display: 'flex', gap: 20 }}>
-            {[{ href: '/', label: 'Home' }, { href: '/prijzen', label: 'Prijzen' }, { href: '/privacy', label: 'Privacy' }, { href: '/voorwaarden', label: 'Voorwaarden' }].map(({ href, label }) => (
+            {[{ href: '/', label: 'Home' }, { href: '/privacy', label: 'Privacy' }, { href: '/voorwaarden', label: 'Voorwaarden' }].map(({ href, label }) => (
               <Link key={label} href={href} style={{ fontSize: 13, color: '#9AA6A0', textDecoration: 'none' }}>{label}</Link>
             ))}
           </div>

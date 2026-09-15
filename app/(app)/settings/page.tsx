@@ -21,7 +21,7 @@ export default async function SettingsPage() {
 
   const { data: kantoor } = await supabase
     .from('kantoren')
-    .select('id, name, plan, logo_url, huisstijl_json, trial_ends_at')
+    .select('id, name, logo_url, huisstijl_json')
     .eq('id', (makelaar as Makelaar).kantoor_id)
     .single()
 
