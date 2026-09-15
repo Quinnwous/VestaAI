@@ -5,7 +5,7 @@ import { PublicNav } from '@/components/PublicNav'
 export const metadata: Metadata = {
   title: 'Contact — VestaAI',
   description:
-    'Neem contact op met VestaAI. Plan een demo, stel een vraag of meld u aan voor de gratis proefperiode.',
+    'Neem contact op met VestaAI voor een demo of een offerte. Al klant? Log in via de knop hierboven.',
 }
 
 const NR = { fontFamily: 'var(--font-newsreader), Georgia, serif' }
@@ -22,8 +22,19 @@ export default function ContactPage() {
             Laten we kennismaken.
           </h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: '#445249', margin: 0, maxWidth: 560 }}>
-            Wilt u toegang aanvragen, een demo plannen of wilt u samenwerken? Stuur een e-mail — we reageren binnen één werkdag.
+            Al klant van VestaAI? Log direct in. Nog niet? Vraag een demo of een offerte aan — we reageren binnen één werkdag.
           </p>
+        </div>
+
+        {/* Bestaande klant — uitgelicht als eerste, duidelijk onderscheiden van de aanvraag-opties */}
+        <div style={{ background: '#0E1A13', borderRadius: 18, padding: '26px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
+          <div>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Al klant?</h2>
+            <p style={{ fontSize: 14.5, lineHeight: 1.55, color: '#A8BBB0', margin: 0, maxWidth: 440 }}>Log in op uw kantooromgeving.</p>
+          </div>
+          <Link href="/login" style={{ fontSize: 15, fontWeight: 700, color: '#114230', background: '#fff', padding: '11px 20px', borderRadius: 11, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Inloggen →
+          </Link>
         </div>
 
         <div style={{ display: 'grid', gap: 16, marginBottom: 56 }}>
@@ -35,10 +46,10 @@ export default function ContactPage() {
               cta: 'Plan een demo →',
             },
             {
-              label: 'Toegang aanvragen',
-              desc: 'VestaAI is een gesloten platform — wij zetten uw kantoor klaar.',
-              href: 'mailto:quinn.berkouwer@gmail.com?subject=VestaAI%20toegang%20aanvragen',
-              cta: 'Stuur een e-mail →',
+              label: 'Offerte aanvragen',
+              desc: 'Benieuwd wat VestaAI voor uw kantoor kost? Wij stellen op maat een voorstel op.',
+              href: 'mailto:quinn.berkouwer@gmail.com?subject=VestaAI%20offerte%20aanvragen',
+              cta: 'Vraag een offerte →',
             },
             {
               label: 'Technische ondersteuning',

@@ -46,7 +46,6 @@ const FEATURES = [
   { icon: 'doc', titel: 'Woningteksten', tekst: 'Funda-tekst, korte én lange brochure, drie Instagram-varianten, twee LinkedIn-posts, koper-e-mail en buurtomschrijving — in één generatie.' },
   { icon: 'brand', titel: 'Huisstijlgeheugen', tekst: 'Vesta leert de schrijftoon en het logo van uw kantoor. Elke tekst klinkt als ú, niet als een generieke assistent.' },
   { icon: 'sofa', titel: 'Virtual staging', tekst: 'Richt lege ruimtes digitaal in met passend meubilair, zodat kopers de mogelijkheden meteen voor zich zien.' },
-  { icon: 'folder', titel: 'Documentenassistent', tekst: 'Upload VVE-notulen, leveringsakte of koopakte en stel er vragen over. Vesta vat samen en zoekt het op.' },
   { icon: 'data', titel: 'Automatische woningdata', tekst: 'Typ het adres — bouwjaar, oppervlak en energielabel worden automatisch opgehaald uit BAG en Kadaster.' },
   { icon: 'export', titel: 'Funda, Realworks & PDF', tekst: 'Teksten direct klaar voor Funda, te exporteren naar Realworks of als nette PDF-brochure voor de bezichtiging.' },
 ]
@@ -114,18 +113,13 @@ const FOTO_PUNTEN = [
   'Eén klik per ruimte — kies de stijl die bij de doelgroep van de woning past.',
 ]
 
-const STEPS = [
-  { nr: '01', titel: 'Voer de woning in', tekst: 'Acht velden — of laat Vesta bouwjaar, oppervlak en energielabel automatisch ophalen uit BAG en Kadaster.' },
-  { nr: '02', titel: 'Vesta doet het werk', tekst: 'Alle teksten en social posts worden gegenereerd — afgestemd op Funda, de doelgroep en uw huisstijl.' },
-  { nr: '03', titel: 'Publiceer direct', tekst: 'Kopieer naar Funda of Realworks, exporteer als PDF of mail de brochure direct naar een koper.' },
-]
 
 const REDENEN = [
   { nr: 'a', titel: "Kent Funda, niet 'vastgoed in het algemeen'", tekst: 'Engelse AI-tools zijn vertaald en missen de Funda-regelset. Vesta is er vanaf de eerste regel op gebouwd.' },
   { nr: 'b', titel: 'Klinkt als uw kantoor, niet als ChatGPT', tekst: 'Het huisstijlgeheugen leert uw toon en stijl. Geen generieke output die u alsnog moet herschrijven.' },
-  { nr: 'c', titel: 'Eén login in plaats van tien tools', tekst: 'Teksten, virtual staging, documenten, waardering en marktinzichten op één plek — die ook nog eens met elkaar samenwerken.' },
+  { nr: 'c', titel: 'Eén login in plaats van tien tools', tekst: 'Teksten, virtual staging, waardering en marktinzichten op één plek — die ook nog eens met elkaar samenwerken.' },
   { nr: 'd', titel: 'Direct plaatsbaar, geen nabewerking', tekst: 'Output voldoet aan de Funda-regels en is meteen te plaatsen, exporteren of met één klik te herschrijven.' },
-  { nr: 'e', titel: 'Uw data blijft in Nederland', tekst: 'Versleuteld op Nederlandse servers, volledig AVG-proof. Wij verkopen geen data en gebruiken uw objecten alleen voor u.' },
+  { nr: 'e', titel: 'Uw data blijft in Europa', tekst: 'Versleuteld opgeslagen binnen de EU (Frankfurt), volledig AVG-proof. Wij verkopen geen data en gebruiken uw objecten alleen voor u.' },
   { nr: 'f', titel: 'Groeit mee met uw kantoor', tekst: 'Van één vestiging tot een volledig team — iedereen genereert in dezelfde huisstijl, onder één dak.' },
 ]
 
@@ -136,19 +130,9 @@ const HUISSTIJL_RIJEN = [
 ]
 
 
-// ─── Testimonial ─────────────────────────────────────────────────────────────
-const TESTIMONIAL = {
-  quote:
-    '"VestaAI bespaart ons per woning minstens een uur schrijfwerk. De Funda-teksten zijn direct plaatsbaar — onze makelaar hoeft ze nauwelijks aan te passen."',
-  naam: 'Naam makelaar',
-  functie: 'Makelaar',
-  kantoor: 'Eerste klant',
-  tijdsbesparing: '1 uur per woning',
-  placeholder: true,
-}
 
 const FAQS = [
-  { v: 'Wat kan Vesta AI precies allemaal?', a: "Vesta genereert al uw woningteksten (Funda, brochure, social, e-mail, buurt), doet virtual staging, beantwoordt vragen over woningdocumenten, berekent een onderbouwde woningwaardering en geeft marktinzicht in uw regio. Eén platform voor uw hele werk als makelaar." },
+  { v: 'Wat kan Vesta AI precies allemaal?', a: "Vesta genereert al uw woningteksten (Funda, brochure, social, e-mail, buurt), doet virtual staging, berekent een onderbouwde woningwaardering en geeft marktinzicht in uw regio. Eén platform voor uw hele werk als makelaar." },
   { v: 'Werkt dit met Funda en Realworks?', a: 'De teksten voldoen aan de Funda-richtlijnen (lengte, structuur, verboden woorden) en zijn direct te plaatsen. U kopieert ze naar Funda of uw CRM, of exporteert naar Realworks-formaat. Een directe Funda-API-koppeling is in ontwikkeling.' },
   { v: 'Houdt Vesta rekening met de Nederlandse regels?', a: 'Ja. Vesta is getraind op Funda-richtlijnen en NVM-stijlregels, en houdt rekening met de toon en buurtcultuur die de Nederlandse markt verwacht. Algemene of vertaalde tools missen die context.' },
   { v: 'Hoe zit het met de privacy van mijn objectdata?', a: 'Alle data wordt versleuteld opgeslagen op Nederlandse servers en is AVG-proof. Wij verkopen geen data; uw objectgegevens worden uitsluitend gebruikt voor uw eigen generaties.' },
@@ -358,7 +342,7 @@ export function LandingPageClient() {
                   </div>
                 )}
               </div>
-              <Link href="/contact" className="vll" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>Toegang aanvragen</Link>
+              <Link href="/contact" className="vll" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>Offerte aanvragen</Link>
               <Link href="/login" className="vg" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '11px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 6px 16px rgba(26,107,69,.22)', transition: 'background .15s' }}>
                 Inloggen
               </Link>
@@ -386,11 +370,11 @@ export function LandingPageClient() {
             </h1>
 
             <p style={{ fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 498, margin: '0 0 32px' }}>
-              Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform. Afgestemd op Funda-richtlijnen en de NVM-stijlregels.
+              Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform. Afgestemd op Funda-richtlijnen en de NVM-stijlregels.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
               <Link href="/contact" className="vg" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
-                Toegang aanvragen →
+                Offerte aanvragen →
               </Link>
               <Link href="/login" style={{ fontSize: 15, fontWeight: 600, color: '#1A6B45', textDecoration: 'none' }}>
                 Al klant? Inloggen →
@@ -516,7 +500,7 @@ export function LandingPageClient() {
           Niet één losse tool, maar het <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>complete digitale gereedschap</span> van uw kantoor.
         </h2>
         <p style={{ fontSize: 18.5, lineHeight: 1.66, color: '#445249', maxWidth: 700, margin: '0 auto' }}>
-          Een woning verkopen vraagt om veel meer dan een Funda-tekst: sterke social posts, een nette brochure, documentenwerk, een onderbouwde waardebepaling en zicht op wat er in de regio gebeurt. Vesta&nbsp;AI brengt dat allemaal samen in één Nederlands platform — getraind op Funda-richtlijnen en NVM-stijlregels, met uw eigen huisstijl als basis. U houdt de regie; Vesta doet het werk.
+          Een woning verkopen vraagt om veel meer dan een Funda-tekst: sterke social posts, een nette brochure, een onderbouwde waardebepaling en zicht op wat er in de regio gebeurt. Vesta&nbsp;AI brengt dat allemaal samen in één Nederlands platform — getraind op Funda-richtlijnen en NVM-stijlregels, met uw eigen huisstijl als basis. U houdt de regie; Vesta doet het werk.
         </p>
       </section>
 
@@ -688,84 +672,6 @@ export function LandingPageClient() {
               </div>
             </div>
             <span style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: '#fff', border: '1px solid #E4EAE6', boxShadow: '0 8px 24px rgba(14,26,19,.12)', width: 46, height: 46, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#1A6B45', fontWeight: 800 }}>→</span>
-          </div>
-        </div>
-      </section>
-
-      {/* DOCUMENT ASSISTENT */}
-      <section style={{ background: '#F1F7F3' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
-          <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 54, alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Documentenassistent</div>
-              <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
-                Upload een document. Stel een vraag.
-              </h2>
-              <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 440 }}>
-                VVE-notulen, leveringsakte of koopovereenkomst — upload het document en stel Vesta uw vraag in gewoon Nederlands. U krijgt direct een nauwkeurig antwoord, inclusief de bron in het document.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {['VVE-notulen, aktes, taxaties en meer', 'Vraag stellen in gewoon Nederlands', 'Antwoord met paginaverwijzing'].map(pt => (
-                  <div key={pt} style={{ display: 'flex', gap: 11, alignItems: 'flex-start' }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 999, background: '#EAF5EE', color: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0, marginTop: 1 }}>✓</span>
-                    <span style={{ fontSize: 15.5, color: '#3A463F', lineHeight: 1.5 }}>{pt}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.32)', overflow: 'hidden' }}>
-                <div style={{ padding: '13px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 9, background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A6B45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/></svg>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>VVE-notulen-2024.pdf</div>
-                    <div style={{ fontSize: 11, color: '#9AA6A0' }}>18 pagina&apos;s · geanalyseerd</div>
-                  </div>
-                  <span style={{ marginLeft: 'auto', fontSize: 11.5, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '4px 10px' }}>✓ Klaar</span>
-                </div>
-                <div style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 11 }}>
-                  <div style={{ alignSelf: 'flex-end', background: '#1A6B45', color: '#fff', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontSize: 14, maxWidth: '85%', lineHeight: 1.45 }}>
-                    Zijn er openstaande bestuursbesluiten over het dak?
-                  </div>
-                  <div style={{ background: '#F7FAF8', border: '1px solid #EDF2EF', padding: '13px 15px', borderRadius: '4px 14px 14px 14px', fontSize: 13.5, lineHeight: 1.6, color: '#2A372F', maxWidth: '93%' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 6 }}>Vesta AI</div>
-                    Ja. In de vergadering van 14 maart 2024 is besloten het platte dak van het achtergebouw in 2025 te vervangen. Het reservefonds dekt circa 60%; het verwachte eigenaarsdeel bedraagt <strong>€&nbsp;1.840</strong>.
-                    <div style={{ marginTop: 8 }}><span style={{ fontSize: 11, color: '#9AA6A0', background: '#F0F4F1', borderRadius: 6, padding: '3px 8px' }}>Bron: p.&nbsp;4 · agendapunt 3b</span></div>
-                  </div>
-                  <div style={{ alignSelf: 'flex-end', background: '#1A6B45', color: '#fff', padding: '10px 14px', borderRadius: '14px 14px 4px 14px', fontSize: 14, maxWidth: '85%', lineHeight: 1.45 }}>
-                    Wat is het saldo van het reservefonds?
-                  </div>
-                  <div style={{ background: '#F7FAF8', border: '1px solid #EDF2EF', padding: '13px 15px', borderRadius: '4px 14px 14px 14px', fontSize: 13.5, lineHeight: 1.6, color: '#2A372F', maxWidth: '93%' }}>
-                    <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 6 }}>Vesta AI</div>
-                    Het reservefonds bedroeg per 31 december 2023 <strong>€&nbsp;42.750</strong>. Met de geplande bijdragen loopt dat naar verwachting op tot €&nbsp;48.300 eind 2024.
-                    <div style={{ marginTop: 8 }}><span style={{ fontSize: 11, color: '#9AA6A0', background: '#F0F4F1', borderRadius: 6, padding: '3px 8px' }}>Bron: p.&nbsp;7 · jaarrekening 2023</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* HOE HET WERKT */}
-      <section style={{ background: '#0E1A13', color: '#EAF5EE' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
-          <div style={{ maxWidth: 640, marginBottom: 54 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#7DC4A0', marginBottom: 16 }}>Hoe het werkt</div>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.1, letterSpacing: '-.015em', color: '#fff', margin: 0 }}>
-              Van woninggegevens naar een complete online presentatie.
-            </h2>
-          </div>
-          <div className="vsg" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 26 }}>
-            {STEPS.map(st => (
-              <div key={st.nr} style={{ borderTop: '1px solid #2A3B31', paddingTop: 26 }}>
-                <div style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontSize: 17, fontWeight: 500, color: '#7DC4A0', marginBottom: 18 }}>{st.nr}</div>
-                <h3 style={{ fontSize: 21, fontWeight: 700, color: '#fff', margin: '0 0 12px', letterSpacing: '-.01em' }}>{st.titel}</h3>
-                <p style={{ fontSize: 15.5, lineHeight: 1.6, color: '#A8BBB0', margin: 0 }}>{st.tekst}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -951,44 +857,6 @@ export function LandingPageClient() {
         </div>
       </section>
 
-      {/* TESTIMONIAL */}
-      <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px 0' }}>
-        <div style={{ textAlign: 'center', marginBottom: 46 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Wat makelaars zeggen</div>
-          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto', maxWidth: 640 }}>
-            Vertrouwd door <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>makelaars</span> die tijd terugwinnen.
-          </h2>
-        </div>
-        <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative' }}>
-          {TESTIMONIAL.placeholder && (
-            <div style={{ position: 'absolute', top: -10, right: -10, fontSize: 10.5, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: '#9A6B16', background: '#FBF4E6', border: '1px solid #F0E2C2', borderRadius: 999, padding: '4px 9px', zIndex: 1 }}>
-              Binnenkort — na pilot
-            </div>
-          )}
-          <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 24, padding: '44px 48px', boxShadow: '0 24px 60px -34px rgba(14,26,19,.18)', position: 'relative' }}>
-            <div style={{ fontSize: 52, lineHeight: 1, color: '#D5E8DD', fontFamily: 'Georgia, serif', position: 'absolute', top: 28, left: 36 }}>&ldquo;</div>
-            <p style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontSize: 'clamp(18px,2.4vw,24px)', lineHeight: 1.55, color: '#0E1A13', margin: '0 0 32px', paddingTop: 16, fontStyle: 'italic' }}>
-              {TESTIMONIAL.quote}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 48, height: 48, borderRadius: 999, background: '#EAF5EE', border: '2px solid #C7E6D5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: 18, fontWeight: 700, color: '#1A6B45' }}>{TESTIMONIAL.naam[0]}</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13' }}>{TESTIMONIAL.naam}</div>
-                  <div style={{ fontSize: 13.5, color: '#5A6B61' }}>{TESTIMONIAL.functie} · {TESTIMONIAL.kantoor}</div>
-                </div>
-              </div>
-              <div style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 12, padding: '10px 18px', textAlign: 'center' }}>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#1A6B45', letterSpacing: '-.02em' }}>{TESTIMONIAL.tijdsbesparing}</div>
-                <div style={{ fontSize: 12, color: '#4A9970', fontWeight: 600, marginTop: 2 }}>bespaard per woning</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* FAQ */}
       <section style={{ maxWidth: 760, margin: '0 auto', padding: '96px 28px' }}>
         <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', textAlign: 'center', margin: '0 0 42px' }}>
@@ -1025,7 +893,7 @@ export function LandingPageClient() {
             </p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/contact" className="vw" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '16px 30px', borderRadius: 13, textDecoration: 'none', transition: 'background .15s' }}>
-                Toegang aanvragen →
+                Offerte aanvragen →
               </Link>
               <Link href="/login" style={{ fontSize: 16, fontWeight: 600, color: '#EAF5EE', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.18)', padding: '16px 28px', borderRadius: 13, textDecoration: 'none' }}>
                 Al klant? Inloggen
@@ -1044,13 +912,13 @@ export function LandingPageClient() {
                 <VestaLogo size={32} />
               </Link>
               <p style={{ fontSize: 14, color: '#7C8983', lineHeight: 1.6, maxWidth: 300, margin: 0 }}>
-                De complete AI-toolkit voor Nederlandse makelaars. Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten — in één platform.
+                De complete AI-toolkit voor Nederlandse makelaars. Woningteksten, virtual staging, woningwaardering en marktinzichten — in één platform.
               </p>
             </div>
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Product</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[{ href: '/#demo', label: 'Live demo' }, { href: '/', label: 'Functies' }, { href: '/contact', label: 'Toegang aanvragen' }].map(({ href, label }) => (
+                {[{ href: '/#demo', label: 'Live demo' }, { href: '/', label: 'Functies' }, { href: '/contact', label: 'Offerte aanvragen' }].map(({ href, label }) => (
                   <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>

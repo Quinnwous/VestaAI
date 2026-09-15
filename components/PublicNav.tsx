@@ -70,7 +70,7 @@ export function PublicNav({ active }: { active?: string }) {
 
               {/* Desktop: CTA — gesloten platform, dus contact i.p.v. zelf aanmelden */}
               <Link href="/contact" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
-                Toegang aanvragen
+                Offerte aanvragen
               </Link>
             </>
           )}

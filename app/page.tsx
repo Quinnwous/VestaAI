@@ -7,14 +7,14 @@ import { LandingPageClient } from '@/components/LandingPageClient'
 export const metadata: Metadata = {
   title: 'VestaAI — Dé AI-toolkit voor makelaars',
   description:
-    'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform. Aangedreven door Anthropic, gekoppeld aan Kadaster en BAG.',
+    'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform. Aangedreven door Anthropic, gekoppeld aan Kadaster en BAG.',
   openGraph: {
     title: 'VestaAI — Dé AI-toolkit voor makelaars',
-    description: 'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform.',
+    description: 'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform.',
   },
   twitter: {
     title: 'VestaAI — Dé AI-toolkit voor makelaars',
-    description: 'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform.',
+    description: 'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform.',
   },
 }
 
