@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Eyebrow, SerifTitle } from '@/components/ui'
+import { CONTENT_VERGRENDELD } from '@/lib/features'
 
 type Kaart = {
   titel: string
@@ -39,10 +40,10 @@ export function FeatureKaarten({ newestObjectId }: { newestObjectId: string | nu
     },
     {
       titel: 'Content',
-      desc: 'Woningteksten, staging en documenten. Tijdelijk gesloten.',
-      href: '/dashboard',
-      emoji: '🔒',
-      slot: true,
+      desc: CONTENT_VERGRENDELD ? 'Woningteksten, staging en documenten. Tijdelijk gesloten.' : 'Woningteksten, virtual staging en documenten per woning.',
+      href: CONTENT_VERGRENDELD ? '/dashboard' : (werkruimte ?? '/object/new'),
+      emoji: CONTENT_VERGRENDELD ? '🔒' : '✍️',
+      slot: CONTENT_VERGRENDELD,
     },
   ]
 

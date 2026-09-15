@@ -107,11 +107,3 @@ describe('POST /api/generate', () => {
     expect(data.error).toBe('API timeout')
   })
 })
-
-describe('contentslot', () => {
-  it('is in productie dicht', async () => {
-    // Niet gemockt: de echte vlag uit lib/features.ts.
-    const { CONTENT_VERGRENDELD } = await vi.importActual<typeof import('@/lib/features')>('@/lib/features')
-    expect(CONTENT_VERGRENDELD).toBe(true)
-  })
-})

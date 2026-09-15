@@ -6,9 +6,10 @@ import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
 import { DeleteButton } from './DeleteButton'
+import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { Eyebrow, SerifTitle } from '@/components/ui'
-import type { PropertyInput } from '@/lib/schemas'
+import type { ContentOutput, PropertyInput } from '@/lib/schemas'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   if (!object) return { title: 'Object niet gevonden — VestaAI' }
   return {
     title: `${object.address} — VestaAI`,
-    description: `Content-suite voor ${object.address}`,
+    description: `Woningdossier voor ${object.address}`,
   }
 }
 
@@ -67,13 +68,23 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
             <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
             <span style={{ fontSize: 13, color: '#9AA6A0' }}>{formatDatum(object.created_at)}</span>
           </div>
-          <DeleteButton objectId={object.id} adres={object.address} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <RegenereerButton invoer={object.input_json as PropertyInput} />
+            <DeleteButton objectId={object.id} adres={object.address} />
+          </div>
         </div>
       </div>
 
       <InvoerToggle invoer={object.input_json as PropertyInput} />
 
-      <ObjectWorkspace address={object.address} />
+      <ObjectWorkspace
+        objectId={object.id}
+        address={object.address}
+        outputs={object.outputs_json as ContentOutput}
+        vraagprijs={(object.input_json as PropertyInput).vraagprijs ?? 0}
+        notitie={(object as unknown as { notitie: string | null }).notitie ?? null}
+        userEmail={user.email ?? undefined}
+      />
     </main>
   )
 }

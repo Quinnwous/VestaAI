@@ -1,16 +1,14 @@
 /**
- * Functie-vlaggen voor de koerswijziging van september 2026.
+ * Functie-vlag voor de contentsuite (woningteksten, brochures, virtual
+ * staging, documenten) naast de nieuwe waarderingskoers van september 2026.
  *
- * VestaAI verschuift van content-generatie naar woningwaardering. De
- * content-functies (woningteksten, brochures, virtual staging, documenten)
- * blijven in de codebase staan maar zijn vergrendeld: ze zijn zichtbaar in de
- * navigatie met een slotje, en zowel de pagina's als de API's weigeren toegang.
- *
- * Zet `CONTENT_VERGRENDELD` op `false` om de hele contentsuite in één keer
- * terug aan te zetten. Er is bewust géén per-kantoor-uitzondering: dat besluit
- * (15 sep 2026) geldt ook voor pilotklant i4housing.
+ * Was vergrendeld op 15 sep, weer ontgrendeld op verzoek van Quinn (nog volop
+ * aan het bouwen/testen). Zet `CONTENT_VERGRENDELD` op `true` om de hele
+ * contentsuite in één keer weer op slot te zetten — dan verdwijnen de API's
+ * achter een 403 en toont de UI (`ObjectWorkspace`, `object/new`) het
+ * `InAanbouw`-slotpaneel in plaats van de echte formulieren.
  */
-export const CONTENT_VERGRENDELD = true
+export const CONTENT_VERGRENDELD = false
 
 export const CONTENT_SLOT_TEKST = {
   titel: 'Contentfuncties zijn tijdelijk gesloten',

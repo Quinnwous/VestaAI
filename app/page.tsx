@@ -2,19 +2,19 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 import { isPlatformAdmin } from '@/lib/admin'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
-import { LandingHero } from '@/components/LandingHero'
+import { LandingPageClient } from '@/components/LandingPageClient'
 
 export const metadata: Metadata = {
-  title: 'VestaAI — Woningwaardering voor makelaars',
+  title: 'VestaAI — Dé AI-toolkit voor makelaars',
   description:
-    'Waardering en marktanalyse op basis van echte transactiedata, in de huisstijl van uw eigen kantoor. Gesloten platform voor Nederlandse makelaars.',
+    'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform. Aangedreven door Anthropic, gekoppeld aan Kadaster en BAG.',
   openGraph: {
-    title: 'VestaAI — Woningwaardering voor makelaars',
-    description: 'Waardering en marktanalyse op basis van echte transactiedata, in de huisstijl van uw eigen kantoor.',
+    title: 'VestaAI — Dé AI-toolkit voor makelaars',
+    description: 'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform.',
   },
   twitter: {
-    title: 'VestaAI — Woningwaardering voor makelaars',
-    description: 'Waardering en marktanalyse op basis van echte transactiedata, in de huisstijl van uw eigen kantoor.',
+    title: 'VestaAI — Dé AI-toolkit voor makelaars',
+    description: 'Woningteksten, virtual staging, documenten, woningwaardering en marktinzichten in één Nederlands platform.',
   },
 }
 
@@ -25,5 +25,5 @@ export default async function LandingPage() {
     if (user) redirect(isPlatformAdmin(user.email) ? '/admin' : '/dashboard')
   }
 
-  return <LandingHero />
+  return <LandingPageClient />
 }

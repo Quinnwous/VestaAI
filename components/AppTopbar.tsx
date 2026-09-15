@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
+import { CONTENT_VERGRENDELD } from '@/lib/features'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -33,7 +34,7 @@ const MENUS: Menu[] = [
     items: [
       { href: '/dashboard', label: 'Alle woningen', hint: 'Het volledige woningdossier van uw kantoor' },
       { href: '/dashboard?status=actief', label: 'In verkoop', hint: 'Woningen die nu lopen' },
-      { href: '/object/new', label: 'Woning toevoegen', hint: 'Komt terug met de waarderingsflow', binnenkort: true },
+      { href: '/object/new', label: 'Woning toevoegen', hint: 'Acht velden — start direct een nieuw dossier' },
     ],
   },
   {
@@ -47,13 +48,13 @@ const MENUS: Menu[] = [
   {
     id: 'content',
     label: 'Content',
-    slot: true,
+    slot: CONTENT_VERGRENDELD,
     items: [
-      { href: '/object/new', label: 'Brochure & Funda-tekst', slot: true },
-      { href: '/object/new', label: 'Social media-teksten', slot: true },
-      { href: '/object/new', label: 'Verkoopadvies & buurtrapport', slot: true },
-      { href: '/object/new', label: 'Virtual staging', slot: true },
-      { href: '/object/new', label: 'Documentenassistent', slot: true },
+      { href: '/object/new', label: 'Brochure & Funda-tekst', slot: CONTENT_VERGRENDELD },
+      { href: '/object/new', label: 'Social media-teksten', slot: CONTENT_VERGRENDELD },
+      { href: '/object/new', label: 'Verkoopadvies & buurtrapport', slot: CONTENT_VERGRENDELD },
+      { href: '/object/new', label: 'Virtual staging', slot: CONTENT_VERGRENDELD },
+      { href: '/object/new', label: 'Documentenassistent', slot: CONTENT_VERGRENDELD },
     ],
   },
   {

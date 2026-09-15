@@ -5,29 +5,28 @@
 > Laatst herzien: 15 september 2026 — koerswijziging naar waardering, zie `goals.md`.
 
 > **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
-> Laatst afgerond: (1) scope + shell van de koerswijziging — gesloten landingspagina zonder
-> prijzen, topbar met Woningdossier/Marktinzichten/Content(🔒)/Kantoorinstellingen,
-> kantoorbranding via CSS-variabelen; (2) alle prijzen/abonnementen/Stripe volledig uit de
-> code (niet alleen bevroren); toegang is nu puur admin-beheerd; (3) hoofdstructuur herzien
-> naar het micro/macro-model (Woningdossier vs. Marktinzichten) met de gedetailleerde
-> module-spec hieronder. Zie "Al gebouwd & live" voor het volledige lijstje.
-> ⚠️ **Bekend probleem, actie Quinn:** `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` wijst naar
-> `uvpcjpejocjmlxxyhqyz.supabase.co`, wat **NXDOMAIN** geeft (host bestaat niet / project weg).
-> Hierdoor kon Quinn's eigen inlog + het i4housing-kantoor niet worden aangemaakt en kan lokaal
-> niets tegen de database draaien. Controleer of dit de juiste project-ref is (Supabase
-> dashboard → Settings → API) en werk `.env.local` bij. Het klaarstaande script staat in de
-> sessie-scratchpad (`setup-i4housing.mjs`) — opnieuw te draaien zodra de URL klopt: maakt het
-> kantoor "i4 Housing" (met het al opgezochte palet) en het account
-> `quinn.berkouwer@icloud.com` (wachtwoord `Quinn123!vesta`) in één keer aan.
-> **Volgende zonder blokkade, in deze volgorde:** (1) Supabase-URL fixen 🔴 (actie Quinn,
-> blokkeert de rest); (2) Quinn's login + i4housing-kantoor aanmaken (script staat klaar);
-> (3) importformaat voor de transactiedataset vastleggen 🔴 — blokkeert het waarderingsmodel;
-> (4) waarderingsmodel ontwerpen 🔴 (referentieselectie + kenmerk-effecten + modulaire
-> variabelen + AI USP-extractor, zie spec hieronder).
+> Laatst afgerond: (1) scope + shell van de koerswijziging — gesloten landingspagina,
+> topbar met Woningdossier/Marktinzichten/Content/Kantoorinstellingen, kantoorbranding via
+> CSS-variabelen; (2) alle prijzen/abonnementen/Stripe volledig uit de code (niet alleen
+> bevroren); toegang is nu puur admin-beheerd; (3) hoofdstructuur herzien naar het
+> micro/macro-model met de gedetailleerde module-spec hieronder; (4) Supabase-project was
+> gepauzeerd — Quinn heeft het gereactiveerd, `quinn.berkouwer@icloud.com` (rol admin) en
+> het kantoor "i4 Housing" (met het opgezochte palet) staan nu in de database; (5)
+> **contentsuite weer ontgrendeld** (`CONTENT_VERGRENDELD = false` in `lib/features.ts`) —
+> Quinn bouwt nog actief door en wil overal bij kunnen; `ObjectWorkspace`, `object/new` en de
+> topbar tonen nu weer de echte formulieren in plaats van het slotpaneel; (6) de originele,
+> uitgebreide landingspagina (`components/LandingPageClient.tsx`) is teruggezet met dezelfde
+> visuele opzet (live demo-kaart, contentvoorbeelden, virtual-staging-vergelijking,
+> Anthropic/Claude-strip, Kadaster/BAG-sectie) en twee nieuwe secties: Woningwaardering en
+> Marktinzichten. Kalender/chatbot/fotoverbetering-verwijzingen (definitief verwijderde
+> features) en alle prijzen zijn eruit gehaald. Zie "Al gebouwd & live" voor het volledige lijstje.
+> **Volgende zonder blokkade, in deze volgorde:** (1) importformaat voor de transactiedataset
+> vastleggen 🔴 — blokkeert het waarderingsmodel én de i4housing Map (zie "Databron"); (2)
+> waarderingsmodel ontwerpen 🔴 (referentieselectie + kenmerk-effecten + modulaire variabelen
+> + AI USP-extractor, zie spec hieronder); (3) `/marktanalyse` van mockup naar werkend scherm 🟠.
 > **Geblokkeerd, niet oppakken:** waarderingsmodel bouwen (wacht op eerste import) ·
 > concurrentieanalyse (wacht op makelaarsnaam in de dataset) · i4housing Map (wacht op
-> transactiedataset mét coördinaten) · Realworks-API, social-auto-publiceren (content is
-> vergrendeld).
+> transactiedataset mét coördinaten) · Realworks-API, social-auto-publiceren.
 > **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een
 > feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
 
@@ -40,7 +39,7 @@ is regionaal en staat los van een specifieke woning; **Kantoorinstellingen** is 
 
 ### Woningdossier (micro) — `components/ObjectWorkspace.tsx`
 
-**Module A — Content en media** (🔒 vergrendeld, zie `lib/features.ts`):
+**Module A — Content en media** (ontgrendeld, zie `lib/features.ts` — `CONTENT_VERGRENDELD` is de schakelaar):
 - Brochure · Funda-tekst · Social media-teksten (bv. Instagram-captions) · Verkoopadvies · Buurtrapport
 - **i4housing Map** (nieuw, nog te bouwen): interactieve kaart met een straal van **exact 500 meter**
   rondom het actieve adres, met kantoor-vlaggetjes op alle historische transacties van het eigen
@@ -107,13 +106,14 @@ Huisstijl, logo, tone-of-voice voor alle AI-content. Al gebouwd (`lib/branding.t
 
 ## Al gebouwd & live (koerswijziging 15 sep — niet opnieuw doen/checken)
 
-- **Landingspagina** — gesloten platform, geen prijzen, alleen inloggen (`components/LandingHero.tsx`). `/prijzen` is verwijderd.
-- **Topbar met nieuwe hoofdstructuur** — `components/AppTopbar.tsx`: Woningdossier · Marktinzichten (Marktanalyse + Concurrentieanalyse) · Content (🔒) · Kantoorinstellingen.
+- **Landingspagina** — het originele, uitgebreide marketingontwerp is terug (`components/LandingPageClient.tsx`, exact dezelfde visuele opzet als vóór de koerswijziging): live demo-kaart, contentvoorbeelden (Funda/brochure/Instagram/LinkedIn/e-mail/buurt), virtual-staging voor/na-vergelijking, BAG/Kadaster-sectie, documentenassistent-demo, Anthropic/Claude-strip. Twee secties toegevoegd: **Woningwaardering** en **Marktinzichten** (vervangen de oude prijzen-sectie). Verwijderd: alle prijzen, "Aanmelden"/proefperiode-CTA's (nu "Toegang aanvragen" → `/contact`), en verwijzingen naar kalender/chatbot/fotoverbetering (definitief verwijderde features). `/prijzen` blijft verwijderd.
+- **Topbar met nieuwe hoofdstructuur** — `components/AppTopbar.tsx`: Woningdossier · Marktinzichten (Marktanalyse + Concurrentieanalyse) · Content · Kantoorinstellingen.
 - **Kantoorbranding na login** — `lib/branding.ts` bouwt uit `kantoren.huisstijl_json` een volledig palet en zet dat als CSS-variabelen (`--merk*`) in `app/(app)/layout.tsx`. `accent_kleur` toegevoegd aan `HuisstijlSchema` en de huisstijl-instellingen.
-- **Contentsuite vergrendeld** — `lib/features.ts` (`CONTENT_VERGRENDELD = true`) blokkeert op API- én UI-niveau. Geldt voor iedereen, ook i4 Housing.
+- **Contentsuite ontgrendeld** — `lib/features.ts` (`CONTENT_VERGRENDELD = false`) laat de content-API's en de echte formulieren (`ObjectWorkspace` Module A, `object/new`) weer werken. De vlag blijft bestaan: op `true` zetten sluit alles in één keer weer af.
 - **Alle prijzen/abonnementen/Stripe volledig verwijderd (niet alleen bevroren)** — `lib/plans.ts`, alle Stripe-routes (`checkout`, `customer-portal`, `webhooks/stripe`), de `stripe`-npm-dependency, `vercel.json`-cron voor trial-waarschuwing, en alle bijbehorende UI (plan-badges, upgrade-CTA's, trial-banners, referral "1 maand gratis") zijn weg. Toegang is nu **puur admin-beheerd**: geen plan, geen proefperiode — alleen (de)activeren via `/admin`.
 - **`/login` self-signup gesloten** — het "Aanmelden"-tabblad is verwijderd; alleen inloggen + wachtwoord-reset. Teamleden binnen een kantoor uitnodigen loopt via de bestaande `nodigTeamlidUit` (magic link, `Instellingen → Team`).
 - **Admin: kantoor/account-beheer** — `/admin` heeft nu `createKantoor` en `addMakelaarAccount` (`app/admin/actions.ts` + `AccountBeheer.tsx`): een kantoor aanmaken, en een account met zelfgekozen wachtwoord direct koppelen aan een kantoor (incl. opruimen van het kantoor dat de DB-trigger er per ongeluk bij aanmaakt).
+- **i4 Housing-kantoor + Quinn's account live** — het Supabase-project was gepauzeerd (free tier); na reactivering staat het kantoor "i4 Housing" (`huisstijl_json` met het opgezochte palet) in de database, met `quinn.berkouwer@icloud.com` als admin-account.
 
 ---
 
