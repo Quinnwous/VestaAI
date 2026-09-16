@@ -342,7 +342,6 @@ export function LandingPageClient() {
                   </div>
                 )}
               </div>
-              <Link href="/contact" className="vll" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>Offerte aanvragen</Link>
               <Link href="/login" className="vg" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '11px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 6px 16px rgba(26,107,69,.22)', transition: 'background .15s' }}>
                 Inloggen
               </Link>
@@ -373,11 +372,11 @@ export function LandingPageClient() {
               Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform. Afgestemd op Funda-richtlijnen en de NVM-stijlregels.
             </p>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <Link href="/contact" className="vg" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
-                Offerte aanvragen →
+              <Link href="/login" className="vg" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
+                Inloggen →
               </Link>
-              <Link href="/login" style={{ fontSize: 15, fontWeight: 600, color: '#1A6B45', textDecoration: 'none' }}>
-                Al klant? Inloggen →
+              <Link href="/contact" style={{ fontSize: 15, fontWeight: 600, color: '#1A6B45', textDecoration: 'none' }}>
+                Contact opnemen →
               </Link>
             </div>
             <p style={{ fontSize: 13.5, color: '#7C8983', margin: '18px 0 0' }}>Gesloten platform — wij zetten uw kantoor persoonlijk klaar</p>
@@ -893,7 +892,7 @@ export function LandingPageClient() {
             </p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Link href="/contact" className="vw" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '16px 30px', borderRadius: 13, textDecoration: 'none', transition: 'background .15s' }}>
-                Offerte aanvragen →
+                Contact opnemen →
               </Link>
               <Link href="/login" style={{ fontSize: 16, fontWeight: 600, color: '#EAF5EE', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.18)', padding: '16px 28px', borderRadius: 13, textDecoration: 'none' }}>
                 Al klant? Inloggen
@@ -918,7 +917,7 @@ export function LandingPageClient() {
             <div>
               <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Product</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[{ href: '/#demo', label: 'Live demo' }, { href: '/', label: 'Functies' }, { href: '/contact', label: 'Offerte aanvragen' }].map(({ href, label }) => (
+                {[{ href: '/#demo', label: 'Live demo' }, { href: '/', label: 'Functies' }, { href: '/contact', label: 'Contact' }].map(({ href, label }) => (
                   <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>

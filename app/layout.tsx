@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, Newsreader, Gantari, Nunito_Sans } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
+import { APP_URL } from '@/lib/appUrl'
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -34,8 +35,6 @@ const nunito = Nunito_Sans({
   display: 'swap',
   weight: ['400', '500', '600', '700', '800'],
 })
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
 
 export const viewport: Viewport = {
   themeColor: '#1A6B45',

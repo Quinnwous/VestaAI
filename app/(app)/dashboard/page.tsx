@@ -4,8 +4,6 @@ import { ensureMakelaar } from '@/lib/ensureMakelaar'
 import { verwerkNieuweKlant } from '@/lib/nieuweKlant'
 import { isPlatformAdmin } from '@/lib/admin'
 import { DashboardClient } from './DashboardClient'
-import { WelkomBanner } from '@/components/WelkomBanner'
-import { OnboardingChecklist } from '@/components/OnboardingChecklist'
 import { FeatureKaarten } from '@/components/FeatureKaarten'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { ObjectRow } from '@/lib/supabase'
@@ -79,9 +77,6 @@ export default async function DashboardPage({
   // gezet. Geen plan- of proefperiode-check meer — intrekken gaat via
   // "kantoor deactiveren" in /admin (bant de auth-users direct).
 
-  const heeftObjecten = !!makelaar.first_generated_at
-  const heeftHuisstijl = !!(kantoor?.huisstijl_json && Object.keys(kantoor.huisstijl_json).length > 0)
-
   const search = searchParams.search ?? ''
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
   const rawStatus = searchParams.status ?? ''
@@ -104,16 +99,9 @@ export default async function DashboardPage({
     query = query.eq('status', statusFilter)
   }
 
-  const [
-    { data: objecten, count },
-    documentenTelling,
-  ] = await Promise.all([
-    query,
-    supabase.from('object_documenten').select('id', { count: 'exact', head: true }).eq('kantoor_id', makelaar.kantoor_id),
-  ])
+  const { data: objecten, count } = await query
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE)
-  const heeftDocumenten = (documentenTelling.count ?? 0) > 0
   const newestObjectId = objecten?.[0]?.id ?? null
 
   return (
@@ -123,15 +111,8 @@ export default async function DashboardPage({
         <SerifTitle accent="woningen" style={{ marginBottom: 6 }}>Jouw</SerifTitle>
       </div>
 
-      <OnboardingChecklist
-        heeftObjecten={heeftObjecten}
-        heeftHuisstijl={heeftHuisstijl}
-        heeftDocumenten={heeftDocumenten}
-        newestObjectId={newestObjectId}
-      />
-
-      {(count ?? 0) === 0 && !search && <WelkomBanner />}
-
+      {/* Geen welkomstblok of onboarding-checklist: het kantoor komt hier om te werken
+          en ziet direct zijn woningen. */}
       <DashboardClient
         objecten={(objecten ?? []) as Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]}
         totalPages={totalPages}

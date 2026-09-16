@@ -32,7 +32,7 @@ const MENUS: Menu[] = [
     id: 'woningdossier',
     label: 'Woningdossier',
     items: [
-      { href: '/dashboard', label: 'Alle woningen', hint: 'Het volledige woningdossier van uw kantoor' },
+      { href: '/dashboard', label: 'Alle woningen', hint: 'Het volledige woningdossier van je kantoor' },
       { href: '/dashboard?status=actief', label: 'In verkoop', hint: 'Woningen die nu lopen' },
       { href: '/object/new', label: 'Woning toevoegen', hint: 'Acht velden — start direct een nieuw dossier' },
     ],
@@ -61,7 +61,7 @@ const MENUS: Menu[] = [
     id: 'kantoorinstellingen',
     label: 'Kantoorinstellingen',
     items: [
-      { href: '/huisstijl', label: 'Huisstijl', hint: 'Logo, kleuren en tone-of-voice van uw kantoor' },
+      { href: '/huisstijl', label: 'Huisstijl', hint: 'Logo, kleuren en tone-of-voice van je kantoor' },
       { href: '/settings', label: 'Kantoor & team', hint: 'Gebruikers, account en statistieken' },
     ],
   },
@@ -87,11 +87,15 @@ export function AppTopbar({
   children,
   branding,
   userEmail,
+  isBeheerder = false,
 }: {
   children: React.ReactNode
   branding: Branding
   userEmail: string | null
+  /** Kantoorinstellingen (huisstijl, team) zijn alleen voor de beheerder van het kantoor. */
+  isBeheerder?: boolean
 }) {
+  const menus = MENUS.filter(m => m.id !== 'kantoorinstellingen' || isBeheerder)
   const pathname = usePathname()
   const [open, setOpen] = useState<string | null>(null)
   const [mobiel, setMobiel] = useState(false)
@@ -208,7 +212,7 @@ export function AppTopbar({
           <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0 }}>{logo}</Link>
 
           <div className="topbar-menus">
-            {MENUS.map(menu => {
+            {menus.map(menu => {
               const actief = menuIsActief(pathname, menu)
               const uit = open === menu.id
               return (
@@ -266,7 +270,7 @@ export function AppTopbar({
 
         {mobiel && (
           <div style={{ borderTop: '1px solid #EBEEF1', padding: '10px 22px 16px', background: '#fff' }}>
-            {MENUS.map(menu => (
+            {menus.map(menu => (
               <div key={menu.id} style={{ marginBottom: 12 }}>
                 <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#98A0A6', margin: '0 0 4px' }}>
                   {menu.label} {menu.slot && <Slotje size={11} />}

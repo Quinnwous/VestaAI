@@ -30,7 +30,10 @@ const projectRef = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split(
 async function sessieCookie() {
   const { data, error } = await supabase.auth.admin.generateLink({ type: 'magiclink', email: EMAIL })
   if (error) throw new Error(`magic link mislukt: ${error.message}`)
-  const { data: sessie, error: vFout } = await supabase.auth.verifyOtp({
+  // Bewust een aparte client: verifyOtp zet de sessie óp de client, en daarna zouden
+  // alle vervolgqueries als die gebruiker draaien (met RLS) in plaats van als service.
+  const inlogClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
+  const { data: sessie, error: vFout } = await inlogClient.auth.verifyOtp({
     token_hash: data.properties.hashed_token,
     type: 'email',
   })

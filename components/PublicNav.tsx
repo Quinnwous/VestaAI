@@ -62,17 +62,11 @@ export function PublicNav({ active }: { active?: string }) {
               Naar dashboard
             </Link>
           ) : (
-            <>
-              {/* Desktop: Inloggen */}
-              <Link href="/login" className="pnav-login" style={{ fontSize: 15, fontWeight: 600, color: '#0E1A13', textDecoration: 'none' }}>
-                Inloggen
-              </Link>
-
-              {/* Desktop: CTA — gesloten platform, dus contact i.p.v. zelf aanmelden */}
-              <Link href="/contact" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
-                Offerte aanvragen
-              </Link>
-            </>
+            /* Gesloten platform: geen offerte-CTA meer — wie interesse heeft gebruikt
+               de contactpagina in het menu; klanten loggen hier in. */
+            <Link href="/login" style={{ fontSize: 14.5, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '10px 18px', borderRadius: 11, textDecoration: 'none', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}>
+              Inloggen
+            </Link>
           )}
 
           {/* Mobile hamburger */}

@@ -46,7 +46,7 @@ export default function ContactPage() {
               cta: 'Plan een demo →',
             },
             {
-              label: 'Offerte aanvragen',
+              label: 'Contact opnemen',
               desc: 'Benieuwd wat VestaAI voor uw kantoor kost? Wij stellen op maat een voorstel op.',
               href: 'mailto:quinn.berkouwer@gmail.com?subject=VestaAI%20offerte%20aanvragen',
               cta: 'Vraag een offerte →',

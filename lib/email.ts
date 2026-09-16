@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { APP_URL } from '@/lib/appUrl'
 
 let _resend: Resend | null = null
 
@@ -12,8 +13,6 @@ function getResend(): Resend {
 }
 
 const FROM = 'VestaAI <noreply@vestaai.nl>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
-
 /**
  * Merk van de ontvanger: een mail aan een makelaar hoort het kantoor te tonen waar hij
  * werkt, niet het platform erachter. Zonder merk valt alles terug op VestaAI zelf.

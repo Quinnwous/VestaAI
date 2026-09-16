@@ -45,7 +45,7 @@ const VOORBEELD_URLS = [
 ]
 
 const FOTOS = {
-  achtergrond_url: 'https://www.i4housing.nl/wp-content/uploads/2026/06/Team-compulatie.png',
+  achtergrond_url: 'https://www.i4housing.nl/wp-content/uploads/2026/06/i4h-mei-23-scaled.jpg',
   achtergrond_secundair_url: 'https://www.i4housing.nl/wp-content/uploads/2026/01/i4h-dec-02-scaled-e1767955960733.jpg',
 }
 

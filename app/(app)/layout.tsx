@@ -15,19 +15,24 @@ type KantoorRij = {
 // Gedeeld door generateMetadata (tabbladtitel + favicon) en AppLayout (kleuren/logo in de
 // pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één request, zodat het
 // niet twee keer bevraagd wordt voor dezelfde requestcyclus.
-const haalKantoorOp = cache(async (): Promise<KantoorRij> => {
+const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij; isBeheerder: boolean }> => {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
+  if (!user) return { kantoor: null, isBeheerder: false }
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, kantoren(name, logo_url, huisstijl_json)')
+    .select('kantoor_id, role, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', user.id)
     .single()
 
-  return (makelaar?.kantoren as unknown as KantoorRij) ?? null
+  return {
+    kantoor: (makelaar?.kantoren as unknown as KantoorRij) ?? null,
+    isBeheerder: makelaar?.role === 'admin',
+  }
 })
+
+const haalKantoorOp = async (): Promise<KantoorRij> => (await haalMakelaarOp()).kantoor
 
 // Tabbladtitel en favicon van het kantoor — geen "— VestaAI"-suffix (title.absolute), en
 // het favicon van het kantoor i.p.v. het VestaAI-icoon uit de root-metadata.
@@ -61,7 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Platform-admins gebruiken de app niet als klant → naar het beheer.
   if (isPlatformAdmin(user.email)) redirect('/admin')
 
-  const kantoor = await haalKantoorOp()
+  const { kantoor, isBeheerder } = await haalMakelaarOp()
 
   // Vanaf de ingelogde omgeving is de hele app van het kantoor: logo, kleuren, lettertype,
   // vormtaal — en straks ook het waarderingsrapport. Zie lib/branding.ts.
@@ -78,25 +83,28 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <>
           <style>{`
             .merk-watermerk { display: none; }
-            @media (min-width: 1600px) {
+            @media (min-width: 1280px) {
               .merk-watermerk {
                 display: block; position: fixed; top: 0; bottom: 0; z-index: 0;
-                width: calc((100vw - var(--app-breedte)) / 2);
-                background-size: cover; background-position: center; opacity: .14;
-                /* Vervagen houdt het een sfeerlaag: tekst op een bord of een gezicht in
-                   beeld mag nooit leesbaar worden en de aandacht wegtrekken. */
-                filter: blur(2px) saturate(.8);
+                /* Loopt bewust een stuk ónder de content door, zodat het beeld ook op een
+                   smaller scherm zichtbaar blijft. De kaarten in het midden zijn wit en
+                   dekken het af waar tekst staat. */
+                width: calc((100vw - var(--app-breedte)) / 2 + 260px);
+                background-size: cover; background-position: center; opacity: .18;
+                /* Lichte vervaging: een bord of gezicht in beeld mag nooit scherp genoeg
+                   zijn om de aandacht van het werk weg te trekken. */
+                filter: blur(2.5px) saturate(.85);
                 pointer-events: none;
               }
               .merk-watermerk-links {
                 left: 0;
-                -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
-                mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
+                mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
               }
               .merk-watermerk-rechts {
                 right: 0;
-                -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
-                mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.55) 55%, transparent 100%);
+                -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
+                mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
               }
             }
           `}</style>
@@ -123,7 +131,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-      <AppTopbar branding={branding} userEmail={user.email ?? null}>
+      <AppTopbar branding={branding} userEmail={user.email ?? null} isBeheerder={isBeheerder}>
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
           <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px 22px', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
