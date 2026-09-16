@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { bouwBranding } from '@/lib/branding'
-import { Eyebrow, SerifTitle } from '@/components/ui'
-import { ProfielSectie } from './ProfielSectie'
+import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
 import { StatistiekenPaneel } from './StatistiekenPaneel'
 import { KantoorBanner } from './KantoorBanner'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
@@ -12,8 +11,12 @@ export const metadata = { title: 'Kantoor' }
 /**
  * Read-only kantoorpagina (besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur):
  * huisstijl, courtage, kantoorprofiel en team zijn platform-admin-beheerd
- * (VestaAI stelt ze per kantoor in via /admin) — hier alleen ter inzage. De
- * enige actie die overblijft is je eigen naam wijzigen, zie ProfielSectie.
+ * (VestaAI stelt ze per kantoor in via /admin) — hier alleen ter inzage.
+ *
+ * Fase 1.7-1.8 (masterplan 16-17 sep 2026): "Jouw profiel" en "Uitloggen"
+ * zijn hier weg — profiel staat nu op /account, uitloggen in het
+ * profielmenu rechtsboven (zie components/AppTopbar.tsx). Deze pagina is
+ * bereikbaar via datzelfde profielmenu.
  */
 export default async function KantoorPage() {
   const supabase = createServerSupabaseClient()
@@ -44,7 +47,7 @@ export default async function KantoorPage() {
   const branding = bouwBranding(kantoor as Kantoor | null)
 
   return (
-    <main style={{ maxWidth: 980, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <AppPagina>
       {branding.achtergrondUrl && <KantoorBanner url={branding.achtergrondUrl} naam={branding.naam} />}
 
       <Eyebrow>Beheer</Eyebrow>
@@ -52,15 +55,10 @@ export default async function KantoorPage() {
         <span style={{ fontStyle: 'italic', color: 'var(--merk,#1A6B45)' }}>Kantoor</span>
       </SerifTitle>
       <p style={{ fontSize: 14, color: '#5C6470', margin: '0 0 32px', maxWidth: 560 }}>
-        Huisstijl, courtage en kantoorprofiel stelt VestaAI voor je in — hieronder zie je waarop je omgeving draait.
+        Huisstijl, courtage en kantoorprofiel stelt je platformbeheerder voor je in — hieronder zie je waarop je omgeving draait.
       </p>
 
       <div style={{ display: 'grid', gap: 40 }}>
-        <section>
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Jouw profiel</h2>
-          <ProfielSectie naam={(makelaar as Makelaar).name} email={(makelaar as Makelaar).email} />
-        </section>
-
         <section>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Kantoor</h2>
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-5 space-y-4 max-w-md text-sm">
@@ -90,7 +88,7 @@ export default async function KantoorPage() {
               </div>
             )}
             {!instellingen && (
-              <p className="text-xs text-gray-400">Courtage, kantoorprofiel en werkgebied zijn nog niet ingesteld — neem contact op met VestaAI.</p>
+              <p className="text-xs text-gray-400">Courtage, kantoorprofiel en werkgebied zijn nog niet ingesteld — neem contact op met je platformbeheerder.</p>
             )}
           </div>
         </section>
@@ -130,7 +128,7 @@ export default async function KantoorPage() {
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-4">Wil je iets aanpassen aan je huisstijl? Neem contact op met VestaAI.</p>
+            <p className="text-xs text-gray-400 mt-4">Wil je iets aanpassen aan je huisstijl? Neem contact op met je platformbeheerder.</p>
           </div>
         </section>
 
@@ -146,22 +144,14 @@ export default async function KantoorPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-2">Een nieuwe collega toevoegen? Neem contact op met VestaAI.</p>
+          <p className="text-xs text-gray-400 mt-2">Een nieuwe collega toevoegen? Neem contact op met je platformbeheerder.</p>
         </section>
 
         <section>
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Statistieken</h2>
           <StatistiekenPaneel />
         </section>
-
-        <section className="border-t border-gray-100 pt-6">
-          <form action="/api/auth/logout" method="POST">
-            <button type="submit" className="text-sm text-red-600 hover:text-red-700 transition-colors">
-              Uitloggen
-            </button>
-          </form>
-        </section>
       </div>
-    </main>
+    </AppPagina>
   )
 }

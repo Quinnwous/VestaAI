@@ -1,4 +1,4 @@
-import { Eyebrow, SerifTitle } from '@/components/ui'
+import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
 import { MarktinzichtenNav } from './MarktinzichtenNav'
 
 /**
@@ -9,11 +9,11 @@ import { MarktinzichtenNav } from './MarktinzichtenNav'
  */
 export default function MarktinzichtenLayout({ children }: { children: React.ReactNode }) {
   return (
-    <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
+    <AppPagina>
       <Eyebrow>Marktinzichten</Eyebrow>
       <SerifTitle size={34} accent="de markt" style={{ marginBottom: 22 }}>Zoeken in</SerifTitle>
       <MarktinzichtenNav />
       {children}
-    </main>
+    </AppPagina>
   )
 }

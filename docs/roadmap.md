@@ -10,15 +10,23 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 0 — Veiligheid, fundament & documentatie (vrijwel afgerond)
-- **Laatst opgeleverd:** fase 0 volledig doorlopen op het databaseonafhankelijke
-  én het databaseafhankelijke werk — zie § Opgeleverd voor de volledige lijst.
-  Twee live beveiligingsproblemen gevonden en direct gefixt: een cross-tenant
-  datalek in de transactiedata (RLS + SECURITY DEFINER-view) en een kapotte
-  import-upsert. Zie het besluitenlogboek (17 sep 2026) voor de details.
-- **Volgende item:** fase 1 — UI-fundament + nieuwe schil (1.1 t/m 1.10, zie
-  § Fase 1 hieronder). Start met 1.1 (ontwerpprincipes + basisprimitives)
-  vóórdat de topbar/startpagina gebouwd worden.
+- **Fase:** 1 — UI-fundament + nieuwe schil (1.1 t/m 1.8 klaar, 1.9-1.10 nog open)
+- **Laatst opgeleverd:** fase 0 volledig afgerond (zie § Opgeleverd) én fase 1's
+  kern: topbar herbouwd (groter logo, Verhuur weg, avatarmenu), blauwe balk
+  weg, volle breedte op de meeste schermen, de woningenlijst verhuisd naar
+  `/woningen` en een nieuwe startpagina op `/dashboard` (banner + kerncijfers
+  + snelkoppelingen), `/account` (naam + wachtwoord), kantoorpagina
+  opgeschoond. Alles op branch `feat/nieuwe-schil`, gecommit en gepusht.
+- **Bewust nog niet gedaan binnen fase 1** (zie de aantekeningen bij 1.4/1.6/1.8
+  hieronder voor waarom): `RecentBekeken` + tabel `gebruik_events`, het losse
+  `bannerfoto`-veld in de admin, de tweekoloms intake-redesign
+  (`object/new` blijft op 900px tot dan), de Tailwind→ui-primitives-slag op
+  de kantoorpagina.
+- **Volgende item:** eerst **1.9** (drie kleine kleurbugs +
+  demo-knop-gating) en **1.10** (favicon/SEO — vroeg belangrijk, Google
+  ververst traag), dan de Fase 1 "Klaar als"-criteria nalopen met
+  `scripts/screenshots.mjs` (vereist `E2E_TEST_EMAIL` + een echt account) en
+  de PR openen. Daarna verder met fase 2.
 - **Blokkades:**
   - Verwerkersovereenkomst met i4housing (concept staat klaar:
     `docs/verwerkersovereenkomst-concept.md`) moet juridisch getoetst en
@@ -333,30 +341,60 @@ subagent zodra fase 1 gemerged is.
   staat een back-up en een baseline (✅); `/sessie-start` in een nieuwe chat
   weet zonder uitleg waar we staan (✅, dit document + de skill).
 
-### Fase 1: UI-fundament + nieuwe schil (4 sessies)
-- [ ] 1.1 **Fundament eerst**: `docs/ontwerpprincipes.md`; `scripts/screenshots.mjs`;
+### Fase 1: UI-fundament + nieuwe schil (4 sessies, ~1 sessie nog te gaan)
+- [x] 1.1 **Fundament eerst**: `docs/ontwerpprincipes.md`; `scripts/screenshots.mjs`;
       basisprimitives `AppPagina`/`StatTile`/`EmptyState`/`Skeleton`;
       `--app-breedte: 1680px` + `--app-marge`.
-- [ ] 1.2 **Blauwe balk weg**: `app/(app)/layout.tsx:76-91`.
-- [ ] 1.3 **Topbar**: lockup groter; menu's Overzicht · Woningdossier ·
-      Marktinzichten (Verhuur weg); avatar-dropdown (Mijn account · Kantoor ·
-      Uitloggen).
-- [ ] 1.4 **Volle breedte**: `AppPagina` overal; intake tweekoloms.
-- [ ] 1.5 **"Aan de slag" weg**: `components/FeatureKaarten.tsx` verwijderen.
-- [ ] 1.6 **Startpagina**: lijst verhuist naar `/woningen`; `StartBanner`
-      (teamfoto + begroeting); `Snelkoppelingen`; `Kerncijfers` (`lib/kerncijfers.ts`);
-      `RecentBekeken` (`gebruik_events`, alle eventtypes gedefinieerd, `logGebruik()`
-      ge-await); bannerfoto-veld in admin.
-- [ ] 1.7 **Mijn account**: naam wijzigen, e-mail read-only, wachtwoord wijzigen.
-- [ ] 1.8 **Kantoorpagina**: "VestaAI" eruit (4×); ui-primitives i.p.v. Tailwind-grijs.
+- [x] 1.2 **Blauwe balk weg**: `app/(app)/layout.tsx`.
+- [x] 1.3 **Topbar**: lockup groter (26px-blok, 15px-tekst, 38px-kantoorlogo);
+      menu's Woningdossier · Marktinzichten (Verhuur volledig verwijderd, geen
+      slot/binnenkort-restant); avatar-dropdown met initiaal (Mijn account ·
+      Kantoor · Uitloggen), klik-buiten/Escape/mobiel werken.
+- [x] 1.4 **Volle breedte**: `AppPagina` toegepast op `/woningen`,
+      `object/[id]`, `marktanalyse/layout`, `/kantoor`. **Bewust nog niet
+      gedaan:** `object/new` (900px) — dat vereist eerst de tweekoloms
+      intake-redesign (wizard + WoningdataPanel naast elkaar); losstaand
+      breder maken zou een wizard in een leeg vlak laten zweven.
+- [x] 1.5 **"Aan de slag" weg**: `components/FeatureKaarten.tsx` verwijderd,
+      vervangen door `Snelkoppelingen` op de nieuwe startpagina.
+- [x] 1.6 **Startpagina — kern**: lijst verhuisd naar `/woningen`
+      (`WoningenClient.tsx`, `PitchScorebord.tsx`, `loading.tsx`); nieuwe
+      `/dashboard` met `StartBanner` (begroeting + datum, valt terug op het
+      bestaande sfeerbeeld of een merkverloop) en `Kerncijfers` (6 tegels,
+      `lib/kerncijfers.ts` + 11 tests: lopende acquisities, winratio 12mnd,
+      in verkoop, verkocht dit jaar, gem. looptijd, prijs t.o.v. vraagprijs —
+      elk met een eerlijke waarschuwing bij te weinig data). Gedeelde
+      auth/self-heal-logica geëxtraheerd naar `lib/haalIngelogdeMakelaar.tsx`
+      (gebruikt door zowel `/dashboard` als `/woningen`).
+      **Bewust nog niet gedaan** (vereist een nieuwe migratie resp. een door
+      Quinn goedgekeurde foto — hoort niet in dezelfde sessie als de
+      mechanische routingwissel):
+      - `RecentBekeken` + tabel `gebruik_events` + `lib/gebruik.ts`
+        (`logGebruik()`);
+      - los `bannerfoto`-veld in de admin (`AfbeeldingUpload`,
+        `HuisstijlForm.tsx`) — de banner gebruikt voorlopig het bestaande
+        sfeerbeeld (`achtergrondUrl`).
+- [x] 1.7 **Mijn account** (`/account`, nieuw): naam wijzigen, e-mail
+      read-only, wachtwoord wijzigen (`wijzigWachtwoord`-action verifieert
+      eerst het huidige wachtwoord via `signInWithPassword`). Zod-schema
+      `WachtwoordWijzigenSchema` in `lib/schemas.ts`.
+- [x] 1.8 **Kantoorpagina**: "VestaAI" 4× eruit → "je platformbeheerder";
+      profielsectie en uitlogknop verwijderd (nu op `/account` resp. in het
+      profielmenu). **Bewust nog niet gedaan:** Tailwind-grijs →
+      ui-primitives, tweekoloms grid — dat is een visuele herontwerp-taak,
+      geen bugfix, en de pagina werkt correct zoals hij nu is.
 - [ ] 1.9 **Bugs**: `StatusToggle.tsx:10` kapotte class, `FaseToggle.tsx:15,81`
-      en `StatistiekenPaneel.tsx:89` hardgecodeerd groen; demo-knop alleen in dev/demo.
+      en `StatistiekenPaneel.tsx:89` hardgecodeerd groen; demo-knop alleen in
+      dev/demo. **Nog te doen.**
 - [ ] 1.10 **Google-logo & SEO-basis**: `app/icon.png`/`favicon.ico`/`apple-icon.png`;
-      manifest repareren; canonical + JSON-LD; opengraph-image; robots/sitemap.
-- **Klaar als:** geen blauwe balk en geen Verhuur; avatarmenu werkt overal;
-  startpagina met banner/kerncijfers/recent bekeken zonder fouten bij lege
-  data; `/woningen` compleet; account wijzigt naam en wachtwoord; kantoorpagina
-  zonder "VestaAI"; favicons geven 200; screenshots consistent; DoD groen.
+      manifest repareren; canonical + JSON-LD; opengraph-image; robots/sitemap
+      (nu ook `/woningen`/`/account` toevoegen aan de disallow-lijst).
+      **Nog te doen** — belangrijk om vroeg te doen, Google ververst favicons traag.
+- **Klaar als:** geen blauwe balk en geen Verhuur ✅; avatarmenu werkt overal ✅;
+  startpagina met banner/kerncijfers zonder fouten bij lege data ✅
+  (recent bekeken volgt nog); `/woningen` compleet ✅; account wijzigt naam en
+  wachtwoord ✅; kantoorpagina zonder "VestaAI" ✅; favicons geven 200 ❌ (1.10
+  nog te doen); DoD (typecheck/test/build) groen ✅.
 
 ### Fase 2: Interactieve primitives (2 sessies)
 - [ ] 2.1 `RangeSlider`/`ToggleGroup`/`Chip`/`ChartCard`/`FilterBar`/`Drawer`/`DataTable`.
@@ -587,3 +625,13 @@ hun site · ROI-dashboard · prijsadvies bij lange looptijd.
   documentatie (CLAUDE.md/goals.md/root-CLAUDE.md) geactualiseerd, geheugen
   opgeschoond, sessieskills (`sessie-start`/`sessie-afronden`) en de
   concept-verwerkersovereenkomst geschreven. `typecheck`/`test`/`build` groen.
+- 17 sep 2026 — fase 1.1 t/m 1.8: `docs/ontwerpprincipes.md`,
+  `scripts/screenshots.mjs`, ui-primitives (`AppPagina`/`StatTile`/
+  `EmptyState`/`Skeleton`); topbar herbouwd (groter logo, Verhuur weg,
+  avatarmenu); blauwe contactbalk weg; volle breedte op `/woningen`,
+  `object/[id]`, marktanalyse, `/kantoor`; "Aan de slag"-blok weg; lijst
+  verhuisd naar `/woningen`, nieuwe startpagina op `/dashboard` (banner +
+  kerncijfers, `lib/kerncijfers.ts` + 11 tests) met gedeelde auth-helper
+  `lib/haalIngelogdeMakelaar.tsx`; nieuwe `/account`-pagina (naam + wachtwoord);
+  kantoorpagina opgeschoond ("VestaAI" eruit, profiel/uitloggen verhuisd).
+  `typecheck`/`test` (114 tests)/`build` groen.

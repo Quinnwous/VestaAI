@@ -29,7 +29,7 @@ export default async function NewObjectPage() {
           eyebrow="Tijdelijk gesloten"
           titel={CONTENT_SLOT_TEKST.titel}
           uitleg={`${CONTENT_SLOT_TEKST.uitleg} Het huidige invoerformulier hoort bij de contentgeneratie. Woningen toevoegen komt terug met de waarderingsflow: adres invoeren, data ophalen, waarderen.`}
-          actie={{ href: '/dashboard', label: 'Terug naar de portefeuille' }}
+          actie={{ href: '/woningen', label: 'Terug naar de portefeuille' }}
         />
       </main>
     )

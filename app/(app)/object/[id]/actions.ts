@@ -41,6 +41,7 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
 
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
+  revalidatePath('/woningen')
   return { ok: true, fase: nieuweFase }
 }
 
@@ -73,6 +74,7 @@ export async function setPitchUitslag(objectId: string, uitslag: PitchUitslag) {
 
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
+  revalidatePath('/woningen')
   return { ok: true, uitslag, fase: update.fase }
 }
 
@@ -102,6 +104,7 @@ export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatu
 
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
+  revalidatePath('/woningen')
 
   return { ok: true, status: nieuwStatus }
 }
@@ -133,5 +136,6 @@ export async function deleteObject(objectId: string) {
   if (error) return { ok: false, error: error.message }
 
   revalidatePath('/dashboard')
-  redirect('/dashboard')
+  revalidatePath('/woningen')
+  redirect('/woningen')
 }

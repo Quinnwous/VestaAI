@@ -60,12 +60,25 @@ function hasAuth(): boolean {
   }
 }
 
-test('authenticated: dashboard laadt objectenlijst', async ({ browser }) => {
+test('authenticated: dashboard laadt de startpagina (masterplan fase 1.6)', async ({ browser }) => {
   test.skip(!hasAuth(), 'Geen auth state — stel E2E_TEST_EMAIL + Supabase-keys in om te activeren')
   const ctx = await browser.newContext({ storageState: AUTH_FILE })
   const page = await ctx.newPage()
 
   await page.goto('/dashboard')
+  await expect(page.url()).not.toContain('/login')
+  // Overzicht-startpagina: begroeting + snelkoppelingen, geen woningenlijst meer.
+  await expect(page.getByText(/goede(morgen|middag|avond|nacht)/i).first()).toBeVisible()
+  await expect(page.getByText(/woning toevoegen/i).first()).toBeVisible()
+  await ctx.close()
+})
+
+test('authenticated: /woningen laadt de woningdossier-lijst', async ({ browser }) => {
+  test.skip(!hasAuth(), 'Geen auth state — stel E2E_TEST_EMAIL + Supabase-keys in om te activeren')
+  const ctx = await browser.newContext({ storageState: AUTH_FILE })
+  const page = await ctx.newPage()
+
+  await page.goto('/woningen')
   await expect(page.url()).not.toContain('/login')
   await expect(page.getByText(/object|woning|geen/i).first()).toBeVisible()
   await ctx.close()

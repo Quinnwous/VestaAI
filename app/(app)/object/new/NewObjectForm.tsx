@@ -141,7 +141,7 @@ export function NewObjectForm() {
       {state.status === 'idle' && (
         <div>
           <Link
-            href="/dashboard"
+            href="/woningen"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
           >
             ← Terug naar woningen

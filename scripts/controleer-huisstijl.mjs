@@ -20,8 +20,10 @@ const GROENEN = ['26, 107, 69', '42, 138, 92', '17, 66, 48', '199, 230, 213', '2
 // het kantoor zelf ziet alleen de read-only /kantoor-pagina. /huisstijl en /settings bestaan niet meer.
 const PAGINAS = [
   ['dashboard', '/dashboard'],
+  ['woningen', '/woningen'],
   ['object-nieuw', '/object/new'],
   ['kantoor', '/kantoor'],
+  ['account', '/account'],
   ['marktanalyse', '/marktanalyse'],
   ['marktanalyse-transacties', '/marktanalyse/transacties'],
   ['marktanalyse-concurrentie', '/marktanalyse/concurrentie'],

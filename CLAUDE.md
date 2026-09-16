@@ -41,7 +41,7 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.md`:
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
-  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. Het dashboard toont een scorebord (`PitchScorebord.tsx`) met winratio.
+  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. De woningenlijst (`/woningen`) toont een scorebord (`PitchScorebord.tsx`) met winratio; de startpagina (`/dashboard`) toont dezelfde winratio (laatste 12 maanden) als kerncijfer.
   - **In verkoop** — hetzelfde als Acquisitie, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. Content wordt in de achtergrond al gegenereerd zodra het dossier wordt aangemaakt (`/api/generate`), maar blijft verborgen tot deze fase.
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
@@ -53,8 +53,8 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.m
   - **Transacties opzoeken** (`components/TransactiesZoeken.tsx`) — zoeken/filteren over de dataset; "meenemen als referentie" wacht op verdere waarderings-integratie.
   - **Concurrentieanalyse** (`components/ConcurrentieExplorer.tsx` + `lib/concurrentie.ts`) — marktaandeel, wie wint welk segment, presteren wij beter, concurrent-profielen. Draait op `transacties.verkopend_kantoor`; toont een eerlijke lege staat zolang dat veld niet gevuld is.
   - **Verkoopkaart** (`app/(app)/marktanalyse/kaart/`, `components/VerkoopkaartExplorer.tsx`) — alleen eigen verkopen als vlaggetje, met live filters.
-- **Verhuur** — zichtbaar in de topbar, bewust op slot ("Binnenkort"). Niet gebouwd.
-- **Kantoor** (`app/(app)/kantoor/`) — read-only pagina achter het gebruikersmenu: huisstijl-preview, kantoorgegevens, team, statistieken. Bewerken kan alleen via `/admin/kantoor/[id]` (platform-admin).
+- **Verhuur** — volledig uit de app gehaald (fase 1.3, masterplan 16-17 sep 2026, zie `docs/roadmap.md`). Stond eerder als "Binnenkort" in de topbar; nu bewust níet gebouwd, geen restant meer in de navigatie.
+- **Kantoor** (`app/(app)/kantoor/`) — read-only pagina achter het profielmenu (avatar rechtsboven): huisstijl-preview, kantoorgegevens, team, statistieken. Bewerken kan alleen via `/admin/kantoor/[id]` (platform-admin). Eigen naam/wachtwoord staan sinds fase 1.7 op `/account`, niet meer hier.
 
 **Eén rol per kantoor** (besluit 16 sep 2026): iedereen met een login binnen een kantoor ziet en kan hetzelfde — geen kantoor-admin meer. De kolom `makelaars.role` bestaat nog maar stuurt geen rechten meer binnen het kantoor. Platform-admin (Quinn, `lib/admin.ts`) is een los concept.
 
@@ -128,28 +128,35 @@ VestaAI/
 │   ├── page.tsx               # landingspagina (LandingPageClient) — gesloten platform, geen prijzen
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
-│   │   ├── dashboard/          #   woningdossier-lijst, fase-filters, PitchScorebord
+│   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
+│   │   │                       #   StartBanner + Snelkoppelingen + Kerncijfers
+│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, PitchScorebord (verhuisd
+│   │   │                       #   van /dashboard hierheen in fase 1.6)
 │   │   ├── object/new · [id]/  #   gedeelde intake (PropertyForm) · woningdossier (ObjectWorkspace,
 │   │   │                       #   fase-afhankelijk: waardering/verkoopadvies altijd, content pas
 │   │   │                       #   vanaf "In verkoop")
 │   │   ├── marktanalyse/        #   4 interactieve explorers: marktanalyse · transacties ·
 │   │   │                       #   concurrentie · kaart
-│   │   └── kantoor/             #   read-only: huisstijl-preview, team, statistieken
+│   │   ├── kantoor/             #   read-only: huisstijl-preview, team, statistieken
+│   │   └── account/             #   "Mijn account" (fase 1.7): naam wijzigen, wachtwoord wijzigen
 │   ├── admin/                  # platform-admin: kantoor/account-beheer, per-kantoor huisstijl +
 │   │   ├── kantoor/[id]/        #   instellingen + team (HuisstijlForm/InstellingenForm/TeamBeheer),
 │   │   └── transacties/         #   transactie-CSV-import
 │   └── api/                    # generate (NL+EN), fotos/documenten/pdf/export, verrijking,
 │                                #   object/[id]/usps, stats, object, auth, me
 ├── components/
-│   ├── AppTopbar.tsx           # topbar: Woningdossier · Marktinzichten · Verhuur (op slot)
+│   ├── AppTopbar.tsx           # topbar (herbouwd fase 1.3): Woningdossier · Marktinzichten;
+│   │                           #   avatarmenu rechtsboven (Mijn account · Kantoor · Uitloggen).
+│   │                           #   Verhuur volledig uit de app (was hier "op slot")
 │   ├── ObjectWorkspace.tsx     # woningdossier, fase-afhankelijke weergave
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
 │   ├── Verkoopkaart.tsx / VerkoopkaartClient.tsx / VerkoopkaartExplorer.tsx / StraalKaartPaneel.tsx
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
-│   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies (Verhuur)
-│   └── ui/                     # design-system: tokens.ts + primitives
+│   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
+│   └── ui/                     # design-system: tokens.ts + primitives (o.a. AppPagina, StatTile,
+│                               #   EmptyState, Skeleton — sinds fase 1.1)
 ├── lib/
 │   ├── branding.ts             # kantoorpalet uit huisstijl_json → CSS-variabelen
 │   ├── waardering.ts           # referentieselectie, bandbreedte, kenmerk-effecten (vergelijkbare-paren)
