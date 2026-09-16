@@ -1,5 +1,24 @@
 # VestaAI
 
+> ## 🚦 Begin hier bij elke sessie
+> **Lees eerst `docs/roadmap.md` § Stand van zaken** (fase, laatst opgeleverd, volgende
+> item, blokkades, open vragen) vóór je iets anders doet. Dat document is het masterplan
+> "demo-klaar" (opgesteld 16-17 sep 2026) met alle fases, klaar-als-criteria, het
+> besluitenlogboek, risico's en de vangrails voor de productiedatabase.
+>
+> **Definition of Done** (elk item, zie `docs/roadmap.md` § 4 voor de volledige versie):
+> `npm run typecheck && npm run test && npm run build` groen · huisstijl-hook schoon ·
+> `scripts/screenshots.mjs` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
+> aanwezig · geen kale `select('*')` op `transacties` · elke nieuwe tabel met RLS per kantoor ·
+> docs bijgewerkt.
+>
+> **Vangrails productiedatabase:** back-up (`scripts/backup-data.mjs`) vóór elke
+> risicovolle stap (migratie, import, bulk-update, opruimen); scripts dry-run als
+> standaard; migraties alleen na expliciet akkoord van Quinn.
+>
+> **Werkwijze:** Opus plant (`/model opusplan`), Sonnet bouwt. `/sessie-start` bij het
+> begin, `/sessie-afronden` bij het einde van elke sessie.
+
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Acquisitie → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
 
 > **Koerswijziging 15 september 2026.** VestaAI was een AI-contentplatform (Funda-teksten, brochures, virtual staging) en werd daarnaast een waarderingsplatform. Alle prijzen/abonnementen/Stripe zijn uit de code gehaald (niet bevroren — verwijderd).
