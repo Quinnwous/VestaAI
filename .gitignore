@@ -44,3 +44,6 @@ next-env.d.ts
 
 # back-ups van scripts/backup-data.mjs — bevatten productiedata, nooit committen
 /backups/
+
+# screenshots van scripts/screenshots.mjs — lokaal beoordelingsmateriaal, geen historie
+/screenshots/
