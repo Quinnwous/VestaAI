@@ -16,8 +16,9 @@ export const HuisstijlSchema = z.object({
   // brede wordmark is en een favicon een vierkant beeldmerk — geen aparte kolom nodig,
   // dit is JSON net als de rest van de huisstijl.
   favicon_url: z.string().min(1).optional(),
-  // Sfeerbeeld van het kantoor (team, pand) dat als licht watermerk in de zijmarges
-  // van de ingelogde omgeving staat. Twee slots: links en rechts. Leeg = vlakke achtergrond.
+  // Sfeerbeeld van het kantoor (team, pand). `achtergrond_url` staat scherp als
+  // volle-breedte banner bovenaan de kantoorpagina; `achtergrond_secundair_url` is een
+  // reserveslot voor toekomstig gebruik elders. Leeg = geen banner.
   achtergrond_url: z.string().min(1).optional(),
   achtergrond_secundair_url: z.string().min(1).optional(),
   // Contactgegevens voor de merkbalk bovenaan de ingelogde omgeving.

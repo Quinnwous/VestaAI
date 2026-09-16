@@ -1,8 +1,10 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { bouwBranding } from '@/lib/branding'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import { ProfielSectie } from './ProfielSectie'
 import { StatistiekenPaneel } from './StatistiekenPaneel'
+import { KantoorBanner } from './KantoorBanner'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 
 export const metadata = { title: 'Kantoor' }
@@ -39,9 +41,12 @@ export default async function KantoorPage() {
 
   const huisstijl = (kantoor as Kantoor | null)?.huisstijl_json ?? null
   const instellingen = (kantoor as Kantoor | null)?.instellingen_json ?? null
+  const branding = bouwBranding(kantoor as Kantoor | null)
 
   return (
     <main style={{ maxWidth: 980, margin: '0 auto', padding: '44px 40px 80px' }}>
+      {branding.achtergrondUrl && <KantoorBanner url={branding.achtergrondUrl} naam={branding.naam} />}
+
       <Eyebrow>Beheer</Eyebrow>
       <SerifTitle style={{ marginBottom: 8 }}>
         <span style={{ fontStyle: 'italic', color: 'var(--merk,#1A6B45)' }}>Kantoor</span>

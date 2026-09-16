@@ -4,9 +4,9 @@ import { useRef, useState } from 'react'
 import { uploadAchtergrondAlsAdmin } from '../actions'
 
 /**
- * Sfeerbeeld van het kantoor (team links, pand rechts) dat als licht watermerk in de
- * zijmarges van de ingelogde omgeving staat. Staand beeld werkt het beste — de marges
- * zijn hoge, smalle stroken.
+ * Sfeerbeeld van het kantoor. Het primaire beeld verschijnt scherp (geen vervaging) als
+ * volle-breedte banner bovenaan de kantoorpagina — liggend, ca. 21:9. Het secundaire beeld
+ * is een reserveslot voor toekomstig gebruik elders in de app.
  */
 type Slot = 'primair' | 'secundair'
 
@@ -92,14 +92,14 @@ export function AchtergrondUpload({ kantoorId, huidigPrimair, huidigSecundair }:
 }) {
   return (
     <div>
-      <p className="text-sm font-medium text-gray-700 mb-1">Sfeerbeeld in de zijmarges</p>
+      <p className="text-sm font-medium text-gray-700 mb-1">Sfeerbeeld van het kantoor</p>
       <p className="text-xs text-gray-500 mb-3 leading-relaxed">
-        Verschijnt licht vervaagd links en rechts van het werkscherm op brede schermen. Staande foto&apos;s
-        van het team of pand werken het beste; leeg = effen achtergrond.
+        Het primaire beeld staat scherp als banner bovenaan de kantoorpagina — een liggende
+        foto van het team of pand (ca. 21:9) werkt het beste; leeg = geen banner.
       </p>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <Vak kantoorId={kantoorId} slot="primair" label="Links" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigPrimair} />
-        <Vak kantoorId={kantoorId} slot="secundair" label="Rechts" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigSecundair} />
+        <Vak kantoorId={kantoorId} slot="primair" label="Banner" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigPrimair} />
+        <Vak kantoorId={kantoorId} slot="secundair" label="Reserve (nog niet gebruikt)" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigSecundair} />
       </div>
     </div>
   )
