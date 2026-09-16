@@ -76,7 +76,7 @@ export function InstellingenForm({ kantoorId, naam, instellingen }: {
 
       <div className="border-t border-gray-100 pt-5">
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Kantoorprofiel</h3>
-        <p className="text-xs text-gray-500 mb-3">Voedt de "over ons"-sectie van het verkoopadvies.</p>
+        <p className="text-xs text-gray-500 mb-3">Voedt de &ldquo;over ons&rdquo;-sectie van het verkoopadvies.</p>
         <div className="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Opgericht</label>

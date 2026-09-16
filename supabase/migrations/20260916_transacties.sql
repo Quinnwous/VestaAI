@@ -57,3 +57,13 @@ create index if not exists transacties_eigen_verkoop_idx on transacties (kantoor
 -- transactie opnieuw aanleveren werkt als upsert i.p.v. een dubbele rij.
 create unique index if not exists transacties_natuurlijke_sleutel_idx
   on transacties (kantoor_id, adres, coalesce(verkoopdatum, '1900-01-01'::date));
+
+-- PostgREST (Supabase JS) geeft een geography-kolom terug als EWKB-hex, niet
+-- bruikbaar in de browser — deze view ontsluit lat/lng als gewone floats voor
+-- de verkoopkaart (components/Verkoopkaart.tsx) zonder de brontabel te raken.
+create or replace view transacties_met_coordinaten as
+select
+  t.*,
+  st_y(t.geo::geometry) as lat,
+  st_x(t.geo::geometry) as lng
+from transacties t;

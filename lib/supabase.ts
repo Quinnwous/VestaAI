@@ -57,6 +57,12 @@ export type TransactieRow = {
   created_at: string
 }
 
+/** Zie SQL-view `transacties_met_coordinaten` — lat/lng als floats i.p.v. EWKB-hex. */
+export type TransactieMetCoordinaten = TransactieRow & {
+  lat: number | null
+  lng: number | null
+}
+
 export type ObjectRow = {
   id: string
   kantoor_id: string
@@ -68,6 +74,8 @@ export type ObjectRow = {
   status: 'draft' | 'published' | 'onder_bod' | 'verkocht'
   fase: ObjectFase
   pitch_uitslag: PitchUitslag | null
+  lat: number | null
+  lng: number | null
 }
 
 export function createServerSupabaseClient() {

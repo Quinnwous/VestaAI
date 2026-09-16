@@ -13,7 +13,9 @@ import { FotoBibliotheek } from '@/components/FotoBibliotheek'
 import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
+import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import type { ContentOutput, ObjectFase } from '@/lib/schemas'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
@@ -91,6 +93,8 @@ export function ObjectWorkspace({
   vraagprijs,
   notitie,
   userEmail,
+  geo,
+  eigenVerkopen = [],
 }: {
   objectId: string
   address: string
@@ -99,10 +103,20 @@ export function ObjectWorkspace({
   vraagprijs: number
   notitie: string | null
   userEmail?: string
+  /** Coördinaat van dit adres (uit lib/verrijking.ts) — voedt de straal-uitsnede hieronder. */
+  geo?: { lat: number; lng: number } | null
+  eigenVerkopen?: TransactieMetCoordinaten[]
 }) {
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
+
+  const straalKaart = geo ? (
+    <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid #E6E9EC', background: '#fff', padding: 18 }}>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>In de buurt verkocht</p>
+      <StraalKaartPaneel lat={geo.lat} lng={geo.lng} eigenVerkopen={eigenVerkopen} />
+    </div>
+  ) : null
 
   // Acquisitiefase: er zijn nog geen foto's of een vaste vraagprijs — alleen
   // waardebepaling en verkoopadvies zijn relevant, geen tabbalk nodig.
@@ -111,6 +125,7 @@ export function ObjectWorkspace({
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         <WaarderingPaneel address={address} />
         <VerkoopadviesPaneel address={address} />
+        {straalKaart}
       </div>
     )
   }
@@ -128,6 +143,7 @@ export function ObjectWorkspace({
         <div style={{ display: 'grid', gap: 16 }}>
           <WaarderingPaneel address={address} />
           <VerkoopadviesPaneel address={address} />
+          {straalKaart}
         </div>
       </div>
 

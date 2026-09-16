@@ -249,7 +249,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         {(verrijkingBezig || verrijkingData) && (
           <div style={{ marginTop: 12 }}>
             <WoningdataPanel
-              data={verrijkingData ?? { woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null }}
+              data={verrijkingData ?? { woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null, coord: null }}
               bezig={verrijkingBezig}
             />
           </div>

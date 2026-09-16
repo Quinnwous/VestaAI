@@ -11,13 +11,14 @@ import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { ContentOutput, ObjectFase, PitchUitslag, PropertyInput } from '@/lib/schemas'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie')
+      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie, lat, lng')
       .eq('id', objectId)
       .single()
     return data
@@ -54,6 +55,15 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
   const pitchUitslag = (object.pitch_uitslag ?? null) as PitchUitslag | null
+  const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
+
+  const { data: eigenVerkopen } = geo
+    ? await createServiceSupabaseClient()
+        .from('transacties_met_coordinaten')
+        .select('*')
+        .eq('kantoor_id', object.kantoor_id)
+        .eq('eigen_verkoop', true)
+    : { data: [] as TransactieMetCoordinaten[] }
 
   return (
     <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
@@ -92,6 +102,8 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         vraagprijs={(object.input_json as PropertyInput).vraagprijs ?? 0}
         notitie={(object as unknown as { notitie: string | null }).notitie ?? null}
         userEmail={user.email ?? undefined}
+        geo={geo}
+        eigenVerkopen={(eigenVerkopen ?? []) as TransactieMetCoordinaten[]}
       />
     </main>
   )

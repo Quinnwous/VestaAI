@@ -35,7 +35,7 @@ export default async function AdminTransactiesPage() {
     <main className="mx-auto max-w-3xl px-4 py-10">
       <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600">← Admin</Link>
       <h1 className="text-xl font-bold text-gray-900 mt-2 mb-1">Transacties importeren</h1>
-      <p className="text-xs text-gray-400 mb-8">Voedt waardering, marktinzichten en de verkoopkaart. Alleen "eigen verkoop"-rijen krijgen een vlaggetje op de kaart.</p>
+      <p className="text-xs text-gray-400 mb-8">Voedt waardering, marktinzichten en de verkoopkaart. Alleen &ldquo;eigen verkoop&rdquo;-rijen krijgen een vlaggetje op de kaart.</p>
 
       <div className="mb-8 rounded-xl border border-gray-200 overflow-hidden">
         <table className="w-full text-sm">
