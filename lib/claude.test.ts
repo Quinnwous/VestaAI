@@ -167,3 +167,91 @@ describe('generateContent', () => {
     ).rejects.toThrow('valide JSON')
   })
 })
+
+describe('generateContent — content_keuzes (F8)', () => {
+  it('houdt alleen de aangevinkte optionele velden, kernvelden blijven altijd staan', async () => {
+    const volledigeOutput = {
+      ...validOutput,
+      bezichtiging_followup_positief: 'follow-up tekst',
+      bezichtiging_followup_negatief: 'follow-up tekst 2',
+      video_script: 'video tekst',
+      energie_advies: 'energie tekst',
+      kopersvragen_faq: 'faq tekst',
+      marktanalyse: 'markt tekst',
+    }
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(volledigeOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(
+      {
+        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
+        vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
+        content_keuzes: ['video'],
+      },
+      mockClient,
+    )
+
+    expect(result.video_script).toBe('video tekst')
+    expect(result.energie_advies).toBe('')
+    expect(result.kopersvragen_faq).toBe('')
+    expect(result.marktanalyse).toBe('')
+    expect(result.bezichtiging_followup_positief).toBe('')
+    // Kernvelden blijven altijd staan, ongeacht content_keuzes.
+    expect(result.funda_tekst).toContain('Herengracht')
+  })
+
+  it('laat alles staan als content_keuzes ontbreekt (bestaande dossiers)', async () => {
+    const volledigeOutput = { ...validOutput, video_script: 'video tekst' }
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(volledigeOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(
+      {
+        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
+        vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
+      },
+      mockClient,
+    )
+    expect(result.video_script).toBe('video tekst')
+  })
+})
+
+describe('generateContentBeideTalen', () => {
+  const inputBasis = {
+    adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement' as const, kamers: 3,
+    oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' as const,
+    vraagprijs: 450000, usps: 'Prachtig uitzicht', doelgroep: 'Jonge gezinnen',
+  }
+
+  it('genereert nl en en parallel en levert beide', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContentBeideTalen } = await import('./claude')
+    const result = await generateContentBeideTalen(inputBasis, undefined, undefined, undefined, mockClient)
+
+    expect(result.nl.funda_tekst).toContain('Herengracht')
+    expect(result.en).not.toBeNull()
+    expect(mockStream).toHaveBeenCalledTimes(2)
+  })
+
+  it('geeft nl terug ook als de engelse generatie mislukt (best-effort)', async () => {
+    let call = 0
+    const mockStream = vi.fn().mockImplementation(() => {
+      call++
+      // Eerste call (nl) slaagt; alle volgende pogingen (en, incl. retry) falen.
+      return call === 1 ? streamReturning(JSON.stringify(validOutput)) : streamReturning('geen json')
+    })
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContentBeideTalen } = await import('./claude')
+    const result = await generateContentBeideTalen(inputBasis, undefined, undefined, undefined, mockClient)
+
+    expect(result.nl.funda_tekst).toContain('Herengracht')
+    expect(result.en).toBeNull()
+  })
+})

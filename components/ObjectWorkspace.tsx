@@ -103,6 +103,7 @@ export function ObjectWorkspace({
   address,
   fase,
   outputs,
+  outputsEn = null,
   vraagprijs,
   notitie,
   userEmail,
@@ -119,6 +120,8 @@ export function ObjectWorkspace({
   address: string
   fase: ObjectFase
   outputs: ContentOutput
+  /** Engelse tegenhanger van `outputs` (F8, besluit 16 sep 2026: elke tekst standaard NL+EN). */
+  outputsEn?: ContentOutput | null
   vraagprijs: number
   notitie: string | null
   userEmail?: string
@@ -210,7 +213,7 @@ export function ObjectWorkspace({
 
             {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
             <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
-              <ResultTabs data={outputs} objectId={objectId} onResetHref="/dashboard" />
+              <ResultTabs data={outputs} dataEn={outputsEn} objectId={objectId} onResetHref="/dashboard" />
               <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>

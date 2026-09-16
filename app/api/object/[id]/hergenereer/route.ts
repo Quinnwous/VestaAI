@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
-import { generateContent } from '@/lib/claude'
+import { generateContentBeideTalen } from '@/lib/claude'
 import { PropertyInputSchema, type HuisstijlConfig } from '@/lib/schemas'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
@@ -69,17 +69,17 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
     const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
 
-    const output = await generateContent(input, huisstijl, undefined, verrijkingTekst, docIds)
+    const { nl: output, en: outputEn } = await generateContentBeideTalen(input, huisstijl, verrijkingTekst, docIds)
 
     const { error } = await serviceClient
       .from('objecten')
-      .update({ outputs_json: output })
+      .update({ outputs_json: output, outputs_json_en: outputEn })
       .eq('id', params.id)
       .eq('kantoor_id', makelaar.kantoor_id)
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
     revalidatePath(`/object/${params.id}`)
-    return NextResponse.json({ output })
+    return NextResponse.json({ output, output_en: outputEn })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Onbekende fout'
     return NextResponse.json({ error: message }, { status: 500 })

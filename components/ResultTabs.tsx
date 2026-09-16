@@ -33,26 +33,35 @@ function tabFromHash(): Tab {
 
 interface ResultTabsProps {
   data: ContentOutput
+  /** Engelse tegenhanger (F8, besluit 16 sep 2026: elke tekst standaard NL+EN). Toggle verschijnt alleen als dit gevuld is. */
+  dataEn?: ContentOutput | null
   objectId?: string | null
   taal?: 'nl' | 'en'
   onReset?: () => void
   onResetHref?: string
 }
 
-export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }: ResultTabsProps) {
+export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onResetHref }: ResultTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>(() => tabFromHash())
   const [brochureVariant, setBrochureVariant] = useState<'kort' | 'lang'>('lang')
   const [followupVariant, setFollowupVariant] = useState<'positief' | 'negatief'>('positief')
   const [localData, setLocalData] = useState<ContentOutput>(data)
+  // Weergavetaal is los van bewerken: bewerken/herschrijven werkt altijd op de
+  // Nederlandse brondata (localData) — Engels is hier alleen ter inzage/kopiëren.
+  const [weergaveTaal, setWeergaveTaal] = useState<'nl' | 'en'>(taal)
 
-  const isEn = taal === 'en'
+  const isEn = weergaveTaal === 'en'
+  const weergaveData = isEn && dataEn ? dataEn : localData
 
   const updateField = (sleutel: keyof ContentOutput, nieuweTekst: string) => {
     setLocalData(prev => ({ ...prev, [sleutel]: nieuweTekst }))
   }
 
-  const saveField = (sleutel: keyof ContentOutput) => objectId
+  // Bewerken/herschrijven werkt alleen op de Nederlandse brondata — bij het
+  // bekijken van de Engelse tegenhanger (F8) zijn deze bewust uitgeschakeld,
+  // anders zou een Engelse bewerking per ongeluk het NL-veld overschrijven.
+  const saveField = (sleutel: keyof ContentOutput) => (objectId && !isEn)
     ? async (tekst: string) => {
         updateField(sleutel, tekst)
         await fetch(`/api/object/${objectId}/veld`, {
@@ -80,24 +89,24 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
 
   const handleCopyAll = async () => {
     const secties: [string, string][] = [
-      [isEn ? '=== MAIN DESCRIPTION ===' : '=== FUNDA-TEKST ===', localData.funda_tekst],
-      [isEn ? '=== BROCHURE (LONG) ===' : '=== BROCHURE (LANG) ===', localData.brochure_lang],
-      [isEn ? '=== BROCHURE (SHORT) ===' : '=== BROCHURE (KORT) ===', localData.brochure_kort],
-      [isEn ? '=== INSTAGRAM — EMOTIONAL ===' : '=== INSTAGRAM — EMOTIONEEL ===', localData.instagram_emotioneel],
-      [isEn ? '=== INSTAGRAM — INFORMATIVE ===' : '=== INSTAGRAM — INFORMATIEF ===', localData.instagram_informatief],
-      [isEn ? '=== INSTAGRAM — CALL TO ACTION ===' : '=== INSTAGRAM — ACTIE ===', localData.instagram_actie],
-      [isEn ? '=== LINKEDIN — AGENCY ===' : '=== LINKEDIN — KANTOOR ===', localData.linkedin_kantoor],
-      [isEn ? '=== LINKEDIN — AGENT ===' : '=== LINKEDIN — MAKELAAR ===', localData.linkedin_makelaar],
-      [isEn ? '=== BUYER EMAIL ===' : '=== E-MAIL AAN KOPER ===', localData.koper_email],
-      [isEn ? '=== NEIGHBOURHOOD ===' : '=== BUURTOMSCHRIJVING ===', localData.buurtomschrijving],
+      [isEn ? '=== MAIN DESCRIPTION ===' : '=== FUNDA-TEKST ===', weergaveData.funda_tekst],
+      [isEn ? '=== BROCHURE (LONG) ===' : '=== BROCHURE (LANG) ===', weergaveData.brochure_lang],
+      [isEn ? '=== BROCHURE (SHORT) ===' : '=== BROCHURE (KORT) ===', weergaveData.brochure_kort],
+      [isEn ? '=== INSTAGRAM — EMOTIONAL ===' : '=== INSTAGRAM — EMOTIONEEL ===', weergaveData.instagram_emotioneel],
+      [isEn ? '=== INSTAGRAM — INFORMATIVE ===' : '=== INSTAGRAM — INFORMATIEF ===', weergaveData.instagram_informatief],
+      [isEn ? '=== INSTAGRAM — CALL TO ACTION ===' : '=== INSTAGRAM — ACTIE ===', weergaveData.instagram_actie],
+      [isEn ? '=== LINKEDIN — AGENCY ===' : '=== LINKEDIN — KANTOOR ===', weergaveData.linkedin_kantoor],
+      [isEn ? '=== LINKEDIN — AGENT ===' : '=== LINKEDIN — MAKELAAR ===', weergaveData.linkedin_makelaar],
+      [isEn ? '=== BUYER EMAIL ===' : '=== E-MAIL AAN KOPER ===', weergaveData.koper_email],
+      [isEn ? '=== NEIGHBOURHOOD ===' : '=== BUURTOMSCHRIJVING ===', weergaveData.buurtomschrijving],
     ]
-    if (localData.open_huis) secties.push([isEn ? '=== OPEN HOUSE ===' : '=== OPEN HUIS ===', localData.open_huis])
-    if (localData.bezichtiging_followup_positief) secties.push([isEn ? '=== FOLLOW-UP (INTERESTED) ===' : '=== FOLLOW-UP (GEÏNTERESSEERD) ===', localData.bezichtiging_followup_positief])
-    if (localData.bezichtiging_followup_negatief) secties.push([isEn ? '=== FOLLOW-UP (NOT INTERESTED) ===' : '=== FOLLOW-UP (NIET GEÏNTERESSEERD) ===', localData.bezichtiging_followup_negatief])
-    if (localData.video_script) secties.push([isEn ? '=== VIDEO SCRIPT ===' : '=== VIDEO SCRIPT ===', localData.video_script])
-    if (localData.energie_advies) secties.push([isEn ? '=== ENERGY ADVICE ===' : '=== ENERGIEADVIES ===', localData.energie_advies])
-    if (localData.kopersvragen_faq) secties.push([isEn ? '=== BUYER FAQ ===' : '=== KOPERSVRAGEN FAQ ===', localData.kopersvragen_faq])
-    if (localData.marktanalyse) secties.push([isEn ? '=== MARKET ANALYSIS ===' : '=== MARKTANALYSE ===', localData.marktanalyse])
+    if (weergaveData.open_huis) secties.push([isEn ? '=== OPEN HOUSE ===' : '=== OPEN HUIS ===', weergaveData.open_huis])
+    if (weergaveData.bezichtiging_followup_positief) secties.push([isEn ? '=== FOLLOW-UP (INTERESTED) ===' : '=== FOLLOW-UP (GEÏNTERESSEERD) ===', weergaveData.bezichtiging_followup_positief])
+    if (weergaveData.bezichtiging_followup_negatief) secties.push([isEn ? '=== FOLLOW-UP (NOT INTERESTED) ===' : '=== FOLLOW-UP (NIET GEÏNTERESSEERD) ===', weergaveData.bezichtiging_followup_negatief])
+    if (weergaveData.video_script) secties.push([isEn ? '=== VIDEO SCRIPT ===' : '=== VIDEO SCRIPT ===', weergaveData.video_script])
+    if (weergaveData.energie_advies) secties.push([isEn ? '=== ENERGY ADVICE ===' : '=== ENERGIEADVIES ===', weergaveData.energie_advies])
+    if (weergaveData.kopersvragen_faq) secties.push([isEn ? '=== BUYER FAQ ===' : '=== KOPERSVRAGEN FAQ ===', weergaveData.kopersvragen_faq])
+    if (weergaveData.marktanalyse) secties.push([isEn ? '=== MARKET ANALYSIS ===' : '=== MARKTANALYSE ===', weergaveData.marktanalyse])
 
     const alles = secties.map(([titel, inhoud]) => `${titel}\n${inhoud}`).join('\n\n')
     await navigator.clipboard.writeText(alles)
@@ -149,17 +158,17 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
   // Alleen tabs tonen waarvan content aanwezig is
   const visibleTabs = TABS.filter(tab => {
     if (!tab.optioneel) return true
-    if (tab.id === 'openhuis') return !!localData.open_huis
-    if (tab.id === 'followup') return !!(localData.bezichtiging_followup_positief || localData.bezichtiging_followup_negatief)
-    if (tab.id === 'video') return !!localData.video_script
-    if (tab.id === 'energieadvies') return !!localData.energie_advies
-    if (tab.id === 'kopersvragen') return !!localData.kopersvragen_faq
-    if (tab.id === 'marktanalyse') return !!localData.marktanalyse
+    if (tab.id === 'openhuis') return !!weergaveData.open_huis
+    if (tab.id === 'followup') return !!(weergaveData.bezichtiging_followup_positief || weergaveData.bezichtiging_followup_negatief)
+    if (tab.id === 'video') return !!weergaveData.video_script
+    if (tab.id === 'energieadvies') return !!weergaveData.energie_advies
+    if (tab.id === 'kopersvragen') return !!weergaveData.kopersvragen_faq
+    if (tab.id === 'marktanalyse') return !!weergaveData.marktanalyse
     return true
   })
 
   const rewrite = (sleutel: keyof ContentOutput) =>
-    objectId ? (
+    (objectId && !isEn) ? (
       <HerschrijfKnop
         objectId={objectId}
         sleutel={sleutel}
@@ -174,9 +183,23 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <h2 className="text-lg font-semibold text-gray-900">
             {isEn ? 'Generated content' : 'Gegenereerde content'}
           </h2>
+          {dataEn && (
+            <div style={{ display: 'inline-flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #E1E5E9' }}>
+              {(['nl', 'en'] as const).map(t => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setWeergaveTaal(t)}
+                  style={{ padding: '5px 10px', fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', background: weergaveTaal === t ? 'var(--merk,#1A6B45)' : '#fff', color: weergaveTaal === t ? '#fff' : '#5C6470' }}
+                >
+                  {t === 'nl' ? '🇳🇱 NL' : '🇬🇧 EN'}
+                </button>
+              ))}
+            </div>
+          )}
           {isEn && (
-            <span style={{ fontSize: 12, background: 'var(--merk-zacht,#EAF5EE)', color: 'var(--merk,#1A6B45)', border: '1px solid var(--merk-rand,#C7E6D5)', borderRadius: 'var(--merk-radius-card-xl, 20px)', padding: '2px 8px', fontWeight: 600 }}>
-              🇬🇧 English
+            <span style={{ fontSize: 11.5, color: '#98A0A6' }}>
+              Alleen ter inzage — bewerken kan op de NL-versie
             </span>
           )}
         </div>
@@ -253,7 +276,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Funda limit: max 800 words' : 'Funda-limiet: max 800 woorden'}
           </p>
-          <TabContent content={localData.funda_tekst} wordCount wordLimit={800} onSave={saveField('funda_tekst')} />
+          <TabContent content={weergaveData.funda_tekst} wordCount wordLimit={800} onSave={saveField('funda_tekst')} />
           {rewrite('funda_tekst')}
         </div>
 
@@ -272,7 +295,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
             ))}
           </div>
           <TabContent
-            content={brochureVariant === 'lang' ? localData.brochure_lang : localData.brochure_kort}
+            content={brochureVariant === 'lang' ? weergaveData.brochure_lang : weergaveData.brochure_kort}
             wordCount
             onSave={saveField(brochureVariant === 'lang' ? 'brochure_lang' : 'brochure_kort')}
           />
@@ -285,15 +308,15 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           </p>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <TabContent label={isEn ? 'Emotional' : 'Emotioneel'} content={localData.instagram_emotioneel} charLimit={2200} onSave={saveField('instagram_emotioneel')} />
+              <TabContent label={isEn ? 'Emotional' : 'Emotioneel'} content={weergaveData.instagram_emotioneel} charLimit={2200} onSave={saveField('instagram_emotioneel')} />
               {rewrite('instagram_emotioneel')}
             </div>
             <div className="space-y-2">
-              <TabContent label={isEn ? 'Informative' : 'Informatief'} content={localData.instagram_informatief} charLimit={2200} onSave={saveField('instagram_informatief')} />
+              <TabContent label={isEn ? 'Informative' : 'Informatief'} content={weergaveData.instagram_informatief} charLimit={2200} onSave={saveField('instagram_informatief')} />
               {rewrite('instagram_informatief')}
             </div>
             <div className="space-y-2">
-              <TabContent label={isEn ? 'Call to action' : 'Actie'} content={localData.instagram_actie} charLimit={2200} onSave={saveField('instagram_actie')} />
+              <TabContent label={isEn ? 'Call to action' : 'Actie'} content={weergaveData.instagram_actie} charLimit={2200} onSave={saveField('instagram_actie')} />
               {rewrite('instagram_actie')}
             </div>
           </div>
@@ -305,23 +328,23 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           </p>
           <div className="space-y-4">
             <div className="space-y-2">
-              <TabContent label={isEn ? 'Agency variant' : 'Kantoor-variant'} content={localData.linkedin_kantoor} charLimit={3000} onSave={saveField('linkedin_kantoor')} />
+              <TabContent label={isEn ? 'Agency variant' : 'Kantoor-variant'} content={weergaveData.linkedin_kantoor} charLimit={3000} onSave={saveField('linkedin_kantoor')} />
               {rewrite('linkedin_kantoor')}
             </div>
             <div className="space-y-2">
-              <TabContent label={isEn ? 'Agent variant' : 'Makelaar-variant'} content={localData.linkedin_makelaar} charLimit={3000} onSave={saveField('linkedin_makelaar')} />
+              <TabContent label={isEn ? 'Agent variant' : 'Makelaar-variant'} content={weergaveData.linkedin_makelaar} charLimit={3000} onSave={saveField('linkedin_makelaar')} />
               {rewrite('linkedin_makelaar')}
             </div>
           </div>
         </div>
 
         <div role="tabpanel" id="panel-email" aria-labelledby="tab-email" hidden={activeTab !== 'email'} className="space-y-3">
-          <TabContent content={localData.koper_email} onSave={saveField('koper_email')} />
+          <TabContent content={weergaveData.koper_email} onSave={saveField('koper_email')} />
           {rewrite('koper_email')}
         </div>
 
         <div role="tabpanel" id="panel-buurt" aria-labelledby="tab-buurt" hidden={activeTab !== 'buurt'} className="space-y-3">
-          <TabContent content={localData.buurtomschrijving} onSave={saveField('buurtomschrijving')} />
+          <TabContent content={weergaveData.buurtomschrijving} onSave={saveField('buurtomschrijving')} />
           {rewrite('buurtomschrijving')}
         </div>
 
@@ -329,7 +352,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Open house announcement for Instagram/social' : 'Open huis-aankondiging voor Instagram/social'}
           </p>
-          <TabContent content={localData.open_huis} charLimit={2200} onSave={saveField('open_huis')} />
+          <TabContent content={weergaveData.open_huis} charLimit={2200} onSave={saveField('open_huis')} />
           {rewrite('open_huis')}
         </div>
 
@@ -350,8 +373,8 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <div className="space-y-2">
             <TabContent
               content={followupVariant === 'positief'
-                ? localData.bezichtiging_followup_positief
-                : localData.bezichtiging_followup_negatief}
+                ? weergaveData.bezichtiging_followup_positief
+                : weergaveData.bezichtiging_followup_negatief}
               onSave={saveField(followupVariant === 'positief' ? 'bezichtiging_followup_positief' : 'bezichtiging_followup_negatief')}
             />
             {rewrite(followupVariant === 'positief' ? 'bezichtiging_followup_positief' : 'bezichtiging_followup_negatief')}
@@ -362,7 +385,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Voice-over script for property video (±60 seconds)' : 'Voice-over script voor woningvideo (±60 seconden)'}
           </p>
-          <TabContent content={localData.video_script} wordCount onSave={saveField('video_script')} />
+          <TabContent content={weergaveData.video_script} wordCount onSave={saveField('video_script')} />
           {rewrite('video_script')}
         </div>
 
@@ -370,7 +393,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Energy advice and subsidy overview based on the energy label' : 'Energieadvies en subsidieoverzicht op basis van het energielabel'}
           </p>
-          <TabContent content={localData.energie_advies ?? ''} wordCount onSave={saveField('energie_advies')} />
+          <TabContent content={weergaveData.energie_advies ?? ''} wordCount onSave={saveField('energie_advies')} />
           {rewrite('energie_advies')}
         </div>
 
@@ -378,7 +401,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Frequently asked questions from buyers — ready to share or export as PDF' : 'Veelgestelde vragen van kopers — klaar om te delen of als PDF te exporteren'}
           </p>
-          <TabContent content={localData.kopersvragen_faq ?? ''} wordCount onSave={saveField('kopersvragen_faq')} />
+          <TabContent content={weergaveData.kopersvragen_faq ?? ''} wordCount onSave={saveField('kopersvragen_faq')} />
           {rewrite('kopersvragen_faq')}
         </div>
 
@@ -386,7 +409,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           <p className="text-xs text-gray-400">
             {isEn ? 'Market analysis and sales strategy for this property' : 'Marktanalyse en verkoopstrategie voor dit object'}
           </p>
-          <TabContent content={localData.marktanalyse ?? ''} wordCount onSave={saveField('marktanalyse')} />
+          <TabContent content={weergaveData.marktanalyse ?? ''} wordCount onSave={saveField('marktanalyse')} />
           {rewrite('marktanalyse')}
         </div>
       </div>

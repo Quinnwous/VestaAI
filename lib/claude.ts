@@ -277,6 +277,34 @@ function parseClaudeResponse(text: string): ContentOutput {
   return ContentOutputSchema.parse(JSON.parse(cleaned))
 }
 
+const OPTIONELE_VELD_PER_KEUZE = {
+  followup: ['bezichtiging_followup_positief', 'bezichtiging_followup_negatief'],
+  video: ['video_script'],
+  energieadvies: ['energie_advies'],
+  kopersvragen: ['kopersvragen_faq'],
+  marktanalyse: ['marktanalyse'],
+} as const satisfies Record<string, (keyof ContentOutput)[]>
+
+/**
+ * Past de keuzevinkjes toe (F8, besluit 16 sep 2026): Claude genereert altijd
+ * de volledige set, maar alleen de door de makelaar aangevinkte optionele
+ * content blijft staan — de rest wordt leeggemaakt. `open_huis` loopt via
+ * zijn eigen aan/uit-veld in de intake (open_huis_datum), niet via
+ * content_keuzes. Ontbreekt `content_keuzes` (oudere dossiers), dan blijft
+ * alles staan zoals Claude het aanleverde.
+ */
+function toepassenContentKeuzes(output: ContentOutput, keuzes?: PropertyInput['content_keuzes']): ContentOutput {
+  if (!keuzes) return output
+  const geselecteerdeVelden = new Set(keuzes.flatMap(k => OPTIONELE_VELD_PER_KEUZE[k]))
+  const resultaat = { ...output }
+  for (const velden of Object.values(OPTIONELE_VELD_PER_KEUZE)) {
+    for (const veld of velden) {
+      if (!geselecteerdeVelden.has(veld)) (resultaat as Record<string, string>)[veld] = ''
+    }
+  }
+  return resultaat
+}
+
 export async function generateContent(
   input: PropertyInput,
   huisstijlOrClient?: HuisstijlConfig | Anthropic,
@@ -346,12 +374,35 @@ export async function generateContent(
     }
 
     try {
-      return parseClaudeResponse(text)
+      return toepassenContentKeuzes(parseClaudeResponse(text), input.content_keuzes)
     } catch {
       if (attempt === 1) throw new Error('Claude gaf geen valide JSON na 2 pogingen')
     }
   }
   throw new Error('Onverwachte fout')
+}
+
+/**
+ * Genereert de contentsuite in NL én EN (besluit 16 sep 2026, zie CLAUDE.md §
+ * Hoofdstructuur: "elke tekst standaard NL+EN"). Draait de bestaande,
+ * onveranderde `generateContent`-pipeline twee keer parallel — één met
+ * `taal: 'nl'`, één met `taal: 'en'` — zodat het beproefde prompt-ontwerp per
+ * taal intact blijft. De Engelse generatie is best-effort: mislukt hij, dan
+ * krijgt de makelaar nog steeds zijn Nederlandse content (`en: null`) in
+ * plaats van dat de hele aanvraag faalt.
+ */
+export async function generateContentBeideTalen(
+  input: PropertyInput,
+  huisstijl?: HuisstijlConfig,
+  verrijkingTekst?: string,
+  documentFileIds?: string[],
+  client?: Anthropic,
+): Promise<{ nl: ContentOutput; en: ContentOutput | null }> {
+  const [nl, en] = await Promise.all([
+    generateContent({ ...input, taal: 'nl' }, huisstijl, client, verrijkingTekst, documentFileIds),
+    generateContent({ ...input, taal: 'en' }, huisstijl, client, verrijkingTekst, documentFileIds).catch(() => null),
+  ])
+  return { nl, en }
 }
 
 // Prijswijziging: aparte Claude-call voor een bestaand object

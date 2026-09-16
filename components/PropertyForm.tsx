@@ -23,6 +23,16 @@ const ORIENTATIE_OPTIES = ['noord', 'noordoost', 'oost', 'zuidoost', 'zuid', 'zu
 const PARKEREN_OPTIES = ['garage', 'carport', 'oprit', 'openbaar', 'geen'] as const
 const BIJZONDERE_LIGGING_OPTIES = ['water', 'park', 'drukke_weg'] as const
 
+// Keuzevinkjes voor extra content (F8, besluit 16 sep 2026) — standaard allemaal
+// aangevinkt, zodat bestaand gedrag (alles genereren) de default blijft.
+const CONTENT_KEUZE_OPTIES = [
+  { value: 'followup', label: 'Follow-up na bezichtiging' },
+  { value: 'video', label: 'Video script' },
+  { value: 'energieadvies', label: 'Energieadvies' },
+  { value: 'kopersvragen', label: 'Kopersvragen FAQ' },
+  { value: 'marktanalyse', label: 'Marktanalyse-tekst' },
+] as const
+
 const STAPPEN = [
   { id: 1, label: 'Adres' },
   { id: 2, label: 'Woning' },
@@ -597,6 +607,21 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
               : 'Claude schrijft de tekst gericht op deze koper — toon, sfeer en USP-keuze worden hierop afgestemd.'}
           </p>
         }
+      </div>
+
+      {/* Keuzevinkjes (F8, besluit 16 sep 2026): alleen de aangevinkte extra content komt straks
+          in het dossier terecht — de kernteksten (Funda/brochure/social/e-mail/buurt) staan hier
+          los van, die worden altijd gegenereerd. */}
+      <div>
+        <label style={labelStyle}>Extra content <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel, naast de kernteksten)</span></label>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          {CONTENT_KEUZE_OPTIES.map(optie => (
+            <label key={optie.value} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+              <input type="checkbox" value={optie.value} disabled={disabled} defaultChecked {...register('content_keuzes')} />
+              {optie.label}
+            </label>
+          ))}
+        </div>
       </div>
       </div>
 

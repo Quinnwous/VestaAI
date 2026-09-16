@@ -19,7 +19,7 @@ const getCachedObject = unstable_cache(
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie, lat, lng, waardering_json, usps_structuur')
+      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur')
       .eq('id', objectId)
       .single()
     return data
@@ -114,6 +114,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         address={object.address}
         fase={fase}
         outputs={object.outputs_json as ContentOutput}
+        outputsEn={(object.outputs_json_en as ContentOutput | null) ?? null}
         vraagprijs={(object.input_json as PropertyInput).vraagprijs ?? 0}
         notitie={(object as unknown as { notitie: string | null }).notitie ?? null}
         userEmail={user.email ?? undefined}

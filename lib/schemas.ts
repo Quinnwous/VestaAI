@@ -145,6 +145,11 @@ export const PropertyInputSchema = z.object({
   // dat laatste komt pas vast te staan zodra de fase naar In verkoop gaat.
   prijsverwachting_verkoper: z.number().int().min(1).optional(),
   courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
+  // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze
+  // willen genereren, zodat ze alleen krijgen wat ze willen"). Ontbreekt dit
+  // veld (bestaande dossiers van vóór deze uitbreiding), dan blijft het oude
+  // gedrag gelden: alle optionele content die Claude relevant acht.
+  content_keuzes: z.array(z.enum(['followup', 'video', 'energieadvies', 'kopersvragen', 'marktanalyse'])).optional(),
 })
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>
