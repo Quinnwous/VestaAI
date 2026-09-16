@@ -3,6 +3,12 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    /* Breedte van de content-kolom in de ingelogde omgeving. De zijmarges die
+       hierbuiten vallen dragen het sfeerbeeld van het kantoor (zie (app)/layout.tsx). */
+    --app-breedte: 1240px;
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -14,7 +20,7 @@
   }
 
   ::selection {
-    background: #C7E6D5;
+    background: var(--merk-rand, #C7E6D5);
     color: #0E1A13;
   }
 
@@ -35,22 +41,24 @@
    ───────────────────────────────────────────────────────── */
 /* NB: !important is nodig omdat inline-styles (die dit project veel gebruikt)
    qua specificiteit winnen van gewone class-regels. */
+/* Elke kleur hieronder loopt via --merk*: binnen de ingelogde omgeving zet
+   (app)/layout.tsx die per kantoor, daarbuiten geldt de VestaAI-fallback. */
 .vui-btn { transition: background .15s, border-color .15s, transform .15s, box-shadow .15s; }
-.vui-btn-primary:hover:not(:disabled) { background: #114230 !important; }
-.vui-btn-secondary:hover:not(:disabled) { border-color: #C7E6D5 !important; background: #F8FAF8 !important; }
-.vui-btn-ghost:hover:not(:disabled) { color: #114230 !important; }
+.vui-btn-primary:hover:not(:disabled) { background: var(--merk-diep, #114230) !important; }
+.vui-btn-secondary:hover:not(:disabled) { border-color: var(--merk-rand, #C7E6D5) !important; background: var(--merk-zacht, #F8FAF8) !important; }
+.vui-btn-ghost:hover:not(:disabled) { color: var(--merk-diep, #114230) !important; }
 .vui-btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .vui-card-hover { transition: border-color .15s, box-shadow .15s, transform .15s; }
-.vui-card-hover:hover { border-color: #C7E6D5 !important; box-shadow: 0 2px 12px rgba(26,107,69,.08) !important; }
+.vui-card-hover:hover { border-color: var(--merk-rand, #C7E6D5) !important; box-shadow: 0 2px 12px rgba(var(--merk-rgb, 26,107,69),.08) !important; }
 .vui-card-lift { transition: border-color .15s, box-shadow .15s, transform .15s; }
-.vui-card-lift:hover { border-color: #C7E6D5 !important; transform: translateY(-2px); }
+.vui-card-lift:hover { border-color: var(--merk-rand, #C7E6D5) !important; transform: translateY(-2px); }
 
 .vui-input { transition: border-color .15s, background .15s; }
-.vui-input:focus { border-color: #1A6B45 !important; background: #fff !important; }
+.vui-input:focus { border-color: var(--merk, #1A6B45) !important; background: #fff !important; }
 
 .vui-navitem { transition: background .15s, color .15s; }
-.vui-navitem:hover { background: #F1F7F3 !important; }
+.vui-navitem:hover { background: var(--merk-zacht, #F1F7F3) !important; }
 
 /* Formulier: 2-koloms grid collaps op mobile */
 .form-grid-2 {

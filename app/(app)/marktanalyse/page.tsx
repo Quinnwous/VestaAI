@@ -1,7 +1,7 @@
 import { InAanbouw } from '@/components/InAanbouw'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 
-export const metadata = { title: 'Marktinzichten — VestaAI' }
+export const metadata = { title: 'Marktinzichten' }
 
 /**
  * Marktinzichten (macro) — het spiegelbeeld van het Woningdossier (micro):
@@ -12,11 +12,11 @@ export const metadata = { title: 'Marktinzichten — VestaAI' }
  */
 export default function MarktinzichtenPage() {
   return (
-    <main style={{ maxWidth: 940, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
       <Eyebrow>Marktinzichten</Eyebrow>
       <SerifTitle size={34} accent="de markt" style={{ marginBottom: 10 }}>Zoeken in</SerifTitle>
-      <p style={{ fontSize: 15, color: '#5A6B61', lineHeight: 1.6, margin: '0 0 28px', maxWidth: 620 }}>
-        Straks stelt u hier vrije vragen aan de transactiedata — zonder eerst een woning te hoeven aanmaken.
+      <p style={{ fontSize: 15, color: '#5C6470', lineHeight: 1.6, margin: '0 0 28px', maxWidth: 620 }}>
+        Straks stel je hier vrije vragen aan de transactiedata — zonder eerst een woning te hoeven aanmaken.
       </p>
 
       <div style={{ display: 'grid', gap: 16 }}>
@@ -45,7 +45,7 @@ export default function MarktinzichtenPage() {
           slot
           eyebrow="Concurrentieanalyse — wacht op data"
           titel="Verkoopresultaten en marktaandeel vs. concurrenten"
-          uitleg="Dashboards die de verkoopresultaten van uw eigen kantoor afzetten tegenover concurrenten in de regio. Kan pas als de verkopende makelaar in de dataset zit — die bron levert Quinn later aan."
+          uitleg="Dashboards die de verkoopresultaten van je eigen kantoor afzetten tegenover concurrenten in de regio. Kan pas als de verkopende makelaar in de dataset zit — die bron levert Quinn later aan."
           punten={[
             'Marktaandeel per makelaarskantoor in de regio',
             'Wie verkoopt welk segment, tegen welke gemiddelde prijs en doorlooptijd',

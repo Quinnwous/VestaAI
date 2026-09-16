@@ -36,12 +36,12 @@ interface PropertyFormProps {
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  borderRadius: 12,
-  border: '1px solid #E4EAE6',
+  borderRadius: 'var(--merk-radius-md, 12px)',
+  border: '1px solid #E1E5E9',
   padding: '12px 14px',
   fontSize: 14,
-  color: '#0E1A13',
-  background: '#FBFCFB',
+  color: '#14181B',
+  background: '#FAFBFB',
   outline: 'none',
   boxSizing: 'border-box',
 }
@@ -50,7 +50,7 @@ const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: 13.5,
   fontWeight: 700,
-  color: '#0E1A13',
+  color: '#14181B',
   marginBottom: 8,
 }
 
@@ -155,15 +155,15 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
       {/* Taal toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #E9EFEB' }}>
-        <p style={{ fontSize: 13, color: '#9AA6A0' }}>{isEn ? 'Generate content in:' : 'Genereer content in:'}</p>
-        <div style={{ display: 'flex', borderRadius: 10, border: '1px solid #E4EAE6', overflow: 'hidden', fontSize: 13, fontWeight: 600 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #E6E9EC' }}>
+        <p style={{ fontSize: 13, color: '#98A0A6' }}>{isEn ? 'Generate content in:' : 'Genereer content in:'}</p>
+        <div style={{ display: 'flex', borderRadius: 'var(--merk-radius-md, 10px)', border: '1px solid #E1E5E9', overflow: 'hidden', fontSize: 13, fontWeight: 600 }}>
           {(['nl', 'en'] as const).map(t => (
             <button
               key={t}
               type="button"
               onClick={() => setValue('taal', t)}
-              style={{ padding: '7px 14px', cursor: 'pointer', border: 'none', transition: 'all .15s', background: taalValue === t ? '#1A6B45' : '#fff', color: taalValue === t ? '#fff' : '#5A6B61' }}
+              style={{ padding: '7px 14px', cursor: 'pointer', border: 'none', transition: 'all .15s', background: taalValue === t ? 'var(--merk,#1A6B45)' : '#fff', color: taalValue === t ? 'var(--merk-op,#fff)' : '#5C6470' }}
             >
               {t === 'nl' ? '🇳🇱 Nederlands' : '🇬🇧 English'}
             </button>
@@ -187,7 +187,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         <input type="hidden" {...register('adres')} />
         {errors.adres && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.adres.message}</p>}
         {duplicaat && !errors.adres && (
-          <div style={{ marginTop: 8, borderRadius: 10, background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <div style={{ marginTop: 8, borderRadius: 'var(--merk-radius-md, 10px)', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#D97706" style={{ flexShrink: 0, marginTop: 1 }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
@@ -222,8 +222,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('woningtype')}
             disabled={disabled}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           >
             <option value="">{isEn ? 'Choose type...' : 'Kies type...'}</option>
             {WONINGSTYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -238,8 +238,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('kamers', { valueAsNumber: true })}
             type="number" min={1} max={20} disabled={disabled} placeholder="3"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
           {errors.kamers && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.kamers.message}</p>}
         </div>
@@ -255,8 +255,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('oppervlak_m2', { valueAsNumber: true })}
             type="number" min={1} disabled={disabled} placeholder="85"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
           {errors.oppervlak_m2 && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.oppervlak_m2.message}</p>}
         </div>
@@ -268,8 +268,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('bouwjaar', { valueAsNumber: true })}
             type="number" min={1800} max={2035} disabled={disabled} placeholder="1995"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
           {errors.bouwjaar && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.bouwjaar.message}</p>}
         </div>
@@ -285,8 +285,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('energielabel')}
             disabled={disabled}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           >
             <option value="">{isEn ? 'Choose label...' : 'Kies label...'}</option>
             {ENERGIELABELS.map(l => <option key={l} value={l}>{l}</option>)}
@@ -301,8 +301,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {...register('vraagprijs', { valueAsNumber: true })}
             type="number" min={1} disabled={disabled} placeholder="450000"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
           {errors.vraagprijs && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.vraagprijs.message}</p>}
         </div>
@@ -314,7 +314,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           <label style={{ ...labelStyle, marginBottom: 0 }}>
             {isEn ? "USPs" : "USP's"} <span style={{ color: '#DC2626' }}>*</span>
           </label>
-          <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#9AA6A0', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#98A0A6', fontVariantNumeric: 'tabular-nums' }}>
             {uspsValue.length}/{MAX_USPS}
           </span>
         </div>
@@ -327,12 +327,12 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             ? 'E.g. renovated kitchen, sunny terrace, unobstructed view, quiet street, new roof 2022'
             : 'Bijv: gerenoveerde keuken, zonnig terras, vrij uitzicht, rustige straat, recent dak'}
           style={{ ...inputStyle, resize: 'none', opacity: disabled ? .5 : 1 }}
-          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-          onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+          onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+          onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
         />
         {errors.usps
           ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.usps.message}</p>
-          : <p style={{ marginTop: 6, fontSize: 12, color: '#9AA6A0' }}>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
             {isEn
               ? 'More unique features = stronger copy.'
               : 'Hoe meer unieke kenmerken, hoe sterker de tekst.'}
@@ -358,8 +358,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           }}
           disabled={disabled}
           style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-          onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-          onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+          onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+          onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
         >
           <option value="">{isEn ? 'Choose audience...' : 'Kies doelgroep...'}</option>
           {DOELGROEPEN.map(d => <option key={d} value={d}>{d}</option>)}
@@ -372,13 +372,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             defaultValue={doelgroepValue ?? ''}
             onChange={e => setValue('doelgroep', e.target.value, { shouldValidate: true })}
             style={{ ...inputStyle, marginTop: 8, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-            onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
         )}
         {errors.doelgroep
           ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.doelgroep.message}</p>
-          : <p style={{ marginTop: 6, fontSize: 12, color: '#9AA6A0' }}>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
             {isEn
               ? 'Claude tailors tone, atmosphere and USP selection to this buyer profile.'
               : 'Claude schrijft de tekst gericht op deze koper — toon, sfeer en USP-keuze worden hierop afgestemd.'}
@@ -387,16 +387,16 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       </div>
 
       {/* Open huis */}
-      <div style={{ border: '1px solid #E9EFEB', borderRadius: 14, padding: '16px 18px' }}>
+      <div style={{ border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-lg, 14px)', padding: '16px 18px' }}>
         <button
           type="button"
           onClick={() => setOpenHuisActief(v => !v)}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
         >
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#0E1A13' }}>
+          <span style={{ fontSize: 14, fontWeight: 600, color: '#14181B' }}>
             {isEn ? 'Open house (optional)' : 'Open huis (optioneel)'}
           </span>
-          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 20, background: openHuisActief ? '#EAF5EE' : '#F1F7F3', color: openHuisActief ? '#1A6B45' : '#9AA6A0' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)', background: openHuisActief ? 'var(--merk-zacht,#EAF5EE)' : '#F1F3F5', color: openHuisActief ? 'var(--merk,#1A6B45)' : '#98A0A6' }}>
             {openHuisActief ? (isEn ? 'On' : 'Aan') : (isEn ? 'Off' : 'Uit')}
           </span>
         </button>
@@ -404,7 +404,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         {openHuisActief && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
             <div>
-              <label style={{ ...labelStyle, fontSize: 12, color: '#9AA6A0' }}>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#98A0A6' }}>
                 {isEn ? 'Date' : 'Datum'}
               </label>
               <input
@@ -412,12 +412,12 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
                 type="date"
                 disabled={disabled}
                 style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-                onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-                onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+                onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+                onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
               />
             </div>
             <div>
-              <label style={{ ...labelStyle, fontSize: 12, color: '#9AA6A0' }}>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#98A0A6' }}>
                 {isEn ? 'Time' : 'Tijdstip'}
               </label>
               <input
@@ -425,8 +425,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
                 type="time"
                 disabled={disabled}
                 style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-                onFocus={e => !disabled && (e.target.style.borderColor = '#1A6B45')}
-                onBlur={e => (e.target.style.borderColor = '#E4EAE6')}
+                onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
+                onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
               />
             </div>
           </div>
@@ -438,16 +438,16 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           type="submit"
           disabled={disabled}
           className="vui-btn vui-btn-primary"
-          style={{ width: '100%', borderRadius: 12, background: '#1A6B45', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(26,107,69,.24)' }}
+          style={{ width: '100%', borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk,#1A6B45)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb,26,107,69),.24)' }}
         >
           {disabled
             ? (isEn ? 'Generating...' : 'Bezig met genereren...')
             : (isEn ? 'Generate content →' : 'Genereer content →')}
         </button>
         {!disabled && (
-          <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#9AA6A0' }}>
+          <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#98A0A6' }}>
             {isEn ? 'or press' : 'of druk'}{' '}
-            <kbd style={{ fontFamily: 'monospace', background: '#F1F7F3', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5A6B61', border: '1px solid #E4EAE6' }}>⌘ Enter</kbd>
+            <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht, #F1F7F3)', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
           </p>
         )}
       </div>

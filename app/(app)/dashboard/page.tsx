@@ -10,7 +10,7 @@ import { FeatureKaarten } from '@/components/FeatureKaarten'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { ObjectRow } from '@/lib/supabase'
 
-export const metadata = { title: 'Overzicht — VestaAI' }
+export const metadata = { title: 'Overzicht' }
 
 type StatusFilter = '' | 'draft' | 'published' | 'onder_bod' | 'verkocht'
 
@@ -57,9 +57,9 @@ export default async function DashboardPage({
   if (!makelaar) {
     return (
       <main style={{ maxWidth: 520, margin: '80px auto', padding: '0 28px', textAlign: 'center' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Account wordt klaargezet…</h1>
-        <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6 }}>
-          Uw account is aangemaakt maar nog niet aan een kantoor gekoppeld. Herlaad de pagina.
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#14181B', marginBottom: 10 }}>Account wordt klaargezet…</h1>
+        <p style={{ fontSize: 14, color: '#5C6470', lineHeight: 1.6 }}>
+          Je account is aangemaakt maar nog niet aan een kantoor gekoppeld. Herlaad de pagina.
           Blijft dit? Log uit en opnieuw in, of neem contact op via quinn.berkouwer@gmail.com.
         </p>
       </main>
@@ -117,10 +117,10 @@ export default async function DashboardPage({
   const newestObjectId = objecten?.[0]?.id ?? null
 
   return (
-    <main style={{ maxWidth: 920, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
       <div style={{ marginBottom: 30 }}>
         <Eyebrow>Portefeuille</Eyebrow>
-        <SerifTitle accent="woningen" style={{ marginBottom: 6 }}>Uw</SerifTitle>
+        <SerifTitle accent="woningen" style={{ marginBottom: 6 }}>Jouw</SerifTitle>
       </div>
 
       <OnboardingChecklist

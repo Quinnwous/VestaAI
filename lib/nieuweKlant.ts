@@ -18,10 +18,12 @@ export async function verwerkNieuweKlant(kantoorId: string): Promise<void> {
       .update({ admin_notified_at: new Date().toISOString() })
       .eq('id', kantoorId)
       .is('admin_notified_at', null)
-      .select('name')
+      .select('name, huisstijl_json')
       .maybeSingle()
 
     if (!geclaimd) return // al verwerkt (of race verloren)
+
+    const kantoorKleur = (geclaimd.huisstijl_json as { primaire_kleur?: string } | null)?.primaire_kleur ?? null
 
     const { data: lid } = await service
       .from('makelaars')
@@ -32,7 +34,7 @@ export async function verwerkNieuweKlant(kantoorId: string): Promise<void> {
       .maybeSingle()
 
     await Promise.all([
-      lid ? sendWelcomeEmail(lid.email, lid.name) : Promise.resolve(),
+      lid ? sendWelcomeEmail(lid.email, lid.name, { naam: geclaimd.name, kleur: kantoorKleur }) : Promise.resolve(),
       sendNieuweKlantMelding(
         PLATFORM_ADMIN_EMAILS,
         lid?.name ?? 'Onbekend',

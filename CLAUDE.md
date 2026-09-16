@@ -1,6 +1,6 @@
 # VestaAI
 
-Waarderingsplatform voor Nederlandse makelaars. De woning is de kern: per adres bouwt de makelaar een dossier met een onderbouwde waarde, vergelijkbare verkopen en "wat-als"-scenario's (energielabel, extra kamer, garage). Marktinzichten ernaast voor vrije vragen aan de data, los van één woning. Na inloggen draagt de hele omgeving — en straks het waarderingsrapport — het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen). Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
+Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: per adres bouwt de makelaar een dossier met content (Funda-tekst, brochures, virtual staging), een onderbouwde waarde met vergelijkbare verkopen en "wat-als"-scenario's (energielabel, extra kamer, garage), en — los van één woning — Marktinzichten (marktanalyse + concurrentieanalyse). Na inloggen draagt de hele omgeving — en straks het waarderingsrapport — het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen). Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
 
 > **Koerswijziging 15 september 2026.** VestaAI was een AI-contentplatform (Funda-teksten, brochures, virtual staging) en wordt daarnaast een waarderingsplatform — niet in plaats van. Dezelfde dag zijn ook alle prijzen/abonnementen/Stripe uit de code gehaald (niet bevroren — verwijderd) en is de navigatie herzien naar een micro/macro-hoofdstructuur. De contentsuite werd kort vergrendeld (`lib/features.ts` → `CONTENT_VERGRENDELD`) en is diezelfde week weer ontgrendeld — Quinn bouwt nog actief door en wil overal bij kunnen. De vlag blijft bestaan als schakelaar voor later.
 
@@ -10,15 +10,21 @@ Waarderingsplatform voor Nederlandse makelaars. De woning is de kern: per adres 
 
 Micro/macro-knip — volledige spec en bouwvolgorde in `docs/roadmap.md` § Hoofdstructuur:
 
-- **Woningdossier** (micro, `app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — alles hangt aan één geselecteerd adres.
+- **Woningdossier** (micro, `app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — alles hangt aan één geselecteerd adres, met **één gedeelde intake** (besluit 15 sep, zie `docs/roadmap.md` § Hoofdstructuur): adres, kenmerken (kamers, oppervlakte, kavelgrootte, bouwjaar, energielabel, staat van onderhoud, WOZ), doelgroep en vrije-tekst bijzonderheden (→ AI USP-extractor), plus automatische verrijking (Kadaster/BAG/CBS/Overpass, `lib/verrijking.ts`). Die ene intake voedt beide modules — geen apart invoermoment per module:
   - **Module A — Content en media** (ontgrendeld): woningteksten (Funda/brochure/social/e-mail/buurt), virtual staging, documentenassistent, PDF/Realworks-export, prijswijziging — zie `components/ObjectWorkspace.tsx`. Plus de nog te bouwen **i4housing Map** (kaart met 500m-radius rond het adres, kantoor-vlaggetjes op eigen historische transacties binnen die straal).
-  - **Module B — Waardering** (in aanbouw): modulaire variabele-blokken (kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud — elk aan/uit-schakelbaar) + een AI USP-extractor (vrije tekst → gestructureerde Unique Selling Points) + referentietransacties + PDF-rapport in kantoorhuisstijl.
-- **Marktinzichten** (macro, `app/(app)/marktanalyse/`) — los van één woning: Marktanalyse (macro-trends per type/wijk/periode) en Concurrentieanalyse (eigen kantoor vs. concurrenten in de regio, wacht op makelaarsnaam in de dataset).
+  - **Module B — Waardering** (in aanbouw): toont de ingevulde kenmerken als modulaire, aan/uit-schakelbare blokken (voor "wat-als"-scenario's — welk kenmerk telt mee in de berekening) + referentietransacties + PDF-rapport in kantoorhuisstijl. Geen eigen los invoerformulier — leest uit dezelfde intake als Module A.
+- **Marktinzichten** (macro, `app/(app)/marktanalyse/`) — los van één woning, drie dropdown-items: Marktanalyse (macro-trends per type/wijk/periode), Transacties opzoeken (losse zoekfunctie op adres/wijk/periode over de transactiedataset) en Concurrentieanalyse (eigen kantoor vs. concurrenten in de regio, databron Brainbay).
 - **Kantoorinstellingen** (`app/(app)/huisstijl/`, `app/(app)/settings/`) — huisstijl, logo, tone-of-voice.
 
-**Databron voor waardering** (nog te bouwen — zie `docs/roadmap.md` § Nu): combinatie van Altum AI (adres → woningkenmerken, zoals in `Dealwijs/`) en een eigen, regelmatig te importeren dataset van verkochte woningen (transacties, heel Nederland, **inclusief coördinaten** voor de i4housing Map). ⚠️ Licentiestatus van de transactiedata (Kadaster/NVM-brainbay/Funda zijn licentieplichtig, scrapen mag niet) moet vaststaan vóór de import gebouwd wordt — zie `goals.md` § Risico's.
+**Databron voor waardering** (nog te bouwen — zie `docs/roadmap.md` § Nu): i4housing's eigen Realworks-verkoopdata (regelmatig te importeren) als referentiedataset, **inclusief coördinaten** voor de i4housing Map. Bewuste keuze (15 sep 2026): geen externe/landelijke dataset (Altum AI, Kadaster) — dat scheelt een licentie-afhankelijkheid, maar betekent wel een kleinere referentiedataset dan een landelijke bron; zie `goals.md` § Risico's.
 
-**Huisstijl na login** (`lib/branding.ts`) — bouwt uit `kantoren.huisstijl_json` (`primaire_kleur` + `accent_kleur`) een volledig kleurenpalet en zet dat als CSS-variabelen (`--merk*`) in `app/(app)/layout.tsx`. Componenten in de ingelogde omgeving gebruiken `var(--merk)` etc., nooit een hardgecodeerde merkkleur. Kantoor zonder eigen stijl valt terug op de VestaAI-kleur. Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM) — blauw `#0089D0` / rood `#C81E46`, staat in de database met dat palet. Quinn logt hier in als `quinn.berkouwer@icloud.com` (rol admin, i4 Housing-kantoor).
+**Databron voor concurrentieanalyse:** Brainbay (NVM) — apart van de Realworks-import, zie `docs/roadmap.md` § "Admin-databeheer & maatwerk".
+
+**Huisstijl na login** (`lib/branding.ts`) — bouwt uit `kantoren.huisstijl_json` een volledig palet en zet dat als CSS-variabelen (`--merk*`) in `app/(app)/layout.tsx`: kleuren (`primaire_kleur`, `accent_kleur`), lettertype (`jakarta` · `gantari` · `nunito`), vormtaal (`zacht` · `strak`), favicon, contactgegevens (`telefoon`, `email` → merkbalk bovenaan) en sfeerbeeld (`achtergrond_url`, `achtergrond_secundair_url` → licht watermerk in de zijmarges vanaf 1600px). Componenten in de ingelogde omgeving gebruiken `var(--merk)` etc., nooit een hardgecodeerde merkkleur. Kantoor zonder eigen stijl valt terug op de VestaAI-kleur; zonder sfeerbeeld blijft de achtergrond effen.
+
+Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger), knoppen zonder afronding (`vorm: 'strak'`). Quinn logt in als `quinn.berkouwer@icloud.com` (rol admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
+
+⚠️ **Nooit een absoluut pad als `logo_url`** — dat was de oorzaak van het "?"-logo: `/kantoren/i4housing/logo.png` bestond alleen lokaal en niet in de deploy. Assets horen in Storage, met een volledige URL.
 
 **Landingspagina** (`components/LandingPageClient.tsx`) — het oorspronkelijke, uitgebreide marketingontwerp (live demo-kaart, contentvoorbeelden, virtual-staging-vergelijking, Anthropic/Claude-strip, Kadaster/BAG-sectie) plus twee nieuwe secties voor Woningwaardering en Marktinzichten. Geen prijzen, geen zelf-aanmelden — CTA's wijzen naar `/contact` (toegang aanvragen) of `/login`. Nieuwe kantoren worden handmatig klaargezet via `/admin`.
 
@@ -34,7 +40,7 @@ Micro/macro-knip — volledige spec en bouwvolgorde in `docs/roadmap.md` § Hoof
 | Database + Auth + Storage | Supabase |
 | AI engine (contentsuite; ook de toekomstige AI USP-extractor) | Claude API — `claude-sonnet-4-6` |
 | Virtual staging | Gemini API — `gemini-2.0-flash-exp` (`GOOGLE_AI_API_KEY`) |
-| Woningkenmerken (waardering) | Altum AI — patroon staat al in `Dealwijs/` |
+| Woningkenmerken (waardering) | i4housing's eigen Realworks-verkoopdata |
 | Kaart (i4housing Map, nog te bouwen) | Nog te kiezen — Leaflet/Mapbox |
 | PDF export | react-pdf |
 | Transactionele e-mail | Resend |
@@ -94,7 +100,7 @@ VestaAI/
 │   ├── goals.md                # strategie & doelen (leidend, koerswijziging 15 sep)
 │   ├── roadmap.md              # open to-do's per fase (klaar = weg) — incl. hoofdstructuur-spec
 │   ├── kostenschatting.md      # interne API-/infrakosten — geen omzet/marge meer (prijzen weg)
-│   ├── Concurrentieanalyse-HousApp.docx  # analyse vs HousApp (juli 2026, contentplatform-context)
+│   ├── i4housing-onderzoek.md  # klantonderzoek i4housing
 │   └── data-integraties/       # API-referenties (CBS-buurtdata etc.)
 ```
 
@@ -106,6 +112,10 @@ VestaAI/
 
 - TypeScript strict mode — geen `any`.
 - Server Components als default; `'use client'` alleen waar interactiviteit nodig.
+- **Aanspreekvorm:** de ingelogde omgeving schrijft informeel ("je/jouw"), de publieke pagina's (landing, `/login`, `/contact`) formeel ("u"). Eén globale keuze, geen instelling per kantoor — dat zou een vertaallaag over elke string vragen.
+- **Geen productnaam in de kantooromgeving:** achter de login staat nergens "VestaAI" in zichtbare tekst; schrijf neutraal ("we", "het platform") of gebruik de kantoornaam uit `branding.naam`. De paginatitels krijgen hun achtervoegsel van de route-group-layout, dus pagina-`metadata` bevat alleen de paginanaam.
+- **Grijstinten kleurloos houden:** geen groen-getinte grijzen (`#E9EFEB`, `#F1F7F3`, `#9AA6A0` …) in de ingelogde omgeving — die vloeken bij een blauw of rood kantoor. Neutraal grijs of `var(--merk-zacht)`/`var(--merk-rand)` gebruiken; de palette staat in `components/ui/tokens.ts`.
+- **Semantische kleuren nooit aan `--merk-accent` hangen:** een afgevinkte stap of succesmelding in de accentkleur wordt rood bij i4 Housing en leest dan als fout. Gebruik `var(--merk)` of neutraal grijs.
 - Merkkleuren in de ingelogde omgeving altijd via `var(--merk)`/`var(--merk-hover)`/`var(--merk-zacht)`/`var(--merk-rand)`/`var(--merk-accent)`/`var(--merk-op)` (gezet door `lib/branding.ts` in `app/(app)/layout.tsx`) — **nooit** een hardgecodeerde hexkleur voor iets dat merkgebonden is. Dat is wat white-label per kantoor laat werken.
 - Een nieuwe content-route (of het heropenen van een bestaande) begint met de `CONTENT_VERGRENDELD`-check uit `lib/features.ts` totdat Quinn expliciet besluit het slot eraf te halen.
 - Nieuwe accounts of kantoren **nooit** via een self-serve flow — alleen via `/admin` (`createKantoor`/`addMakelaarAccount`) of, binnen een bestaand kantoor, via `nodigTeamlidUit`. Toegang is sinds 15 sep expliciet geen self-signup-product.

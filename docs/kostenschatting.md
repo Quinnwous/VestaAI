@@ -1,6 +1,7 @@
 # VestaAI — Kostenschatting
 
-> Doel: inzicht in de variabele API-kosten per pand en de infrastructuurkosten bij 100 klanten.
+> Doel: inzicht in de variabele API-kosten per pand en de infrastructuurkosten bij het
+> huidige gebruik door i4housing, de enige klant.
 > Gaat over kosten die VestaAI zelf maakt, niet over wat klanten betalen — zie `goals.md` § Prijzen.
 > Tarieven zijn indicatief en gebaseerd op prijzen medio 2026. Controleer actuele tarieven vóór financiële beslissingen.
 
@@ -102,41 +103,46 @@ De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opges
 
 ---
 
-## Infrastructuurkosten bij 100 klanten
+## Infrastructuurkosten bij het huidige gebruik (i4housing, enige klant)
 
 > Abonnementsprijzen zijn op 15 sep 2026 uit het product gehaald (zie `goals.md` § Prijzen) —
 > deze sectie gaat dus alleen nog over de kale infra-/API-kosten, niet over marge of omzet.
+> **Open actiepunt:** het werkelijke aantal objecten/maand dat i4housing verwerkt is nog niet
+> bekend — de aanname hieronder is bewust laag en voorzichtig, geen gemeten getal. Bijwerken
+> zodra er een paar weken echt gebruik is geweest.
 
 ### Variabele kosten (API)
 
-Aanname: 100 kantoren × gem. 20 objecten/mo = **2.000 runs/mo**
+Aanname (voorlopig, niet gemeten): i4housing × ~15 objecten/mo = **15 runs/mo**
 
 | Scenario | Kosten/run | Totaal/mo |
 |----------|-----------|-----------|
-| Nu (Gemini gratis) | €0,24 | **€480/mo** |
-| Na Gemini-betaling (alle objecten gestaged) | €0,61 | €1.220/mo |
-| Realistisch (50% gebruikt staging) | ~€0,43 | **€860/mo** |
+| Nu (Gemini gratis) | €0,24 | **~€4/mo** |
+| Na Gemini-betaling (alle objecten gestaged) | €0,61 | ~€9/mo |
+
+Op deze schaal is de variabele API-kost verwaarloosbaar t.o.v. de vaste infra-kosten
+hieronder — geen reden om hier nu op te sturen.
 
 ### Vaste infra-kosten
 
 | Service | Plan | Kosten/mo | Noodzakelijk? |
 |---------|------|-----------|---------------|
-| **Vercel** | Pro | $20 (~€18) | **JA — verplicht.** De virtual staging route heeft `maxDuration = 120s`; Hobby-plan heeft max 60s. Dit blokkeert de feature nu al. |
-| **Supabase** | Pro | $25 (~€23) | Aanbevolen. Free tier is technisch genoeg voor 100 klanten (500MB database, 1GB storage — alles past ruim), maar Pro geeft Point-in-Time Recovery, geen sleep-mode en SLA. |
-| **Resend** | Free | €0 | Voldoende voor 100 klanten (~500 e-mails/mo, limiet is 3.000/mo). Pro ($20) nodig bij 300+ klanten. |
+| **Vercel** | Pro | $20 (~€18) | **JA — verplicht, klantaantal-onafhankelijk.** De virtual staging route heeft `maxDuration = 120s`; Hobby-plan heeft max 60s. Dit blokkeert de feature ook bij één klant. |
+| **Supabase** | Free of Pro | €0 of $25 (~€23) | Bij één kantoor is Free tier technisch ruim voldoende (500MB database, 1GB storage). Pro is vooral zinvol vanwege Point-in-Time Recovery en het uitblijven van sleep-mode — bij één actieve productieklant is dat de moeite waard, maar geen harde eis meer zoals bij 100 klanten. |
+| **Resend** | Free | €0 | Ruim voldoende bij één kantoor (limiet 3.000 e-mails/mo). |
 | **Plausible** | Starter | $9 (~€8) | Optioneel. Verifieer welk plan nu actief is. |
 
-**Vaste infra totaal: ~€49/mo**
+**Vaste infra totaal: ~€18–41/mo**, afhankelijk van de Supabase-plankeuze.
 
-### Totale kostenstructuur bij 100 klanten
+### Totale kostenstructuur (huidig, i4housing)
 
 | Post | /mo |
 |------|-----|
-| Variabele API-kosten (Gemini gratis) | €480 |
-| Vaste infra | €49 |
-| **Totale kosten** | **€529/mo** |
+| Variabele API-kosten (Gemini gratis) | ~€4 |
+| Vaste infra | €18–41 |
+| **Totale kosten** | **~€22–45/mo** |
 
-Geen omzet-/margeberekening meer — er is geen abonnementsprijs meer om tegenover te zetten.
+Geen omzet-/margeberekening — er is geen betalende klant.
 
 ---
 

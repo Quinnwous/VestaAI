@@ -14,13 +14,26 @@ function getResend(): Resend {
 const FROM = 'VestaAI <noreply@vestaai.nl>'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
 
-function baseTemplate(content: string) {
+/**
+ * Merk van de ontvanger: een mail aan een makelaar hoort het kantoor te tonen waar hij
+ * werkt, niet het platform erachter. Zonder merk valt alles terug op VestaAI zelf.
+ * (De afzender blijft noreply@vestaai.nl tot een kantoordomein in Resend geverifieerd is.)
+ */
+type Merk = { naam: string; kleur?: string | null }
+
+const VESTA_GROEN = '#1A6B45'
+
+function baseTemplate(content: string, merk?: Merk) {
+  const naam = merk?.naam ?? 'VestaAI'
+  const voettekst = merk
+    ? esc(merk.naam)
+    : `VestaAI · De AI-assistent voor makelaars<br/><a href="${APP_URL}" style="color:#9ca3af;text-decoration:underline;">vestaai.nl</a>`
   return `<!DOCTYPE html>
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VestaAI</title>
+  <title>${esc(naam)}</title>
 </head>
 <body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:40px 20px;">
@@ -30,7 +43,7 @@ function baseTemplate(content: string) {
           <!-- Logo / brand -->
           <tr>
             <td style="padding-bottom:24px;text-align:left;">
-              <span style="font-size:18px;font-weight:700;color:#111827;letter-spacing:-0.3px;">VestaAI</span>
+              <span style="font-size:18px;font-weight:700;color:#111827;letter-spacing:-0.3px;">${esc(naam)}</span>
             </td>
           </tr>
           <!-- Card -->
@@ -42,10 +55,7 @@ function baseTemplate(content: string) {
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;">
-              <p style="margin:0;font-size:12px;color:#9ca3af;">
-                VestaAI · De AI-assistent voor makelaars<br/>
-                <a href="${APP_URL}" style="color:#9ca3af;text-decoration:underline;">vestaai.nl</a>
-              </p>
+              <p style="margin:0;font-size:12px;color:#9ca3af;">${voettekst}</p>
             </td>
           </tr>
         </table>
@@ -56,19 +66,20 @@ function baseTemplate(content: string) {
 </html>`
 }
 
-function btn(href: string, label: string) {
-  return `<a href="${href}" style="display:inline-block;background:#1A6B45;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin-top:24px;">${label} →</a>`
+function btn(href: string, label: string, kleur: string = VESTA_GROEN) {
+  return `<a href="${href}" style="display:inline-block;background:${kleur};color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin-top:24px;">${label} →</a>`
 }
 
-export async function sendWelcomeEmail(email: string, name: string) {
+export async function sendWelcomeEmail(email: string, name: string, merk?: Merk) {
+  const kleur = merk?.kleur ?? VESTA_GROEN
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: 'Welkom bij VestaAI — je proefperiode is gestart',
+    subject: 'Welkom — je werkomgeving staat klaar',
     html: baseTemplate(`
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${name}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Je proefperiode van 30 dagen is actief — goed voor 5 objecten. Maak nu je eerste object aan en zie wat je AI-assistent voor je schrijft.
+        Je werkomgeving staat klaar. Maak je eerste woning aan en zie wat er direct voor je geschreven wordt.
       </p>
       <p style="margin:0;font-size:15px;line-height:1.6;color:#374151;">
         Vul 8 velden in en ontvang direct:
@@ -80,12 +91,11 @@ export async function sendWelcomeEmail(email: string, name: string) {
         <li>2 LinkedIn-posts</li>
         <li>Koper-e-mail + buurtomschrijving</li>
       </ul>
-      ${btn(`${APP_URL}/object/new`, 'Maak je eerste object aan')}
+      ${btn(`${APP_URL}/object/new`, 'Maak je eerste woning aan', kleur)}
       <p style="margin:28px 0 0;font-size:13px;color:#6b7280;">
-        Vragen? Reageer gewoon op deze mail — ik help je graag.
+        Vragen? Reageer gewoon op deze mail — we helpen je graag.
       </p>
-      <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
-    `),
+    `, merk),
   })
 }
 
@@ -121,25 +131,22 @@ function esc(s: string): string {
     .replace(/'/g, '&#39;')
 }
 
-export async function sendAccountToegevoegdEmail(email: string, name: string, kantoorNaam: string) {
+export async function sendAccountToegevoegdEmail(email: string, name: string, kantoorNaam: string, kantoorKleur?: string | null) {
+  const kleur = kantoorKleur ?? VESTA_GROEN
   await getResend().emails.send({
     from: FROM,
     to: email,
-    subject: 'VestaAI — uw account is klaargezet',
+    subject: `${kantoorNaam} — je account staat klaar`,
     html: baseTemplate(`
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:600;color:#166534;">✓ Uw account is klaargezet</p>
-      </div>
       <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;">Welkom, ${esc(name)}!</h2>
       <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
-        Uw VestaAI-account is toegevoegd aan <strong>${esc(kantoorNaam)}</strong>. U kunt nu inloggen.
+        Je account bij <strong>${esc(kantoorNaam)}</strong> staat klaar. Je kunt nu inloggen.
       </p>
-      ${btn(`${APP_URL}/login`, 'Naar inloggen')}
+      ${btn(`${APP_URL}/login`, 'Naar inloggen', kleur)}
       <p style="margin:28px 0 0;font-size:13px;color:#6b7280;">
-        Vragen? Reageer gewoon op deze mail — ik help u graag.
+        Vragen? Reageer gewoon op deze mail — we helpen je graag.
       </p>
-      <p style="margin:8px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
-    `),
+    `, { naam: kantoorNaam, kleur }),
   })
 }
 

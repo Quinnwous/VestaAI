@@ -27,9 +27,9 @@ const getCachedObject = unstable_cache(
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const object = await getCachedObject(params.id)
-  if (!object) return { title: 'Object niet gevonden — VestaAI' }
+  if (!object) return { title: 'Woning niet gevonden' }
   return {
-    title: `${object.address} — VestaAI`,
+    title: object.address,
     description: `Woningdossier voor ${object.address}`,
   }
 }
@@ -52,10 +52,10 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const stad = komma > -1 ? object.address.slice(komma + 1).trim() : undefined
 
   return (
-    <main style={{ maxWidth: 940, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
       <Link
         href="/dashboard"
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#9AA6A0', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
       >
         ← Terug naar de portefeuille
       </Link>
@@ -66,7 +66,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
-            <span style={{ fontSize: 13, color: '#9AA6A0' }}>{formatDatum(object.created_at)}</span>
+            <span style={{ fontSize: 13, color: '#98A0A6' }}>{formatDatum(object.created_at)}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <RegenereerButton invoer={object.input_json as PropertyInput} />

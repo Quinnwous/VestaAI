@@ -37,8 +37,8 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
   }
 
   const btnBase: React.CSSProperties = {
-    borderRadius: 10,
-    border: '1px solid #E4EAE6',
+    borderRadius: 'var(--merk-radius-md, 10px)',
+    border: '1px solid #E1E5E9',
     padding: '8px 14px',
     fontSize: 13,
     fontWeight: 600,
@@ -54,7 +54,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       <button
         type="button"
         onClick={() => { setOpen(v => !v); setStatus('idle') }}
-        style={{ ...btnBase, background: open ? '#F1F7F3' : '#fff', borderColor: open ? '#1A6B45' : '#E4EAE6', color: '#0E1A13' }}
+        style={{ ...btnBase, background: open ? '#F1F7F3' : '#fff', borderColor: open ? 'var(--merk,#1A6B45)' : '#E1E5E9', color: '#14181B' }}
         title="PDF per e-mail versturen"
       >
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -65,9 +65,9 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 30, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 14, boxShadow: '0 12px 32px rgba(14,26,19,.12)', padding: 16, minWidth: 280 }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 30, background: '#fff', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-lg, 14px)', boxShadow: '0 12px 32px rgba(20,24,27,.12)', padding: 16, minWidth: 280 }}>
           {status === 'done' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#1A6B45', fontSize: 13, fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--merk,#1A6B45)', fontSize: 13, fontWeight: 600 }}>
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 13l4 4L19 7" />
               </svg>
@@ -75,13 +75,13 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
             </div>
           ) : (
             <>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#5A6B61', marginBottom: 8 }}>Stuur PDF-brochure naar:</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#5C6470', marginBottom: 8 }}>Stuur PDF-brochure naar:</p>
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setStatus('idle') }}
                 placeholder="naam@kantoor.nl"
-                style={{ width: '100%', borderRadius: 9, border: '1px solid #DCE5DF', padding: '9px 12px', fontSize: 13, color: '#0E1A13', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', border: '1px solid #DCE5DF', padding: '9px 12px', fontSize: 13, color: '#14181B', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
               />
               {status === 'error' && (
                 <p style={{ fontSize: 12, color: '#DC2626', marginBottom: 6 }}>{errorMsg}</p>
@@ -90,7 +90,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
                 type="button"
                 onClick={handleSend}
                 disabled={!email || status === 'sending'}
-                style={{ width: '100%', borderRadius: 9, background: '#1A6B45', color: '#fff', border: 'none', padding: '9px', fontSize: 13, fontWeight: 700, cursor: status === 'sending' ? 'wait' : 'pointer', opacity: (!email || status === 'sending') ? .6 : 1 }}
+                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', background: 'var(--merk,#1A6B45)', color: '#fff', border: 'none', padding: '9px', fontSize: 13, fontWeight: 700, cursor: status === 'sending' ? 'wait' : 'pointer', opacity: (!email || status === 'sending') ? .6 : 1 }}
               >
                 {status === 'sending' ? 'Verzenden…' : 'Verstuur PDF →'}
               </button>

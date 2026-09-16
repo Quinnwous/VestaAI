@@ -80,11 +80,11 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    borderRadius: 11,
+    borderRadius: 'var(--merk-radius-md, 11px)',
     border: '1px solid #DCE5DF',
     padding: '11px 40px 11px 14px',
     fontSize: 14,
-    color: '#0E1A13',
+    color: '#14181B',
     background: '#fff',
     outline: 'none',
     boxSizing: 'border-box',
@@ -109,7 +109,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
         />
         {bezig && (
           <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA6A0" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98A0A6" strokeWidth="2">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
                 <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
               </path>
@@ -127,7 +127,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
             right: 0,
             zIndex: 50,
             marginTop: 4,
-            borderRadius: 11,
+            borderRadius: 'var(--merk-radius-md, 11px)',
             border: '1px solid #DCE5DF',
             background: '#fff',
             boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
@@ -148,14 +148,14 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
                 padding: '10px 14px',
                 fontSize: 14,
                 cursor: 'pointer',
-                color: '#0E1A13',
+                color: '#14181B',
                 background: i === actief ? '#F0F6F2' : 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 10,
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A6B45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--merk,#1A6B45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>

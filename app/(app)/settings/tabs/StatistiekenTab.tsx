@@ -83,7 +83,7 @@ export function StatistiekenTab() {
       {/* Samenvatting */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Totaal objecten', waarde: stats.totaalAltijd },
+          { label: 'Totaal woningen', waarde: stats.totaalAltijd },
           { label: 'Gepubliceerd', waarde: stats.gepubliceerd },
           { label: 'Gem. per maand', waarde: gemiddeld },
         ].map(({ label, waarde }) => (
@@ -96,13 +96,13 @@ export function StatistiekenTab() {
 
       {/* Tijdsbesparing */}
       {stats.totaalAltijd > 0 && (
-        <div className="rounded-xl border border-green-200 bg-green-50 p-4 flex items-center gap-4">
+        <div className="rounded-xl border border-[var(--merk-rand,#C7E6D5)] bg-[var(--merk-zacht,#EAF5EE)] p-4 flex items-center gap-4">
           <div className="text-2xl">⏱</div>
           <div>
             <p className="text-sm font-semibold text-green-900">
-              Geschatte tijdsbesparing: <span className="text-green-700">{tijdLabel}</span>
+              Geschatte tijdsbesparing: <span className="text-[var(--merk-hover,#114230)]">{tijdLabel}</span>
             </p>
-            <p className="text-xs text-green-700 mt-0.5">
+            <p className="text-xs text-[var(--merk-hover,#114230)] mt-0.5">
               Op basis van {stats.totaalAltijd} objecten × 45 minuten handmatig schrijven
             </p>
           </div>
@@ -111,7 +111,7 @@ export function StatistiekenTab() {
 
       {/* Bar chart: objecten per maand */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">Objecten per maand (laatste 6 maanden)</h3>
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">Woningen per maand (laatste 6 maanden)</h3>
         <div className="flex items-end gap-3 h-36">
           {maandEntries.map(([key, aantal]) => {
             const [, maand] = key.split('-')
@@ -120,7 +120,7 @@ export function StatistiekenTab() {
               <div key={key} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs text-gray-500 tabular-nums">{aantal}</span>
                 <div
-                  className="w-full rounded-t bg-blue-500 transition-all"
+                  className="w-full rounded-t bg-[var(--merk,#1A6B45)] transition-all"
                   style={{ height: `${Math.max(hoogte, 2)}%` }}
                 />
                 <span className="text-xs text-gray-400">{MAAND_LABELS[maand] ?? maand}</span>
@@ -153,7 +153,7 @@ export function StatistiekenTab() {
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="rounded-xl border border-gray-200 bg-white p-4 text-center">
               <p className={`text-2xl font-bold ${
-                stats.nps.score !== null && stats.nps.score >= 50 ? 'text-green-600'
+                stats.nps.score !== null && stats.nps.score >= 50 ? 'text-[var(--merk,#1A6B45)]'
                 : stats.nps.score !== null && stats.nps.score >= 0 ? 'text-amber-600'
                 : 'text-red-600'
               }`}>
@@ -178,8 +178,8 @@ export function StatistiekenTab() {
               {stats.nps.recenteFeedback.map((fb, i) => (
                 <div key={i} className="rounded-lg border border-gray-100 bg-white px-4 py-3 flex items-start gap-3">
                   <span className={`text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 ${
-                    fb.score >= 9 ? 'bg-green-100 text-green-700'
-                    : fb.score >= 7 ? 'bg-blue-100 text-blue-700'
+                    fb.score >= 9 ? 'bg-green-100 text-[var(--merk-hover,#114230)]'
+                    : fb.score >= 7 ? 'bg-[var(--merk-zacht,#EAF5EE)] text-[var(--merk-hover,#114230)]'
                     : 'bg-red-100 text-red-700'
                   }`}>
                     {fb.score}
@@ -195,13 +195,13 @@ export function StatistiekenTab() {
       {/* Per makelaar */}
       {stats.makelaarStats.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">Objecten per teamlid</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3">Woningen per teamlid</h3>
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Naam</th>
-                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Objecten (6 mnd)</th>
+                  <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">Woningen (6 mnd)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -212,7 +212,7 @@ export function StatistiekenTab() {
                       <p className="text-xs text-gray-400">{m.email}</p>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={`font-semibold ${m.objecten > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk,#1A6B45)]' : 'text-gray-400'}`}>
                         {m.objecten}
                       </span>
                     </td>

@@ -61,6 +61,72 @@ export async function uploadLogo(formData: FormData) {
   return { ok: true, url: urlData.publicUrl }
 }
 
+/**
+ * Sfeerbeeld van het kantoor (team of pand) dat als watermerk in de zijmarges van de
+ * ingelogde omgeving staat. Twee slots — links en rechts. Anders dan het logo is dit
+ * geen eigen kolom maar een veld in huisstijl_json, dus lezen-mengen-schrijven.
+ */
+export async function uploadAchtergrond(formData: FormData) {
+  const file = formData.get('achtergrond') as File | null
+  const kantoorId = formData.get('kantoor_id') as string | null
+  const slot = formData.get('slot') === 'secundair' ? 'secundair' : 'primair'
+
+  if (!file || !kantoorId || file.size === 0) {
+    return { ok: false, error: 'Ongeldig bestand' }
+  }
+
+  const TOEGESTANE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+  if (!TOEGESTANE_TYPES.includes(file.type)) {
+    return { ok: false, error: 'Alleen PNG, JPG of WebP toegestaan' }
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    return { ok: false, error: 'Bestand mag maximaal 5 MB zijn' }
+  }
+
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: 'Niet ingelogd' }
+
+  const { data: makelaar } = await supabase
+    .from('makelaars')
+    .select('role, kantoor_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!makelaar || makelaar.role !== 'admin' || makelaar.kantoor_id !== kantoorId) {
+    return { ok: false, error: 'Geen rechten' }
+  }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+  const pad = `${kantoorId}/achtergrond-${slot}.${ext}`
+  const bytes = await file.arrayBuffer()
+
+  const serviceClient = createServiceSupabaseClient()
+
+  const { error: uploadError } = await serviceClient.storage
+    .from('kantoor-assets')
+    .upload(pad, bytes, { contentType: file.type, upsert: true })
+
+  if (uploadError) return { ok: false, error: uploadError.message }
+
+  const { data: urlData } = serviceClient.storage.from('kantoor-assets').getPublicUrl(pad)
+
+  const { data: kantoor } = await serviceClient
+    .from('kantoren')
+    .select('huisstijl_json')
+    .eq('id', kantoorId)
+    .single()
+
+  const veld = slot === 'secundair' ? 'achtergrond_secundair_url' : 'achtergrond_url'
+  await serviceClient
+    .from('kantoren')
+    .update({ huisstijl_json: { ...(kantoor?.huisstijl_json ?? {}), [veld]: urlData.publicUrl } })
+    .eq('id', kantoorId)
+
+  return { ok: true, url: urlData.publicUrl }
+}
+
 export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: string }) {
   try {
     const { kantoor_id, ...rest } = data
@@ -100,21 +166,23 @@ export async function slaHuisstijlOp(data: HuisstijlConfig & { kantoor_id: strin
 
     const serviceClient = createServiceSupabaseClient()
 
-    // Geleerde regels (uit inline-bewerkingen) staan niet in het formulier — behoud ze.
+    // Velden die buiten dit formulier om gezet worden (geleerde regels, favicon,
+    // achtergrondbeelden) blijven staan doordat we op het bestaande blok stapelen —
+    // niet op een whitelist, want die vergeet je bij elk nieuw veld.
     const { data: bestaand } = await serviceClient
       .from('kantoren')
       .select('huisstijl_json')
       .eq('id', kantoor_id)
       .single()
-    const geleerde_regels = (bestaand?.huisstijl_json as HuisstijlConfig | null)?.geleerde_regels
+    const bestaandeHuisstijl = (bestaand?.huisstijl_json ?? {}) as Partial<HuisstijlConfig>
 
     const { error } = await serviceClient
       .from('kantoren')
       .update({
         huisstijl_json: {
+          ...bestaandeHuisstijl,
           ...huisstijl,
           ...(stijlprofiel ? { stijlprofiel } : {}),
-          ...(geleerde_regels ? { geleerde_regels } : {}),
           ...(brochure_stijl ? { brochure_stijl } : {}),
         },
       })
@@ -206,7 +274,7 @@ export async function verwijderTeamlid(data: { makelaar_id: string; kantoor_id: 
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
   if (data.makelaar_id === user.id) {
-    return { ok: false, error: 'U kunt uzelf niet verwijderen' }
+    return { ok: false, error: 'Je kunt jezelf niet verwijderen' }
   }
 
   const { data: makelaar } = await supabase

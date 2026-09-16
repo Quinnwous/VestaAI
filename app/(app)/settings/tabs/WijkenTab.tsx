@@ -73,7 +73,7 @@ export function WijkenTab() {
   }
 
   const handleVerwijder = async (slug: string, naam: string) => {
-    if (!confirm(`Weet u zeker dat u "${naam}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return
+    if (!confirm(`Weet je zeker dat je "${naam}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return
     await fetch('/api/wijken', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -99,7 +99,7 @@ export function WijkenTab() {
                 onChange={e => setWijk(e.target.value)}
                 placeholder="De Pijp"
                 required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
               />
             </div>
             <div>
@@ -109,7 +109,7 @@ export function WijkenTab() {
                 onChange={e => setStad(e.target.value)}
                 placeholder="Amsterdam"
                 required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
               />
             </div>
           </div>
@@ -121,7 +121,7 @@ export function WijkenTab() {
           <button
             type="submit"
             disabled={genereerStatus === 'bezig'}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+            className="rounded-lg bg-[var(--merk,#1A6B45)] px-4 py-2 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
           >
             {genereerStatus === 'bezig'
               ? 'Genereren... (±15 sec)'
@@ -152,7 +152,7 @@ export function WijkenTab() {
                     href={`/wijken/${w.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-[var(--merk,#1A6B45)] hover:underline"
                   >
                     /wijken/{w.slug} ↗
                   </a>
@@ -161,7 +161,7 @@ export function WijkenTab() {
                   <button
                     onClick={() => handleToggle(w.slug, w.actief)}
                     className={`relative inline-flex h-5 w-9 rounded-full transition-colors ${
-                      w.actief ? 'bg-blue-600' : 'bg-gray-200'
+                      w.actief ? 'bg-[var(--merk,#1A6B45)]' : 'bg-gray-200'
                     }`}
                     aria-label={w.actief ? 'Deactiveren' : 'Activeren'}
                   >

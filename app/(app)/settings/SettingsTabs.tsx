@@ -48,12 +48,12 @@ export function SettingsTabs({ makelaar, kantoor, teamleden, isAdmin }: Props) {
 
   return (
     <div>
-      <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E9EFEB', marginBottom: 32 }}>
+      <div style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E6E9EC', marginBottom: 32 }}>
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => handleTabChange(tab.id)}
-            style={{ padding: '9px 16px', fontSize: 14, fontWeight: active === tab.id ? 700 : 500, cursor: 'pointer', background: 'none', border: 'none', borderBottom: active === tab.id ? '2px solid #1A6B45' : '2px solid transparent', color: active === tab.id ? '#1A6B45' : '#9AA6A0', transition: 'all .15s', marginBottom: -1 }}
+            style={{ padding: '9px 16px', fontSize: 14, fontWeight: active === tab.id ? 700 : 500, cursor: 'pointer', background: 'none', border: 'none', borderBottom: active === tab.id ? '2px solid var(--merk,#1A6B45)' : '2px solid transparent', color: active === tab.id ? 'var(--merk,#1A6B45)' : '#98A0A6', transition: 'all .15s', marginBottom: -1 }}
           >
             {tab.label}
           </button>

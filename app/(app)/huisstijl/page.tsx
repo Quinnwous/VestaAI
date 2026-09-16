@@ -4,7 +4,7 @@ import { HuisstijlTab } from '../settings/tabs/HuisstijlTab'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 
-export const metadata = { title: 'Huisstijl — VestaAI' }
+export const metadata = { title: 'Huisstijl' }
 
 export default async function HuisstijlPage() {
   const supabase = createServerSupabaseClient()
@@ -25,11 +25,11 @@ export default async function HuisstijlPage() {
     .single()
 
   return (
-    <main style={{ maxWidth: 760, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <main style={{ maxWidth: 900, margin: '0 auto', padding: '44px 40px 80px' }}>
       <Eyebrow>Merk</Eyebrow>
-      <SerifTitle accent="huisstijl" style={{ marginBottom: 8 }}>Uw</SerifTitle>
-      <p style={{ fontSize: 14.5, color: '#5A6B61', margin: '0 0 30px', lineHeight: 1.55, maxWidth: 560 }}>
-        Leg vast hoe uw kantoor klinkt — elke gegenereerde tekst neemt deze toon over.
+      <SerifTitle accent="huisstijl" style={{ marginBottom: 8 }}>Jouw</SerifTitle>
+      <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55, maxWidth: 560 }}>
+        Leg vast hoe je kantoor klinkt — elke gegenereerde tekst neemt deze toon over.
       </p>
       <HuisstijlTab kantoor={kantoor as Kantoor} isAdmin={(makelaar as Makelaar).role === 'admin'} />
     </main>

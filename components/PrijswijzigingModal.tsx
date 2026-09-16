@@ -88,7 +88,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
                     onClick={() => setSituatie(s)}
                     className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg border transition-colors ${
                       situatie === s
-                        ? 'bg-blue-600 text-white border-blue-600'
+                        ? 'bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)] border-[var(--merk,#1A6B45)]'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -109,10 +109,10 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
                   value={nieuweprijs}
                   onChange={e => setNieuweprijs(e.target.value)}
                   placeholder={huidigeprijs.toLocaleString('nl-NL')}
-                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
                 />
                 {situatie === 'prijsreductie' && huidigeprijs > 0 && nieuweprijs && (
-                  <span className="text-xs text-green-600 font-medium whitespace-nowrap">
+                  <span className="text-xs text-[var(--merk,#1A6B45)] font-medium whitespace-nowrap">
                     -{Math.round((1 - parseInt(nieuweprijs) / huidigeprijs) * 100)}%
                   </span>
                 )}
@@ -124,7 +124,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
             <button
               onClick={handleGenereer}
               disabled={status === 'loading'}
-              className="w-full rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="w-full rounded-lg bg-[var(--merk,#1A6B45)] py-2.5 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
             >
               {status === 'loading' ? 'Genereren...' : 'Genereer content →'}
             </button>
@@ -144,7 +144,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
                   onClick={() => setActieveTab(key)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-lg border whitespace-nowrap transition-colors ${
                     actieveTab === key
-                      ? 'bg-blue-600 text-white border-blue-600'
+                      ? 'bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)] border-[var(--merk,#1A6B45)]'
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
                 >

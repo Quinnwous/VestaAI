@@ -5,61 +5,68 @@
  * (`forest`-scale + `font-serif`) voor class-based plekken.
  */
 
+// Merk-bewust met terugval op VestaAI's eigen groene basisstijl: binnen de (app)-omgeving
+// van een kantoor met eigen huisstijl zet lib/branding.ts de --merk-*-variabelen op de
+// wrapper (zie app/(app)/layout.tsx); buiten die omgeving (landing/auth/admin) zijn die
+// variabelen niet gezet en gelden de fallback-waarden hieronder — VestaAI's eigen stijl.
 export const colors = {
   // Merk
-  primary: '#1A6B45',
-  primaryHover: '#114230',
-  accent: '#2A8A5C',
-  deep: '#0E3B27',
-  // Oppervlakken
-  bg: '#FBFCFB',
+  primary: 'var(--merk, #1A6B45)',
+  primaryHover: 'var(--merk-hover, #114230)',
+  accent: 'var(--merk-accent, #2A8A5C)',
+  deep: 'var(--merk-diep, #0E3B27)',
+  // Oppervlakken — kleurloos grijs, want een groene ondertoon vloekt met een
+  // kantoor dat blauw of rood voert. De merkkleur komt uit de --merk*-variabelen.
+  bg: '#FAFBFB',
   surface: '#FFFFFF',
-  surfaceAlt: '#F8FAF8',
-  tint: '#EAF5EE',
-  tint2: '#F1F7F3',
+  surfaceAlt: '#F7F8F9',
+  tint: 'var(--merk-zacht, #EAF5EE)',
+  tint2: 'var(--merk-zacht, #F1F7F3)',
   // Tekst
-  text: '#0E1A13',
-  body: '#5A6B61',
-  bodyStrong: '#2A362D',
-  muted: '#9AA6A0',
+  text: '#14181B',
+  body: '#5C6470',
+  bodyStrong: '#2C3238',
+  muted: '#98A0A6',
   // Randen
-  border: '#E9EFEB',
-  borderStrong: '#E4EAE6',
-  borderSoft: '#EAF0EC',
-  greenBorder: '#C7E6D5',
-  greenBorder2: '#D5E8DD',
+  border: '#E6E9EC',
+  borderStrong: '#E1E5E9',
+  borderSoft: '#EBEEF1',
+  greenBorder: 'var(--merk-rand, #C7E6D5)',
+  greenBorder2: 'var(--merk-rand, #D5E8DD)',
   // Status
-  statusDraft: '#9AA6A0',
-  statusPublished: '#1A6B45',
+  statusDraft: '#98A0A6',
   statusOnderBod: '#D97706',
-  statusVerkocht: '#5A6B61',
+  statusVerkocht: '#5C6470',
 } as const
 
-export const serifFont = 'var(--font-newsreader), Georgia, serif'
+// Apart gedefinieerd omdat "Gepubliceerd" de merkkleur van het kantoor moet volgen.
+export const STATUS_PUBLISHED_COLOR = colors.primary
+
+export const serifFont = 'var(--merk-font-heading, var(--font-newsreader)), Georgia, serif'
 
 export const radius = {
-  sm: 10,
-  md: 12,
-  lg: 14,
-  card: 16,
-  cardLg: 18,
-  cardXl: 20,
-  pill: 9999,
+  sm: 'var(--merk-radius-sm, 10px)',
+  md: 'var(--merk-radius-md, 12px)',
+  lg: 'var(--merk-radius-lg, 14px)',
+  card: 'var(--merk-radius-card, 16px)',
+  cardLg: 'var(--merk-radius-card-lg, 18px)',
+  cardXl: 'var(--merk-radius-card-xl, 20px)',
+  pill: 'var(--merk-radius-pill, 9999px)',
 } as const
 
 export const shadow = {
-  card: '0 2px 12px rgba(14,26,19,.04)',
-  cardStrong: '0 2px 16px rgba(14,26,19,.04)',
-  btn: '0 4px 12px rgba(26,107,69,.22)',
-  btnLg: '0 6px 18px rgba(26,107,69,.24)',
-  dropdown: '0 12px 32px rgba(14,26,19,.14)',
-  modal: '0 24px 60px rgba(14,26,19,.24)',
+  card: 'var(--merk-shadow-card, 0 2px 12px rgba(20,24,27,.04))',
+  cardStrong: '0 2px 16px rgba(20,24,27,.04)',
+  btn: 'var(--merk-shadow-btn, 0 4px 12px rgba(26,107,69,.22))',
+  btnLg: 'var(--merk-shadow-btn-lg, 0 6px 18px rgba(26,107,69,.24))',
+  dropdown: 'var(--merk-shadow-dropdown, 0 12px 32px rgba(20,24,27,.14))',
+  modal: 'var(--merk-shadow-modal, 0 24px 60px rgba(20,24,27,.24))',
 } as const
 
 /** Object-status → label + kleur (dashboardfilters, badges, StatusToggle). */
 export const STATUS_CFG: Record<string, { label: string; color: string }> = {
   draft: { label: 'Concept', color: colors.statusDraft },
-  published: { label: 'Gepubliceerd', color: colors.statusPublished },
+  published: { label: 'Gepubliceerd', color: STATUS_PUBLISHED_COLOR },
   onder_bod: { label: 'Onder bod', color: colors.statusOnderBod },
   verkocht: { label: 'Verkocht', color: colors.statusVerkocht },
 }

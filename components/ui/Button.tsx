@@ -6,7 +6,7 @@ export type BtnSize = 'sm' | 'md' | 'lg'
 
 const SIZE: Record<BtnSize, CSSProperties> = {
   sm: { padding: '9px 16px', fontSize: 13, borderRadius: radius.sm },
-  md: { padding: '11px 18px', fontSize: 13.5, borderRadius: 11 },
+  md: { padding: '11px 18px', fontSize: 13.5, borderRadius: 'var(--merk-radius-md, 11px)' },
   lg: { padding: '14px 22px', fontSize: 15, borderRadius: radius.md },
 }
 

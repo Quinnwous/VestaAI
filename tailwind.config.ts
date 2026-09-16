@@ -37,9 +37,24 @@ const config: Config = {
           "900": "#0E1A13",
         },
       },
+      // Zelfde truc als bij fontFamily: de vormtaal van het kantoor (zacht-rond of
+      // strak-hoekig, zie lib/branding.ts § VORM_OPTIES) stuurt élke rounded-class in
+      // de ingelogde omgeving. Buiten die omgeving zijn de variabelen niet gezet en
+      // gelden de Tailwind-standaarden hieronder.
+      borderRadius: {
+        md: 'var(--merk-radius-sm, 0.375rem)',
+        lg: 'var(--merk-radius-md, 0.5rem)',
+        xl: 'var(--merk-radius-lg, 0.75rem)',
+        '2xl': 'var(--merk-radius-card, 1rem)',
+        '3xl': 'var(--merk-radius-card-xl, 1.5rem)',
+        full: 'var(--merk-radius-pill, 9999px)',
+      },
       fontFamily: {
-        sans: ["var(--font-jakarta)", "system-ui", "sans-serif"],
-        serif: ["var(--font-newsreader)", "Georgia", "serif"],
+        // Merk-bewust met terugval op VestaAI's eigen fonts: een kantoor met eigen
+        // lettertype (lib/branding.ts § brandingCssVars) zet --merk-font-body/-heading,
+        // landing/auth/admin (geen --merk* gezet) vallen terug op Jakarta/Newsreader.
+        sans: ["var(--merk-font-body, var(--font-jakarta))", "system-ui", "sans-serif"],
+        serif: ["var(--merk-font-heading, var(--font-newsreader))", "Georgia", "serif"],
       },
     },
   },

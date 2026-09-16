@@ -24,7 +24,7 @@ export function Badge({
         fontSize: 12,
         fontWeight: 700,
         padding: '4px 10px',
-        borderRadius: 20,
+        borderRadius: 'var(--merk-radius-card-xl, 20px)',
         background: bg ?? `${color}14`,
         color,
         letterSpacing: '.02em',

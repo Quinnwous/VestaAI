@@ -6,7 +6,7 @@ export default function SettingsLoading() {
       {/* Tab bar skeleton */}
       <div className="flex gap-1 border-b border-gray-200 mb-8">
         {['Account', 'Huisstijl', 'Team'].map((label, i) => (
-          <div key={label} className={`px-4 py-2 ${i === 0 ? 'border-b-2 border-blue-200' : ''}`}>
+          <div key={label} className={`px-4 py-2 ${i === 0 ? 'border-b-2 border-[var(--merk-rand,#C7E6D5)]' : ''}`}>
             <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: `${label.length * 8}px` }} />
           </div>
         ))}

@@ -24,7 +24,7 @@ export function Switch({
         position: 'relative',
         width: 44,
         height: 26,
-        borderRadius: 9999,
+        borderRadius: 'var(--merk-radius-pill, 9999px)',
         border: 'none',
         cursor: disabled ? 'not-allowed' : 'pointer',
         background: checked ? colors.primary : '#D5E0DA',
@@ -43,7 +43,7 @@ export function Switch({
           height: 20,
           borderRadius: '50%',
           background: '#fff',
-          boxShadow: '0 1px 3px rgba(14,26,19,.22)',
+          boxShadow: '0 1px 3px rgba(20,24,27,.22)',
           transition: 'left .18s',
         }}
       />

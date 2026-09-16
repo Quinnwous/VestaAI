@@ -50,7 +50,7 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                 {!naamBewerkModus && (
                   <button
                     onClick={() => setNaamBewerkModus(true)}
-                    className="text-xs text-blue-600 hover:text-blue-700"
+                    className="text-xs text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)]"
                   >
                     Bewerk
                   </button>
@@ -63,13 +63,13 @@ export function AccountTab({ makelaar, kantoor }: Props) {
                     onChange={e => setNaam(e.target.value)}
                     maxLength={100}
                     autoFocus
-                    className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="w-full rounded-md border border-gray-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-[var(--merk,#1A6B45)]"
                   />
                   <div className="flex gap-1.5">
                     <button
                       onClick={handleNaamOpslaan}
                       disabled={naamStatus === 'saving'}
-                      className="text-xs bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-700 disabled:opacity-50"
+                      className="text-xs bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)] px-2.5 py-1 rounded hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50"
                     >
                       {naamStatus === 'saving' ? 'Opslaan...' : 'Opslaan'}
                     </button>
@@ -87,7 +87,7 @@ export function AccountTab({ makelaar, kantoor }: Props) {
               ) : (
                 <p className="text-sm font-medium text-gray-900">
                   {naam || <span className="text-gray-400 italic">Geen naam ingesteld</span>}
-                  {naamStatus === 'saved' && <span className="ml-2 text-xs text-green-600">✓ Opgeslagen</span>}
+                  {naamStatus === 'saved' && <span className="ml-2 text-xs text-[var(--merk,#1A6B45)]">✓ Opgeslagen</span>}
                 </p>
               )}
             </div>

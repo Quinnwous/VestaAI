@@ -37,7 +37,7 @@ export function Card({
   children: ReactNode
   variant?: CardVariant
   pad?: number | string
-  rounded?: number
+  rounded?: number | string
   hover?: boolean
   className?: string
   style?: CSSProperties

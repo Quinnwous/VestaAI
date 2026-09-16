@@ -6,7 +6,7 @@ import { Eyebrow, SerifTitle } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
 import { NewObjectForm } from './NewObjectForm'
 
-export const metadata = { title: 'Woning toevoegen — VestaAI' }
+export const metadata = { title: 'Woning toevoegen' }
 
 export default async function NewObjectPage() {
   // Platform-admins gebruiken de app niet als klant.
@@ -21,7 +21,7 @@ export default async function NewObjectPage() {
   // invoer (adres → data → waarde) — zie docs/roadmap.md.
   if (CONTENT_VERGRENDELD) {
     return (
-      <main style={{ maxWidth: 760, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <main style={{ maxWidth: 900, margin: '0 auto', padding: '44px 40px 80px' }}>
         <Eyebrow>Woning toevoegen</Eyebrow>
         <SerifTitle size={32} accent="nog even" style={{ marginBottom: 22 }}>Dit duurt</SerifTitle>
         <InAanbouw
@@ -39,7 +39,7 @@ export default async function NewObjectPage() {
   // een makelaar-record mag hier komen zodra het slot eraf gaat.
   return (
     <main style={{ minHeight: '100vh' }}>
-      <div style={{ maxWidth: 760, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '44px 40px 80px' }}>
         <NewObjectForm />
       </div>
     </main>

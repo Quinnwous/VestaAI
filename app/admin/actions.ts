@@ -130,9 +130,10 @@ export async function addMakelaarAccount(data: {
   const plaatsing = await plaatsInKantoor(service, created.user.id, data.kantoorId, data.naam, data.email, data.rol)
   if (!plaatsing.ok) return plaatsing
 
-  const { data: kantoor } = await service.from('kantoren').select('name').eq('id', data.kantoorId).single()
+  const { data: kantoor } = await service.from('kantoren').select('name, huisstijl_json').eq('id', data.kantoorId).single()
+  const kantoorKleur = (kantoor?.huisstijl_json as { primaire_kleur?: string } | null)?.primaire_kleur ?? null
   try {
-    await sendAccountToegevoegdEmail(data.email, data.naam, kantoor?.name ?? 'VestaAI')
+    await sendAccountToegevoegdEmail(data.email, data.naam, kantoor?.name ?? 'VestaAI', kantoorKleur)
   } catch {
     // best-effort
   }

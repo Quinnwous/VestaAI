@@ -37,15 +37,15 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocume
   }
 
   return (
-    <div style={{ marginBottom: 28, borderRadius: 18, border: '1px solid #D5E8DD', background: '#F1F7F3', padding: '20px 22px' }}>
+    <div style={{ marginBottom: 28, borderRadius: 'var(--merk-radius-card-lg,18px)', border: '1px solid var(--merk-rand,#D5E8DD)', background: 'var(--merk-zacht,#F1F7F3)', padding: '20px 22px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#0E3B27' }}>Aan de slag — {aantalKlaar}/{stappen.length} stappen</p>
-        <span style={{ fontSize: 12, color: '#2A8A5C', fontWeight: 600 }}>{voortgang}%</span>
+        <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--merk-diep,#0E3B27)' }}>Aan de slag — {aantalKlaar}/{stappen.length} stappen</p>
+        <span style={{ fontSize: 12, color: 'var(--merk,#1A6B45)', fontWeight: 600 }}>{voortgang}%</span>
       </div>
 
-      <div style={{ width: '100%', background: '#C7E6D5', borderRadius: 9999, height: 5, marginBottom: 16 }}>
+      <div style={{ width: '100%', background: 'var(--merk-rand,#C7E6D5)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 5, marginBottom: 16 }}>
         <div
-          style={{ background: '#1A6B45', height: 5, borderRadius: 9999, transition: 'width .5s', width: `${voortgang}%` }}
+          style={{ background: 'var(--merk,#1A6B45)', height: 5, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width .5s', width: `${voortgang}%` }}
         />
       </div>
 
@@ -55,18 +55,20 @@ export function OnboardingChecklist({ heeftObjecten, heeftHuisstijl, heeftDocume
           const actie = acties[stap.id]
           return (
             <li key={stap.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: gedaan ? '#1A6B45' : '#fff', border: gedaan ? 'none' : '2px solid #A8D4BB' }}>
+              <span style={{ width: 20, height: 20, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: gedaan ? 'var(--merk,#1A6B45)' : '#fff', border: gedaan ? 'none' : '2px solid var(--merk-rand,#A8D4BB)' }}>
                 {gedaan && (
-                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="#fff">
+                  <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="var(--merk-op,#fff)">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </span>
-              <span style={{ fontSize: 14, fontWeight: gedaan ? 400 : 600, color: gedaan ? '#2A8A5C' : '#0E3B27', textDecoration: gedaan ? 'line-through' : 'none' }}>
+              {/* Afgevinkt is bewust neutraal grijs: de accentkleur van een kantoor kan rood
+                  zijn, en dan leest een afgeronde stap als een foutmelding. */}
+              <span style={{ fontSize: 14, fontWeight: gedaan ? 400 : 600, color: gedaan ? '#7C8A82' : 'var(--merk-diep,#0E3B27)', textDecoration: gedaan ? 'line-through' : 'none' }}>
                 {stap.label}
               </span>
               {!gedaan && actie && (
-                <Link href={actie.href} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: '#1A6B45', textDecoration: 'underline', whiteSpace: 'nowrap' }}>
+                <Link href={actie.href} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--merk,#1A6B45)', textDecoration: 'underline', whiteSpace: 'nowrap' }}>
                   {actie.label}
                 </Link>
               )}

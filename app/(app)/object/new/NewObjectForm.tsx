@@ -33,11 +33,11 @@ type PageState =
   | { status: 'error'; message: string; isRateLimit?: boolean }
 
 const card: React.CSSProperties = {
-  borderRadius: 20,
+  borderRadius: 'var(--merk-radius-card-xl, 20px)',
   background: '#fff',
-  border: '1px solid #E9EFEB',
+  border: '1px solid #E6E9EC',
   padding: '32px 28px',
-  boxShadow: '0 2px 16px rgba(14,26,19,.05)',
+  boxShadow: '0 2px 16px rgba(20,24,27,.05)',
 }
 
 export function NewObjectForm() {
@@ -133,14 +133,14 @@ export function NewObjectForm() {
         <div>
           <Link
             href="/dashboard"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#9AA6A0', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
           >
-            ← Terug naar objecten
+            ← Terug naar woningen
           </Link>
-          <Eyebrow>Nieuw object</Eyebrow>
+          <Eyebrow>Nieuwe woning</Eyebrow>
           <SerifTitle accent="alle content" size={34} style={{ marginBottom: 8 }}>Genereer</SerifTitle>
-          <p style={{ fontSize: 14.5, color: '#5A6B61', margin: '0 0 30px', lineHeight: 1.55 }}>
-            Vul het adres en enkele kenmerken in — VestaAI schrijft de Funda-tekst, brochures, social posts en koper-e-mail in één keer.
+          <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55 }}>
+            Vul het adres en enkele kenmerken in — we schrijven de Funda-tekst, brochures, social posts en koper-e-mail in één keer.
           </p>
 
           <div style={card}>
@@ -148,7 +148,7 @@ export function NewObjectForm() {
               <button
                 type="button"
                 onClick={fillDemo}
-                style={{ fontSize: 12.5, fontWeight: 600, color: '#1A6B45', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
               >
                 Vul een voorbeeld in
               </button>
@@ -179,19 +179,19 @@ export function NewObjectForm() {
         <div style={{ ...card, textAlign: 'center' }}>
           {state.isRateLimit ? (
             <>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#1A6B45">
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--merk-zacht,#EAF5EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--merk,#1A6B45)">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', marginBottom: 6 }}>Vorige generatie nog bezig</p>
-              <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 20 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#14181B', marginBottom: 6 }}>Vorige generatie nog bezig</p>
+              <p style={{ fontSize: 14, color: '#5C6470', marginBottom: 20 }}>
                 Automatisch opnieuw beschikbaar over{' '}
-                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: '#1A6B45' }}>{countdown}s</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--merk,#1A6B45)' }}>{countdown}s</span>
               </p>
-              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: '#F1F7F3', borderRadius: 9999, height: 6 }}>
+              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: 'var(--merk-zacht,#F1F7F3)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 6 }}>
                 <div
-                  style={{ background: '#1A6B45', height: 6, borderRadius: 9999, transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
+                  style={{ background: 'var(--merk,#1A6B45)', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
                 />
               </div>
             </>
@@ -201,7 +201,7 @@ export function NewObjectForm() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={handleReset}
-                  style={{ borderRadius: 11, background: '#1A6B45', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(26,107,69,.22)' }}
+                  style={{ borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk,#1A6B45)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(var(--merk-rgb,26,107,69),.22)' }}
                 >
                   Probeer opnieuw
                 </button>

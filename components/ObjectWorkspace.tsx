@@ -42,11 +42,11 @@ const CONTENT_TABS: { id: ContentTab; label: string }[] = [
 ]
 
 const card: React.CSSProperties = {
-  borderRadius: 18,
+  borderRadius: 'var(--merk-radius-card-lg, 18px)',
   background: '#fff',
-  border: '1px solid #E9EFEB',
+  border: '1px solid #E6E9EC',
   padding: 22,
-  boxShadow: '0 2px 12px rgba(14,26,19,.04)',
+  boxShadow: '0 2px 12px rgba(20,24,27,.04)',
 }
 
 export function ObjectWorkspace({
@@ -81,12 +81,12 @@ export function ObjectWorkspace({
         <InAanbouw
           eyebrow="Module B — in aanbouw"
           titel={`Waardering van ${address}`}
-          uitleg="Een reken- en datamodule: modulaire variabelen die u zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
+          uitleg="Een reken- en datamodule: modulaire variabelen die je zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
           punten={[
             'Modulaire variabelen als losse blokken: kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud',
             'AI USP-extractor: typ een bijzonderheid in ("heeft een mooie garage", "nieuw dakkapel") — de AI vertaalt dit naar USP\'s die de waardering en marketing beïnvloeden',
             'Waarde met bandbreedte, onderbouwd met vergelijkbare verkochte woningen',
-            'Eén klik naar een waarderingsrapport als PDF, in de huisstijl van uw kantoor',
+            'Eén klik naar een waarderingsrapport als PDF, in de huisstijl van je kantoor',
           ]}
         />
       </div>
@@ -118,7 +118,7 @@ export function ObjectWorkspace({
             {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
             <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
               <ResultTabs data={outputs} objectId={objectId} onResetHref="/dashboard" />
-              <div style={{ marginTop: 30, borderTop: '1px solid #EEF2F0', paddingTop: 22 }}>
+              <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>
             </div>
@@ -127,13 +127,13 @@ export function ObjectWorkspace({
             <div style={{ display: contentTab === 'media' ? 'block' : 'none' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Virtual staging</h2>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Virtual staging</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
                   <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
                 </div>
                 <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
                   <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
                 </div>
               </div>
@@ -148,18 +148,18 @@ export function ObjectWorkspace({
             <div style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
                 <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Mail naar geïnteresseerde</h2>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure + follow-up direct naar een koper.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar geïnteresseerde</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure + follow-up direct naar een koper.</p>
                   <EmailPdfButton objectId={objectId} userEmail={userEmail} />
                 </div>
                 <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Realworks-export</h2>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de objectdata als XML voor Realworks.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Realworks-export</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de woninggegevens als XML voor Realworks.</p>
                   <RealworksExportButton objectId={objectId} />
                 </div>
                 <div style={{ ...card, gridColumn: 'span 2' }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
                   <PrijswijzigingModal objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
                 </div>
               </div>

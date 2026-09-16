@@ -2,7 +2,11 @@ import type { CSSProperties, ReactNode } from 'react'
 import { colors, serifFont } from './tokens'
 import { Eyebrow } from './Eyebrow'
 
-/** Serif-heading met optioneel cursief groen accentwoord (redesign-signatuur). */
+/**
+ * Kop met optioneel accentwoord in de merkkleur. Of dat accent cursief staat, bepaalt de
+ * vormtaal van het kantoor (`--merk-titel-stijl`): VestaAI's eigen zachte stijl zet het
+ * cursief, een strakke zakelijke huisstijl rechtop — zie lib/branding.ts § VORM_OPTIES.
+ */
 export function SerifTitle({
   children,
   accent,
@@ -21,7 +25,7 @@ export function SerifTitle({
     <Tag
       style={{
         fontFamily: serifFont,
-        fontWeight: 500,
+        fontWeight: 'var(--merk-titel-gewicht, 500)' as CSSProperties['fontWeight'],
         fontSize: size,
         lineHeight: 1.05,
         letterSpacing: '-.015em',
@@ -34,7 +38,7 @@ export function SerifTitle({
       {accent != null && (
         <>
           {' '}
-          <span style={{ fontStyle: 'italic', color: colors.primary }}>{accent}</span>
+          <span style={{ fontStyle: 'var(--merk-titel-stijl, italic)' as CSSProperties['fontStyle'], color: colors.primary }}>{accent}</span>
         </>
       )}
     </Tag>

@@ -16,15 +16,86 @@ export const VESTA_MERK = {
   accent: '#2A8A5C',
 } as const
 
+/**
+ * Lettertype-opties voor de ingelogde omgeving. `css` verwijst naar een CSS-variabele
+ * die `next/font/google` vooraf laadt in `app/layout.tsx` — nieuwe opties moeten daar
+ * ook toegevoegd worden. Onbekend/leeg → `jakarta` (VestaAI's eigen font).
+ */
+export const FONT_OPTIES = {
+  jakarta: { css: 'var(--font-jakarta)', label: 'Jakarta Sans (VestaAI-standaard)' },
+  gantari: { css: 'var(--font-gantari)', label: 'Gantari' },
+  // Vrije tegenhanger van Proxima Nova — het (betaalde) lettertype dat veel
+  // makelaarskantoren voeren, waaronder i4 Housing.
+  nunito: { css: 'var(--font-nunito)', label: 'Nunito Sans (Proxima Nova-stijl)' },
+} as const
+export type LettertypeKeuze = keyof typeof FONT_OPTIES
+
+/**
+ * Vormtaal van de ingelogde omgeving: afronding en schaduwdiepte. VestaAI's eigen
+ * "zacht"-stijl is zacht-rond met diffuse schaduwen; "strak" is scherp-hoekig met
+ * vlakke lijnen — voor een kantoor dat juist een zakelijke, rechte huisstijl voert.
+ */
+type Schaduwen = { card: string; btn: string; btnLg: string; dropdown: string; modal: string }
+
+export const VORM_OPTIES = {
+  zacht: {
+    label: 'Zacht & rond (VestaAI-standaard)',
+    radius: { sm: 10, md: 12, lg: 14, card: 16, cardLg: 18, cardXl: 20, pill: 9999 },
+    // Typografische signatuur: VestaAI's eigen stijl zet een cursief accentwoord in
+    // de kop en kapitale eyebrow-labels. Zakelijke huisstijlen doen dat vrijwel nooit.
+    titelStijl: 'italic',
+    titelGewicht: '500',
+    labelTransform: 'uppercase',
+    labelSpacing: '.08em',
+    // Diffuse, merkgetinte schaduwen — merktint(alpha) geeft de rgba() van de primaire kleur.
+    schaduw: (merktint: (alpha: number) => string): Schaduwen => ({
+      card: `0 2px 12px ${merktint(.08)}`,
+      btn: `0 4px 12px ${merktint(.28)}`,
+      btnLg: `0 6px 18px ${merktint(.3)}`,
+      dropdown: `0 12px 32px -4px ${merktint(.14)}`,
+      modal: `0 24px 60px -8px ${merktint(.22)}`,
+    }),
+  },
+  strak: {
+    label: 'Strak & zakelijk',
+    // Nul afronding op knoppen en velden — precies hoe zakelijke makelaarssites het doen;
+    // kaarten houden een haarlijn-afronding zodat het geen ruwe blokkendoos wordt.
+    radius: { sm: 0, md: 0, lg: 2, card: 2, cardLg: 3, cardXl: 4, pill: 2 },
+    titelStijl: 'normal',
+    titelGewicht: '700',
+    labelTransform: 'none',
+    labelSpacing: '.02em',
+    // Vlakke rand i.p.v. schaduw — dunne neutrale contourlijn, geen "zwevend kaartje"-gevoel.
+    schaduw: (merktint: (alpha: number) => string): Schaduwen => ({
+      card: `0 0 0 1px rgba(14,26,19,.10)`,
+      btn: `0 0 0 1px ${merktint(.55)}`,
+      btnLg: `0 0 0 1px ${merktint(.6)}`,
+      dropdown: `0 0 0 1px rgba(14,26,19,.10), 0 8px 24px -4px rgba(14,26,19,.14)`,
+      modal: `0 0 0 1px rgba(14,26,19,.10), 0 16px 48px -8px rgba(14,26,19,.2)`,
+    }),
+  },
+} as const
+export type VormKeuze = keyof typeof VORM_OPTIES
+
 export type Branding = {
   naam: string
   logoUrl: string | null
+  faviconUrl: string | null
+  /** Sfeerbeeld (team/kantoor) dat als licht watermerk in de zijmarges staat. */
+  achtergrondUrl: string | null
+  achtergrondSecundairUrl: string | null
+  /** Contactgegevens voor de merkbalk bovenaan — leeg = balk verdwijnt. */
+  telefoon: string | null
+  email: string | null
   primair: string
   primairHover: string
   primairZacht: string
   primairRand: string
+  primairDiep: string
   accent: string
   opPrimair: string
+  lettertype: LettertypeKeuze
+  vorm: VormKeuze
   isEigenStijl: boolean
 }
 
@@ -77,6 +148,14 @@ function geldigeHex(waarde: unknown, fallback: string): string {
   return typeof waarde === 'string' && HEX.test(waarde) ? waarde : fallback
 }
 
+function geldigeLettertype(waarde: unknown): LettertypeKeuze {
+  return typeof waarde === 'string' && waarde in FONT_OPTIES ? (waarde as LettertypeKeuze) : 'jakarta'
+}
+
+function geldigeVorm(waarde: unknown): VormKeuze {
+  return typeof waarde === 'string' && waarde in VORM_OPTIES ? (waarde as VormKeuze) : 'zacht'
+}
+
 /**
  * Bouwt het merkpalet van een kantoor. Ontbreekt er iets, dan valt dat onderdeel
  * terug op de VestaAI-stijl — nooit op een half ingevuld palet.
@@ -89,28 +168,83 @@ export function bouwBranding(kantoor: {
   const huisstijl = kantoor?.huisstijl_json ?? null
   const primair = geldigeHex(huisstijl?.primaire_kleur, VESTA_MERK.primair)
   const accent = geldigeHex(huisstijl?.accent_kleur, primair === VESTA_MERK.primair ? VESTA_MERK.accent : lichter(primair, 0.25))
+  const lettertype = geldigeLettertype(huisstijl?.lettertype)
+  const vorm = geldigeVorm(huisstijl?.vorm)
+  const tekst = (waarde: unknown): string | null =>
+    typeof waarde === 'string' && waarde.trim() ? waarde.trim() : null
 
   return {
     naam: kantoor?.name?.trim() || 'VestaAI',
     logoUrl: kantoor?.logo_url ?? null,
+    faviconUrl: tekst(huisstijl?.favicon_url),
+    achtergrondUrl: tekst(huisstijl?.achtergrond_url),
+    achtergrondSecundairUrl: tekst(huisstijl?.achtergrond_secundair_url),
+    telefoon: tekst(huisstijl?.telefoon),
+    email: tekst(huisstijl?.email),
     primair,
     primairHover: donkerder(primair, 0.18),
     primairZacht: lichter(primair, 0.92),
     primairRand: lichter(primair, 0.72),
+    primairDiep: donkerder(primair, 0.55),
     accent,
     opPrimair: tekstOp(primair),
+    lettertype,
+    vorm,
     isEigenStijl: primair !== VESTA_MERK.primair || !!kantoor?.logo_url,
+  }
+}
+
+/**
+ * Geeft de logo-URL alleen terug als hij ook echt laadt. react-pdf's `<Image>` kent geen
+ * onError: een verlopen URL laat daar de hele PDF-generatie klappen, dus dat checken we
+ * vooraf. In de browser vangt AppTopbar het zelf op met onError.
+ */
+export async function bruikbaarLogo(url: string | null | undefined): Promise<string | null> {
+  if (!url) return null
+  try {
+    const res = await fetch(url, { method: 'HEAD' })
+    return res.ok ? url : null
+  } catch {
+    return null
   }
 }
 
 /** De CSS-variabelen die de (app)-layout op zijn wrapper zet. */
 export function brandingCssVars(b: Branding): React.CSSProperties {
+  const font = FONT_OPTIES[b.lettertype]
+  const vorm = VORM_OPTIES[b.vorm]
+  const [r, g, b_] = naarRgb(b.primair)
+  const tint = (alpha: number) => `rgba(${r},${g},${b_},${alpha})`
+  const schaduw = vorm.schaduw(tint)
+
   return {
     '--merk': b.primair,
+    // Los kanalen-triplet voor plekken die nog `rgba(26,107,69,.2)`-literals gebruiken:
+    // `rgba(var(--merk-rgb, 26,107,69), .2)` blijft zo ook merk-bewust.
+    '--merk-rgb': `${r},${g},${b_}`,
     '--merk-hover': b.primairHover,
     '--merk-zacht': b.primairZacht,
     '--merk-rand': b.primairRand,
+    '--merk-diep': b.primairDiep,
     '--merk-accent': b.accent,
     '--merk-op': b.opPrimair,
+    '--merk-font-heading': font.css,
+    '--merk-font-body': font.css,
+    '--merk-titel-stijl': vorm.titelStijl,
+    '--merk-titel-gewicht': vorm.titelGewicht,
+    '--merk-label-transform': vorm.labelTransform,
+    '--merk-label-spacing': vorm.labelSpacing,
+    '--merk-radius-sm': `${vorm.radius.sm}px`,
+    '--merk-radius-md': `${vorm.radius.md}px`,
+    '--merk-radius-lg': `${vorm.radius.lg}px`,
+    '--merk-radius-card': `${vorm.radius.card}px`,
+    '--merk-radius-card-lg': `${vorm.radius.cardLg}px`,
+    '--merk-radius-card-xl': `${vorm.radius.cardXl}px`,
+    '--merk-radius-pill': `${vorm.radius.pill}px`,
+    '--merk-shadow-card': schaduw.card,
+    '--merk-shadow-btn': schaduw.btn,
+    '--merk-shadow-btn-lg': schaduw.btnLg,
+    '--merk-shadow-dropdown': schaduw.dropdown,
+    '--merk-shadow-modal': schaduw.modal,
   } as React.CSSProperties
 }

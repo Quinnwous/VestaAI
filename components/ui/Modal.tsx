@@ -22,7 +22,7 @@ export function Modal({
         position: 'fixed',
         inset: 0,
         zIndex: 60,
-        background: 'rgba(14,26,19,.42)',
+        background: 'rgba(20,24,27,.42)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

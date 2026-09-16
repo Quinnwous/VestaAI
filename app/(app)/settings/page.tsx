@@ -4,7 +4,7 @@ import { SettingsTabs } from './SettingsTabs'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
 
-export const metadata = { title: 'Instellingen — VestaAI' }
+export const metadata = { title: 'Instellingen' }
 
 export default async function SettingsPage() {
   const supabase = createServerSupabaseClient()
@@ -34,9 +34,9 @@ export default async function SettingsPage() {
   const isAdmin = (makelaar as Makelaar).role === 'admin'
 
   return (
-    <main style={{ maxWidth: 820, margin: '0 auto', padding: '44px 40px 80px' }}>
+    <main style={{ maxWidth: 980, margin: '0 auto', padding: '44px 40px 80px' }}>
       <Eyebrow>Beheer</Eyebrow>
-      <SerifTitle style={{ marginBottom: 22 }}><span style={{ fontStyle: 'italic', color: '#1A6B45' }}>Instellingen</span></SerifTitle>
+      <SerifTitle style={{ marginBottom: 22 }}><span style={{ fontStyle: 'italic', color: 'var(--merk,#1A6B45)' }}>Instellingen</span></SerifTitle>
       <SettingsTabs
         makelaar={makelaar as Makelaar}
         kantoor={kantoor as Kantoor}

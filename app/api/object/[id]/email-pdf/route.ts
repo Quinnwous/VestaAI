@@ -6,6 +6,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { PdfTemplate } from '@/components/PdfTemplate'
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
+import { bruikbaarLogo } from '@/lib/branding'
 import React from 'react'
 
 export const runtime = 'nodejs'
@@ -61,7 +62,9 @@ export async function POST(
   const pdfBuffer = await renderToBuffer(React.createElement(PdfTemplate, {
     address: object.address,
     output: object.outputs_json as ContentOutput,
-    kantoor: kantoorData ?? { name: 'VestaAI', logo_url: null, huisstijl_json: null },
+    kantoor: kantoorData
+      ? { ...kantoorData, logo_url: await bruikbaarLogo(kantoorData.logo_url) }
+      : { name: 'VestaAI', logo_url: null, huisstijl_json: null },
     fotos,
   }) as React.ReactElement<ReactPDF.DocumentProps>)
 

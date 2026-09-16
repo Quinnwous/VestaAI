@@ -9,22 +9,22 @@ interface Props {
 }
 
 const PROFIEL_KLEUR: Record<string, string> = {
-  Premium: '#1A6B45',
+  Premium: 'var(--merk,#1A6B45)',
   Bovengemiddeld: '#2E7D5E',
-  Gemiddeld: '#5A6B61',
-  Ondergemiddeld: '#9AA6A0',
+  Gemiddeld: '#5C6470',
+  Ondergemiddeld: '#98A0A6',
 }
 
 function Chip({ label, kleur }: { label: string; kleur?: string }) {
   return (
     <span style={{
       display: 'inline-block',
-      borderRadius: 6,
+      borderRadius: 'var(--merk-radius-sm, 6px)',
       padding: '2px 8px',
       fontSize: 11,
       fontWeight: 700,
       background: kleur ? `${kleur}18` : '#F0F6F2',
-      color: kleur ?? '#1A6B45',
+      color: kleur ?? 'var(--merk,#1A6B45)',
       letterSpacing: 0.2,
     }}>
       {label}
@@ -36,7 +36,7 @@ function Rij({ label, waarde }: { label: string; waarde: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
       <span style={{ fontSize: 12, color: '#7A8A80', whiteSpace: 'nowrap' }}>{label}</span>
-      <span style={{ fontSize: 13, color: '#0E1A13', fontWeight: 600, textAlign: 'right' }}>{waarde}</span>
+      <span style={{ fontSize: 13, color: '#14181B', fontWeight: 600, textAlign: 'right' }}>{waarde}</span>
     </div>
   )
 }
@@ -44,7 +44,7 @@ function Rij({ label, waarde }: { label: string; waarde: React.ReactNode }) {
 function Sectie({ titel, children }: { titel: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: '#1A6B45', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk,#1A6B45)', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
       {children}
     </div>
   )
@@ -52,7 +52,7 @@ function Sectie({ titel, children }: { titel: string; children: React.ReactNode 
 
 function Toelichting({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 10, color: '#9AA6A0', lineHeight: 1.4, margin: 0 }}>{children}</p>
+    <p style={{ fontSize: 10, color: '#98A0A6', lineHeight: 1.4, margin: 0 }}>{children}</p>
   )
 }
 
@@ -68,7 +68,7 @@ function CbsWaarde({ m, toon }: { m: CbsMetriek; toon: (w: number) => string }) 
   return (
     <>
       {toon(m.waarde)}
-      <span style={{ marginLeft: 5, fontSize: 10, fontWeight: 500, color: '#9AA6A0' }}>{NIVEAU_LABEL[m.niveau]}</span>
+      <span style={{ marginLeft: 5, fontSize: 10, fontWeight: 500, color: '#98A0A6' }}>{NIVEAU_LABEL[m.niveau]}</span>
     </>
   )
 }
@@ -84,7 +84,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
 
   return (
     <div style={{
-      borderRadius: 12,
+      borderRadius: 'var(--merk-radius-md, 12px)',
       border: '1px solid #DCE5DF',
       background: '#F8FBF9',
       overflow: 'hidden',
@@ -106,12 +106,12 @@ export function WoningdataPanel({ data, bezig }: Props) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1A6B45" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--merk,#1A6B45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Woningdata</span>
-          {bezig && <span style={{ fontSize: 12, color: '#9AA6A0' }}>Ophalen…</span>}
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#14181B' }}>Woningdata</span>
+          {bezig && <span style={{ fontSize: 12, color: '#98A0A6' }}>Ophalen…</span>}
           {data.gemeente && !bezig && (
             <span style={{ fontSize: 12, color: '#7A8A80' }}>{data.gemeente}</span>
           )}
@@ -121,7 +121,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#9AA6A0"
+          stroke="#98A0A6"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -137,7 +137,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: 20,
-          borderTop: '1px solid #E9EFEB',
+          borderTop: '1px solid #E6E9EC',
           paddingTop: 16,
         }}>
 
@@ -189,7 +189,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           {/* Markt */}
           {data.markt && (
             <Sectie titel="Marktdynamiek">
-              <Chip label={data.markt.label} kleur="#1A6B45" />
+              <Chip label={data.markt.label} kleur="var(--merk,#1A6B45)" />
               <Rij label="Verkooptijd" waarde={data.markt.verkooptijd_weken} />
               <Rij label="Overbiedingskans" waarde={data.markt.overbiedingskans_pct} />
               <Rij label="Gem. overbod" waarde={data.markt.overbod_pct} />
@@ -200,7 +200,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           {/* Voorzieningen */}
           {data.voorzieningen && (
             <Sectie titel="Nabijheid">
-              <Chip label={`Bereikbaarheid: ${data.voorzieningen.nabijheid_beoordeling}`} kleur="#1A6B45" />
+              <Chip label={`Bereikbaarheid: ${data.voorzieningen.nabijheid_beoordeling}`} kleur="var(--merk,#1A6B45)" />
               {data.voorzieningen.supermarkt[0] && (
                 <Rij
                   label={data.voorzieningen.supermarkt[0].naam}

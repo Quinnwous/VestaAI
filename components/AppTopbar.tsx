@@ -95,6 +95,7 @@ export function AppTopbar({
   const pathname = usePathname()
   const [open, setOpen] = useState<string | null>(null)
   const [mobiel, setMobiel] = useState(false)
+  const [logoKapot, setLogoKapot] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
 
   // Buiten de balk klikken of Escape sluit het geopende menu.
@@ -115,17 +116,24 @@ export function AppTopbar({
   // Navigeren sluit alles.
   useEffect(() => { setOpen(null); setMobiel(false) }, [pathname])
 
-  const logo = branding.logoUrl ? (
+  // Laadt het logo niet (verlopen URL, bucket weg), dan valt hij terug op de merkletter —
+  // nooit het gebroken-afbeelding-icoon van de browser.
+  const logo = branding.logoUrl && !logoKapot ? (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={branding.logoUrl} alt={branding.naam} style={{ height: 30, maxWidth: 170, objectFit: 'contain' }} />
+    <img
+      src={branding.logoUrl}
+      alt={branding.naam}
+      onError={() => setLogoKapot(true)}
+      style={{ height: 34, maxWidth: 190, objectFit: 'contain' }}
+    />
   ) : (
     <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-      <span style={{ width: 30, height: 30, borderRadius: 9, background: 'var(--merk)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+      <span style={{ width: 30, height: 30, borderRadius: 'var(--merk-radius-sm, 9px)', background: 'var(--merk)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ color: 'var(--merk-op)', fontWeight: 800, fontSize: 16, letterSpacing: '-.04em' }}>
           {branding.naam.slice(0, 1).toUpperCase()}
         </span>
       </span>
-      <span style={{ fontWeight: 750, fontSize: 16, letterSpacing: '-.02em', color: '#0E1A13' }}>{branding.naam}</span>
+      <span style={{ fontWeight: 750, fontSize: 16, letterSpacing: '-.02em', color: '#14181B' }}>{branding.naam}</span>
     </span>
   )
 
@@ -134,8 +142,8 @@ export function AppTopbar({
       role="menu"
       style={{
         position: 'absolute', top: '100%', left: 0, marginTop: 6, minWidth: 268,
-        background: '#fff', border: '1px solid #E6EBE8', borderRadius: 14,
-        boxShadow: '0 18px 44px -12px rgba(14,26,19,.22)', padding: 6, zIndex: 60,
+        background: '#fff', border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-lg, 14px)',
+        boxShadow: '0 18px 44px -12px rgba(20,24,27,.22)', padding: 6, zIndex: 60,
       }}
     >
       {menu.items.map((item, i) => {
@@ -143,19 +151,19 @@ export function AppTopbar({
         const inhoud = (
           <>
             <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: geblokkeerd ? '#9AA6A0' : '#0E1A13' }}>{item.label}</span>
-              {item.slot && <span style={{ color: '#9AA6A0', display: 'flex' }}><Slotje /></span>}
+              <span style={{ fontSize: 14, fontWeight: 600, color: geblokkeerd ? '#98A0A6' : '#14181B' }}>{item.label}</span>
+              {item.slot && <span style={{ color: '#98A0A6', display: 'flex' }}><Slotje /></span>}
               {item.binnenkort && (
-                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', color: 'var(--merk)', background: 'var(--merk-zacht)', borderRadius: 5, padding: '2px 6px' }}>
+                <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.03em', textTransform: 'uppercase', color: 'var(--merk)', background: 'var(--merk-zacht)', borderRadius: 'var(--merk-radius-sm, 5px)', padding: '2px 6px' }}>
                   Binnenkort
                 </span>
               )}
             </span>
-            {item.hint && <span style={{ display: 'block', fontSize: 12, color: '#9AA6A0', marginTop: 2 }}>{item.hint}</span>}
+            {item.hint && <span style={{ display: 'block', fontSize: 12, color: '#98A0A6', marginTop: 2 }}>{item.hint}</span>}
           </>
         )
         const stijl: React.CSSProperties = {
-          display: 'block', padding: '9px 11px', borderRadius: 10,
+          display: 'block', padding: '9px 11px', borderRadius: 'var(--merk-radius-md, 10px)',
           textDecoration: 'none', textAlign: 'left', width: '100%',
           background: 'none', border: 'none',
           cursor: geblokkeerd ? 'not-allowed' : 'pointer',
@@ -169,7 +177,7 @@ export function AppTopbar({
         )
       })}
       {menu.slot && (
-        <p style={{ fontSize: 11.5, color: '#9AA6A0', lineHeight: 1.5, padding: '8px 11px 4px', borderTop: '1px solid #F1F4F2', margin: '4px 0 0' }}>
+        <p style={{ fontSize: 11.5, color: '#98A0A6', lineHeight: 1.5, padding: '8px 11px 4px', borderTop: '1px solid #F1F3F5', margin: '4px 0 0' }}>
           Tijdelijk gesloten — VestaAI richt zich nu op waardering en marktanalyse.
         </p>
       )}
@@ -193,10 +201,10 @@ export function AppTopbar({
         ref={balkRef}
         style={{
           position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.93)',
-          backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E9EFEB',
+          backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
       >
-        <div style={{ maxWidth: 1180, margin: '0 auto', height: 62, padding: '0 22px', display: 'flex', alignItems: 'center', gap: 26 }}>
+        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 22px', display: 'flex', alignItems: 'center', gap: 26 }}>
           <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0 }}>{logo}</Link>
 
           <div className="topbar-menus">
@@ -212,10 +220,10 @@ export function AppTopbar({
                     className="vui-menuknop"
                     style={{
                       display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '8px 12px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                      padding: '8px 12px', borderRadius: 'var(--merk-radius-sm, 9px)', border: 'none', cursor: 'pointer',
                       fontSize: 14.5, fontWeight: actief ? 700 : 550,
-                      color: menu.slot ? '#9AA6A0' : actief ? 'var(--merk)' : '#3F4F46',
-                      background: actief ? 'var(--merk-zacht)' : uit ? '#F4F7F5' : 'transparent',
+                      color: menu.slot ? '#98A0A6' : actief ? 'var(--merk)' : '#41494F',
+                      background: actief ? 'var(--merk-zacht)' : uit ? '#F5F6F8' : 'transparent',
                       transition: 'background .15s, color .15s',
                     }}
                   >
@@ -233,12 +241,12 @@ export function AppTopbar({
 
           <div className="topbar-rechts" style={{ marginLeft: 'auto' }}>
             {userEmail && (
-              <span style={{ fontSize: 12.5, color: '#9AA6A0', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={userEmail}>
+              <span style={{ fontSize: 12.5, color: '#98A0A6', maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={userEmail}>
                 {userEmail}
               </span>
             )}
             <form action="/api/auth/logout" method="POST">
-              <button type="submit" style={{ fontSize: 13.5, fontWeight: 600, color: '#5A6B61', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              <button type="submit" style={{ fontSize: 13.5, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 Uitloggen
               </button>
             </form>
@@ -248,26 +256,26 @@ export function AppTopbar({
             className="topbar-mobiel-knop"
             onClick={() => setMobiel(v => !v)}
             aria-label="Menu openen"
-            style={{ marginLeft: 'auto', cursor: 'pointer', width: 40, height: 40, border: '1px solid #DCE5E0', borderRadius: 10, alignItems: 'center', justifyContent: 'center', background: '#fff' }}
+            style={{ marginLeft: 'auto', cursor: 'pointer', width: 40, height: 40, border: '1px solid #DDE1E5', borderRadius: 'var(--merk-radius-md, 10px)', alignItems: 'center', justifyContent: 'center', background: '#fff' }}
           >
             <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {[0, 1, 2].map(i => <span key={i} style={{ width: 17, height: 2, background: '#0E1A13', borderRadius: 2 }} />)}
+              {[0, 1, 2].map(i => <span key={i} style={{ width: 17, height: 2, background: '#14181B', borderRadius: 2 }} />)}
             </span>
           </button>
         </div>
 
         {mobiel && (
-          <div style={{ borderTop: '1px solid #EEF2F0', padding: '10px 22px 16px', background: '#fff' }}>
+          <div style={{ borderTop: '1px solid #EBEEF1', padding: '10px 22px 16px', background: '#fff' }}>
             {MENUS.map(menu => (
               <div key={menu.id} style={{ marginBottom: 12 }}>
-                <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#9AA6A0', margin: '0 0 4px' }}>
+                <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#98A0A6', margin: '0 0 4px' }}>
                   {menu.label} {menu.slot && <Slotje size={11} />}
                 </p>
                 {menu.items.map((item, i) => (
                   item.slot || item.binnenkort ? (
-                    <p key={i} style={{ fontSize: 14, color: '#9AA6A0', padding: '6px 0', margin: 0 }}>{item.label}</p>
+                    <p key={i} style={{ fontSize: 14, color: '#98A0A6', padding: '6px 0', margin: 0 }}>{item.label}</p>
                   ) : (
-                    <Link key={i} href={item.href} style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', padding: '6px 0', textDecoration: 'none' }}>
+                    <Link key={i} href={item.href} style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
                       {item.label}
                     </Link>
                   )
@@ -275,7 +283,7 @@ export function AppTopbar({
               </div>
             ))}
             <form action="/api/auth/logout" method="POST">
-              <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5A6B61', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}>
+              <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}>
                 Uitloggen
               </button>
             </form>

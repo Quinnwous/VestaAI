@@ -7,6 +7,22 @@ export const HuisstijlSchema = z.object({
   // Tweede merkkleur. Samen met primaire_kleur kleurt deze de hele ingelogde
   // omgeving en het waarderingsrapport — zie lib/branding.ts.
   accent_kleur: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+  // Lettertype + vormtaal van de ingelogde omgeving — samen met de kleuren en het logo
+  // maakt dit de omgeving onherkenbaar als "VestaAI" voor een kantoor met eigen stijl.
+  // Onbekend/leeg valt terug op VestaAI's eigen stijl (Jakarta Sans, zacht-rond) — zie lib/branding.ts.
+  lettertype: z.enum(['jakarta', 'gantari', 'nunito']).optional(),
+  vorm: z.enum(['zacht', 'strak']).optional(),
+  // Favicon (tabblad-icoon) van het kantoor. Los van logo_url omdat een logo vaak een
+  // brede wordmark is en een favicon een vierkant beeldmerk — geen aparte kolom nodig,
+  // dit is JSON net als de rest van de huisstijl.
+  favicon_url: z.string().min(1).optional(),
+  // Sfeerbeeld van het kantoor (team, pand) dat als licht watermerk in de zijmarges
+  // van de ingelogde omgeving staat. Twee slots: links en rechts. Leeg = vlakke achtergrond.
+  achtergrond_url: z.string().min(1).optional(),
+  achtergrond_secundair_url: z.string().min(1).optional(),
+  // Contactgegevens voor de merkbalk bovenaan de ingelogde omgeving.
+  telefoon: z.string().max(40).optional(),
+  email: z.string().max(120).optional(),
   voorbeelden: z.array(z.string().max(2000)).max(20),
   // Uit de voorbeelden gedestilleerd, compact stijlprofiel (server-side gegenereerd).
   // Wordt in de prompt gebruikt i.p.v. alle voorbeelden integraal → schaalt zonder promptkosten-explosie.

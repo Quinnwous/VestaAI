@@ -175,7 +175,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
             {isEn ? 'Generated content' : 'Gegenereerde content'}
           </h2>
           {isEn && (
-            <span style={{ fontSize: 12, background: '#EAF5EE', color: '#1A6B45', border: '1px solid #C7E6D5', borderRadius: 20, padding: '2px 8px', fontWeight: 600 }}>
+            <span style={{ fontSize: 12, background: 'var(--merk-zacht,#EAF5EE)', color: 'var(--merk,#1A6B45)', border: '1px solid var(--merk-rand,#C7E6D5)', borderRadius: 'var(--merk-radius-card-xl, 20px)', padding: '2px 8px', fontWeight: 600 }}>
               🇬🇧 English
             </span>
           )}
@@ -183,7 +183,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleCopyAll}
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5A6B61', border: '1px solid #E4EAE6', borderRadius: 10, padding: '7px 12px', background: '#fff', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5C6470', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-md, 10px)', padding: '7px 12px', background: '#fff', cursor: 'pointer' }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -197,7 +197,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
               <button
                 onClick={handlePdfDownload}
                 disabled={downloadingPdf}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5A6B61', border: '1px solid #E4EAE6', borderRadius: 10, padding: '7px 12px', background: '#fff', cursor: downloadingPdf ? 'not-allowed' : 'pointer', opacity: downloadingPdf ? .5 : 1 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5C6470', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-md, 10px)', padding: '7px 12px', background: '#fff', cursor: downloadingPdf ? 'not-allowed' : 'pointer', opacity: downloadingPdf ? .5 : 1 }}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -208,8 +208,8 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
               <button
                 onClick={handleEmailPdf}
                 disabled={emailingPdf || emailSent}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5A6B61', border: '1px solid #E4EAE6', borderRadius: 10, padding: '7px 12px', background: '#fff', cursor: emailingPdf || emailSent ? 'not-allowed' : 'pointer', opacity: emailingPdf || emailSent ? .6 : 1 }}
-                title={isEn ? 'Send PDF to your email address' : 'Verstuur PDF naar uw e-mailadres'}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#5C6470', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-md, 10px)', padding: '7px 12px', background: '#fff', cursor: emailingPdf || emailSent ? 'not-allowed' : 'pointer', opacity: emailingPdf || emailSent ? .6 : 1 }}
+                title={isEn ? 'Send PDF to your email address' : 'Verstuur PDF naar je e-mailadres'}
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
@@ -221,17 +221,17 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
           )}
           <button
             onClick={handleReset}
-            style={{ fontSize: 14, color: '#9AA6A0', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ fontSize: 14, color: '#98A0A6', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
             {onResetHref
               ? (isEn ? '← Back to overview' : '← Terug naar overzicht')
-              : (isEn ? 'New property' : 'Nieuw object')}
+              : (isEn ? 'New property' : 'Nieuwe woning')}
           </button>
         </div>
       </div>
 
       {/* Tab navigatie */}
-      <div role="tablist" aria-label="Content-types" style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E9EFEB', marginBottom: 24, overflowX: 'auto' }}>
+      <div role="tablist" aria-label="Content-types" style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E6E9EC', marginBottom: 24, overflowX: 'auto' }}>
         {visibleTabs.map(tab => (
           <button
             key={tab.id}
@@ -240,7 +240,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
-            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid #1A6B45' : '2px solid transparent', color: activeTab === tab.id ? '#1A6B45' : '#9AA6A0', transition: 'all .15s', marginBottom: -1 }}
+            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk,#1A6B45)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk,#1A6B45)' : '#98A0A6', transition: 'all .15s', marginBottom: -1 }}
           >
             {tab.label}
           </button>
@@ -263,7 +263,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
               <button
                 key={v}
                 onClick={() => setBrochureVariant(v)}
-                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 20, border: '1px solid', cursor: 'pointer', background: brochureVariant === v ? '#1A6B45' : '#fff', color: brochureVariant === v ? '#fff' : '#5A6B61', borderColor: brochureVariant === v ? '#1A6B45' : '#E4EAE6' }}
+                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: brochureVariant === v ? 'var(--merk,#1A6B45)' : '#fff', color: brochureVariant === v ? 'var(--merk-op,#fff)' : '#5C6470', borderColor: brochureVariant === v ? 'var(--merk,#1A6B45)' : '#E1E5E9' }}
               >
                 {v === 'lang'
                   ? (isEn ? 'Long (500+ words)' : 'Lang (500+ woorden)')
@@ -339,7 +339,7 @@ export function ResultTabs({ data, objectId, taal = 'nl', onReset, onResetHref }
               <button
                 key={v}
                 onClick={() => setFollowupVariant(v)}
-                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 20, border: '1px solid', cursor: 'pointer', background: followupVariant === v ? '#1A6B45' : '#fff', color: followupVariant === v ? '#fff' : '#5A6B61', borderColor: followupVariant === v ? '#1A6B45' : '#E4EAE6' }}
+                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: followupVariant === v ? 'var(--merk,#1A6B45)' : '#fff', color: followupVariant === v ? 'var(--merk-op,#fff)' : '#5C6470', borderColor: followupVariant === v ? 'var(--merk,#1A6B45)' : '#E1E5E9' }}
               >
                 {v === 'positief'
                   ? (isEn ? 'Interested buyer' : 'Geïnteresseerde koper')

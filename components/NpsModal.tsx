@@ -57,18 +57,18 @@ export function NpsModal({ trigger }: NpsModalProps) {
       <div className="relative z-10 w-full max-w-md rounded-2xl bg-white shadow-2xl border border-gray-100 p-6 sm:p-8">
         {status === 'done' ? (
           <div className="text-center py-4">
-            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-12 h-12 rounded-full bg-[var(--merk-zacht,#EAF5EE)] flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-[var(--merk,#1A6B45)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <p className="font-semibold text-gray-900">Bedankt voor uw feedback!</p>
+            <p className="font-semibold text-gray-900">Bedankt voor je feedback!</p>
           </div>
         ) : (
           <>
             <div className="flex items-start justify-between mb-5">
               <div>
-                <p className="text-sm font-semibold text-gray-900">Hoe waarschijnlijk is het dat u VestaAI aanbeveelt?</p>
+                <p className="text-sm font-semibold text-gray-900">Hoe waarschijnlijk is het dat je dit platform aanbeveelt?</p>
                 <p className="text-xs text-gray-500 mt-0.5">0 = absoluut niet · 10 = zeker weten</p>
               </div>
               <button onClick={handleDismiss} className="text-gray-300 hover:text-gray-500 ml-4 flex-shrink-0">
@@ -89,7 +89,7 @@ export function NpsModal({ trigger }: NpsModalProps) {
                       ? i >= 9
                         ? 'bg-green-600 text-white'
                         : i >= 7
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)]'
                         : 'bg-orange-500 text-white'
                       : 'border border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                   }`}
@@ -105,14 +105,14 @@ export function NpsModal({ trigger }: NpsModalProps) {
               onChange={e => setFeedback(e.target.value)}
               placeholder="Wat mis je het meest? (optioneel)"
               rows={2}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] mb-4"
             />
 
             <div className="flex items-center gap-3">
               <button
                 onClick={handleSubmit}
                 disabled={score === null || status === 'submitting'}
-                className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-40 transition-colors"
+                className="flex-1 rounded-lg bg-[var(--merk,#1A6B45)] py-2.5 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-40 transition-colors"
               >
                 {status === 'submitting' ? 'Versturen...' : 'Verstuur feedback'}
               </button>

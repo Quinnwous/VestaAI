@@ -5,6 +5,8 @@ import type { Kantoor } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { slaHuisstijlOp } from '../actions'
 import { LogoUpload } from './LogoUpload'
+import { AchtergrondUpload } from './AchtergrondUpload'
+import { FONT_OPTIES, VORM_OPTIES, type LettertypeKeuze, type VormKeuze } from '@/lib/branding'
 
 interface Props {
   kantoor: Kantoor
@@ -25,6 +27,10 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   const [slogan, setSlogan] = useState(huidig?.slogan ?? '')
   const [primaire_kleur, setPrimaireKleur] = useState(huidig?.primaire_kleur ?? '#1A6B45')
   const [accent_kleur, setAccentKleur] = useState(huidig?.accent_kleur ?? '#2A8A5C')
+  const [lettertype, setLettertype] = useState<LettertypeKeuze>(huidig?.lettertype ?? 'jakarta')
+  const [vorm, setVorm] = useState<VormKeuze>(huidig?.vorm ?? 'zacht')
+  const [telefoon, setTelefoon] = useState(huidig?.telefoon ?? '')
+  const [email, setEmail] = useState(huidig?.email ?? '')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(
     huidig?.voorbeelden?.length ? huidig.voorbeelden : ['']
   )
@@ -132,6 +138,10 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       slogan,
       primaire_kleur,
       accent_kleur,
+      lettertype,
+      vorm,
+      telefoon: telefoon.trim() || undefined,
+      email: email.trim() || undefined,
       voorbeelden: voorbeelden.filter(Boolean),
       brochure_stijl: broVb.length || slotTekst.trim()
         ? { voorbeelden: broVb, ...(slotTekst.trim() ? { slot_tekst: slotTekst.trim() } : {}) }
@@ -147,9 +157,44 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-lg">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
       {/* Logo */}
       <LogoUpload kantoorId={kantoor.id} huidigUrl={kantoor.logo_url} />
+
+      {/* Sfeerbeeld in de zijmarges van de ingelogde omgeving */}
+      <AchtergrondUpload
+        kantoorId={kantoor.id}
+        huidigPrimair={huidig?.achtergrond_url ?? null}
+        huidigSecundair={huidig?.achtergrond_secundair_url ?? null}
+      />
+
+      {/* Contactgegevens — vullen de merkbalk bovenaan de omgeving */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Contactgegevens</label>
+        <p className="text-xs text-gray-500 mb-3">
+          Staan in de balk bovenaan je omgeving. Laat je ze leeg, dan verdwijnt die balk.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <input
+            type="tel"
+            value={telefoon}
+            onChange={e => setTelefoon(e.target.value)}
+            maxLength={40}
+            placeholder="070-1234567"
+            aria-label="Telefoonnummer"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            maxLength={120}
+            placeholder="info@jouwkantoor.nl"
+            aria-label="E-mailadres"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
+          />
+        </div>
+      </div>
 
       {/* Schrijftoon */}
       <div>
@@ -162,7 +207,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
               onClick={() => setSchrijftoon(t.value)}
               className={`rounded-xl border p-3 text-left transition-colors ${
                 schrijftoon === t.value
-                  ? 'border-blue-500 bg-blue-50'
+                  ? 'border-[var(--merk,#1A6B45)] bg-[var(--merk-zacht,#EAF5EE)]'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
@@ -184,7 +229,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
           onChange={e => setSlogan(e.target.value)}
           maxLength={100}
           placeholder="Bijv: Meer dan een huis. Een thuis."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
         />
       </div>
 
@@ -192,7 +237,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Merkkleuren</label>
         <p className="text-xs text-gray-500 mb-3">
-          Deze kleuren gelden voor uw hele omgeving: navigatie, knoppen en straks het waarderingsrapport.
+          Deze kleuren gelden voor je hele omgeving: navigatie, knoppen en straks het waarderingsrapport.
         </p>
         <div className="flex flex-wrap items-center gap-6">
           <div className="flex items-center gap-3">
@@ -222,14 +267,43 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
         </div>
       </div>
 
+      {/* Lettertype + vormtaal — samen met de kleuren en het logo hierboven maakt dit de
+          omgeving onherkenbaar als "VestaAI" voor een kantoor met eigen huisstijl. */}
+      <div className="flex flex-wrap gap-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Lettertype</label>
+          <select
+            value={lettertype}
+            onChange={e => setLettertype(e.target.value as LettertypeKeuze)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            {Object.entries(FONT_OPTIES).map(([key, opt]) => (
+              <option key={key} value={key}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Vormtaal</label>
+          <select
+            value={vorm}
+            onChange={e => setVorm(e.target.value as VormKeuze)}
+            className="rounded-lg border border-gray-300 px-3 py-2 text-sm"
+          >
+            {Object.entries(VORM_OPTIES).map(([key, opt]) => (
+              <option key={key} value={key}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Voorbeeldteksten */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Voorbeeldteksten <span className="text-gray-400 font-normal">(tot 20)</span>
         </label>
         <p className="text-xs text-gray-500 mb-3">
-          Plak Funda-teksten, brochures of social posts van uw kantoor. Bij opslaan destilleert VestaAI hier
-          automatisch één stijlprofiel uit — hoe meer representatieve voorbeelden, hoe scherper uw huisstijl wordt geleerd.
+          Plak Funda-teksten, brochures of social posts van je kantoor. Bij opslaan destilleren we hier
+          automatisch één stijlprofiel uit — hoe meer representatieve voorbeelden, hoe scherper je huisstijl wordt geleerd.
         </p>
         <div className="space-y-3">
           {voorbeelden.map((v, i) => (
@@ -239,8 +313,8 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
                 onChange={e => updateVoorbeeld(i, e.target.value)}
                 rows={4}
                 maxLength={2000}
-                placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure van uw kantoor`}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                placeholder={`Voorbeeld ${i + 1} — plak hier een Funda-tekst of brochure van je kantoor`}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] resize-none"
               />
               {voorbeelden.length > 1 && (
                 <button
@@ -262,13 +336,13 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
             <button
               type="button"
               onClick={addVoorbeeld}
-              className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+              className="text-sm font-semibold text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)]"
             >
               + Voorbeeld toevoegen ({voorbeelden.length}/20)
             </button>
           )}
           {voorbeelden.length < 20 && (
-            <label className={`text-sm font-semibold text-blue-600 hover:text-blue-700 cursor-pointer ${bezigUpload ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            <label className={`text-sm font-semibold text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] cursor-pointer ${bezigUpload ? 'opacity-50 cursor-not-allowed' : ''}`}>
               <input type="file" accept=".pdf,.txt" onChange={uploadVoorbeeld} disabled={bezigUpload} className="hidden" />
               {bezigUpload ? 'Bestand lezen…' : '↑ Uploaden (PDF/TXT)'}
             </label>
@@ -283,7 +357,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
           Brochure-huisstijl <span className="text-gray-400 font-normal">(optioneel · apart van de schrijfstijl)</span>
         </label>
         <p className="text-xs text-gray-500 mb-3">
-          Plak voorbeelden van úw brochures. VestaAI stemt de gegenereerde brochure-teksten hier specifiek op af —
+          Plak voorbeelden van jouw brochures. We stemmen de gegenereerde brochure-teksten hier specifiek op af —
           los van de Funda- en social-stijl hierboven.
         </p>
 
@@ -297,7 +371,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
                   rows={4}
                   maxLength={2000}
                   placeholder={`Brochure-voorbeeld ${i + 1}`}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] resize-none"
                 />
                 <button
                   type="button"
@@ -317,7 +391,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
           <button
             type="button"
             onClick={addBrochure}
-            className="text-sm font-semibold text-blue-600 hover:text-blue-700"
+            className="text-sm font-semibold text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)]"
           >
             + Brochure-voorbeeld toevoegen{brochureVoorbeelden.length > 0 ? ` (${brochureVoorbeelden.length}/10)` : ''}
           </button>
@@ -333,7 +407,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
             rows={3}
             maxLength={600}
             placeholder="Bijv: Makelaardij De Sleutel · Dorpsstraat 1, 1234 AB · 020-1234567 · info@desleutel.nl · KvK 12345678"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] resize-none"
           />
         </div>
       </div>
@@ -345,14 +419,14 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
             Leren van je bewerkingen <span className="text-gray-400 font-normal">(automatisch)</span>
           </label>
           <p className="text-xs text-gray-500 mb-3">
-            Als je gegenereerde teksten handmatig aanpast, ziet VestaAI dat als voorbeeld. Laat er stijlregels uit destilleren — jij bepaalt of ze kloppen voordat ze worden toegepast.
+            Als je gegenereerde teksten handmatig aanpast, zien we dat als voorbeeld. Laat er stijlregels uit destilleren — jij bepaalt of ze kloppen voordat ze worden toegepast.
           </p>
 
           {!leerRegels && leerKlaar !== 'toegepast' && (
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
               <p className="text-sm text-gray-700 mb-3">
                 {leerAantal >= leerMin
-                  ? `VestaAI verzamelde ${leerAantal} bewerking${leerAantal === 1 ? '' : 'en'} om van te leren.`
+                  ? `We verzamelden ${leerAantal} bewerking${leerAantal === 1 ? '' : 'en'} om van te leren.`
                   : `Nog te weinig bewerkingen (minimaal ${leerMin}).`}
               </p>
               {leerAantal >= leerMin && (
@@ -361,7 +435,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
                   onClick={analyseerBewerkingen}
                   disabled={leerBezig}
                   className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60"
-                  style={{ background: '#1A6B45' }}
+                  style={{ background: 'var(--merk,#1A6B45)' }}
                 >
                   {leerBezig ? 'Analyseren…' : `Analyseer ${leerAantal} bewerking${leerAantal === 1 ? '' : 'en'}`}
                 </button>
@@ -372,7 +446,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
 
           {leerRegels && (
             <div className="rounded-xl border p-4" style={{ borderColor: '#BBE3CE', background: '#F1FAF5' }}>
-              <p className="text-sm font-semibold text-gray-900 mb-2">VestaAI heeft dit geleerd — kloppen deze regels?</p>
+              <p className="text-sm font-semibold text-gray-900 mb-2">We hebben dit geleerd — kloppen deze regels?</p>
               <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-sans mb-3">{leerRegels}</pre>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -380,7 +454,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
                   onClick={() => rondLerenAf(true)}
                   disabled={leerBezig}
                   className="text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60"
-                  style={{ background: '#1A6B45' }}
+                  style={{ background: 'var(--merk,#1A6B45)' }}
                 >
                   {leerBezig ? 'Bezig…' : 'Toevoegen aan mijn stijl'}
                 </button>
@@ -399,7 +473,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
           {leerKlaar === 'toegepast' && (
             <div className="rounded-xl border p-4" style={{ borderColor: '#BBE3CE', background: '#F1FAF5' }}>
               <p className="text-sm font-semibold" style={{ color: '#166534' }}>✓ Toegevoegd aan je huisstijl</p>
-              <p className="text-xs text-gray-600 mt-1">VestaAI past deze regels voortaan toe bij het genereren.</p>
+              <p className="text-xs text-gray-600 mt-1">Deze regels worden voortaan toegepast bij het genereren.</p>
             </div>
           )}
 
@@ -410,7 +484,7 @@ export function HuisstijlTab({ kantoor, isAdmin }: Props) {
       <button
         type="submit"
         disabled={status === 'saving'}
-        className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
+        className="rounded-lg bg-[var(--merk,#1A6B45)] px-5 py-2 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
       >
         {status === 'saving' ? 'Stijlprofiel leren…' : status === 'saved' ? 'Opgeslagen!' : 'Sla huisstijl op'}
       </button>

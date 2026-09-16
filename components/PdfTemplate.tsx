@@ -161,7 +161,7 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
   })
 
   return (
-    <Document title={`${address} — VestaAI`} author="VestaAI" creator="VestaAI">
+    <Document title={`${address} — ${kantoor.name}`} author={kantoor.name} creator={kantoor.name}>
 
       {/* Cover */}
       <Page size="A4" style={s.page}>
@@ -179,7 +179,7 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
           <Text style={s.coverSubtitle}>Content-suite · {datum}</Text>
 
           <View style={s.coverFooter}>
-            <Text style={s.coverFooterText}>Gegenereerd met VestaAI · vestaai.nl</Text>
+            <Text style={s.coverFooterText}>Gegenereerd met dit platform</Text>
           </View>
         </View>
       </Page>
@@ -208,7 +208,7 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
           </View>
           <View style={s.pageFooterFixed} fixed>
             <Text style={s.pageFooterText}>
-              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `VestaAI · ${datum}`}
+              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `${kantoor.name} · ${datum}`}
             </Text>
             <Text style={s.pageFooterText} render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
           </View>
@@ -245,7 +245,7 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
             <Text style={s.pageFooterText}>
               {kantoor.huisstijl_json?.slogan
                 ? `${kantoor.huisstijl_json.slogan} · ${datum}`
-                : `VestaAI · ${datum}`}
+                : `${kantoor.name} · ${datum}`}
             </Text>
             <Text
               style={s.pageFooterText}
@@ -274,7 +274,7 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
           <Text style={s.sectionBody}>{kantoor.huisstijl_json.brochure_stijl.slot_tekst}</Text>
           <View style={s.pageFooterFixed} fixed>
             <Text style={s.pageFooterText}>
-              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `VestaAI · ${datum}`}
+              {kantoor.huisstijl_json?.slogan ? `${kantoor.huisstijl_json.slogan} · ${datum}` : `${kantoor.name} · ${datum}`}
             </Text>
             <Text
               style={s.pageFooterText}

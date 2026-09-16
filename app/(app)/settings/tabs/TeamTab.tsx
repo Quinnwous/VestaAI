@@ -20,7 +20,7 @@ function OnboardingBadge({ createdAt, firstGeneratedAt }: { createdAt: string; f
   const snel = diffMin <= 5
   return (
     <span
-      className={`text-xs px-1.5 py-0.5 rounded font-mono hidden sm:inline ${snel ? 'text-green-700 bg-green-50' : 'text-gray-500 bg-gray-50'}`}
+      className={`text-xs px-1.5 py-0.5 rounded font-mono hidden sm:inline ${snel ? 'text-[var(--merk-hover,#114230)] bg-[var(--merk-zacht,#EAF5EE)]' : 'text-gray-500 bg-gray-50'}`}
       title={`Eerste generatie na ${diffMin} minuten`}
     >
       {label}
@@ -97,7 +97,7 @@ export function TeamTab({ teamleden, kantoorId, isAdmin, huidigeMakelaarsId }: P
                 )}
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                   lid.role === 'admin'
-                    ? 'bg-blue-50 text-blue-700'
+                    ? 'bg-[var(--merk-zacht,#EAF5EE)] text-[var(--merk-hover,#114230)]'
                     : 'bg-gray-100 text-gray-600'
                 }`}>
                   {lid.role}
@@ -142,12 +142,12 @@ export function TeamTab({ teamleden, kantoorId, isAdmin, huidigeMakelaarsId }: P
               onChange={e => setUitnodigEmail(e.target.value)}
               required
               placeholder="collega@kantoor.nl"
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)]"
             />
             <button
               type="submit"
               disabled={uitnodigStatus === 'sending'}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors whitespace-nowrap"
+              className="rounded-lg bg-[var(--merk,#1A6B45)] px-4 py-2 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors whitespace-nowrap"
             >
               {uitnodigStatus === 'sending' ? '...' : uitnodigStatus === 'sent' ? 'Verzonden!' : 'Uitnodigen'}
             </button>

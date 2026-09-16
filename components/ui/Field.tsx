@@ -12,7 +12,7 @@ export function fieldStyle(style?: CSSProperties): CSSProperties {
   return {
     width: '100%',
     boxSizing: 'border-box',
-    borderRadius: 12,
+    borderRadius: 'var(--merk-radius-md, 12px)',
     border: `1px solid ${colors.borderStrong}`,
     padding: '12px 14px',
     fontSize: 14,

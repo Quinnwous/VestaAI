@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Plus_Jakarta_Sans, Newsreader } from 'next/font/google'
+import { Plus_Jakarta_Sans, Newsreader, Gantari, Nunito_Sans } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 
@@ -16,6 +16,23 @@ const newsreader = Newsreader({
   weight: ['400', '500', '600'],
   style: ['normal', 'italic'],
   adjustFontFallback: false,
+})
+
+// Kantoor-lettertype-opties (zie lib/branding.ts § FONT_OPTIES). Hier vooraf geladen
+// als CSS-variabele, net als jakarta/newsreader hierboven — next/font vereist statische
+// imports, dus nieuwe kantoorfonts komen er hier ook bij.
+const gantari = Gantari({
+  subsets: ['latin'],
+  variable: '--font-gantari',
+  display: 'swap',
+  weight: ['400', '500', '600', '700'],
+})
+
+const nunito = Nunito_Sans({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 })
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://vestaai.nl'
@@ -83,7 +100,7 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       </head>
-      <body className={`${jakarta.variable} ${newsreader.variable} ${jakarta.className}`}>
+      <body className={`${jakarta.variable} ${newsreader.variable} ${gantari.variable} ${nunito.variable} ${jakarta.className}`}>
         <a
           href="#main-content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-blue-600 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
