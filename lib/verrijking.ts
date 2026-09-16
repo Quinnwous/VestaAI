@@ -585,6 +585,8 @@ export interface VerrijkingData {
   voorzieningen: VoorzieningenData | null
   markt: MarktData | null
   gemeente: string | null
+  /** Coördinaat van het adres — voedt de straal-uitsnede van de verkoopkaart in het woningdossier. */
+  coord: { lat: number; lon: number } | null
 }
 
 export async function fetchVerrijking(adres: string, oppervlakM2?: number): Promise<VerrijkingData> {
@@ -612,7 +614,7 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
 
   const markt = gemeente ? marktProfielOpzoeken(gemeente, cbs) : null
 
-  return { woz, cbs, voorzieningen, markt, gemeente }
+  return { woz, cbs, voorzieningen, markt, gemeente, coord }
 }
 
 // ─── Verrijking → leesbare string voor Claude-prompt ─────────────────────────

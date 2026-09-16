@@ -23,27 +23,18 @@ try {
   ok(landing?.status() === 200, `landing 200 (${landing?.status()})`)
   ok((await page.content()).includes('VestaAI'), 'landing contains "VestaAI"')
 
-  // 2. Key public pages return 200
-  for (const path of ['/login', '/prijzen', '/vertrouwen', '/privacy']) {
+  // 2. Key public pages return 200. /prijzen and self-signup were removed 15 sep 2026 —
+  // toegang is puur admin-beheerd, geen zelf-aanmelden of geprijsde publieke pagina meer.
+  for (const path of ['/login', '/vertrouwen', '/privacy']) {
     const r = await page.goto(BASE + path, { waitUntil: 'domcontentloaded' })
     ok(r?.status() === 200, `${path} 200 (${r?.status()})`)
   }
 
-  // 3. Login form: email + password inputs present, and the register tab switches the CTA
+  // 3. Login form: alleen inloggen + wachtwoord-reset, geen "Aanmelden"-tab meer.
   await page.goto(`${BASE}/login`, { waitUntil: 'networkidle' })
   ok(await page.locator('input[type="email"]').count() > 0, 'login has email field')
   ok(await page.locator('input[type="password"]').count() > 0, 'login has password field')
-  const aanmeld = page.getByText('Aanmelden', { exact: true }).first()
-  if (await aanmeld.count()) {
-    await aanmeld.click().catch(() => {})
-    await page.waitForTimeout(400)
-    const cta = (await page.locator('button[type="submit"]').first().textContent().catch(() => '')) || ''
-    ok(/aanmaken|account/i.test(cta), `register tab shows account-create CTA ("${cta.trim()}")`)
-  }
-
-  // 4. A public wijk page for a non-existent slug degrades gracefully (no 500)
-  const wijk = await page.goto(`${BASE}/wijken/bestaat-niet-xyz`, { waitUntil: 'domcontentloaded' })
-  ok(wijk && wijk.status() < 500, `public wijk page non-500 (${wijk?.status()})`)
+  ok((await page.locator('text=Aanmelden').count()) === 0, 'login has no self-signup tab')
 } catch (e) {
   console.log('✗ smoke run threw:', e.message)
   failures++

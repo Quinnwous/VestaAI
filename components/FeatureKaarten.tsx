@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { Eyebrow, SerifTitle } from '@/components/ui'
-import { CONTENT_VERGRENDELD } from '@/lib/features'
 
 type Kaart = {
   titel: string
@@ -11,39 +10,30 @@ type Kaart = {
 }
 
 /**
- * Wegwijzer op het dashboard. Sinds de koerswijziging (sept 2026) staan hier
- * waardering en marktanalyse voorop; de contentsuite staat er vergrendeld bij
- * zodat zichtbaar blijft dat hij bestaat en terugkomt.
+ * Wegwijzer op het dashboard. Fasemodel (besluit 16 sep 2026, zie CLAUDE.md):
+ * een woning doorloopt Acquisitie → In verkoop → Verkocht in één dossier —
+ * content en waardering zijn geen losse bestemmingen meer maar fases van
+ * dezelfde woning, dus deze kaarten wijzen naar het dossier zelf.
  */
-export function FeatureKaarten({ newestObjectId }: { newestObjectId: string | null }) {
-  // Per-woning-tools openen in het dossier van de meest recente woning.
-  const werkruimte = newestObjectId ? `/object/${newestObjectId}` : null
-
+export function FeatureKaarten() {
   const kaarten: Kaart[] = [
     {
-      titel: 'Waardering',
-      desc: 'Onderbouwde woningwaarde met referenties en wat-als-scenario’s.',
-      href: werkruimte ?? '/dashboard',
-      emoji: '📊',
+      titel: 'Woning toevoegen',
+      desc: 'Start een nieuw dossier — begint in de acquisitiefase met waardebepaling en verkoopadvies.',
+      href: '/object/new',
+      emoji: '🏠',
     },
     {
       titel: 'Marktanalyse',
-      desc: 'Zoek vrij in verkochte woningen: type, wijk, periode.',
+      desc: 'Interactief: prijsontwikkeling, m²-prijs en doorlooptijd per type, wijk en periode.',
       href: '/marktanalyse',
       emoji: '📈',
     },
     {
-      titel: 'Huisstijl',
-      desc: 'Logo en kleuren van je kantoor — die kleuren deze hele omgeving.',
-      href: '/huisstijl',
-      emoji: '🎨',
-    },
-    {
-      titel: 'Content',
-      desc: CONTENT_VERGRENDELD ? 'Woningteksten, staging en documenten. Tijdelijk gesloten.' : 'Woningteksten, virtual staging en documenten per woning.',
-      href: CONTENT_VERGRENDELD ? '/dashboard' : (werkruimte ?? '/object/new'),
-      emoji: CONTENT_VERGRENDELD ? '🔒' : '✍️',
-      slot: CONTENT_VERGRENDELD,
+      titel: 'Verkoopkaart',
+      desc: 'Eigen verkopen van je kantoor op de kaart, met live filters.',
+      href: '/marktanalyse/kaart',
+      emoji: '🗺️',
     },
   ]
 
@@ -51,7 +41,7 @@ export function FeatureKaarten({ newestObjectId }: { newestObjectId: string | nu
     <section style={{ marginTop: 44 }}>
       <Eyebrow>Aan de slag</Eyebrow>
       <SerifTitle as="h2" size={24} style={{ marginBottom: 4 }}>Dit kan het platform</SerifTitle>
-      <p style={{ fontSize: 13.5, color: '#98A0A6', margin: '0 0 18px' }}>Waardering en marktanalyse zijn in aanbouw — je ziet per onderdeel wat eraan komt.</p>
+      <p style={{ fontSize: 13.5, color: '#98A0A6', margin: '0 0 18px' }}>Marktinzichten zijn in aanbouw — je ziet per onderdeel wat eraan komt.</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(232px, 1fr))', gap: 12 }}>
         {kaarten.map(k => {
           const inhoud = (

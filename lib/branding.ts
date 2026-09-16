@@ -81,7 +81,7 @@ export type Branding = {
   naam: string
   logoUrl: string | null
   faviconUrl: string | null
-  /** Sfeerbeeld (team/kantoor) dat als licht watermerk in de zijmarges staat. */
+  /** Sfeerbeeld (team/kantoor), scherp getoond als banner op kantoor-gerelateerde pagina's. */
   achtergrondUrl: string | null
   achtergrondSecundairUrl: string | null
   /** Contactgegevens voor de merkbalk bovenaan — leeg = balk verdwijnt. */

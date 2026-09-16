@@ -116,7 +116,7 @@ function buildRealworksXml(objectId: string, input: PropertyInput, output: Conte
 
       <Overdracht>
         <Status>Beschikbaar</Status>
-        <Koopprijs>${input.vraagprijs}</Koopprijs>
+        <Koopprijs>${input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0}</Koopprijs>
         <KoopAanvaardig>kosten koper</KoopAanvaardig>
       </Overdracht>
 

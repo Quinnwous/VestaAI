@@ -15,20 +15,19 @@ type KantoorRij = {
 // Gedeeld door generateMetadata (tabbladtitel + favicon) en AppLayout (kleuren/logo in de
 // pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één request, zodat het
 // niet twee keer bevraagd wordt voor dezelfde requestcyclus.
-const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij; isBeheerder: boolean }> => {
+const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij }> => {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { kantoor: null, isBeheerder: false }
+  if (!user) return { kantoor: null }
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, role, kantoren(name, logo_url, huisstijl_json)')
+    .select('kantoor_id, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', user.id)
     .single()
 
   return {
     kantoor: (makelaar?.kantoren as unknown as KantoorRij) ?? null,
-    isBeheerder: makelaar?.role === 'admin',
   }
 })
 
@@ -66,53 +65,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Platform-admins gebruiken de app niet als klant → naar het beheer.
   if (isPlatformAdmin(user.email)) redirect('/admin')
 
-  const { kantoor, isBeheerder } = await haalMakelaarOp()
+  const { kantoor } = await haalMakelaarOp()
 
   // Vanaf de ingelogde omgeving is de hele app van het kantoor: logo, kleuren, lettertype,
   // vormtaal — en straks ook het waarderingsrapport. Zie lib/branding.ts.
   const branding = bouwBranding(kantoor)
 
-  const watermerk = branding.achtergrondUrl ?? branding.achtergrondSecundairUrl
-  const watermerkRechts = branding.achtergrondSecundairUrl ?? branding.achtergrondUrl
-
   return (
     <div style={{ ...brandingCssVars(branding), minHeight: '100vh', background: '#FAFBFB', fontFamily: 'var(--merk-font-body, var(--font-jakarta))' }}>
-      {/* Sfeerbeeld van het kantoor in de zijmarges: alleen daar waar de content-kolom
-          ze vrijlaat, zodat het een watermerk blijft en nooit onder tekst komt. */}
-      {watermerk && (
-        <>
-          <style>{`
-            .merk-watermerk { display: none; }
-            @media (min-width: 1280px) {
-              .merk-watermerk {
-                display: block; position: fixed; top: 0; bottom: 0; z-index: 0;
-                /* Loopt bewust een stuk ónder de content door, zodat het beeld ook op een
-                   smaller scherm zichtbaar blijft. De kaarten in het midden zijn wit en
-                   dekken het af waar tekst staat. */
-                width: calc((100vw - var(--app-breedte)) / 2 + 260px);
-                background-size: cover; background-position: center; opacity: .18;
-                /* Lichte vervaging: een bord of gezicht in beeld mag nooit scherp genoeg
-                   zijn om de aandacht van het werk weg te trekken. */
-                filter: blur(2.5px) saturate(.85);
-                pointer-events: none;
-              }
-              .merk-watermerk-links {
-                left: 0;
-                -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
-                mask-image: linear-gradient(to right, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
-              }
-              .merk-watermerk-rechts {
-                right: 0;
-                -webkit-mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
-                mask-image: linear-gradient(to left, #000 0%, rgba(0,0,0,.8) 45%, rgba(0,0,0,.3) 75%, transparent 100%);
-              }
-            }
-          `}</style>
-          <div className="merk-watermerk merk-watermerk-links" style={{ backgroundImage: `url(${watermerk})` }} aria-hidden />
-          <div className="merk-watermerk merk-watermerk-rechts" style={{ backgroundImage: `url(${watermerkRechts})` }} aria-hidden />
-        </>
-      )}
-
       {(branding.telefoon || branding.email) && (
         <div style={{ position: 'relative', zIndex: 1, background: 'var(--merk)', color: 'var(--merk-op)' }}>
           <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '0 22px', height: 34, display: 'flex', alignItems: 'center', gap: 18, fontSize: 12.5, fontWeight: 600 }}>
@@ -131,14 +91,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-      <AppTopbar branding={branding} userEmail={user.email ?? null} isBeheerder={isBeheerder}>
+      <AppTopbar branding={branding} userEmail={user.email ?? null}>
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
           <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px 22px', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
-              Deze omgeving draait nog op de standaardstijl.{' '}
-              <a href="/huisstijl" style={{ color: 'var(--merk)', fontWeight: 700, textDecoration: 'underline' }}>
-                Stel je logo en kleuren in →
-              </a>
+              Deze omgeving draait nog op de standaardstijl — huisstijl wordt door VestaAI ingesteld.
             </p>
           </div>
         )}

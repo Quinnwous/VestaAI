@@ -4,6 +4,9 @@ import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { sendAccountToegevoegdEmail } from '@/lib/email'
+import { distilleerStijlprofiel } from '@/lib/claude'
+import type { HuisstijlConfig, KantoorInstellingen } from '@/lib/schemas'
+import { HuisstijlSchema, KantoorInstellingenSchema } from '@/lib/schemas'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -138,6 +141,147 @@ export async function addMakelaarAccount(data: {
     // best-effort
   }
 
+  revalidatePath('/admin')
+  return { ok: true }
+}
+
+/**
+ * Verwijdert een teamlid uit een kantoor. Team- en huisstijlbeheer zijn sinds
+ * 16 sep 2026 volledig platform-admin-beheerd (één rol per kantoor, zie
+ * CLAUDE.md) — dit vervangt de oude, kantoor-zelfbeheerde `verwijderTeamlid`.
+ */
+export async function verwijderMakelaar(makelaarId: string, kantoorId: string): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  const service = createServiceSupabaseClient()
+  const { error } = await service.from('makelaars').delete().eq('id', makelaarId).eq('kantoor_id', kantoorId)
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(`/admin/kantoor/${kantoorId}`)
+  return { ok: true }
+}
+
+export async function uploadLogoAlsAdmin(formData: FormData): Promise<Result & { url?: string }> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+
+  const file = formData.get('logo') as File | null
+  const kantoorId = formData.get('kantoor_id') as string | null
+  if (!file || !kantoorId || file.size === 0) return { ok: false, error: 'Ongeldig bestand' }
+
+  const TOEGESTANE_TYPES = ['image/png', 'image/jpeg', 'image/svg+xml', 'image/webp']
+  if (!TOEGESTANE_TYPES.includes(file.type)) return { ok: false, error: 'Alleen PNG, JPG, SVG of WebP toegestaan' }
+  if (file.size > 2 * 1024 * 1024) return { ok: false, error: 'Bestand mag maximaal 2 MB zijn' }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'png'
+  const pad = `${kantoorId}/logo.${ext}`
+  const bytes = await file.arrayBuffer()
+
+  const service = createServiceSupabaseClient()
+  const { error: uploadError } = await service.storage.from('kantoor-assets').upload(pad, bytes, { contentType: file.type, upsert: true })
+  if (uploadError) return { ok: false, error: uploadError.message }
+
+  const { data: urlData } = service.storage.from('kantoor-assets').getPublicUrl(pad)
+  await service.from('kantoren').update({ logo_url: urlData.publicUrl }).eq('id', kantoorId)
+
+  revalidatePath(`/admin/kantoor/${kantoorId}`)
+  return { ok: true, url: urlData.publicUrl }
+}
+
+export async function uploadAchtergrondAlsAdmin(formData: FormData): Promise<Result & { url?: string }> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+
+  const file = formData.get('achtergrond') as File | null
+  const kantoorId = formData.get('kantoor_id') as string | null
+  const slot = formData.get('slot') === 'secundair' ? 'secundair' : 'primair'
+  if (!file || !kantoorId || file.size === 0) return { ok: false, error: 'Ongeldig bestand' }
+
+  const TOEGESTANE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
+  if (!TOEGESTANE_TYPES.includes(file.type)) return { ok: false, error: 'Alleen PNG, JPG of WebP toegestaan' }
+  if (file.size > 5 * 1024 * 1024) return { ok: false, error: 'Bestand mag maximaal 5 MB zijn' }
+
+  const ext = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+  const pad = `${kantoorId}/achtergrond-${slot}.${ext}`
+  const bytes = await file.arrayBuffer()
+
+  const service = createServiceSupabaseClient()
+  const { error: uploadError } = await service.storage.from('kantoor-assets').upload(pad, bytes, { contentType: file.type, upsert: true })
+  if (uploadError) return { ok: false, error: uploadError.message }
+
+  const { data: urlData } = service.storage.from('kantoor-assets').getPublicUrl(pad)
+  const { data: kantoor } = await service.from('kantoren').select('huisstijl_json').eq('id', kantoorId).single()
+  const veld = slot === 'secundair' ? 'achtergrond_secundair_url' : 'achtergrond_url'
+  await service.from('kantoren').update({ huisstijl_json: { ...(kantoor?.huisstijl_json ?? {}), [veld]: urlData.publicUrl } }).eq('id', kantoorId)
+
+  revalidatePath(`/admin/kantoor/${kantoorId}`)
+  return { ok: true, url: urlData.publicUrl }
+}
+
+/** Huisstijl opslaan namens een kantoor — volledige vervanger van de oude, kantoor-zelfbeheerde `slaHuisstijlOp`. */
+export async function slaHuisstijlOpAlsAdmin(data: HuisstijlConfig & { kantoor_id: string }): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  try {
+    const { kantoor_id, ...rest } = data
+    const huisstijl = HuisstijlSchema.parse(rest)
+
+    const broVoorbeelden = huisstijl.brochure_stijl?.voorbeelden?.filter(Boolean) ?? []
+    const [stijlprofiel, brochureStijlprofiel] = await Promise.all([
+      huisstijl.voorbeelden.filter(Boolean).length
+        ? distilleerStijlprofiel(huisstijl.voorbeelden, huisstijl.schrijftoon, huisstijl.slogan).catch(() => '')
+        : Promise.resolve(''),
+      broVoorbeelden.length
+        ? distilleerStijlprofiel(broVoorbeelden, huisstijl.schrijftoon, huisstijl.slogan).catch(() => '')
+        : Promise.resolve(''),
+    ])
+
+    const brochure_stijl = huisstijl.brochure_stijl
+      ? { ...huisstijl.brochure_stijl, ...(brochureStijlprofiel ? { stijlprofiel: brochureStijlprofiel } : {}) }
+      : undefined
+
+    const service = createServiceSupabaseClient()
+    const { data: bestaand } = await service.from('kantoren').select('huisstijl_json').eq('id', kantoor_id).single()
+    const bestaandeHuisstijl = (bestaand?.huisstijl_json ?? {}) as Partial<HuisstijlConfig>
+
+    const { error } = await service
+      .from('kantoren')
+      .update({
+        huisstijl_json: {
+          ...bestaandeHuisstijl,
+          ...huisstijl,
+          ...(stijlprofiel ? { stijlprofiel } : {}),
+          ...(brochure_stijl ? { brochure_stijl } : {}),
+        },
+      })
+      .eq('id', kantoor_id)
+
+    if (error) return { ok: false, error: error.message }
+    revalidatePath(`/admin/kantoor/${kantoor_id}`)
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Validatiefout' }
+  }
+}
+
+/** Courtage, kantoorprofiel en werkgebied — zie lib/schemas.ts KantoorInstellingenSchema. */
+export async function slaKantoorInstellingenOp(kantoorId: string, data: KantoorInstellingen): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  try {
+    const instellingen = KantoorInstellingenSchema.parse(data)
+    const service = createServiceSupabaseClient()
+    const { error } = await service.from('kantoren').update({ instellingen_json: instellingen }).eq('id', kantoorId)
+    if (error) return { ok: false, error: error.message }
+    revalidatePath(`/admin/kantoor/${kantoorId}`)
+    revalidatePath('/kantoor')
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Validatiefout' }
+  }
+}
+
+export async function slaKantoorNaamOpAlsAdmin(kantoorId: string, naam: string): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  if (!naam.trim() || naam.length > 100) return { ok: false, error: 'Ongeldige naam' }
+  const service = createServiceSupabaseClient()
+  const { error } = await service.from('kantoren').update({ name: naam.trim() }).eq('id', kantoorId)
+  if (error) return { ok: false, error: error.message }
+  revalidatePath(`/admin/kantoor/${kantoorId}`)
   revalidatePath('/admin')
   return { ok: true }
 }

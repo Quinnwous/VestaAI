@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ZodError } from 'zod'
-import { generateContent } from '@/lib/claude'
+import { generateContent, generateContentBeideTalen } from '@/lib/claude'
 import { PropertyInputSchema } from '@/lib/schemas'
 import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         const inputVergelijk = JSON.stringify(input)
         const { data: recenteObjecten } = await supabase
           .from('objecten')
-          .select('id, outputs_json, input_json')
+          .select('id, outputs_json, outputs_json_en, input_json')
           .eq('kantoor_id', makelaar.kantoor_id)
           .gte('created_at', zeveDagenGeleden)
           .order('created_at', { ascending: false })
@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
           releaseRateLimit(user.id)
           return NextResponse.json({
             output: cachedTreffer.outputs_json,
+            output_en: cachedTreffer.outputs_json_en ?? null,
             object_id: cachedTreffer.id,
             cached: true,
           })
@@ -108,8 +109,10 @@ export async function POST(req: NextRequest) {
         const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
         const verrijkMs = Date.now() - tVerrijkStart
 
+        // NL + EN parallel (besluit 16 sep 2026, F8) — de wandkloktijd blijft
+        // ~gelijk aan één generatie, begrensd door de traagste van de twee.
         const tGenStart = Date.now()
-        const output = await generateContent(input, huisstijl, undefined, verrijkingTekst)
+        const { nl: output, en: outputEn } = await generateContentBeideTalen(input, huisstijl, verrijkingTekst)
         console.log(`[generate] verrijking ${verrijkMs}ms · generatie ${Date.now() - tGenStart}ms · kantoor ${makelaar.kantoor_id}`)
 
         const serviceClient = createServiceSupabaseClient()
@@ -121,6 +124,15 @@ export async function POST(req: NextRequest) {
             address: input.adres,
             input_json: input,
             outputs_json: output,
+            outputs_json_en: outputEn,
+            // Elk nieuw dossier start in de acquisitiefase (besluit 16 sep
+            // 2026, zie CLAUDE.md § Hoofdstructuur) — content staat al klaar,
+            // maar wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.
+            fase: 'acquisitie',
+            // Voedt de straal-uitsnede van de verkoopkaart (F5) — was al
+            // opgehaald voor de prompt, nu ook bewaard bij het object zelf.
+            lat: verrijking?.coord?.lat ?? null,
+            lng: verrijking?.coord?.lon ?? null,
           })
           .select('id')
           .single()
@@ -140,11 +152,13 @@ export async function POST(req: NextRequest) {
             .eq('id', makelaar.id)
         }
 
-        return NextResponse.json({ output, object_id: objectId })
+        return NextResponse.json({ output, output_en: outputEn, object_id: objectId })
       }
     }
 
-    // Fallback: geen Supabase of geen makelaar-record
+    // Fallback: geen Supabase of geen makelaar-record — geen object om op te
+    // slaan, dus hier volstaat de enkeltalige generatie (geen dubbele kosten
+    // voor een resultaat dat toch nergens bewaard wordt).
     const verrijkingFallback = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
     const verrijkingTekstFallback = verrijkingFallback ? verrijkingNaarPrompt(verrijkingFallback) : undefined
     const output = await generateContent(input, huisstijl, undefined, verrijkingTekstFallback)

@@ -38,3 +38,6 @@ next-env.d.ts
 
 # office temp/lock files
 ~$*
+
+# supabase CLI cache
+/supabase/.temp/

@@ -9,9 +9,9 @@ const supabaseConfigured =
   !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
 // Gesloten platform (sinds 15 sep 2026): geen self-serve "Aanmelden" meer.
-// Nieuwe accounts zet de platform-admin klaar bij een kantoor (/admin); bestaande
-// teamleden worden ván daaruit binnen hun eigen kantoor uitgenodigd (zie
-// app/(app)/settings/actions.ts → nodigTeamlidUit, die loopt via /auth/verify).
+// Nieuwe accounts én teamleden zet de platform-admin direct klaar via /admin
+// (addMakelaarAccount, met wachtwoord — geen self-serve uitnodigingslink meer
+// sinds het één-rol-per-kantoor-besluit van 16 sep 2026).
 type Mode = 'login' | 'forgot'
 type Status = 'idle' | 'loading' | 'success' | 'error'
 

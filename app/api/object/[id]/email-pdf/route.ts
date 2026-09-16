@@ -39,6 +39,18 @@ export async function POST(
   }
 
   const serviceClient = createServiceSupabaseClient()
+
+  // Alleen intern versturen (jezelf of een collega) — nooit naar een koper of
+  // klant, zie CLAUDE.md § Hoofdstructuur (besluit 16 sep 2026).
+  const { data: collega } = await serviceClient
+    .from('makelaars')
+    .select('id')
+    .eq('kantoor_id', makelaar.kantoor_id)
+    .ilike('email', ontvangerEmail)
+    .maybeSingle()
+  if (!collega) {
+    return NextResponse.json({ error: 'Alleen versturen naar een collega binnen je eigen kantoor' }, { status: 400 })
+  }
   const { data: object } = await serviceClient
     .from('objecten')
     .select('address, outputs_json, kantoren(name, logo_url, huisstijl_json)')

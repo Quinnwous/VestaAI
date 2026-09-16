@@ -234,7 +234,10 @@ ${blok}`,
 
 function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): string {
   const isEn = input.taal === 'en'
-  const prijsFormatted = `€${input.vraagprijs.toLocaleString('nl-NL')}`
+  // Acquisitiefase heeft nog geen vaste vraagprijs — val terug op de
+  // prijsverwachting van de verkoper (zie lib/schemas.ts, F3).
+  const prijs = input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0
+  const prijsFormatted = `€${prijs.toLocaleString('nl-NL')}`
 
   const openHuisRegel = input.open_huis_datum
     ? isEn
@@ -272,6 +275,34 @@ Genereer alle content als JSON.`
 function parseClaudeResponse(text: string): ContentOutput {
   const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
   return ContentOutputSchema.parse(JSON.parse(cleaned))
+}
+
+const OPTIONELE_VELD_PER_KEUZE = {
+  followup: ['bezichtiging_followup_positief', 'bezichtiging_followup_negatief'],
+  video: ['video_script'],
+  energieadvies: ['energie_advies'],
+  kopersvragen: ['kopersvragen_faq'],
+  marktanalyse: ['marktanalyse'],
+} as const satisfies Record<string, (keyof ContentOutput)[]>
+
+/**
+ * Past de keuzevinkjes toe (F8, besluit 16 sep 2026): Claude genereert altijd
+ * de volledige set, maar alleen de door de makelaar aangevinkte optionele
+ * content blijft staan — de rest wordt leeggemaakt. `open_huis` loopt via
+ * zijn eigen aan/uit-veld in de intake (open_huis_datum), niet via
+ * content_keuzes. Ontbreekt `content_keuzes` (oudere dossiers), dan blijft
+ * alles staan zoals Claude het aanleverde.
+ */
+function toepassenContentKeuzes(output: ContentOutput, keuzes?: PropertyInput['content_keuzes']): ContentOutput {
+  if (!keuzes) return output
+  const geselecteerdeVelden = new Set(keuzes.flatMap(k => OPTIONELE_VELD_PER_KEUZE[k]))
+  const resultaat = { ...output }
+  for (const velden of Object.values(OPTIONELE_VELD_PER_KEUZE)) {
+    for (const veld of velden) {
+      if (!geselecteerdeVelden.has(veld)) (resultaat as Record<string, string>)[veld] = ''
+    }
+  }
+  return resultaat
 }
 
 export async function generateContent(
@@ -343,12 +374,35 @@ export async function generateContent(
     }
 
     try {
-      return parseClaudeResponse(text)
+      return toepassenContentKeuzes(parseClaudeResponse(text), input.content_keuzes)
     } catch {
       if (attempt === 1) throw new Error('Claude gaf geen valide JSON na 2 pogingen')
     }
   }
   throw new Error('Onverwachte fout')
+}
+
+/**
+ * Genereert de contentsuite in NL én EN (besluit 16 sep 2026, zie CLAUDE.md §
+ * Hoofdstructuur: "elke tekst standaard NL+EN"). Draait de bestaande,
+ * onveranderde `generateContent`-pipeline twee keer parallel — één met
+ * `taal: 'nl'`, één met `taal: 'en'` — zodat het beproefde prompt-ontwerp per
+ * taal intact blijft. De Engelse generatie is best-effort: mislukt hij, dan
+ * krijgt de makelaar nog steeds zijn Nederlandse content (`en: null`) in
+ * plaats van dat de hele aanvraag faalt.
+ */
+export async function generateContentBeideTalen(
+  input: PropertyInput,
+  huisstijl?: HuisstijlConfig,
+  verrijkingTekst?: string,
+  documentFileIds?: string[],
+  client?: Anthropic,
+): Promise<{ nl: ContentOutput; en: ContentOutput | null }> {
+  const [nl, en] = await Promise.all([
+    generateContent({ ...input, taal: 'nl' }, huisstijl, client, verrijkingTekst, documentFileIds),
+    generateContent({ ...input, taal: 'en' }, huisstijl, client, verrijkingTekst, documentFileIds).catch(() => null),
+  ])
+  return { nl, en }
 }
 
 // Prijswijziging: aparte Claude-call voor een bestaand object
@@ -405,22 +459,28 @@ Genereer de drie berichten als JSON.`
   throw new Error('Onverwachte fout')
 }
 
-// SEO-tekst voor een wijk
-export async function generateWijkSeoTekst(params: {
-  wijk: string
-  stad: string
-}): Promise<string> {
-  const client = new Anthropic()
+// AI USP-extractor (F7, zie CLAUDE.md § Hoofdstructuur): losse, kleine prompt
+// naast de hoofdwaardering — vertaalt de vrije intaketekst naar
+// gestructureerde USP's die zowel de waardering als de content voeden.
+export async function extraheerUsps(vrijeTekst: string, client?: Anthropic): Promise<string[]> {
+  const tekst = vrijeTekst.trim()
+  if (!tekst) return []
+  const c = client ?? new Anthropic()
 
-  const message = await client.messages.create({
+  const message = await c.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system: `Je bent een Nederlandse SEO-copywriter gespecialiseerd in vastgoed. Schrijf een informatieve SEO-tekst over een wijk. Schrijf puur de tekst (geen JSON, geen markdown), ±400–600 woorden.`,
-    messages: [{
-      role: 'user',
-      content: `Schrijf een SEO-tekst over de wijk ${params.wijk} in ${params.stad}. Focus op: sfeer, woningaanbod, voorzieningen, bereikbaarheid en kopers-doelgroep. Doel: hoog scoren op "[wijk] huizen te koop".`,
-    }],
+    max_tokens: 500,
+    system: 'Je vertaalt vrije tekst met bijzonderheden van een woning naar korte, losse Unique Selling Points (USP\'s). Geef ALLEEN een JSON-array van strings terug, geen uitleg. Elke USP is kort (max. 6 woorden), concreet en begint met een kenmerk, niet met een lidwoord. Voorbeeld invoer: "heeft een mooie garage en nieuw dakkapel uit 2023" → ["Ruime garage", "Nieuw dakkapel (2023)"]. Onbekende of vage input levert een lege array op — verzin niets.',
+    messages: [{ role: 'user', content: tekst }],
   })
 
-  return message.content[0].type === 'text' ? message.content[0].text : ''
+  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
+  try {
+    const parsed = JSON.parse(cleaned)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string').slice(0, 12) : []
+  } catch {
+    return []
+  }
 }
+

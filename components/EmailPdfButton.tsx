@@ -75,12 +75,13 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
             </div>
           ) : (
             <>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#5C6470', marginBottom: 8 }}>Stuur PDF-brochure naar:</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#5C6470', marginBottom: 4 }}>Stuur PDF naar jezelf of een collega:</p>
+              <p style={{ fontSize: 11.5, color: '#98A0A6', marginBottom: 8 }}>Alleen intern — niet naar een koper of klant.</p>
               <input
                 type="email"
                 value={email}
                 onChange={e => { setEmail(e.target.value); setStatus('idle') }}
-                placeholder="naam@kantoor.nl"
+                placeholder="collega@kantoor.nl"
                 style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', border: '1px solid #DCE5DF', padding: '9px 12px', fontSize: 13, color: '#14181B', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
               />
               {status === 'error' && (

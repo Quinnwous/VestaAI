@@ -8,14 +8,10 @@ export async function GET() {
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, role')
+    .select('kantoor_id')
     .eq('id', user.id)
     .single()
   if (!makelaar) return NextResponse.json({ error: 'Niet gevonden' }, { status: 404 })
-
-  if (makelaar.role !== 'admin') {
-    return NextResponse.json({ error: 'Alleen admins hebben toegang tot statistieken' }, { status: 403 })
-  }
 
   const serviceClient = createServiceSupabaseClient()
   const zesMaandenGeleden = new Date()
@@ -72,7 +68,7 @@ export async function GET() {
   eersteVanDeMaand.setDate(1)
   eersteVanDeMaand.setHours(0, 0, 0, 0)
 
-  const [totaalResult, gepubliceerdResult, npsResult, dezeMaandResult] = await Promise.all([
+  const [totaalResult, gepubliceerdResult, dezeMaandResult] = await Promise.all([
     serviceClient
       .from('objecten')
       .select('id', { count: 'exact', head: true })
@@ -83,34 +79,18 @@ export async function GET() {
       .eq('kantoor_id', makelaar.kantoor_id)
       .eq('status', 'published'),
     serviceClient
-      .from('nps_responses')
-      .select('score, feedback, created_at')
-      .order('created_at', { ascending: false })
-      .limit(50),
-    serviceClient
       .from('objecten')
       .select('id', { count: 'exact', head: true })
       .eq('kantoor_id', makelaar.kantoor_id)
       .gte('created_at', eersteVanDeMaand.toISOString()),
   ])
 
-  const npsScores = (npsResult.data ?? []).map(r => r.score)
-  const npsGemiddeld = npsScores.length > 0
-    ? Math.round((npsScores.reduce((s, v) => s + v, 0) / npsScores.length) * 10) / 10
-    : null
-
-  // NPS score: promotors (9-10) - detractors (0-6) / totaal * 100
-  const promotors = npsScores.filter(s => s >= 9).length
-  const detractors = npsScores.filter(s => s <= 6).length
-  const npsScore = npsScores.length > 0
-    ? Math.round(((promotors - detractors) / npsScores.length) * 100)
-    : null
-
   const dezeMaand = dezeMaandResult.count ?? 0
 
-  // API-kosten schatting (€0,08 per content-set op Sonnet 4.6) — intern
-  // referentiecijfer, geen abonnementsprijs of -budget meer aan gekoppeld.
-  const KOSTEN_PER_OBJECT = 0.08
+  // API-kosten schatting (€0,24 per content-set op Sonnet 4.6, sinds 16 sep
+  // 2026 NL+EN parallel — zie docs/kostenschatting.md § Hoofdgeneratie) —
+  // intern referentiecijfer, geen abonnementsprijs of -budget aan gekoppeld.
+  const KOSTEN_PER_OBJECT = 0.24
   const kostenschatting = {
     deze_maand: Math.round(dezeMaand * KOSTEN_PER_OBJECT * 100) / 100,
     per_maand: Object.fromEntries(
@@ -126,15 +106,6 @@ export async function GET() {
     gepubliceerd: gepubliceerdResult.count ?? 0,
     dezeMaand,
     kostenschatting,
-    nps: {
-      gemiddeld: npsGemiddeld,
-      score: npsScore,
-      totaal: npsScores.length,
-      recenteFeedback: (npsResult.data ?? [])
-        .filter(r => r.feedback)
-        .slice(0, 5)
-        .map(r => ({ score: r.score, feedback: r.feedback, datum: r.created_at })),
-    },
     periode: 'laatste 6 maanden',
   })
 }

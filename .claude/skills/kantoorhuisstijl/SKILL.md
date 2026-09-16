@@ -70,7 +70,8 @@ of een gebroken afbeelding. Een `<img>` met een kantoor-URL krijgt altijd een `o
 
 1. `lib/schemas.ts` → `HuisstijlSchema` (optioneel veld)
 2. `lib/branding.ts` → `Branding`-type + `bouwBranding()` (+ `brandingCssVars()` als het een CSS-variabele wordt)
-3. `app/(app)/settings/tabs/HuisstijlTab.tsx` → invoer, zodat elk kantoor het zelf instelt
+3. `app/admin/kantoor/HuisstijlForm.tsx` → invoer (platform-admin-beheerd sinds 16 sep 2026,
+   niet meer een instelling die het kantoor zelf bewerkt)
 4. Nooit een waarde voor één specifiek kantoor in de code zetten — die hoort in de database
 
 ## Controleren

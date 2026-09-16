@@ -25,7 +25,6 @@ export function AccountBeheer({ kantoren }: { kantoren: KantoorOptie[] }) {
   const [naam, setNaam] = useState('')
   const [wachtwoord, setWachtwoord] = useState(genereerWachtwoord())
   const [kantoorId, setKantoorId] = useState(kantoren[0]?.id ?? '')
-  const [rol, setRol] = useState<'admin' | 'makelaar'>('admin')
   const [accountStatus, setAccountStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [accountFout, setAccountFout] = useState('')
 
@@ -54,7 +53,7 @@ export function AccountBeheer({ kantoren }: { kantoren: KantoorOptie[] }) {
       return
     }
     startTransition(async () => {
-      const res = await addMakelaarAccount({ email, naam, wachtwoord, kantoorId, rol })
+      const res = await addMakelaarAccount({ email, naam, wachtwoord, kantoorId, rol: 'makelaar' })
       if (res.ok) {
         setAccountStatus('success')
         setEmail('')
@@ -137,14 +136,6 @@ export function AccountBeheer({ kantoren }: { kantoren: KantoorOptie[] }) {
             Nieuw
           </button>
         </div>
-        <select
-          value={rol}
-          onChange={e => setRol(e.target.value as 'admin' | 'makelaar')}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white"
-        >
-          <option value="admin">Beheerder (van dit kantoor)</option>
-          <option value="makelaar">Medewerker</option>
-        </select>
         {accountStatus === 'error' && <p className="text-xs text-red-600">{accountFout}</p>}
         {accountStatus === 'success' && <p className="text-xs text-green-600">Account aangemaakt en gemaild.</p>}
         <button
@@ -156,8 +147,8 @@ export function AccountBeheer({ kantoren }: { kantoren: KantoorOptie[] }) {
         </button>
         <p className="text-[11px] text-gray-400 leading-relaxed">
           Zet direct een actief account klaar met dit wachtwoord — geef het door aan de gebruiker.
-          Voor een teamlid uitnodigen bínnen een kantoor gebruikt de kantoor-admin zelf de uitnodiging
-          in Instellingen → Team (dat stuurt een magic link, geen wachtwoord nodig).
+          Extra teamleden bij een bestaand kantoor voeg je toe via de kantoorpagina zelf
+          (Beheren-knop bij een kantoor hieronder).
         </p>
       </form>
     </div>

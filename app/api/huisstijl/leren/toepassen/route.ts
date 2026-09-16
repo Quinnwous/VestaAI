@@ -2,23 +2,26 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { HuisstijlConfig } from '@/lib/schemas'
 
-async function adminKantoor() {
+// Eigen kantoor van de ingelogde gebruiker — sinds 16 sep 2026 is er één rol
+// per kantoor (zie CLAUDE.md): het kantoor keurt zijn eigen geleerde regels
+// goed, geen aparte admin-rol meer nodig.
+async function eigenKantoor() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('role, kantoor_id')
+    .select('kantoor_id')
     .eq('id', user.id)
     .single()
-  if (!makelaar || makelaar.role !== 'admin') return null
+  if (!makelaar) return null
   return makelaar.kantoor_id as string
 }
 
 // Voorstel accepteren (regels toevoegen aan het stijlprofiel) of negeren. In beide gevallen
 // worden de betrokken bewerkingen als verwerkt gemarkeerd zodat ze niet opnieuw meetellen.
 export async function POST(req: NextRequest) {
-  const kantoorId = await adminKantoor()
+  const kantoorId = await eigenKantoor()
   if (!kantoorId) return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
 
   let body: { ids?: string[]; regels?: string }
