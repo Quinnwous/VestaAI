@@ -1,29 +1,28 @@
-import { InAanbouw } from '@/components/InAanbouw'
+import { redirect } from 'next/navigation'
+import { createServerSupabaseClient } from '@/lib/supabase'
+import { ConcurrentieExplorer } from '@/components/ConcurrentieExplorer'
+import type { TransactieRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Concurrentieanalyse' }
 
 /**
  * Concurrentieanalyse — eigen kantoor vs. concurrenten in de regio (zie
- * CLAUDE.md § Hoofdstructuur). Draait idealiter op dezelfde Realworks-export
- * als de waardering áls die ook het verkopende kantoor bevat (besluit 16 sep
- * 2026 — nog te bevestigen); zo niet, dan op een latere Brainbay-import. Geen
- * slotje meer op dit scherm — het wachten op data geldt evengoed voor
- * Marktanalyse en is geen aparte vergrendeling.
+ * CLAUDE.md § Hoofdstructuur). Draait op `verkopend_kantoor` in dezelfde
+ * transactiedataset als de waardering, zodra dat veld gevuld is; anders een
+ * eerlijke lege staat i.p.v. misleidende cijfers (zie ConcurrentieExplorer).
  */
-export default function ConcurrentieAnalysePage() {
-  return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <InAanbouw
-        eyebrow="Concurrentieanalyse"
-        titel="Hoe presteren we ten opzichte van de regio?"
-        uitleg="Interactieve dashboards die de verkoopresultaten en het marktaandeel van het eigen kantoor afzetten tegen concurrenten in de regio."
-        punten={[
-          'Marktaandeel in de regio, per periode',
-          'Wie wint welk segment — per prijsklasse, woningtype en wijk',
-          'Presteren wij beter: eigen doorlooptijd en vraagprijs-verschil tegen het regiogemiddelde',
-          'Concurrent-profielen: aantal transacties, segment en gemiddelde prijs per kantoor',
-        ]}
-      />
-    </div>
-  )
+export default async function ConcurrentieAnalysePage() {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
+  if (!makelaar) redirect('/login')
+
+  const { data: transacties } = await supabase
+    .from('transacties')
+    .select('*')
+    .eq('kantoor_id', makelaar.kantoor_id)
+
+  return <ConcurrentieExplorer transacties={(transacties ?? []) as TransactieRow[]} />
 }

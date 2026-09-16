@@ -1,29 +1,29 @@
-import { InAanbouw } from '@/components/InAanbouw'
+import { redirect } from 'next/navigation'
+import { createServerSupabaseClient } from '@/lib/supabase'
+import { MarktanalyseExplorer } from '@/components/MarktanalyseExplorer'
+import type { TransactieRow } from '@/lib/supabase'
 
 export const metadata = { title: 'Marktanalyse' }
 
 /**
- * Marktanalyse — macro-trends, los van één woning (zie CLAUDE.md § Hoofdstructuur).
- * Wordt geen statisch dashboard maar een interactieve data-explorer (schuivers,
- * knoppen, live hertekenende grafieken — besluit 16 sep 2026): filter op type,
- * wijk en periode, met segmentvergelijking naast elkaar. Wacht op de
- * Realworks-transactie-import (zie docs/roadmap.md § Blokkades) — pas dan kan
- * de daadwerkelijke variabelen-inventarisatie en de explorer gebouwd worden.
+ * Marktanalyse — macro-trends, los van één woning (zie CLAUDE.md §
+ * Hoofdstructuur). Interactieve explorer (besluit 16 sep 2026): filters op
+ * type/wijk/periode met live hertekenende grafieken, plus segmentvergelijking
+ * — zie components/MarktanalyseExplorer.tsx. Draait op de volledige
+ * transactiedataset van het kantoor (eigen én overige verkopen).
  */
-export default function MarktanalysePage() {
-  return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <InAanbouw
-        eyebrow="Marktanalyse"
-        titel="Wat deed de markt?"
-        uitleg="Interactieve grafieken over macro-trends: prijsontwikkeling, m²-prijs met spreiding en doorlooptijd, met schuivers en filters om zelf te verkennen — geen statisch dashboard."
-        punten={[
-          'Filter op woningtype, wijk en periode — de grafieken tekenen live opnieuw',
-          'Segmentvergelijking: twee selecties naast elkaar (bv. hoekwoning vs. tussenwoning, dit jaar vs. vorig jaar)',
-          'Gemiddelde m²-prijs en de spreiding daarvan, niet alleen het gemiddelde',
-          'Verschil tussen vraagprijs en verkoopprijs, en de doorlooptijd',
-        ]}
-      />
-    </div>
-  )
+export default async function MarktanalysePage() {
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
+  if (!makelaar) redirect('/login')
+
+  const { data: transacties } = await supabase
+    .from('transacties')
+    .select('*')
+    .eq('kantoor_id', makelaar.kantoor_id)
+
+  return <MarktanalyseExplorer transacties={(transacties ?? []) as TransactieRow[]} />
 }
