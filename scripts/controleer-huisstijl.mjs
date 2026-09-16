@@ -16,12 +16,16 @@ const UIT = '/tmp/vesta-shots'
 
 const GROENEN = ['26, 107, 69', '42, 138, 92', '17, 66, 48', '199, 230, 213', '241, 247, 243']
 
+// Sinds 16 sep 2026: huisstijl en team zijn platform-admin-beheerd (/admin/kantoor/[id]) —
+// het kantoor zelf ziet alleen de read-only /kantoor-pagina. /huisstijl en /settings bestaan niet meer.
 const PAGINAS = [
   ['dashboard', '/dashboard'],
   ['object-nieuw', '/object/new'],
-  ['huisstijl', '/huisstijl'],
-  ['instellingen', '/settings'],
+  ['kantoor', '/kantoor'],
   ['marktanalyse', '/marktanalyse'],
+  ['marktanalyse-transacties', '/marktanalyse/transacties'],
+  ['marktanalyse-concurrentie', '/marktanalyse/concurrentie'],
+  ['marktanalyse-kaart', '/marktanalyse/kaart'],
 ]
 
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)

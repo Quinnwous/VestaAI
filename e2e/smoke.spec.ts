@@ -25,14 +25,9 @@ test('landingspagina laadt en toont CTA', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle(/VestaAI/)
   await expect(page.getByRole('heading', { level: 1 })).toContainText('AI-assistent')
-  await expect(page.getByRole('link', { name: /gratis starten/i }).first()).toBeVisible()
-})
-
-test('prijzenpagina laadt', async ({ page }) => {
-  await page.goto('/prijzen')
-  await expect(page.getByText('Starter')).toBeVisible()
-  await expect(page.getByText('Pro')).toBeVisible()
-  await expect(page.getByText('Kantoor')).toBeVisible()
+  // Gesloten platform sinds 15 sep 2026 (geen zelf-aanmelden): CTA's zijn
+  // "Inloggen" en "Contact opnemen", geen "gratis starten"/prijzenpagina meer.
+  await expect(page.getByRole('link', { name: /inloggen/i }).first()).toBeVisible()
 })
 
 test('loginpagina toont magic-link formulier', async ({ page }) => {
@@ -76,11 +71,16 @@ test('authenticated: dashboard laadt objectenlijst', async ({ browser }) => {
   await ctx.close()
 })
 
-// Echte generatie kost Claude-API-credits (~€0,08/run) → alleen draaien met E2E_GENERATE=1.
+// Echte generatie kost Claude-API-credits (~€0,08/run, sinds 16 sep 2026 x2 voor NL+EN)
+// → alleen draaien met E2E_GENERATE=1.
 const RUN_GENERATE = !!process.env.E2E_GENERATE
 // Statuscodes waarop de client de "duurde te lang"-fout toont (Vercel 504 e.d.).
 const TIMEOUT_CODES = [408, 502, 503, 504, 524]
 
+// "Woning toevoegen" is sinds 16 sep 2026 een zesstappenwizard (adres, woning, staat &
+// afwerking, ligging & buitenruimte, verhaal, commercieel) die het dossier direct in de
+// acquisitiefase aanmaakt en na succes doorstuurt naar /object/[id] — zie
+// components/PropertyForm.tsx en app/(app)/object/new/NewObjectForm.tsx.
 test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async ({ browser }) => {
   test.skip(!hasAuth(), 'Geen auth state — stel E2E_TEST_EMAIL + Supabase-keys in om te activeren')
   test.skip(!RUN_GENERATE, 'Kostenbewaking: zet E2E_GENERATE=1 om de echte generatie te draaien')
@@ -93,9 +93,21 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
   await expect(page.url()).not.toContain('/login')
 
   // Vul via de ingebouwde demo-knop: robuuster dan losse velden + de externe
-  // BAG-autocomplete, en dekt alle 8 verplichte velden met geldige data.
+  // BAG-autocomplete, en dekt de verplichte velden van stap 1-2 en 5 met geldige data.
   await page.getByRole('button', { name: /vul een voorbeeld in/i }).click()
   await expect(page.locator('input[aria-autocomplete="list"]')).toHaveValue(/.+/)
+
+  // Stap 1 (adres) t/m 5 (verhaal) hebben alleen de demo-data nodig; stap 6
+  // (commercieel) vraagt de prijsverwachting expliciet, die zit niet in elk
+  // demo-scenario — vul 'm zekerheidshalve in zodra die stap in beeld komt.
+  for (let stap = 1; stap <= 5; stap++) {
+    await page.getByRole('button', { name: /^volgende/i }).click()
+  }
+  const prijsveld = page.getByLabel(/prijsverwachting verkoper/i)
+  if (await prijsveld.count()) {
+    const huidig = await prijsveld.inputValue()
+    if (!huidig) await prijsveld.fill('595000')
+  }
 
   // Vang de /api/generate-respons af om expliciet op een time-out (504) te asserten.
   const generateResponse = page.waitForResponse(
@@ -103,7 +115,7 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
     { timeout: 220_000 },
   )
   const startedAt = Date.now()
-  await page.getByRole('button', { name: /genereer content/i }).click()
+  await page.getByRole('button', { name: /woning aanmaken/i }).click()
 
   const res = await generateResponse
   const seconds = Math.round((Date.now() - startedAt) / 1000)
@@ -113,18 +125,10 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
   expect(TIMEOUT_CODES, `/api/generate gaf time-out-status ${res.status()} na ${seconds}s`).not.toContain(res.status())
   expect(res.status(), 'verwacht HTTP 200 van /api/generate').toBe(200)
 
-  // Resultaten renderen inline op /object/new (geen URL-wissel) — wacht op de Funda-tab.
-  await expect(page.getByRole('tab', { name: 'Funda' })).toBeVisible({ timeout: 20_000 })
-  // De vaste content-tabs (funda, brochure, instagram, linkedin, e-mail, buurt) horen er te zijn.
-  expect(await page.getByRole('tab').count(), 'verwacht meerdere content-tabs').toBeGreaterThanOrEqual(6)
-  // De foutkaart mag niet verschijnen.
-  await expect(page.getByText(/duurde te lang|Genereren mislukt/i)).toHaveCount(0)
-  // Funda-tekst is daadwerkelijk gevuld (700+ woorden → ruim boven 300 tekens).
-  const fundaText = await page.locator('#panel-funda').innerText()
-  expect(fundaText.length, 'Funda-tekst lijkt leeg').toBeGreaterThan(300)
-
-  // PDF-export moet aanwezig zijn (de download zelf is optioneel uit te breiden).
-  await expect(page.getByRole('button', { name: /pdf/i }).first()).toBeVisible()
+  // Succesvolle aanmaak stuurt door naar het nieuwe dossier — fase Acquisitie.
+  await page.waitForURL(/\/object\/[a-f0-9-]+$/, { timeout: 20_000 })
+  await expect(page.getByText(/acquisitie/i).first()).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(/duurde te lang|mislukt/i)).toHaveCount(0)
 
   await ctx.close()
 })
