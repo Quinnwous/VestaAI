@@ -27,6 +27,36 @@ export type Makelaar = {
   first_generated_at?: string | null
 }
 
+// Transactiedataset (F4, zie CLAUDE.md § Hoofdstructuur) — referentiebasis
+// voor waardering en marktanalyse; alleen `eigen_verkoop` rijen krijgen een
+// vlaggetje op de verkoopkaart (besluit 16 sep 2026).
+export type TransactieRow = {
+  id: string
+  kantoor_id: string
+  adres: string
+  postcode: string | null
+  plaats: string | null
+  wijk: string | null
+  buurt: string | null
+  verkoopprijs: number | null
+  vraagprijs: number | null
+  verkoopdatum: string | null
+  looptijd_dagen: number | null
+  woningtype: string | null
+  woonoppervlak_m2: number | null
+  perceel_m2: number | null
+  inhoud_m3: number | null
+  bouwjaar: number | null
+  energielabel: string | null
+  kamers: number | null
+  garage: boolean | null
+  tuin: boolean | null
+  buitenruimte: string | null
+  eigen_verkoop: boolean
+  verkopend_kantoor: string | null
+  created_at: string
+}
+
 export type ObjectRow = {
   id: string
   kantoor_id: string
