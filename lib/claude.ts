@@ -408,3 +408,28 @@ Genereer de drie berichten als JSON.`
   throw new Error('Onverwachte fout')
 }
 
+// AI USP-extractor (F7, zie CLAUDE.md § Hoofdstructuur): losse, kleine prompt
+// naast de hoofdwaardering — vertaalt de vrije intaketekst naar
+// gestructureerde USP's die zowel de waardering als de content voeden.
+export async function extraheerUsps(vrijeTekst: string, client?: Anthropic): Promise<string[]> {
+  const tekst = vrijeTekst.trim()
+  if (!tekst) return []
+  const c = client ?? new Anthropic()
+
+  const message = await c.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 500,
+    system: 'Je vertaalt vrije tekst met bijzonderheden van een woning naar korte, losse Unique Selling Points (USP\'s). Geef ALLEEN een JSON-array van strings terug, geen uitleg. Elke USP is kort (max. 6 woorden), concreet en begint met een kenmerk, niet met een lidwoord. Voorbeeld invoer: "heeft een mooie garage en nieuw dakkapel uit 2023" → ["Ruime garage", "Nieuw dakkapel (2023)"]. Onbekende of vage input levert een lege array op — verzin niets.',
+    messages: [{ role: 'user', content: tekst }],
+  })
+
+  const text = message.content[0].type === 'text' ? message.content[0].text : ''
+  const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
+  try {
+    const parsed = JSON.parse(cleaned)
+    return Array.isArray(parsed) ? parsed.filter((v): v is string => typeof v === 'string').slice(0, 12) : []
+  } catch {
+    return []
+  }
+}
+

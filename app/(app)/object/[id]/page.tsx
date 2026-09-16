@@ -11,14 +11,15 @@ import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 import type { ContentOutput, ObjectFase, PitchUitslag, PropertyInput } from '@/lib/schemas'
-import type { TransactieMetCoordinaten } from '@/lib/supabase'
+import type { Subject } from '@/lib/waardering'
+import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie, lat, lng')
+      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie, lat, lng, waardering_json, usps_structuur')
       .eq('id', objectId)
       .single()
     return data
@@ -57,13 +58,27 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const pitchUitslag = (object.pitch_uitslag ?? null) as PitchUitslag | null
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
 
-  const { data: eigenVerkopen } = geo
-    ? await createServiceSupabaseClient()
-        .from('transacties_met_coordinaten')
-        .select('*')
-        .eq('kantoor_id', object.kantoor_id)
-        .eq('eigen_verkoop', true)
-    : { data: [] as TransactieMetCoordinaten[] }
+  const service = createServiceSupabaseClient()
+  const [{ data: eigenVerkopen }, { data: transactieDataset }] = await Promise.all([
+    geo
+      ? service.from('transacties_met_coordinaten').select('*').eq('kantoor_id', object.kantoor_id).eq('eigen_verkoop', true)
+      : Promise.resolve({ data: [] as TransactieMetCoordinaten[] }),
+    // Waardering (F7) draait op de volledige dataset, niet alleen eigen verkopen.
+    service.from('transacties').select('*').eq('kantoor_id', object.kantoor_id),
+  ])
+
+  const invoer = object.input_json as PropertyInput
+  const subject: Subject = {
+    woningtype: invoer.woningtype,
+    oppervlak_m2: invoer.oppervlak_m2,
+    bouwjaar: invoer.bouwjaar,
+    lat: object.lat,
+    lng: object.lng,
+  }
+  const heeftGarage = !!invoer.ligging_buitenruimte?.garage_parkeren && invoer.ligging_buitenruimte.garage_parkeren !== 'geen'
+  const heeftTuin = !!invoer.ligging_buitenruimte?.tuin_m2 && invoer.ligging_buitenruimte.tuin_m2 > 0
+  const waarderingCorrectie = (object.waardering_json as { correctie?: { waarde: number; motivatie: string; datum: string } } | null)?.correctie ?? null
+  const uspsInitieel = (object.usps_structuur as string[] | null) ?? []
 
   return (
     <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
@@ -104,6 +119,12 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         userEmail={user.email ?? undefined}
         geo={geo}
         eigenVerkopen={(eigenVerkopen ?? []) as TransactieMetCoordinaten[]}
+        subject={subject}
+        heeftGarage={heeftGarage}
+        heeftTuin={heeftTuin}
+        transactieDataset={(transactieDataset ?? []) as TransactieRow[]}
+        waarderingCorrectie={waarderingCorrectie}
+        uspsInitieel={uspsInitieel}
       />
     </main>
   )

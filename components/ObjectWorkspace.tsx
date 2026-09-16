@@ -14,8 +14,11 @@ import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
+import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
+import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
 import type { ContentOutput, ObjectFase } from '@/lib/schemas'
-import type { TransactieMetCoordinaten } from '@/lib/supabase'
+import type { Subject } from '@/lib/waardering'
+import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
@@ -53,19 +56,29 @@ const card: React.CSSProperties = {
   boxShadow: '0 2px 12px rgba(20,24,27,.04)',
 }
 
-function WaarderingPaneel({ address }: { address: string }) {
+function WaarderingSectie({
+  objectId, subject, heeftGarage, heeftTuin, dataset, correctie, uspsInitieel,
+}: {
+  objectId: string
+  subject: Subject
+  heeftGarage: boolean
+  heeftTuin: boolean
+  dataset: TransactieRow[]
+  correctie: { waarde: number; motivatie: string; datum: string } | null
+  uspsInitieel: string[]
+}) {
   return (
-    <InAanbouw
-      eyebrow="Module B — in aanbouw"
-      titel={`Waardering van ${address}`}
-      uitleg="Een reken- en datamodule: modulaire variabelen die je zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
-      punten={[
-        'Modulaire variabelen als losse blokken: kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud',
-        'AI USP-extractor: typ een bijzonderheid in ("heeft een mooie garage", "nieuw dakkapel") — de AI vertaalt dit naar USP\'s die de waardering en marketing beïnvloeden',
-        'Waarde met bandbreedte, onderbouwd met vergelijkbare verkochte woningen — met duidelijke vermelding van het aantal referenties',
-        'Zelf bij te sturen, met een korte motivatie die meegaat in het verkoopadvies',
-      ]}
-    />
+    <div style={{ display: 'grid', gap: 16 }}>
+      <WaardebepalingPaneel
+        objectId={objectId}
+        subject={subject}
+        heeftGarage={heeftGarage}
+        heeftTuin={heeftTuin}
+        dataset={dataset}
+        opgeslagenCorrectie={correctie}
+      />
+      <UspExtractorPaneel objectId={objectId} initieleUsps={uspsInitieel} />
+    </div>
   )
 }
 
@@ -95,6 +108,12 @@ export function ObjectWorkspace({
   userEmail,
   geo,
   eigenVerkopen = [],
+  subject,
+  heeftGarage,
+  heeftTuin,
+  transactieDataset = [],
+  waarderingCorrectie = null,
+  uspsInitieel = [],
 }: {
   objectId: string
   address: string
@@ -106,6 +125,13 @@ export function ObjectWorkspace({
   /** Coördinaat van dit adres (uit lib/verrijking.ts) — voedt de straal-uitsnede hieronder. */
   geo?: { lat: number; lng: number } | null
   eigenVerkopen?: TransactieMetCoordinaten[]
+  /** Kenmerken uit de intake die de referentieselectie en wat-als-blokken voeden (F7). */
+  subject: Subject
+  heeftGarage: boolean
+  heeftTuin: boolean
+  transactieDataset?: TransactieRow[]
+  waarderingCorrectie?: { waarde: number; motivatie: string; datum: string } | null
+  uspsInitieel?: string[]
 }) {
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
@@ -118,12 +144,24 @@ export function ObjectWorkspace({
     </div>
   ) : null
 
+  const waarderingSectie = (
+    <WaarderingSectie
+      objectId={objectId}
+      subject={subject}
+      heeftGarage={heeftGarage}
+      heeftTuin={heeftTuin}
+      dataset={transactieDataset}
+      correctie={waarderingCorrectie}
+      uspsInitieel={uspsInitieel}
+    />
+  )
+
   // Acquisitiefase: er zijn nog geen foto's of een vaste vraagprijs — alleen
   // waardebepaling en verkoopadvies zijn relevant, geen tabbalk nodig.
   if (fase === 'acquisitie') {
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
-        <WaarderingPaneel address={address} />
+        {waarderingSectie}
         <VerkoopadviesPaneel address={address} />
         {straalKaart}
       </div>
@@ -141,7 +179,7 @@ export function ObjectWorkspace({
 
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
         <div style={{ display: 'grid', gap: 16 }}>
-          <WaarderingPaneel address={address} />
+          {waarderingSectie}
           <VerkoopadviesPaneel address={address} />
           {straalKaart}
         </div>
