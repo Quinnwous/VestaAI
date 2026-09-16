@@ -1,12 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { PropertyInput, ContentOutput } from '@/lib/schemas'
 import { PropertyForm, clearDraft } from '@/components/PropertyForm'
 import { LoadingProgress } from '@/components/LoadingProgress'
-import { ResultTabs } from '@/components/ResultTabs'
-import { NpsModal } from '@/components/NpsModal'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 
 const RATE_LIMIT_SECONDS = 90
@@ -20,7 +19,7 @@ const DEMO_DATA: PropertyInput = {
   oppervlak_m2: 85,
   bouwjaar: 1890,
   energielabel: 'D',
-  vraagprijs: 595000,
+  prijsverwachting_verkoper: 595000,
   usps: 'Authentieke gevelwoning op de Herengracht · originele details bewaard · lichte woonkamer met grachtzicht · moderne open keuken · gerenoveerde badkamer · loopafstand van Jordaan en centrum',
   doelgroep: 'Jonge gezinnen',
   taal: 'nl',
@@ -29,7 +28,6 @@ const DEMO_DATA: PropertyInput = {
 type PageState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'success'; data: ContentOutput; objectId: string | null }
   | { status: 'error'; message: string; isRateLimit?: boolean }
 
 const card: React.CSSProperties = {
@@ -40,7 +38,16 @@ const card: React.CSSProperties = {
   boxShadow: '0 2px 16px rgba(20,24,27,.05)',
 }
 
+/**
+ * Woning toevoegen — start altijd in de acquisitiefase (besluit 16 sep 2026,
+ * zie CLAUDE.md § Hoofdstructuur). Content wordt in de achtergrond al
+ * gegenereerd (dezelfde /api/generate-pijplijn als voorheen — dat blijft
+ * waardevol: de tekst staat al klaar zodra de opdracht binnen is), maar wordt
+ * pas zichtbaar zodra de fase naar "In verkoop" gaat. Na aanmaken gaat de
+ * makelaar daarom direct naar het nieuwe dossier, niet naar een resultatenscherm.
+ */
 export function NewObjectForm() {
+  const router = useRouter()
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [countdown, setCountdown] = useState(0)
   const [formKey, setFormKey] = useState(0)
@@ -77,9 +84,13 @@ export function NewObjectForm() {
     return () => clearInterval(interval)
   }, [state])
 
-  const handleSubmit = async (input: PropertyInput) => {
+  const handleSubmit = async (invoer: PropertyInput) => {
     setState({ status: 'loading' })
     try {
+      // Acquisitiefase heeft nog geen vaste vraagprijs — de content-generatie
+      // vraagt wel om een prijs, dus die valt terug op de prijsverwachting.
+      const input: PropertyInput = { ...invoer, vraagprijs: invoer.vraagprijs ?? invoer.prijsverwachting_verkoper }
+
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,21 +112,19 @@ export function NewObjectForm() {
           status: 'error',
           message: json?.error ?? (timeout
             ? 'Het genereren duurde te lang en is afgebroken. Dit gebeurt soms bij drukte — probeer het over een halve minuut opnieuw.'
-            : 'Genereren mislukt. Probeer het opnieuw.'),
+            : 'Aanmaken mislukt. Probeer het opnieuw.'),
           isRateLimit: res.status === 429,
         })
         return
       }
       clearDraft()
-      try {
-        const count = parseInt(localStorage.getItem('vestaai_generated_count') ?? '0', 10)
-        localStorage.setItem('vestaai_generated_count', String(count + 1))
-      } catch { /* ignore */ }
-      setState({
-        status: 'success',
-        data: (json.output ?? json) as ContentOutput,
-        objectId: json.object_id ?? null,
-      })
+
+      if (json.object_id) {
+        router.push(`/object/${json.object_id}`)
+      } else {
+        // Geen Supabase geconfigureerd (lokale fallback) — er is geen dossier om naartoe te gaan.
+        setState({ status: 'idle' })
+      }
     } catch {
       // Netwerkfout of afgebroken verbinding — geen technische boodschap tonen.
       setState({
@@ -138,9 +147,9 @@ export function NewObjectForm() {
             ← Terug naar woningen
           </Link>
           <Eyebrow>Nieuwe woning</Eyebrow>
-          <SerifTitle accent="alle content" size={34} style={{ marginBottom: 8 }}>Genereer</SerifTitle>
+          <SerifTitle accent="een dossier" size={34} style={{ marginBottom: 8 }}>Start</SerifTitle>
           <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55 }}>
-            Vul het adres en enkele kenmerken in — we schrijven de Funda-tekst, brochures, social posts en koper-e-mail in één keer.
+            Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in de acquisitiefase; content wordt zichtbaar zodra je de opdracht wint.
           </p>
 
           <div style={card}>
@@ -153,27 +162,12 @@ export function NewObjectForm() {
                 Vul een voorbeeld in
               </button>
             </div>
-            <PropertyForm key={formKey} onSubmit={handleSubmit} />
+            <PropertyForm key={formKey} onSubmit={handleSubmit} disabled={isLoading} />
           </div>
         </div>
       )}
 
       {state.status === 'loading' && <LoadingProgress />}
-
-      {state.status === 'success' && (
-        <div>
-          <ResultTabs
-            data={state.data}
-            objectId={state.objectId}
-            onReset={handleReset}
-          />
-          <NpsModal trigger={
-            typeof window !== 'undefined'
-              ? parseInt(localStorage.getItem('vestaai_generated_count') ?? '0', 10) >= 3
-              : false
-          } />
-        </div>
-      )}
 
       {state.status === 'error' && (
         <div style={{ ...card, textAlign: 'center' }}>

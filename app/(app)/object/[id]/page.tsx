@@ -5,18 +5,19 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
+import { FaseToggle } from './FaseToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { Eyebrow, SerifTitle } from '@/components/ui'
-import type { ContentOutput, PropertyInput } from '@/lib/schemas'
+import type { ContentOutput, ObjectFase, PitchUitslag, PropertyInput } from '@/lib/schemas'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, input_json, outputs_json, created_at, notitie')
+      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, created_at, notitie')
       .eq('id', objectId)
       .single()
     return data
@@ -51,6 +52,9 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const straat = komma > -1 ? object.address.slice(0, komma) : object.address
   const stad = komma > -1 ? object.address.slice(komma + 1).trim() : undefined
 
+  const fase = (object.fase ?? 'in_verkoop') as ObjectFase
+  const pitchUitslag = (object.pitch_uitslag ?? null) as PitchUitslag | null
+
   return (
     <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
       <Link
@@ -65,7 +69,10 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         <SerifTitle size={32} accent={stad} style={{ marginBottom: 12 }}>{stad ? `${straat},` : straat}</SerifTitle>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
+            <FaseToggle objectId={object.id} fase={fase} pitchUitslag={pitchUitslag} />
+            {fase !== 'acquisitie' && (
+              <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
+            )}
             <span style={{ fontSize: 13, color: '#98A0A6' }}>{formatDatum(object.created_at)}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -80,6 +87,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
       <ObjectWorkspace
         objectId={object.id}
         address={object.address}
+        fase={fase}
         outputs={object.outputs_json as ContentOutput}
         vraagprijs={(object.input_json as PropertyInput).vraagprijs ?? 0}
         notitie={(object as unknown as { notitie: string | null }).notitie ?? null}

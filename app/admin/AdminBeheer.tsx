@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { setActief } from './actions'
 
 export type KantoorRow = {
@@ -62,7 +63,10 @@ export function AdminBeheer({ rows }: { rows: KantoorRow[] }) {
                 <td className="px-4 py-2.5 text-xs text-gray-700">{row.aantalMakelaars}</td>
                 <td className="px-4 py-2.5 text-xs text-gray-700">{row.aantalObjecten}</td>
                 <td className="px-4 py-2.5">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-3">
+                    <Link href={`/admin/kantoor/${row.id}`} className="text-xs font-medium text-gray-600 hover:text-gray-900">
+                      Beheren
+                    </Link>
                     <button
                       type="button"
                       disabled={bezig}

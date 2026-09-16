@@ -234,7 +234,10 @@ ${blok}`,
 
 function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): string {
   const isEn = input.taal === 'en'
-  const prijsFormatted = `€${input.vraagprijs.toLocaleString('nl-NL')}`
+  // Acquisitiefase heeft nog geen vaste vraagprijs — val terug op de
+  // prijsverwachting van de verkoper (zie lib/schemas.ts, F3).
+  const prijs = input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0
+  const prijsFormatted = `€${prijs.toLocaleString('nl-NL')}`
 
   const openHuisRegel = input.open_huis_datum
     ? isEn
@@ -405,22 +408,3 @@ Genereer de drie berichten als JSON.`
   throw new Error('Onverwachte fout')
 }
 
-// SEO-tekst voor een wijk
-export async function generateWijkSeoTekst(params: {
-  wijk: string
-  stad: string
-}): Promise<string> {
-  const client = new Anthropic()
-
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 1500,
-    system: `Je bent een Nederlandse SEO-copywriter gespecialiseerd in vastgoed. Schrijf een informatieve SEO-tekst over een wijk. Schrijf puur de tekst (geen JSON, geen markdown), ±400–600 woorden.`,
-    messages: [{
-      role: 'user',
-      content: `Schrijf een SEO-tekst over de wijk ${params.wijk} in ${params.stad}. Focus op: sfeer, woningaanbod, voorzieningen, bereikbaarheid en kopers-doelgroep. Doel: hoog scoren op "[wijk] huizen te koop".`,
-    }],
-  })
-
-  return message.content[0].type === 'text' ? message.content[0].text : ''
-}

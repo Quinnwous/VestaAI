@@ -6,24 +6,26 @@ import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
 import { ResultTabs } from '@/components/ResultTabs'
 import { NotitieVeld } from '@/components/NotitieVeld'
+import { StijlLerenPaneel } from '@/components/StijlLerenPaneel'
 import { VirtualStaging } from '@/components/VirtualStaging'
 import { DocumentenAssistent } from '@/components/DocumentenAssistent'
 import { FotoBibliotheek } from '@/components/FotoBibliotheek'
 import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
-import type { ContentOutput } from '@/lib/schemas'
+import type { ContentOutput, ObjectFase } from '@/lib/schemas'
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
- * Alle modules hieronder renderen op basis van dit ene geselecteerde adres:
+ * Eén dossier per adres doorloopt drie fases (besluit 16 sep 2026):
  *
- * - Module A "Content en media" — gated op `CONTENT_VERGRENDELD` (lib/features.ts).
- *   Ontgrendeld: dezelfde sub-tabs als vóór de koerswijziging (Content/Media/
- *   Documenten/Export), minus de losse foto-verbetering en de deel-chatbot —
- *   die zijn op 15 sep 2026 definitief verwijderd, niet alleen vergrendeld.
- * - Module B "Waardering" — reken- en datamodule, in aanbouw (nog te bouwen,
- *   los van de content-vergrendeling).
+ * - **Acquisitie** — alleen waardebepaling en verkoopadvies zijn zichtbaar.
+ *   Er zijn nog geen foto's of een vaste vraagprijs; content hoort hier niet.
+ * - **In verkoop** — content en media (Module A) komen erbij, naast
+ *   waardering. Gated op `CONTENT_VERGRENDELD` (lib/features.ts) als extra,
+ *   losstaande noodschakelaar.
+ * - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld (zie
+ *   FaseToggle.tsx).
  */
 
 type SectionId = 'waardering' | 'content'
@@ -49,9 +51,42 @@ const card: React.CSSProperties = {
   boxShadow: '0 2px 12px rgba(20,24,27,.04)',
 }
 
+function WaarderingPaneel({ address }: { address: string }) {
+  return (
+    <InAanbouw
+      eyebrow="Module B — in aanbouw"
+      titel={`Waardering van ${address}`}
+      uitleg="Een reken- en datamodule: modulaire variabelen die je zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
+      punten={[
+        'Modulaire variabelen als losse blokken: kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud',
+        'AI USP-extractor: typ een bijzonderheid in ("heeft een mooie garage", "nieuw dakkapel") — de AI vertaalt dit naar USP\'s die de waardering en marketing beïnvloeden',
+        'Waarde met bandbreedte, onderbouwd met vergelijkbare verkochte woningen — met duidelijke vermelding van het aantal referenties',
+        'Zelf bij te sturen, met een korte motivatie die meegaat in het verkoopadvies',
+      ]}
+    />
+  )
+}
+
+function VerkoopadviesPaneel({ address }: { address: string }) {
+  return (
+    <InAanbouw
+      eyebrow="Verkoopadvies — in aanbouw"
+      titel="Het document om de opdracht te winnen"
+      uitleg={`Waarde, referenties, buurtkaart, "over ons" en courtage voor ${address} — in één document, in kantoorhuisstijl. Wacht op een voorbeelddocument voordat de opmaak wordt vastgelegd; de onderliggende data (waardering, kaart, kantoorprofiel) is al beschikbaar zodra die fases klaar zijn.`}
+      punten={[
+        'Onderbouwde waarde met bandbreedte en referentietransacties',
+        'Buurtkaart met een straal rond dit adres',
+        '"Over ons" — kantoorprofiel en werkgebied, beheerd door VestaAI',
+        'Courtagevoorstel, met de kantoorstandaard voorgevuld',
+      ]}
+    />
+  )
+}
+
 export function ObjectWorkspace({
   objectId,
   address,
+  fase,
   outputs,
   vraagprijs,
   notitie,
@@ -59,6 +94,7 @@ export function ObjectWorkspace({
 }: {
   objectId: string
   address: string
+  fase: ObjectFase
   outputs: ContentOutput
   vraagprijs: number
   notitie: string | null
@@ -67,6 +103,17 @@ export function ObjectWorkspace({
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
+
+  // Acquisitiefase: er zijn nog geen foto's of een vaste vraagprijs — alleen
+  // waardebepaling en verkoopadvies zijn relevant, geen tabbalk nodig.
+  if (fase === 'acquisitie') {
+    return (
+      <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
+        <WaarderingPaneel address={address} />
+        <VerkoopadviesPaneel address={address} />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -78,17 +125,10 @@ export function ObjectWorkspace({
       />
 
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
-        <InAanbouw
-          eyebrow="Module B — in aanbouw"
-          titel={`Waardering van ${address}`}
-          uitleg="Een reken- en datamodule: modulaire variabelen die je zelf toevoegt, in- of uitschakelt, plus een AI-extractor die bijzonderheden vertaalt naar Unique Selling Points."
-          punten={[
-            'Modulaire variabelen als losse blokken: kamers, WOZ, oppervlakte, kavelgrootte, energielabel, staat van onderhoud',
-            'AI USP-extractor: typ een bijzonderheid in ("heeft een mooie garage", "nieuw dakkapel") — de AI vertaalt dit naar USP\'s die de waardering en marketing beïnvloeden',
-            'Waarde met bandbreedte, onderbouwd met vergelijkbare verkochte woningen',
-            'Eén klik naar een waarderingsrapport als PDF, in de huisstijl van je kantoor',
-          ]}
-        />
+        <div style={{ display: 'grid', gap: 16 }}>
+          <WaarderingPaneel address={address} />
+          <VerkoopadviesPaneel address={address} />
+        </div>
       </div>
 
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>
@@ -101,7 +141,6 @@ export function ObjectWorkspace({
             punten={[
               'Brochure en Funda-tekst',
               'Social media-teksten (bv. Instagram-captions)',
-              'Verkoopadvies voor de verkopende partij',
               'Buurtrapport — omgevingsdata en demografie van de wijk',
               'Virtual staging en documentenassistent',
             ]}
@@ -121,6 +160,7 @@ export function ObjectWorkspace({
               <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>
+              <StijlLerenPaneel />
             </div>
 
             {/* Media — virtual staging + bibliotheek als losse kaarten */}
@@ -148,8 +188,8 @@ export function ObjectWorkspace({
             <div style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
                 <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar geïnteresseerde</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure + follow-up direct naar een koper.</p>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar jezelf of een collega</h2>
+                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure intern door — nooit direct naar een koper.</p>
                   <EmailPdfButton objectId={objectId} userEmail={userEmail} />
                 </div>
                 <div style={card}>

@@ -98,28 +98,6 @@ export async function sendWelcomeEmail(email: string, name: string, merk?: Merk)
   })
 }
 
-export async function sendTeamInviteConfirmation(adminEmail: string, uitgenodigdEmail: string) {
-  await getResend().emails.send({
-    from: FROM,
-    to: adminEmail,
-    subject: `VestaAI — uitnodiging verstuurd naar ${uitgenodigdEmail}`,
-    html: baseTemplate(`
-      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Uitnodiging verstuurd</h2>
-      <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#374151;">
-        We hebben een uitnodigingsmail gestuurd naar <strong>${uitgenodigdEmail}</strong>.
-        Zodra uw collega de link heeft geopend en een account heeft aangemaakt, verschijnt hij of zij automatisch in uw teamoverzicht.
-      </p>
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;margin-top:8px;">
-        <p style="margin:0;font-size:13px;color:#166534;">
-          De uitnodigingslink is 24 uur geldig. Heeft uw collega de mail niet ontvangen? Stuur de uitnodiging opnieuw vanuit uw teaminstellingen.
-        </p>
-      </div>
-      ${btn(`${APP_URL}/settings`, 'Beheer uw team')}
-      <p style="margin:24px 0 0;font-size:13px;color:#6b7280;">— Quinn, VestaAI</p>
-    `),
-  })
-}
-
 /** Klantdata (naam/e-mail) komt uit registratie-invoer → escapen vóór HTML-interpolatie. */
 function esc(s: string): string {
   return s

@@ -41,6 +41,73 @@ export const HuisstijlSchema = z.object({
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>
 
+// Zakelijke kantoorinstellingen — los van de visuele huisstijl hierboven.
+// Beheerd door de platform-admin in /admin (besluit 16 sep 2026: één rol per
+// kantoor, geen eigen instellingenscherm meer bij het kantoor zelf). Voedt
+// straks het verkoopadvies (courtage, "over ons") en de standaardfilters van
+// marktinzichten/kaart/referentieselectie (werkgebied).
+export const KantoorInstellingenSchema = z.object({
+  courtage: z.object({
+    percentage: z.number().min(0).max(10).optional(),
+    opstartkosten: z.number().min(0).optional(),
+    dienstverlening: z.string().max(2000).optional(),
+  }).optional(),
+  profiel: z.object({
+    opgericht: z.string().max(20).optional(),
+    lidmaatschappen: z.string().max(200).optional(),
+    kenmerken: z.string().max(2000).optional(),
+  }).optional(),
+  werkgebied: z.object({
+    plaatsen: z.array(z.string().max(80)).max(30).default([]),
+  }).optional(),
+})
+
+export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>
+
+// Fases van een woningdossier (besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur):
+// één dossier per adres, drie fases. Welke modules zichtbaar zijn hangt af van
+// de fase — zie components/ObjectWorkspace.tsx.
+export const ObjectFaseSchema = z.enum(['acquisitie', 'in_verkoop', 'verkocht'])
+export type ObjectFase = z.infer<typeof ObjectFaseSchema>
+
+export const PitchUitslagSchema = z.enum(['open', 'gewonnen', 'verloren'])
+export type PitchUitslag = z.infer<typeof PitchUitslagSchema>
+
+// Staat & afwerking en Ligging & buitenruimte (besluit 16 sep 2026, F3 —
+// gedeelde intake): precies de knoppen waaraan de waardering straks in de
+// wat-als-scenario's laat draaien. Allemaal optioneel zodat bestaande dossiers
+// (van vóór deze uitbreiding) geldig blijven.
+export const StaatAfwerkingSchema = z.object({
+  onderhoud_binnen: z.enum(['uitstekend', 'goed', 'voldoende', 'opknapper']).optional(),
+  onderhoud_buiten: z.enum(['uitstekend', 'goed', 'voldoende', 'opknapper']).optional(),
+  keuken_jaar: z.number().int().min(1900).max(2035).optional(),
+  badkamer_jaar: z.number().int().min(1900).max(2035).optional(),
+  isolatie: z.array(z.enum(['dak', 'muur', 'vloer', 'glas'])).optional(),
+  zonnepanelen: z.boolean().optional(),
+  recent_verbouwd: z.string().max(300).optional(),
+})
+export type StaatAfwerking = z.infer<typeof StaatAfwerkingSchema>
+
+export const LiggingBuitenruimteSchema = z.object({
+  ligging: z.enum(['hoekwoning', 'tussenwoning', 'vrijstaand', 'twee_onder_een_kap']).optional(),
+  tuin_m2: z.number().int().min(0).max(99999).optional(),
+  tuin_orientatie: z.enum(['noord', 'noordoost', 'oost', 'zuidoost', 'zuid', 'zuidwest', 'west', 'noordwest']).optional(),
+  achterom: z.boolean().optional(),
+  balkon_dakterras: z.boolean().optional(),
+  garage_parkeren: z.enum(['garage', 'carport', 'oprit', 'openbaar', 'geen']).optional(),
+  berging: z.boolean().optional(),
+  uitzicht: z.string().max(200).optional(),
+  bijzondere_ligging: z.array(z.enum(['water', 'park', 'drukke_weg'])).optional(),
+  erfpacht: z.object({
+    van_toepassing: z.boolean(),
+    canon_per_jaar: z.number().min(0).optional(),
+    afgekocht_tot: z.string().max(20).optional(),
+  }).optional(),
+  vve_bijdrage_per_maand: z.number().min(0).optional(),
+  monument: z.boolean().optional(),
+})
+export type LiggingBuitenruimte = z.infer<typeof LiggingBuitenruimteSchema>
+
 export const PropertyInputSchema = z.object({
   adres: z.string().min(5),
   woningtype: z.enum([
@@ -51,7 +118,11 @@ export const PropertyInputSchema = z.object({
   oppervlak_m2: z.number().int().min(1).max(9999),
   bouwjaar: z.number().int().min(1800).max(2035),
   energielabel: z.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']),
-  vraagprijs: z.number().int().min(1),
+  // Optioneel sinds de gedeelde intake (F3, besluit 16 sep 2026): in de
+  // acquisitiefase is er nog geen vaste vraagprijs, alleen een
+  // prijsverwachting van de verkoper (zie prijsverwachting_verkoper
+  // hieronder). Content-generatie valt terug op die prijsverwachting.
+  vraagprijs: z.number().int().min(1).optional(),
   usps: z.string().min(1).max(500),
   doelgroep: z.string().min(1),
   // Optioneel: open huis
@@ -59,6 +130,21 @@ export const PropertyInputSchema = z.object({
   open_huis_tijd: z.string().max(20).optional(),
   // Optioneel: taal (default NL — optioneel zodat bestaande records compatible blijven)
   taal: z.enum(['nl', 'en']).optional(),
+  // Extra basiskenmerken uit de gedeelde intake (F3) — optioneel zodat bestaande
+  // dossiers geldig blijven.
+  perceel_m2: z.number().int().min(0).max(999999).optional(),
+  inhoud_m3: z.number().int().min(0).max(99999).optional(),
+  slaapkamers: z.number().int().min(0).max(20).optional(),
+  badkamers: z.number().int().min(0).max(10).optional(),
+  woonlagen: z.number().int().min(1).max(10).optional(),
+  energielabel_geldig_tot: z.string().max(20).optional(),
+  staat_afwerking: StaatAfwerkingSchema.optional(),
+  ligging_buitenruimte: LiggingBuitenruimteSchema.optional(),
+  // Acquisitiefase (besluit 16 sep 2026): prijsverwachting van de verkoper en
+  // het courtagevoorstel horen bij "opdracht winnen", niet bij "vraagprijs" —
+  // dat laatste komt pas vast te staan zodra de fase naar In verkoop gaat.
+  prijsverwachting_verkoper: z.number().int().min(1).optional(),
+  courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
 })
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>

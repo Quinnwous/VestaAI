@@ -2,16 +2,13 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 // Altijd publiek toegankelijk, geen auth-check nodig.
-// Marketing- en juridische pagina's, Stripe-retourpagina's, SEO-wijkpagina's,
-// en API's die zelf hun toegang regelen (/api/me voor PublicNav,
-// /api/webhooks voor Stripe).
+// Marketing- en juridische pagina's, en API's die zelf hun toegang regelen
+// (/api/me voor PublicNav).
 const PUBLIC_EXACT = new Set([
-  '/', '/prijzen', '/over-ons', '/contact', '/vertrouwen',
-  '/privacy', '/voorwaarden', '/betaling-gelukt', '/betaling-mislukt',
+  '/', '/over-ons', '/contact', '/vertrouwen', '/privacy', '/voorwaarden',
 ])
 const PUBLIC_PREFIX = [
-  '/auth/verify', '/auth/reset-password', '/api/webhooks',
-  '/wijken', '/api/me',
+  '/auth/reset-password', '/api/me',
 ]
 
 export async function middleware(request: NextRequest) {

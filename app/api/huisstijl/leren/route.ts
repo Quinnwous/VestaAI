@@ -7,22 +7,24 @@ export const maxDuration = 60
 
 const MIN_BEWERKINGEN = 4
 
-async function adminKantoor() {
+// Eigen kantoor van de ingelogde gebruiker — sinds 16 sep 2026 is er één rol
+// per kantoor (zie CLAUDE.md), dus geen rol-check meer, alleen kantoor-scoping.
+async function eigenKantoor() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('role, kantoor_id')
+    .select('kantoor_id')
     .eq('id', user.id)
     .single()
-  if (!makelaar || makelaar.role !== 'admin') return null
+  if (!makelaar) return null
   return makelaar.kantoor_id as string
 }
 
-// Aantal onverwerkte bewerkingen (voor de "leren"-knop in de huisstijl-tab).
+// Aantal onverwerkte bewerkingen (voor het "leren"-paneel in het woningdossier).
 export async function GET() {
-  const kantoorId = await adminKantoor()
+  const kantoorId = await eigenKantoor()
   if (!kantoorId) return NextResponse.json({ aantal: 0 })
 
   const serviceClient = createServiceSupabaseClient()
@@ -38,7 +40,7 @@ export async function GET() {
 // Destilleert een voorstel uit de onverwerkte bewerkingen. Past nog niets toe en markeert
 // nog niets als verwerkt — dat gebeurt pas na akkoord via /api/huisstijl/leren/toepassen.
 export async function POST() {
-  const kantoorId = await adminKantoor()
+  const kantoorId = await eigenKantoor()
   if (!kantoorId) return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
 
   const serviceClient = createServiceSupabaseClient()

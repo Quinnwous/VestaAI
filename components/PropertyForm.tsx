@@ -13,6 +13,25 @@ const WONINGSTYPES = ['Appartement', 'Tussenwoning', 'Hoekwoning', 'Vrijstaand',
 const ENERGIELABELS = ['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] as const
 const DOELGROEPEN = ['Starters', 'Jonge gezinnen', 'Senioren', 'Investeerders', 'Anders'] as const
 
+// Gedeelde intake (besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur): stap 3
+// "Staat & afwerking" en stap 4 "Ligging & buitenruimte" — precies de knoppen
+// waaraan de waardering straks in de wat-als-scenario's laat draaien.
+const ONDERHOUD_OPTIES = ['uitstekend', 'goed', 'voldoende', 'opknapper'] as const
+const ISOLATIE_OPTIES = ['dak', 'muur', 'vloer', 'glas'] as const
+const LIGGING_OPTIES = ['hoekwoning', 'tussenwoning', 'vrijstaand', 'twee_onder_een_kap'] as const
+const ORIENTATIE_OPTIES = ['noord', 'noordoost', 'oost', 'zuidoost', 'zuid', 'zuidwest', 'west', 'noordwest'] as const
+const PARKEREN_OPTIES = ['garage', 'carport', 'oprit', 'openbaar', 'geen'] as const
+const BIJZONDERE_LIGGING_OPTIES = ['water', 'park', 'drukke_weg'] as const
+
+const STAPPEN = [
+  { id: 1, label: 'Adres' },
+  { id: 2, label: 'Woning' },
+  { id: 3, label: 'Staat & afwerking' },
+  { id: 4, label: 'Ligging & buitenruimte' },
+  { id: 5, label: 'Verhaal' },
+  { id: 6, label: 'Commercieel' },
+] as const
+
 const DRAFT_KEY = 'vestaai_form_draft'
 
 function loadDraft(): Partial<PropertyInput> {
@@ -62,6 +81,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   )
   const [verrijkingData, setVerrijkingData] = useState<VerrijkingData | null>(null)
   const [verrijkingBezig, setVerrijkingBezig] = useState(false)
+  const [stap, setStap] = useState(1)
 
   const {
     register,
@@ -69,6 +89,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     control,
     setValue,
     getValues,
+    trigger,
     formState: { errors },
   } = useForm<PropertyInput>({
     resolver: zodResolver(PropertyInputSchema),
@@ -77,7 +98,6 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
 
   const adresValue = useWatch({ control, name: 'adres' }) ?? ''
   const doelgroepValue = useWatch({ control, name: 'doelgroep' })
-  const taalValue = useWatch({ control, name: 'taal' }) ?? 'nl'
   const [duplicaat, setDuplicaat] = useState<{ object_id: string; created_at: string } | null>(null)
   const duplicaatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [doelgroepAnders, setDoelgroepAnders] = useState(
@@ -88,7 +108,26 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   const allValues = useWatch({ control })
   const MAX_USPS = 500
 
-  const isEn = taalValue === 'en'
+  // Content komt sinds 16 sep 2026 altijd in NL + EN tegelijk (zie CLAUDE.md) —
+  // geen taalkeuze meer nodig in de intake. Het formulier zelf blijft Nederlands.
+  const isEn = false
+
+  // Stapsgewijze validatie: alleen de velden van de huidige stap controleren
+  // vóór "Volgende", zodat een fout in een latere stap niet blokkeert.
+  const STAP_VELDEN: Record<number, (keyof PropertyInput)[]> = {
+    1: ['adres'],
+    2: ['woningtype', 'kamers', 'oppervlak_m2', 'bouwjaar', 'energielabel'],
+    3: [],
+    4: [],
+    5: ['usps', 'doelgroep'],
+    6: [],
+  }
+
+  const volgendeStap = async () => {
+    const geldig = await trigger(STAP_VELDEN[stap])
+    if (geldig) setStap(s => Math.min(6, s + 1))
+  }
+  const vorigeStap = () => setStap(s => Math.max(1, s - 1))
 
   useEffect(() => {
     if (duplicaatTimerRef.current) clearTimeout(duplicaatTimerRef.current)
@@ -115,12 +154,14 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !disabled) {
-        handleSubmit(onSubmit)()
+        if (stap === 6) handleSubmit(onSubmit)()
+        else volgendeStap()
       }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [disabled, handleSubmit, onSubmit])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disabled, handleSubmit, onSubmit, stap])
 
   const handleAdresSelect = async (suggestie: BagSuggestie) => {
     // BAG-data ophalen (bouwjaar, oppervlak, energielabel)
@@ -153,27 +194,30 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <input type="hidden" {...register('taal')} />
 
-      {/* Taal toggle */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid #E6E9EC' }}>
-        <p style={{ fontSize: 13, color: '#98A0A6' }}>{isEn ? 'Generate content in:' : 'Genereer content in:'}</p>
-        <div style={{ display: 'flex', borderRadius: 'var(--merk-radius-md, 10px)', border: '1px solid #E1E5E9', overflow: 'hidden', fontSize: 13, fontWeight: 600 }}>
-          {(['nl', 'en'] as const).map(t => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setValue('taal', t)}
-              style={{ padding: '7px 14px', cursor: 'pointer', border: 'none', transition: 'all .15s', background: taalValue === t ? 'var(--merk,#1A6B45)' : '#fff', color: taalValue === t ? 'var(--merk-op,#fff)' : '#5C6470' }}
-            >
-              {t === 'nl' ? '🇳🇱 Nederlands' : '🇬🇧 English'}
-            </button>
-          ))}
-        </div>
-        <input type="hidden" {...register('taal')} />
+      {/* Stapindicator — gedeelde intake in zes stappen, zie CLAUDE.md § Hoofdstructuur */}
+      <div style={{ display: 'flex', gap: 4, paddingBottom: 18, borderBottom: '1px solid #E6E9EC', overflowX: 'auto' }}>
+        {STAPPEN.map(s => (
+          <button
+            key={s.id}
+            type="button"
+            onClick={() => s.id < stap && setStap(s.id)}
+            disabled={s.id > stap}
+            style={{
+              flex: '1 0 auto', padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: s.id < stap ? 'pointer' : 'default',
+              borderBottom: `3px solid ${s.id === stap ? 'var(--merk,#1A6B45)' : s.id < stap ? 'var(--merk-rand,#C7E6D5)' : '#E6E9EC'}`,
+            }}
+          >
+            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk,#1A6B45)' : s.id < stap ? '#5C6470' : '#98A0A6', whiteSpace: 'nowrap' }}>
+              {s.id}. {s.label}
+            </span>
+          </button>
+        ))}
       </div>
 
-      {/* Adres */}
-      <div>
+      {/* Stap 1 — Adres */}
+      <div style={{ display: stap === 1 ? 'block' : 'none' }}>
         <label style={labelStyle}>
           {isEn ? 'Address' : 'Adres'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
@@ -212,6 +256,8 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         )}
       </div>
 
+      {/* Stap 2 — Woning */}
+      <div style={{ display: stap === 2 ? 'grid' : 'none', gap: 24 }}>
       {/* Woningtype + Kamers */}
       <div className="form-grid-2">
         <div>
@@ -275,12 +321,10 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         </div>
       </div>
 
-      {/* Energielabel + Vraagprijs */}
+      {/* Energielabel + geldig tot */}
       <div className="form-grid-2">
         <div>
-          <label style={labelStyle}>
-            {isEn ? 'Energy label' : 'Energielabel'} <span style={{ color: '#DC2626' }}>*</span>
-          </label>
+          <label style={labelStyle}>Energielabel <span style={{ color: '#DC2626' }}>*</span></label>
           <select
             {...register('energielabel')}
             disabled={disabled}
@@ -288,26 +332,195 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
             onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           >
-            <option value="">{isEn ? 'Choose label...' : 'Kies label...'}</option>
+            <option value="">Kies label...</option>
             {ENERGIELABELS.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
           {errors.energielabel && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.energielabel.message}</p>}
         </div>
         <div>
-          <label style={labelStyle}>
-            {isEn ? 'Asking price (€)' : 'Vraagprijs (€)'} <span style={{ color: '#DC2626' }}>*</span>
-          </label>
+          <label style={labelStyle}>Geldig tot <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
           <input
-            {...register('vraagprijs', { valueAsNumber: true })}
-            type="number" min={1} disabled={disabled} placeholder="450000"
+            {...register('energielabel_geldig_tot')}
+            type="date" disabled={disabled}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
-            onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk,#1A6B45)')}
-            onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           />
-          {errors.vraagprijs && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.vraagprijs.message}</p>}
         </div>
       </div>
 
+      {/* Perceel + inhoud */}
+      <div className="form-grid-2">
+        <div>
+          <label style={labelStyle}>Perceeloppervlak (m²) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input
+            {...register('perceel_m2', { valueAsNumber: true })}
+            type="number" min={0} disabled={disabled} placeholder="250"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+        </div>
+        <div>
+          <label style={labelStyle}>Inhoud (m³) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input
+            {...register('inhoud_m3', { valueAsNumber: true })}
+            type="number" min={0} disabled={disabled} placeholder="320"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+        </div>
+      </div>
+
+      {/* Slaapkamers, badkamers, woonlagen */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
+        <div>
+          <label style={labelStyle}>Slaapkamers <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input {...register('slaapkamers', { valueAsNumber: true })} type="number" min={0} max={20} disabled={disabled} placeholder="3" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+        </div>
+        <div>
+          <label style={labelStyle}>Badkamers <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input {...register('badkamers', { valueAsNumber: true })} type="number" min={0} max={10} disabled={disabled} placeholder="1" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+        </div>
+        <div>
+          <label style={labelStyle}>Woonlagen <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input {...register('woonlagen', { valueAsNumber: true })} type="number" min={1} max={10} disabled={disabled} placeholder="2" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+        </div>
+      </div>
+      </div>
+
+      {/* Stap 3 — Staat & afwerking */}
+      <div style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+        <div className="form-grid-2">
+          <div>
+            <label style={labelStyle}>Onderhoud binnen <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <select {...register('staat_afwerking.onderhoud_binnen')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
+              <option value="">Kies...</option>
+              {ONDERHOUD_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Onderhoud buiten <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <select {...register('staat_afwerking.onderhoud_buiten')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
+              <option value="">Kies...</option>
+              {ONDERHOUD_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="form-grid-2">
+          <div>
+            <label style={labelStyle}>Keuken — bouwjaar <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <input {...register('staat_afwerking.keuken_jaar', { valueAsNumber: true })} type="number" min={1900} max={2035} disabled={disabled} placeholder="2018" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Badkamer — bouwjaar <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <input {...register('staat_afwerking.badkamer_jaar', { valueAsNumber: true })} type="number" min={1900} max={2035} disabled={disabled} placeholder="2015" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+          </div>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Isolatie <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            {ISOLATIE_OPTIES.map(optie => (
+              <label key={optie} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+                <input type="checkbox" value={optie} disabled={disabled} {...register('staat_afwerking.isolatie')} />
+                {optie}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="checkbox" id="zonnepanelen" disabled={disabled} {...register('staat_afwerking.zonnepanelen')} />
+          <label htmlFor="zonnepanelen" style={{ fontSize: 13.5, color: '#14181B' }}>Zonnepanelen aanwezig</label>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Recent verbouwd <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input
+            {...register('staat_afwerking.recent_verbouwd')}
+            disabled={disabled} placeholder="Bijv: nieuw dakkapel in 2023, uitbouw keuken 2021"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+        </div>
+      </div>
+
+      {/* Stap 4 — Ligging & buitenruimte */}
+      <div style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+        <div className="form-grid-2">
+          <div>
+            <label style={labelStyle}>Ligging <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <select {...register('ligging_buitenruimte.ligging')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
+              <option value="">Kies...</option>
+              {LIGGING_OPTIES.map(o => <option key={o} value={o}>{o.replace(/_/g, ' ')}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Garage/parkeren <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <select {...register('ligging_buitenruimte.garage_parkeren')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
+              <option value="">Kies...</option>
+              {PARKEREN_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="form-grid-2">
+          <div>
+            <label style={labelStyle}>Tuin (m²) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <input {...register('ligging_buitenruimte.tuin_m2', { valueAsNumber: true })} type="number" min={0} disabled={disabled} placeholder="80" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Tuin — oriëntatie <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <select {...register('ligging_buitenruimte.tuin_orientatie')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
+              <option value="">Kies...</option>
+              {ORIENTATIE_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+            <input type="checkbox" disabled={disabled} {...register('ligging_buitenruimte.achterom')} /> Achterom
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+            <input type="checkbox" disabled={disabled} {...register('ligging_buitenruimte.balkon_dakterras')} /> Balkon/dakterras
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+            <input type="checkbox" disabled={disabled} {...register('ligging_buitenruimte.berging')} /> Berging
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+            <input type="checkbox" disabled={disabled} {...register('ligging_buitenruimte.monument')} /> Monument
+          </label>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Bijzondere ligging <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+            {BIJZONDERE_LIGGING_OPTIES.map(optie => (
+              <label key={optie} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+                <input type="checkbox" value={optie} disabled={disabled} {...register('ligging_buitenruimte.bijzondere_ligging')} />
+                {optie.replace(/_/g, ' ')}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Uitzicht <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input {...register('ligging_buitenruimte.uitzicht')} disabled={disabled} placeholder="Bijv: vrij uitzicht over het park" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+        </div>
+
+        <div className="form-grid-2">
+          <div>
+            <label style={labelStyle}>VvE-bijdrage per maand (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <input {...register('ligging_buitenruimte.vve_bijdrage_per_maand', { valueAsNumber: true })} type="number" min={0} disabled={disabled} placeholder="120" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
+              <input type="checkbox" disabled={disabled} {...register('ligging_buitenruimte.erfpacht.van_toepassing')} /> Erfpacht van toepassing
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Stap 5 — Verhaal */}
+      <div style={{ display: stap === 5 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       {/* USP's */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -385,6 +598,31 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           </p>
         }
       </div>
+      </div>
+
+      {/* Stap 6 — Commercieel (acquisitiefase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
+      <div style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="form-grid-2">
+        <div>
+          <label style={labelStyle}>
+            Prijsverwachting verkoper (€) <span style={{ color: '#DC2626' }}>*</span>
+          </label>
+          <input
+            {...register('prijsverwachting_verkoper', { valueAsNumber: true })}
+            type="number" min={1} disabled={disabled} placeholder="450000"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>Wat de verkoper zelf verwacht — de vraagprijs staat pas vast als de opdracht binnen is.</p>
+        </div>
+        <div>
+          <label style={labelStyle}>Courtagevoorstel (%) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input
+            {...register('courtagevoorstel_percentage', { valueAsNumber: true })}
+            type="number" step="0.01" min={0} max={10} disabled={disabled} placeholder="1.25"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+        </div>
+      </div>
 
       {/* Open huis */}
       <div style={{ border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-lg, 14px)', padding: '16px 18px' }}>
@@ -432,23 +670,47 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           </div>
         )}
       </div>
+      </div>
 
-      <div>
-        <button
-          type="submit"
-          disabled={disabled}
-          className="vui-btn vui-btn-primary"
-          style={{ width: '100%', borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk,#1A6B45)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb,26,107,69),.24)' }}
-        >
-          {disabled
-            ? (isEn ? 'Generating...' : 'Bezig met genereren...')
-            : (isEn ? 'Generate content →' : 'Genereer content →')}
-        </button>
-        {!disabled && (
-          <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#98A0A6' }}>
-            {isEn ? 'or press' : 'of druk'}{' '}
-            <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht, #F1F7F3)', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
-          </p>
+      {/* Navigatie tussen stappen */}
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        {stap > 1 && (
+          <button
+            type="button"
+            onClick={vorigeStap}
+            disabled={disabled}
+            style={{ borderRadius: 'var(--merk-radius-md, 12px)', background: '#fff', border: '1px solid #E1E5E9', padding: '15px 20px', fontSize: 14.5, fontWeight: 700, color: '#5C6470', cursor: 'pointer' }}
+          >
+            ← Vorige
+          </button>
+        )}
+        {stap < 6 ? (
+          <button
+            type="button"
+            onClick={volgendeStap}
+            disabled={disabled}
+            className="vui-btn vui-btn-primary"
+            style={{ flex: 1, borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk,#1A6B45)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb,26,107,69),.24)' }}
+          >
+            Volgende →
+          </button>
+        ) : (
+          <div style={{ flex: 1 }}>
+            <button
+              type="submit"
+              disabled={disabled}
+              className="vui-btn vui-btn-primary"
+              style={{ width: '100%', borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk,#1A6B45)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb,26,107,69),.24)' }}
+            >
+              {disabled ? 'Bezig met opslaan...' : 'Woning aanmaken →'}
+            </button>
+            {!disabled && (
+              <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#98A0A6' }}>
+                of druk{' '}
+                <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht, #F1F7F3)', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
+              </p>
+            )}
+          </div>
         )}
       </div>
     </form>

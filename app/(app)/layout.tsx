@@ -15,20 +15,19 @@ type KantoorRij = {
 // Gedeeld door generateMetadata (tabbladtitel + favicon) en AppLayout (kleuren/logo in de
 // pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één request, zodat het
 // niet twee keer bevraagd wordt voor dezelfde requestcyclus.
-const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij; isBeheerder: boolean }> => {
+const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij }> => {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { kantoor: null, isBeheerder: false }
+  if (!user) return { kantoor: null }
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, role, kantoren(name, logo_url, huisstijl_json)')
+    .select('kantoor_id, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', user.id)
     .single()
 
   return {
     kantoor: (makelaar?.kantoren as unknown as KantoorRij) ?? null,
-    isBeheerder: makelaar?.role === 'admin',
   }
 })
 
@@ -66,7 +65,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Platform-admins gebruiken de app niet als klant → naar het beheer.
   if (isPlatformAdmin(user.email)) redirect('/admin')
 
-  const { kantoor, isBeheerder } = await haalMakelaarOp()
+  const { kantoor } = await haalMakelaarOp()
 
   // Vanaf de ingelogde omgeving is de hele app van het kantoor: logo, kleuren, lettertype,
   // vormtaal — en straks ook het waarderingsrapport. Zie lib/branding.ts.
@@ -131,14 +130,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-      <AppTopbar branding={branding} userEmail={user.email ?? null} isBeheerder={isBeheerder}>
+      <AppTopbar branding={branding} userEmail={user.email ?? null}>
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
           <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px 22px', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
-              Deze omgeving draait nog op de standaardstijl.{' '}
-              <a href="/huisstijl" style={{ color: 'var(--merk)', fontWeight: 700, textDecoration: 'underline' }}>
-                Stel je logo en kleuren in →
-              </a>
+              Deze omgeving draait nog op de standaardstijl — huisstijl wordt door VestaAI ingesteld.
             </p>
           </div>
         )}

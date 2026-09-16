@@ -4,17 +4,17 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
-import { CONTENT_VERGRENDELD } from '@/lib/features'
 
 /**
  * Topbar van de ingelogde omgeving.
  *
- * Micro/macro-knip (vastgelegd 15 sep 2026, zie CLAUDE.md): Woningdossier is
- * de kern — alle content- en waarderingsmodules renderen op basis van één
- * geselecteerd adres (zie ObjectWorkspace). Marktinzichten staat daarnaast
- * omdat het regionaal is, los van één woning. Content is vergrendeld maar
- * zichtbaar — zie lib/features.ts. Kantoorinstellingen is de derde,
- * losstaande sectie.
+ * Fasemodel (vastgelegd 16 sep 2026, zie CLAUDE.md): Woningdossier is de kern
+ * — één dossier per adres doorloopt de fases Acquisitie → In verkoop →
+ * Verkocht (zie ObjectWorkspace). Content is geen los hoofdmenu meer: het is
+ * een fase van een woning, geen bestemming. Marktinzichten staat ernaast
+ * omdat het regionaal is, los van één woning. Verhuur is zichtbaar maar op
+ * slot ("Binnenkort") — bewust nog niet gebouwd. Kantoorinstellingen is geen
+ * hoofdmenu meer; die pagina hangt nu achter het gebruikersmenu rechtsboven.
  *
  * Alle merkkleuren komen uit CSS-variabelen (`--merk*`) die de (app)-layout zet,
  * zodat elk kantoor zijn eigen omgeving ziet.
@@ -23,47 +23,30 @@ import { CONTENT_VERGRENDELD } from '@/lib/features'
 type Item = { href: string; label: string; hint?: string; slot?: boolean; binnenkort?: boolean }
 type Menu = { id: string; label: string; slot?: boolean; items: Item[] }
 
-// Hoofdstructuur (vastgelegd 15 sep 2026, zie CLAUDE.md): een duidelijke knip
-// tussen "micro" (Woningdossier — object-specifiek, alles hangt onder één
-// geselecteerd adres) en "macro" (Marktinzichten — regionaal, los van één
-// woning). Kantoorinstellingen is de derde, losstaande sectie.
 const MENUS: Menu[] = [
   {
     id: 'woningdossier',
     label: 'Woningdossier',
     items: [
       { href: '/dashboard', label: 'Alle woningen', hint: 'Het volledige woningdossier van je kantoor' },
-      { href: '/dashboard?status=actief', label: 'In verkoop', hint: 'Woningen die nu lopen' },
-      { href: '/object/new', label: 'Woning toevoegen', hint: 'Acht velden — start direct een nieuw dossier' },
+      { href: '/object/new', label: 'Woning toevoegen', hint: 'Start een nieuw dossier — begint in de acquisitiefase' },
     ],
   },
   {
     id: 'marktinzichten',
     label: 'Marktinzichten',
     items: [
-      { href: '/marktanalyse', label: 'Marktanalyse', hint: 'Macro-trends: prijsontwikkeling per type, wijk en periode' },
-      { href: '/marktanalyse', label: 'Concurrentieanalyse', hint: 'Verkoopresultaten en marktaandeel vs. concurrenten', binnenkort: true },
+      { href: '/marktanalyse', label: 'Marktanalyse', hint: 'Interactief: prijsontwikkeling, m²-prijs en doorlooptijd per type, wijk en periode' },
+      { href: '/marktanalyse/transacties', label: 'Transacties opzoeken', hint: 'Zoek en filter individuele verkopen — bruikbaar als referentie in een waardebepaling' },
+      { href: '/marktanalyse/concurrentie', label: 'Concurrentieanalyse', hint: 'Marktaandeel en prestaties vs. concurrenten in de regio' },
+      { href: '/marktanalyse/kaart', label: 'Verkoopkaart', hint: 'Eigen verkopen op de kaart, met live filters' },
     ],
   },
   {
-    id: 'content',
-    label: 'Content',
-    slot: CONTENT_VERGRENDELD,
-    items: [
-      { href: '/object/new', label: 'Brochure & Funda-tekst', slot: CONTENT_VERGRENDELD },
-      { href: '/object/new', label: 'Social media-teksten', slot: CONTENT_VERGRENDELD },
-      { href: '/object/new', label: 'Verkoopadvies & buurtrapport', slot: CONTENT_VERGRENDELD },
-      { href: '/object/new', label: 'Virtual staging', slot: CONTENT_VERGRENDELD },
-      { href: '/object/new', label: 'Documentenassistent', slot: CONTENT_VERGRENDELD },
-    ],
-  },
-  {
-    id: 'kantoorinstellingen',
-    label: 'Kantoorinstellingen',
-    items: [
-      { href: '/huisstijl', label: 'Huisstijl', hint: 'Logo, kleuren en tone-of-voice van je kantoor' },
-      { href: '/settings', label: 'Kantoor & team', hint: 'Gebruikers, account en statistieken' },
-    ],
+    id: 'verhuur',
+    label: 'Verhuur',
+    slot: true,
+    items: [],
   },
 ]
 
@@ -79,7 +62,6 @@ function Slotje({ size = 12 }: { size?: number }) {
 function menuIsActief(pathname: string, menu: Menu): boolean {
   if (menu.id === 'woningdossier') return pathname === '/dashboard' || pathname.startsWith('/object')
   if (menu.id === 'marktinzichten') return pathname.startsWith('/marktanalyse')
-  if (menu.id === 'kantoorinstellingen') return pathname.startsWith('/settings') || pathname.startsWith('/huisstijl')
   return false
 }
 
@@ -87,15 +69,12 @@ export function AppTopbar({
   children,
   branding,
   userEmail,
-  isBeheerder = false,
 }: {
   children: React.ReactNode
   branding: Branding
   userEmail: string | null
-  /** Kantoorinstellingen (huisstijl, team) zijn alleen voor de beheerder van het kantoor. */
-  isBeheerder?: boolean
 }) {
-  const menus = MENUS.filter(m => m.id !== 'kantoorinstellingen' || isBeheerder)
+  const menus = MENUS
   const pathname = usePathname()
   const [open, setOpen] = useState<string | null>(null)
   const [mobiel, setMobiel] = useState(false)
@@ -180,11 +159,6 @@ export function AppTopbar({
           </Link>
         )
       })}
-      {menu.slot && (
-        <p style={{ fontSize: 11.5, color: '#98A0A6', lineHeight: 1.5, padding: '8px 11px 4px', borderTop: '1px solid #F1F3F5', margin: '4px 0 0' }}>
-          Tijdelijk gesloten — VestaAI richt zich nu op waardering en marktanalyse.
-        </p>
-      )}
     </div>
   )
 
@@ -213,6 +187,25 @@ export function AppTopbar({
 
           <div className="topbar-menus">
             {menus.map(menu => {
+              // Een menu zonder items (Verhuur) is volledig op slot — geen dropdown,
+              // gewoon een label met slotje dat niets doet.
+              if (menu.items.length === 0) {
+                return (
+                  <span
+                    key={menu.id}
+                    aria-disabled
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                      padding: '8px 12px', fontSize: 14.5, fontWeight: 550, color: '#98A0A6',
+                      cursor: 'not-allowed',
+                    }}
+                    title="Binnenkort"
+                  >
+                    {menu.label}
+                    <Slotje size={11} />
+                  </span>
+                )
+              }
               const actief = menuIsActief(pathname, menu)
               const uit = open === menu.id
               return (
@@ -226,13 +219,12 @@ export function AppTopbar({
                       display: 'flex', alignItems: 'center', gap: 6,
                       padding: '8px 12px', borderRadius: 'var(--merk-radius-sm, 9px)', border: 'none', cursor: 'pointer',
                       fontSize: 14.5, fontWeight: actief ? 700 : 550,
-                      color: menu.slot ? '#98A0A6' : actief ? 'var(--merk)' : '#41494F',
+                      color: actief ? 'var(--merk)' : '#41494F',
                       background: actief ? 'var(--merk-zacht)' : uit ? '#F5F6F8' : 'transparent',
                       transition: 'background .15s, color .15s',
                     }}
                   >
                     {menu.label}
-                    {menu.slot && <Slotje size={11} />}
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} style={{ opacity: .5, transform: uit ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} aria-hidden>
                       <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -249,6 +241,9 @@ export function AppTopbar({
                 {userEmail}
               </span>
             )}
+            <Link href="/kantoor" style={{ fontSize: 13.5, fontWeight: 600, color: pathname.startsWith('/kantoor') ? 'var(--merk)' : '#5C6470', textDecoration: 'none' }}>
+              Kantoor
+            </Link>
             <form action="/api/auth/logout" method="POST">
               <button type="submit" style={{ fontSize: 13.5, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 Uitloggen
@@ -273,7 +268,7 @@ export function AppTopbar({
             {menus.map(menu => (
               <div key={menu.id} style={{ marginBottom: 12 }}>
                 <p style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#98A0A6', margin: '0 0 4px' }}>
-                  {menu.label} {menu.slot && <Slotje size={11} />}
+                  {menu.label} {menu.slot && menu.items.length === 0 && <Slotje size={11} />}
                 </p>
                 {menu.items.map((item, i) => (
                   item.slot || item.binnenkort ? (
@@ -286,6 +281,9 @@ export function AppTopbar({
                 ))}
               </div>
             ))}
+            <Link href="/kantoor" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
+              Kantoor
+            </Link>
             <form action="/api/auth/logout" method="POST">
               <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}>
                 Uitloggen

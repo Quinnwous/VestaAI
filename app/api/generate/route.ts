@@ -121,6 +121,10 @@ export async function POST(req: NextRequest) {
             address: input.adres,
             input_json: input,
             outputs_json: output,
+            // Elk nieuw dossier start in de acquisitiefase (besluit 16 sep
+            // 2026, zie CLAUDE.md § Hoofdstructuur) — content staat al klaar,
+            // maar wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.
+            fase: 'acquisitie',
           })
           .select('id')
           .single()

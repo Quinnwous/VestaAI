@@ -1,17 +1,22 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createBaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import type { HuisstijlConfig } from './schemas'
+import type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag } from './schemas'
 
-export type { HuisstijlConfig }
+export type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag }
 
 export type Kantoor = {
   id: string
   name: string
   logo_url: string | null
   huisstijl_json: HuisstijlConfig | null
+  instellingen_json?: KantoorInstellingen | null
 }
 
+// `role` is een historisch veld uit de tijd van kantoor-admin/makelaar-onderscheid.
+// Sinds 16 sep 2026 is er één rol per kantoor (iedereen ziet en kan hetzelfde) —
+// de kolom blijft bestaan maar stuurt geen rechten meer binnen het kantoor zelf.
+// Platform-admin (Quinn) is een los concept, zie lib/admin.ts.
 export type Makelaar = {
   id: string
   kantoor_id: string
@@ -30,7 +35,9 @@ export type ObjectRow = {
   input_json: Record<string, unknown>
   outputs_json: Record<string, unknown>
   created_at: string
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'onder_bod' | 'verkocht'
+  fase: ObjectFase
+  pitch_uitslag: PitchUitslag | null
 }
 
 export function createServerSupabaseClient() {

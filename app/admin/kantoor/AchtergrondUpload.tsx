@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { uploadAchtergrond } from '../actions'
+import { uploadAchtergrondAlsAdmin } from '../actions'
 
 /**
  * Sfeerbeeld van het kantoor (team links, pand rechts) dat als licht watermerk in de
@@ -35,7 +35,7 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
     formData.append('kantoor_id', kantoorId)
     formData.append('slot', slot)
 
-    const resultaat = await uploadAchtergrond(formData)
+    const resultaat = await uploadAchtergrondAlsAdmin(formData)
 
     if (resultaat.ok) {
       setStatus('ok')
@@ -50,12 +50,12 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
 
   return (
     <div style={{ flex: 1, minWidth: 190 }}>
-      <p style={{ fontSize: 13, fontWeight: 600, color: '#41494F', margin: '0 0 8px' }}>{label}</p>
+      <p className="text-xs font-semibold text-gray-600 mb-2">{label}</p>
       <div
         onClick={() => inputRef.current?.click()}
         style={{
-          height: 108, borderRadius: 'var(--merk-radius-md, 12px)', cursor: 'pointer',
-          border: `2px dashed ${preview ? 'var(--merk-rand, #DDE1E5)' : '#DDE1E5'}`,
+          height: 108, borderRadius: 12, cursor: 'pointer',
+          border: '2px dashed #DDE1E5',
           background: preview ? `center / cover no-repeat url(${preview})` : '#F7F8F9',
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
         }}
@@ -63,15 +63,16 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
         {!preview && <span style={{ fontSize: 12.5, color: '#98A0A6', marginBottom: 42 }}>Nog geen beeld</span>}
       </div>
       <div style={{ fontSize: 12.5, marginTop: 7 }}>
-        {status === 'uploading' && <span style={{ color: 'var(--merk)' }}>Uploaden…</span>}
-        {status === 'ok' && <span style={{ color: 'var(--merk)' }}>Opgeslagen</span>}
+        {status === 'uploading' && <span className="text-gray-700">Uploaden…</span>}
+        {status === 'ok' && <span className="text-green-700">Opgeslagen</span>}
         {status === 'error' && <span style={{ color: '#C0392B' }}>{fout}</span>}
         {status === 'idle' && (
           <>
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
-              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontWeight: 600, color: 'var(--merk)', textDecoration: 'underline' }}
+              className="text-gray-700 underline font-semibold"
+              style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
             >
               {preview ? 'Vervangen' : 'Beeld kiezen'}
             </button>
@@ -91,10 +92,10 @@ export function AchtergrondUpload({ kantoorId, huidigPrimair, huidigSecundair }:
 }) {
   return (
     <div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: '#41494F', margin: '0 0 4px' }}>Sfeerbeeld in de zijmarges</p>
-      <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 12px', lineHeight: 1.5 }}>
+      <p className="text-sm font-medium text-gray-700 mb-1">Sfeerbeeld in de zijmarges</p>
+      <p className="text-xs text-gray-500 mb-3 leading-relaxed">
         Verschijnt licht vervaagd links en rechts van het werkscherm op brede schermen. Staande foto&apos;s
-        van je team of je pand werken het beste; laat je ze leeg, dan blijft de achtergrond effen.
+        van het team of pand werken het beste; leeg = effen achtergrond.
       </p>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <Vak kantoorId={kantoorId} slot="primair" label="Links" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigPrimair} />

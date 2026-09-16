@@ -4,15 +4,14 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { relatieveDatum } from '@/lib/utils'
-import type { ObjectRow } from '@/lib/supabase'
+import type { ObjectRow, ObjectFase } from '@/lib/supabase'
 
-type StatusFilter = '' | 'draft' | 'published' | 'onder_bod' | 'verkocht'
+type FaseFilter = '' | ObjectFase
 
-const STATUS_TABS: { value: StatusFilter; label: string }[] = [
+const FASE_TABS: { value: FaseFilter; label: string }[] = [
   { value: '', label: 'Alles' },
-  { value: 'draft', label: 'Concept' },
-  { value: 'published', label: 'Gepubliceerd' },
-  { value: 'onder_bod', label: 'Onder bod' },
+  { value: 'acquisitie', label: 'Acquisitie' },
+  { value: 'in_verkoop', label: 'In verkoop' },
   { value: 'verkocht', label: 'Verkocht' },
 ]
 
@@ -23,12 +22,23 @@ const STATUS_LABELS: Record<string, { label: string; color: string; dot: string 
   verkocht:  { label: 'Verkocht',      color: '#5C6470', dot: '#5C6470' },
 }
 
+const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
+  acquisitie: { label: 'Acquisitie', color: '#D97706' },
+  in_verkoop: { label: 'In verkoop', color: 'var(--merk,#1A6B45)' },
+  verkocht: { label: 'Verkocht', color: '#5C6470' },
+}
+
+const UITSLAG_BADGE: Record<string, { label: string; color: string }> = {
+  gewonnen: { label: 'Gewonnen', color: 'var(--merk,#1A6B45)' },
+  verloren: { label: 'Verloren', color: '#DC2626' },
+}
+
 interface Props {
-  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]
+  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase' | 'pitch_uitslag'>[]
   totalPages: number
   currentPage: number
   search: string
-  statusFilter: StatusFilter
+  faseFilter: FaseFilter
   totalCount: number
 }
 
@@ -43,7 +53,19 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-export function DashboardClient({ objecten, totalPages, currentPage, search, statusFilter, totalCount }: Props) {
+function FaseBadge({ fase, pitchUitslag }: { fase: ObjectFase; pitchUitslag: string | null }) {
+  // In de acquisitiefase telt de pitch-uitslag zwaarder dan de fase zelf.
+  const uitslag = fase === 'acquisitie' && pitchUitslag ? UITSLAG_BADGE[pitchUitslag] : undefined
+  const cfg = uitslag ?? FASE_BADGE[fase]
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color }} />
+      {cfg.label}
+    </span>
+  )
+}
+
+export function DashboardClient({ objecten, totalPages, currentPage, search, faseFilter, totalCount }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -79,12 +101,12 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
 
   return (
     <div>
-      {/* Status-filter tabs */}
+      {/* Fase-filter tabs */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
-        {STATUS_TABS.map(tab => (
+        {FASE_TABS.map(tab => (
           <button
             key={tab.value}
-            onClick={() => updateUrl({ status: tab.value, page: '1' })}
+            onClick={() => updateUrl({ fase: tab.value, page: '1' })}
             style={{
               padding: '6px 14px',
               borderRadius: 'var(--merk-radius-card-xl, 20px)',
@@ -93,9 +115,9 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
               border: '1px solid',
               cursor: 'pointer',
               transition: 'all .15s',
-              background: statusFilter === tab.value ? 'var(--merk,#1A6B45)' : '#fff',
-              color: statusFilter === tab.value ? 'var(--merk-op,#fff)' : '#5C6470',
-              borderColor: statusFilter === tab.value ? 'var(--merk,#1A6B45)' : '#E1E5E9',
+              background: faseFilter === tab.value ? 'var(--merk,#1A6B45)' : '#fff',
+              color: faseFilter === tab.value ? 'var(--merk-op,#fff)' : '#5C6470',
+              borderColor: faseFilter === tab.value ? 'var(--merk,#1A6B45)' : '#E1E5E9',
             }}
           >
             {tab.label}
@@ -132,19 +154,17 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
       {/* Lege state */}
       {objecten.length === 0 && (
         <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '2px dashed #E1E5E9', background: '#fff', padding: '64px 32px', textAlign: 'center' }}>
-          {search || statusFilter ? (
+          {search || faseFilter ? (
             <>
               <p style={{ fontSize: 15, fontWeight: 700, color: '#14181B' }}>Geen woningen gevonden</p>
               <p style={{ fontSize: 14, color: '#98A0A6', marginTop: 6 }}>
-                {search && statusFilter
-                  ? `Geen ${statusFilter === 'draft' ? 'concept' : 'gepubliceerde'} woningen voor "${search}".`
-                  : search
-                    ? 'Probeer een ander adres.'
-                    : `Nog geen ${statusFilter === 'draft' ? 'concept-' : 'gepubliceerde '}woningen.`}
+                {search
+                  ? 'Probeer een ander adres.'
+                  : `Nog geen woningen in fase "${FASE_TABS.find(t => t.value === faseFilter)?.label}".`}
               </p>
               <button
                 type="button"
-                onClick={() => { setZoekterm(''); updateUrl({ search: '', status: '', page: '1' }) }}
+                onClick={() => { setZoekterm(''); updateUrl({ search: '', fase: '', page: '1' }) }}
                 style={{ marginTop: 12, fontSize: 13, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Wis filters
@@ -178,7 +198,8 @@ export function DashboardClient({ objecten, totalPages, currentPage, search, sta
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#14181B' }}>{obj.address}</p>
-                  <StatusBadge status={obj.status ?? 'draft'} />
+                  <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} pitchUitslag={obj.pitch_uitslag ?? null} />
+                  {obj.fase !== 'acquisitie' && <StatusBadge status={obj.status ?? 'draft'} />}
                 </div>
                 <p style={{ fontSize: 13, color: '#98A0A6', marginTop: 3 }}>{formatDatum(obj.created_at)}</p>
               </div>

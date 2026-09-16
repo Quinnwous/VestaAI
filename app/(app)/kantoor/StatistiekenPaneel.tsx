@@ -9,12 +9,6 @@ interface MakelaarStat {
   objecten: number
 }
 
-interface NpsFeedback {
-  score: number
-  feedback: string
-  datum: string
-}
-
 interface KostenSchatting {
   deze_maand: number
   per_maand: Record<string, number>
@@ -28,12 +22,6 @@ interface StatsData {
   gepubliceerd: number
   dezeMaand: number
   kostenschatting: KostenSchatting
-  nps: {
-    gemiddeld: number | null
-    score: number | null
-    totaal: number
-    recenteFeedback: NpsFeedback[]
-  }
 }
 
 const MAAND_LABELS: Record<string, string> = {
@@ -41,7 +29,8 @@ const MAAND_LABELS: Record<string, string> = {
   '07': 'Jul', '08': 'Aug', '09': 'Sep', '10': 'Okt', '11': 'Nov', '12': 'Dec',
 }
 
-export function StatistiekenTab() {
+/** Read-only statistiekenoverzicht — iedereen in het kantoor ziet dezelfde cijfers (één rol, zie CLAUDE.md). */
+export function StatistiekenPaneel() {
   const [stats, setStats] = useState<StatsData | null>(null)
   const [laden, setLaden] = useState(true)
   const [fout, setFout] = useState('')
@@ -80,7 +69,6 @@ export function StatistiekenTab() {
 
   return (
     <div className="space-y-8 max-w-xl">
-      {/* Samenvatting */}
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: 'Totaal woningen', waarde: stats.totaalAltijd },
@@ -94,7 +82,6 @@ export function StatistiekenTab() {
         ))}
       </div>
 
-      {/* Tijdsbesparing */}
       {stats.totaalAltijd > 0 && (
         <div className="rounded-xl border border-[var(--merk-rand,#C7E6D5)] bg-[var(--merk-zacht,#EAF5EE)] p-4 flex items-center gap-4">
           <div className="text-2xl">⏱</div>
@@ -109,7 +96,6 @@ export function StatistiekenTab() {
         </div>
       )}
 
-      {/* Bar chart: objecten per maand */}
       <div>
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Woningen per maand (laatste 6 maanden)</h3>
         <div className="flex items-end gap-3 h-36">
@@ -130,7 +116,6 @@ export function StatistiekenTab() {
         </div>
       </div>
 
-      {/* API-kosten — intern referentiecijfer, geen abonnementsbudget */}
       {stats.kostenschatting && (
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3">API-kosten (schatting)</h3>
@@ -146,53 +131,6 @@ export function StatistiekenTab() {
         </div>
       )}
 
-      {/* NPS */}
-      {stats.nps.totaal > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-gray-700 mb-3">NPS — klantfeedback</h3>
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center">
-              <p className={`text-2xl font-bold ${
-                stats.nps.score !== null && stats.nps.score >= 50 ? 'text-[var(--merk,#1A6B45)]'
-                : stats.nps.score !== null && stats.nps.score >= 0 ? 'text-amber-600'
-                : 'text-red-600'
-              }`}>
-                {stats.nps.score !== null ? (stats.nps.score > 0 ? '+' : '') + stats.nps.score : '—'}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">NPS score</p>
-            </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center">
-              <p className="text-2xl font-bold text-gray-900">
-                {stats.nps.gemiddeld !== null ? stats.nps.gemiddeld.toFixed(1) : '—'}
-              </p>
-              <p className="text-xs text-gray-500 mt-0.5">Gem. score /10</p>
-            </div>
-            <div className="rounded-xl border border-gray-200 bg-white p-4 text-center">
-              <p className="text-2xl font-bold text-gray-900">{stats.nps.totaal}</p>
-              <p className="text-xs text-gray-500 mt-0.5">Reacties</p>
-            </div>
-          </div>
-
-          {stats.nps.recenteFeedback.length > 0 && (
-            <div className="space-y-2">
-              {stats.nps.recenteFeedback.map((fb, i) => (
-                <div key={i} className="rounded-lg border border-gray-100 bg-white px-4 py-3 flex items-start gap-3">
-                  <span className={`text-xs font-bold rounded-full w-7 h-7 flex items-center justify-center flex-shrink-0 ${
-                    fb.score >= 9 ? 'bg-green-100 text-[var(--merk-hover,#114230)]'
-                    : fb.score >= 7 ? 'bg-[var(--merk-zacht,#EAF5EE)] text-[var(--merk-hover,#114230)]'
-                    : 'bg-red-100 text-red-700'
-                  }`}>
-                    {fb.score}
-                  </span>
-                  <p className="text-xs text-gray-700 leading-relaxed">{fb.feedback}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Per makelaar */}
       {stats.makelaarStats.length > 0 && (
         <div>
           <h3 className="text-sm font-semibold text-gray-700 mb-3">Woningen per teamlid</h3>

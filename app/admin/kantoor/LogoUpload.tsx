@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { uploadLogo } from '../actions'
+import { uploadLogoAlsAdmin } from '../actions'
 
 interface Props {
   kantoorId: string
@@ -26,7 +26,7 @@ export function LogoUpload({ kantoorId, huidigUrl }: Props) {
     formData.append('logo', file)
     formData.append('kantoor_id', kantoorId)
 
-    const result = await uploadLogo(formData)
+    const result = await uploadLogoAlsAdmin(formData)
 
     if (result.ok) {
       setStatus('ok')
@@ -45,7 +45,7 @@ export function LogoUpload({ kantoorId, huidigUrl }: Props) {
       <div className="flex items-center gap-4">
         <div
           onClick={() => inputRef.current?.click()}
-          className="w-24 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-[var(--merk,#1A6B45)] transition-colors overflow-hidden bg-gray-50"
+          className="w-24 h-16 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center cursor-pointer hover:border-gray-500 transition-colors overflow-hidden bg-gray-50"
         >
           {preview ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -59,15 +59,15 @@ export function LogoUpload({ kantoorId, huidigUrl }: Props) {
         </div>
 
         <div className="text-sm text-gray-500">
-          {status === 'uploading' && <p className="text-[var(--merk,#1A6B45)]">Uploaden...</p>}
-          {status === 'ok' && <p className="text-[var(--merk,#1A6B45)]">Logo opgeslagen!</p>}
+          {status === 'uploading' && <p className="text-gray-700">Uploaden...</p>}
+          {status === 'ok' && <p className="text-green-700">Logo opgeslagen!</p>}
           {status === 'error' && <p className="text-red-600">{errorMsg}</p>}
           {status === 'idle' && (
             <>
               <button
                 type="button"
                 onClick={() => inputRef.current?.click()}
-                className="text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] underline font-medium"
+                className="text-gray-700 hover:text-gray-900 underline font-medium"
               >
                 {preview ? 'Vervang logo' : 'Upload logo'}
               </button>

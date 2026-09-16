@@ -4,18 +4,19 @@ import { ensureMakelaar } from '@/lib/ensureMakelaar'
 import { verwerkNieuweKlant } from '@/lib/nieuweKlant'
 import { isPlatformAdmin } from '@/lib/admin'
 import { DashboardClient } from './DashboardClient'
+import { PitchScorebord } from './PitchScorebord'
 import { FeatureKaarten } from '@/components/FeatureKaarten'
 import { Eyebrow, SerifTitle } from '@/components/ui'
-import type { ObjectRow } from '@/lib/supabase'
+import type { ObjectRow, ObjectFase } from '@/lib/supabase'
 
 export const metadata = { title: 'Overzicht' }
 
-type StatusFilter = '' | 'draft' | 'published' | 'onder_bod' | 'verkocht'
+type FaseFilter = '' | ObjectFase
 
 interface SearchParams {
   search?: string
   page?: string
-  status?: string
+  fase?: string
 }
 
 const PER_PAGE = 20
@@ -79,15 +80,14 @@ export default async function DashboardPage({
 
   const search = searchParams.search ?? ''
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
-  const rawStatus = searchParams.status ?? ''
-  const gelijkeStatussen: StatusFilter[] = ['draft', 'published', 'onder_bod', 'verkocht']
-  const statusFilter: StatusFilter = gelijkeStatussen.includes(rawStatus as StatusFilter) ? rawStatus as StatusFilter : ''
+  const geldigeFases: FaseFilter[] = ['acquisitie', 'in_verkoop', 'verkocht']
+  const faseFilter: FaseFilter = geldigeFases.includes(searchParams.fase as FaseFilter) ? searchParams.fase as FaseFilter : ''
   const from = (page - 1) * PER_PAGE
   const to = from + PER_PAGE - 1
 
   let query = supabase
     .from('objecten')
-    .select('id, address, created_at, status', { count: 'exact' })
+    .select('id, address, created_at, status, fase, pitch_uitslag', { count: 'exact' })
     .eq('kantoor_id', makelaar.kantoor_id)
     .order('created_at', { ascending: false })
     .range(from, to)
@@ -95,14 +95,21 @@ export default async function DashboardPage({
   if (search) {
     query = query.ilike('address', `%${search}%`)
   }
-  if (statusFilter) {
-    query = query.eq('status', statusFilter)
+  if (faseFilter) {
+    query = query.eq('fase', faseFilter)
   }
 
-  const { data: objecten, count } = await query
+  const [{ data: objecten, count }, { data: acquisitieRows }] = await Promise.all([
+    query,
+    // Los van paginering/zoekfilter — het scorebord telt over álle acquisitiedossiers.
+    supabase
+      .from('objecten')
+      .select('pitch_uitslag')
+      .eq('kantoor_id', makelaar.kantoor_id)
+      .eq('fase', 'acquisitie'),
+  ])
 
   const totalPages = Math.ceil((count ?? 0) / PER_PAGE)
-  const newestObjectId = objecten?.[0]?.id ?? null
 
   return (
     <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
@@ -111,18 +118,20 @@ export default async function DashboardPage({
         <SerifTitle accent="woningen" style={{ marginBottom: 6 }}>Jouw</SerifTitle>
       </div>
 
+      <PitchScorebord rows={(acquisitieRows ?? []) as { pitch_uitslag: string | null }[]} />
+
       {/* Geen welkomstblok of onboarding-checklist: het kantoor komt hier om te werken
           en ziet direct zijn woningen. */}
       <DashboardClient
-        objecten={(objecten ?? []) as Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status'>[]}
+        objecten={(objecten ?? []) as Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase' | 'pitch_uitslag'>[]}
         totalPages={totalPages}
         currentPage={page}
         search={search}
-        statusFilter={statusFilter}
+        faseFilter={faseFilter}
         totalCount={count ?? 0}
       />
 
-      <FeatureKaarten newestObjectId={newestObjectId} />
+      <FeatureKaarten />
     </main>
   )
 }

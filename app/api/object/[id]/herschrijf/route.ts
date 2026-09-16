@@ -44,7 +44,7 @@ Property details:
 - Address: ${input.adres}
 - Type: ${input.woningtype}, ${input.kamers} rooms, ${input.oppervlak_m2} m²
 - Year built: ${input.bouwjaar} | Energy label: ${input.energielabel}
-- Asking price: €${input.vraagprijs.toLocaleString('nl-NL')}
+- Asking price: €${(input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0).toLocaleString('nl-NL')}
 - USPs: ${input.usps}
 - Target audience: ${input.doelgroep}
 
@@ -62,7 +62,7 @@ Objectgegevens:
 - Adres: ${input.adres}
 - Type: ${input.woningtype}, ${input.kamers} kamers, ${input.oppervlak_m2} m²
 - Bouwjaar: ${input.bouwjaar} | Energielabel: ${input.energielabel}
-- Vraagprijs: €${input.vraagprijs.toLocaleString('nl-NL')}
+- Vraagprijs: €${(input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0).toLocaleString('nl-NL')}
 - USP's: ${input.usps}
 - Doelgroep: ${input.doelgroep}
 
