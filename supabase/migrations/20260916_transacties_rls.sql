@@ -1,3 +1,14 @@
+-- ⚠️ SUPERSEDED 17 sep 2026 door migratie 20260916213323_rls_kantoor_isolatie_transacties.sql.
+-- Deze policy ("gedeelde referentiepool", elk ingelogd account van élk kantoor
+-- kon alle rijen lezen) bleek bij verificatie een live cross-tenant datalek:
+-- marktanalyse/transacties/concurrentie bevragen `transacties` al met de
+-- sessie-gebonden client. Besluit (roadmap § Besluitenlogboek, 16-17 sep 2026):
+-- transactiedata is strikt per kantoor afgeschermd, geen gedeelde pool meer.
+-- Dit bestand blijft staan als historisch document van de oorspronkelijke
+-- (bewust foute) keuze; de opvolgmigratie is leidend.
+--
+-- Oorspronkelijke tekst hieronder, ongewijzigd:
+--
 -- RLS voor transacties (ontbrak in 20260916_transacties.sql). Gevonden bij het
 -- controleren van de kantoorpagina: deze migratie — en alle andere van 16 sep —
 -- bleek nooit op de database te zijn uitgevoerd (kolommen/tabel ontbraken).

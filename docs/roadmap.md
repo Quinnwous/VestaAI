@@ -10,18 +10,28 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 0 — Veiligheid, fundament & documentatie
-- **Laatst opgeleverd:** masterplan vastgelegd in `docs/roadmap.md` (dit document)
-- **Volgende item:** 0.1 — stand van de database opvragen via de Supabase-MCP
+- **Fase:** 0 — Veiligheid, fundament & documentatie (vrijwel afgerond)
+- **Laatst opgeleverd:** fase 0 volledig doorlopen op het databaseonafhankelijke
+  én het databaseafhankelijke werk — zie § Opgeleverd voor de volledige lijst.
+  Twee live beveiligingsproblemen gevonden en direct gefixt: een cross-tenant
+  datalek in de transactiedata (RLS + SECURITY DEFINER-view) en een kapotte
+  import-upsert. Zie het besluitenlogboek (17 sep 2026) voor de details.
+- **Volgende item:** fase 1 — UI-fundament + nieuwe schil (1.1 t/m 1.10, zie
+  § Fase 1 hieronder). Start met 1.1 (ontwerpprincipes + basisprimitives)
+  vóórdat de topbar/startpagina gebouwd worden.
 - **Blokkades:**
-  - Supabase-MCP nog niet geautoriseerd door Quinn (`/mcp`) — zonder deze koppeling
-    krijgt Quinn read-only SQL-checks om zelf te plakken.
-  - Verwerkersovereenkomst met i4housing (concept volgt uit 0.9) moet getekend zijn
-    vóórdat de volledige Brainbay-/Realworks-exports geïmporteerd worden (fase 4.8).
-  - Volledige exports van Brainbay + Realworks nog niet ontvangen (toegezegd: week 1).
+  - Verwerkersovereenkomst met i4housing (concept staat klaar:
+    `docs/verwerkersovereenkomst-concept.md`) moet juridisch getoetst en
+    getekend zijn vóórdat de volledige Brainbay-/Realworks-exports
+    geïmporteerd worden (fase 4.8) — blokkeert fase 4, niet fase 1-3.
+  - Volledige exports van Brainbay + Realworks nog niet ontvangen (toegezegd:
+    week 1) — blokkeert fase 4, niet fase 1-3.
   - Voorbeeld-verkoopadvies van Quinn nog niet ontvangen (blokkeert fase 10).
-- **Open vragen:** geen — alle keuzes uit de planningssessie van 16-17 sep 2026
-  staan in het besluitenlogboek hieronder.
+  - **Twee handmatige Supabase Auth-instellingen** (niet via de MCP te zetten,
+    alleen via het dashboard): self-signup uitzetten (Auth → Providers →
+    Email) en "Leaked password protection" aanzetten (Auth → Policies). Beide
+    blokkeren geen code-werk, maar staan nog open.
+- **Open vragen:** geen.
 
 ---
 
@@ -82,6 +92,54 @@ de i4housing-omgeving, via twee voorbereide Chrome-profielen.
 ---
 
 ## 3. Besluitenlogboek
+
+### 17 sep 2026 — fase 0 uitgevoerd: twee live beveiligingsproblemen gevonden en gefixt
+
+Bij het uitvoeren van fase 0.1 (databasestatus via de Supabase-MCP) bleek het
+risico uit het masterplan geen toekomstig risico te zijn, maar een **actief,
+live probleem**:
+
+- **Cross-tenant datalek in `transacties`.** De policy "Ingelogde makelaars
+  lezen de transactiedataset" liet elke ingelogde makelaar van élk kantoor
+  alle transacties van alle kantoren lezen — en de pagina's
+  `marktanalyse/page.tsx`, `transacties/page.tsx` en `concurrentie/page.tsx`
+  bevragen `transacties` al met de sessie-gebonden client (niet service-role).
+  Dit was dus geen theoretisch risico voor zodra het demo-kantoor bestaat,
+  maar een bug die vandaag al fout gaat zodra twee kantoren allebei data
+  hebben.
+- **RLS-omzeiling via de view.** `transacties_met_coordinaten` was aangemaakt
+  als `SECURITY DEFINER` (eigenaar `postgres`), wat RLS op de onderliggende
+  tabel volledig omzeilt voor wie de view bevraagt — vastgesteld met
+  `grant`-informatie dat zowel `anon` als `authenticated` een SELECT-recht op
+  de view hadden. Zonder de fix zou dit ook via de publieke anon-key
+  (zonder inloggen) uitleesbaar zijn geweest zodra er rijen in stonden.
+- **Fix:** migratie `20260916213323_rls_kantoor_isolatie_transacties.sql` —
+  nieuwe policy scoped op `kantoor_id`, view herschapen met
+  `security_invoker = true`, `grant select` alleen aan `authenticated`.
+  Getest met een rolled-back transactie: twee test-kantoren, de policy geeft
+  aantoonbaar alleen het eigen kantoor terug.
+- Op hetzelfde moment ontdekt en gefixt: de import-upsert in
+  `app/admin/transacties/actions.ts` gebruikte
+  `onConflict: 'kantoor_id,adres,verkoopdatum'`, wat niet matchte met de
+  bestaande functionele index (`coalesce(verkoopdatum, …)`) — élke import met
+  een botsende rij faalde met Postgres-foutcode 42P10. Gereproduceerd en
+  gefixt via migratie `20260916213816_fix_transacties_upsert_sleutel.sql`
+  (`nulls not distinct`-index).
+- Ook vastgesteld: `handle_new_user()` (de oude self-signup-trigger die
+  automatisch een kantoor+makelaar aanmaakt) bestaat nog als functie, maar is
+  **niet meer als trigger gekoppeld** aan `auth.users` — het zelf-registratie-
+  risico via de database is dus kleiner dan aangenomen in het masterplan
+  (self-signup op providerniveau uitzetten blijft wel een actie, zie § Stand
+  van zaken, als tweede verdedigingslinie).
+- Alle betrokken tabellen waren op het moment van de fix leeg (0 rijen), dus
+  geen back-up nodig vóór deze specifieke actie — het back-upscript (0.2)
+  is desondanks gebouwd en getest, voor elke volgende risicovolle stap.
+
+**Les voor de rest van het plan:** DDL die buiten `apply_migration` om wordt
+uitgevoerd (bijvoorbeeld via de SQL Editor) komt niet in de migratiehistorie
+terecht — dit is precies hoe de 16-sep-migraties "onzichtbaar" konden blijven
+terwijl hun effect allang op de database stond. Vanaf nu gaat elke
+schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ### 16-17 sep 2026 — masterplan "demo-klaar"
 
@@ -218,33 +276,62 @@ Volgorde: 0 → 1 → 2 → 3 → 4 (volledige exports in week 1) → 5 → 6 �
 subagent zodra fase 1 gemerged is.
 
 ### Fase 0: Veiligheid, fundament & documentatie (2 sessies)
-- [ ] 0.1 **Stand van de database** via de Supabase-MCP: welke `20260916_*`-migraties
-      staan erop; security advisors draaien; self-signup uit; **baseline-schemadump**
-      naar `supabase/schema-baseline.sql`.
-- [ ] 0.2 **Back-upscript** `scripts/backup-data.mjs` + `backups/` in `.gitignore`;
-      eerste back-up draaien.
-- [ ] 0.3 **RLS per kantoor** (vóórdat transactiemigraties draaien of het
-      demo-kantoor bestaat): `20260916_transacties_rls.sql` corrigeren naar
-      `kantoor_id = (select kantoor_id from makelaars where id = auth.uid())`;
-      view `transacties_met_coordinaten` opnieuw met `security_invoker = true`;
-      anon-grants controleren; RLS van kerntabellen verifiëren tegen de baseline.
-- [ ] 0.4 **Import-bug**: unieke index en `onConflict` gelijktrekken (definitieve
-      sleutel komt in 4.4; nu minimaal werkend maken).
-- [ ] 0.5 **Beveiliging tweede laag**: `auth.getUser()` → 401 in `app/api/bag/route.ts`,
-      `bag/suggest` en `verrijking`. CSP in `next.config.mjs:19`: `api.stripe.com` eruit.
-- [ ] 0.6 **Documentatie**: dit document (roadmap) actueel houden; `CLAUDE.md`
-      sessieprotocol/DoD/vangrails bovenaan + RLS-regel + navigatie; `docs/goals.md`
-      hexwaarden + kern "systeem op eigen data"; root-`CLAUDE.md` actualiseren.
-- [ ] 0.7 **Geheugen opschonen**: `vestaai-setup-status.md` en `vestaai-eerste-tester.md`
-      verwijderen; `vestaai-huisstijl.md`/`vestaai-whitelabel-i4housing.md` naar
-      CLAUDE.md verplaatsen; `MEMORY.md` bijwerken.
-- [ ] 0.8 **Projectskills** `.claude/skills/sessie-start/SKILL.md` en
-      `.claude/skills/sessie-afronden/SKILL.md`.
-- [ ] 0.9 **Concept-verwerkersovereenkomst** `docs/verwerkersovereenkomst-concept.md`.
+- [x] 0.1 **Stand van de database** via de Supabase-MCP: `20260916_*`-migraties
+      bleken NIET getrackt maar hun DDL WEL al toegepast (los uitgevoerd, buiten
+      de migratiehistorie om — zie `supabase/schema-baseline.sql`); security
+      advisors gedraaid (resultaten hieronder); **baseline-schemadump**
+      geschreven naar `supabase/schema-baseline.sql`. Self-signup uitzetten en
+      "leaked password protection" aanzetten kunnen niet via de MCP (alleen
+      dashboard) — blijven open als handmatige actie Quinn, zie § Stand van
+      zaken.
+- [x] 0.2 **Back-upscript** `scripts/backup-data.mjs` + `backups/` in `.gitignore`;
+      eerste back-up gedraaid en geverifieerd (rijaantallen kloppen).
+- [x] 0.3 **RLS per kantoor**: bij verificatie bleek dit een live, actief
+      probleem, niet alleen een risico voor de toekomst — gefixt via migratie
+      `20260916213323_rls_kantoor_isolatie_transacties.sql`: nieuwe policy
+      `kantoor_id = (select kantoor_id from makelaars where id = auth.uid())`,
+      view `transacties_met_coordinaten` herschapen met
+      `security_invoker = true`. Getest met een rolled-back transactie (twee
+      test-kantoren, policy geeft alleen het eigen kantoor terug).
+      `spatial_ref_sys` (PostGIS-systeemtabel) kon niet gefixt worden — eigendom
+      van de extensie, "must be owner"-fout; laag risico (alleen
+      SRID-referentiedata), genoteerd in de baseline.
+- [x] 0.4 **Import-bug**: gereproduceerd (foutcode 42P10: de oude
+      `coalesce(verkoopdatum, …)`-index matchte niet met
+      `onConflict: 'kantoor_id,adres,verkoopdatum'`) en gefixt via migratie
+      `20260916213816_fix_transacties_upsert_sleutel.sql` (`nulls not
+      distinct`-index). Getest: herimport update i.p.v. dupliceert, ook bij
+      een ontbrekende verkoopdatum.
+- [x] 0.5 **Beveiliging tweede laag**: `auth.getUser()` → 401 toegevoegd aan
+      `app/api/bag/route.ts`, `bag/suggest/route.ts` en `verrijking/route.ts`.
+      CSP in `next.config.mjs` opgeschoond: alle Stripe-referenties eruit
+      (`script-src`, `frame-src`, `connect-src` — niet alleen `api.stripe.com`).
+- [x] 0.6 **Documentatie**: dit document herschreven tot masterplan;
+      `CLAUDE.md` sessieprotocol/DoD/vangrails bovenaan + de
+      "gedeelde-referentiepool"-tekst gecorrigeerd naar de RLS-per-kantoor-
+      realiteit (was feitelijk onjuist na 0.3); `docs/goals.md` hexwaarden
+      gecorrigeerd + betaalintentie toegevoegd; root-`CLAUDE.md`
+      VestaAI-beschrijving geactualiseerd (Stripe/BE/"8 velden"/`VestaAI.html`
+      waren allemaal verouderd).
+- [x] 0.7 **Geheugen opschonen**: `vestaai-setup-status.md` en
+      `vestaai-eerste-tester.md` verwijderd (achterhaald); uit
+      `vestaai-huisstijl.md`/`vestaai-whitelabel-i4housing.md` bleek alleen de
+      `var(--merk,#hex)`-fallback-valkuil nog niet gedocumenteerd — die is
+      toegevoegd aan CLAUDE.md, de rest was al gedekt door de code/CLAUDE.md
+      of achterhaald (font is inmiddels Newsreader, niet Playfair/Lora); beide
+      bestanden verwijderd; `vestaai-masterplan.md` toegevoegd als pointer;
+      `MEMORY.md` bijgewerkt.
+- [x] 0.8 **Projectskills** `.claude/skills/sessie-start/SKILL.md` en
+      `.claude/skills/sessie-afronden/SKILL.md` geschreven.
+- [x] 0.9 **Concept-verwerkersovereenkomst** `docs/verwerkersovereenkomst-concept.md`
+      geschreven — expliciet gemarkeerd als "niet ondertekenen zonder
+      juridische toetsing".
 - **Klaar als:** een ingelogd demo-account kan via de REST-API aantoonbaar géén
-  transacties van een ander kantoor lezen (test met twee accounts); er staat
-  een back-up en een baseline; `/sessie-start` in een nieuwe chat weet zonder
-  uitleg waar we staan.
+  transacties van een ander kantoor lezen (✅ geverifieerd met een
+  rolled-back testtransactie; een volledige REST-test met twee échte accounts
+  volgt in fase 11.3 zodra er meerdere kantoren met accounts bestaan); er
+  staat een back-up en een baseline (✅); `/sessie-start` in een nieuwe chat
+  weet zonder uitleg waar we staan (✅, dit document + de skill).
 
 ### Fase 1: UI-fundament + nieuwe schil (4 sessies)
 - [ ] 1.1 **Fundament eerst**: `docs/ontwerpprincipes.md`; `scripts/screenshots.mjs`;
@@ -491,5 +578,12 @@ hun site · ROI-dashboard · prijsadvies bij lange looptijd.
 
 ## Opgeleverd
 
-_(nog leeg — hier komt één regel + datum per afgerond item, bijgehouden door
-`/sessie-afronden`)_
+- 16 sep 2026 — masterplan "demo-klaar" opgesteld en vastgelegd in
+  `docs/roadmap.md`, verwijzing toegevoegd bovenaan `CLAUDE.md` (PR #15).
+- 17 sep 2026 — fase 0 (0.1 t/m 0.9) volledig doorlopen: RLS-datalek in
+  `transacties` + SECURITY DEFINER-view gefixt, kapotte import-upsert gefixt,
+  auth-check toegevoegd aan 3 API-routes, CSP opgeschoond (Stripe eruit),
+  back-upscript gebouwd en getest, baseline-schemadump geschreven,
+  documentatie (CLAUDE.md/goals.md/root-CLAUDE.md) geactualiseerd, geheugen
+  opgeschoond, sessieskills (`sessie-start`/`sessie-afronden`) en de
+  concept-verwerkersovereenkomst geschreven. `typecheck`/`test`/`build` groen.

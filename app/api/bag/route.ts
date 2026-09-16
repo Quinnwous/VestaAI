@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 // BAG Kadaster API (vereist KADASTER_API_KEY in .env.local)
 // Registreer gratis op: https://www.kadaster.nl/zakelijk/producten/adressen-en-gebouwen/bag-api-individuele-bevragingen
 const BAG_BASE = 'https://api.bag.kadaster.nl/lvbag/individuelebevragingen/v2'
 
 export async function GET(req: NextRequest) {
+  // Middleware stuurt niet-ingelogde bezoekers al door naar /login, maar geeft
+  // een fetch-aanroep vanuit de client daarbij een HTML-redirect terug i.p.v.
+  // een nette 401 — en biedt geen bescherming tegen een directe aanroep buiten
+  // de browser om. Expliciete check hier is de tweede laag (masterplan fase 0.5,
+  // docs/roadmap.md): zonder deze check kon iedereen deze route aanroepen en
+  // ongemerkt het Kadaster-quotum verbruiken.
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
+
   const adres = req.nextUrl.searchParams.get('adres')
   if (!adres) {
     return NextResponse.json({ error: 'Adres verplicht' }, { status: 400 })

@@ -55,12 +55,25 @@ create index if not exists transacties_eigen_verkoop_idx on transacties (kantoor
 
 -- Natuurlijke sleutel voor herhaalbare (maandelijkse) herimport: dezelfde
 -- transactie opnieuw aanleveren werkt als upsert i.p.v. een dubbele rij.
+--
+-- ⚠️ SUPERSEDED 17 sep 2026 door migratie 20260916213816_fix_transacties_upsert_sleutel.sql:
+-- deze functionele index (coalesce) kon niet gematcht worden door PostgREST's
+-- upsert(onConflict: 'kantoor_id,adres,verkoopdatum') in
+-- app/admin/transacties/actions.ts — elke import met een botsende rij faalde
+-- met foutcode 42P10. Vervangen door een gewone unieke index met
+-- `nulls not distinct` (functioneel gelijk, wél matchbaar).
 create unique index if not exists transacties_natuurlijke_sleutel_idx
   on transacties (kantoor_id, adres, coalesce(verkoopdatum, '1900-01-01'::date));
 
 -- PostgREST (Supabase JS) geeft een geography-kolom terug als EWKB-hex, niet
 -- bruikbaar in de browser — deze view ontsluit lat/lng als gewone floats voor
 -- de verkoopkaart (components/Verkoopkaart.tsx) zonder de brontabel te raken.
+--
+-- ⚠️ SUPERSEDED 17 sep 2026 door migratie 20260916213323_rls_kantoor_isolatie_transacties.sql:
+-- deze view had geen `security_invoker`, dus draaide als SECURITY DEFINER
+-- (eigenaar 'postgres') en omzeilde daarmee RLS op `transacties` volledig
+-- voor iedereen die de view bevroeg — inclusief de publieke anon-key. De
+-- opvolgmigratie herschept de view met `security_invoker = true`.
 create or replace view transacties_met_coordinaten as
 select
   t.*,
