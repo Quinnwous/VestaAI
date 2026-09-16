@@ -2,23 +2,8 @@
 
 > Werklijst, geen logboek. Alleen open items — **klaar = weg**.
 > Gesorteerd op prioriteit: 🔴 HOOG · 🟠 MIDDEL · 🟢 LAAG. Per item kort: wat · waarom · waar in de code.
-> Laatst herzien: 16 september 2026 — herstructurering naar het fasemodel, zie hervat-pointer.
-
-> **Hervat-pointer (Claude-oppakbaar, geen eerdere chat nodig):**
-> Op 16 september 2026 is de volledige navigatie herzien naar een fasemodel (zie CLAUDE.md §
-> Hoofdstructuur voor de complete architectuurbeschrijving — die hoeft hier niet herhaald te
-> worden). Kort samengevat wat er nu staat: **(1)** één woningdossier per adres met fases
-> Acquisitie → In verkoop → Verkocht i.p.v. een los Content-hoofdmenu; **(2)** één rol per
-> kantoor, huisstijl/courtage/team platform-admin-beheerd via `/admin/kantoor/[id]`; **(3)** een
-> echte tabel `transacties` met CSV-import (`/admin/transacties`, kolomherkenning via aliassen,
-> upsert voor herhaalbare herimport) — leeg tot Quinn een export aanlevert, geen nepdata; **(4)**
-> een werkende waarderingsmodule (`lib/waardering.ts`, vergelijkbare-verkopen-methode) met
-> modulaire aan/uit-blokken, bandbreedte en makelaar-correctie; **(5)** een AI USP-extractor;
-> **(6)** een echte verkoopkaart (Leaflet + PDOK) met straal-uitsnede in het dossier; **(7)**
-> Marktinzichten als interactieve explorers (recharts) i.p.v. statische dashboards; **(8)**
-> content genereert nu altijd NL + EN parallel, met keuzevinkjes voor optionele contentvormen.
-> Alles hierboven is **gebouwd en werkt** — leeg totdat er echte data is, maar geen placeholders
-> meer. Wat nog écht open staat, staat hieronder.
+> Laatst herzien: 16 september 2026 — fasemodel-herstructurering gemerged en live; zie CLAUDE.md
+> § Hoofdstructuur voor de volledige architectuur (F0-F10, niet hier herhaald).
 > **Werkwijze:** `npm run typecheck && npm run test` groen vóór elke commit; werk op een
 > feature-branch en lever via PR + merge naar `main` (dat triggert de Vercel-deploy).
 
@@ -26,6 +11,12 @@
 
 ## 🔴 Nu — blokkeert op Quinn, geen code-werk mogelijk zonder
 
+- **Migraties draaien op de database** (actie Quinn, eenmalig, Supabase → SQL Editor) — de
+  16-sep-migraties (fasemodel, transacties, waardering, kantoorinstellingen) bleken na het
+  mergen naar `main` nog nooit op de echte database te zijn uitgevoerd. Zonder deze stap draait
+  de live code tegen ontbrekende kolommen/tabellen. Zie de 7 bestanden
+  `supabase/migrations/20260916_*.sql` — samen in één keer te plakken en te draaien, alles is
+  idempotent (`if not exists`).
 - **Realworks-export aanleveren** (actie Quinn) — kolommen, bereik en of coördinaten (lat/lng)
   en het verkopend kantoor erin zitten. Zodra dit er is: importeren via `/admin/transacties`
   (bestaand scherm) en controleren of `lib/transactieImport.ts`'s kolom-aliassen de echte

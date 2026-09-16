@@ -183,7 +183,22 @@ export function AppTopbar({
         }}
       >
         <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 22px', display: 'flex', alignItems: 'center', gap: 26 }}>
-          <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0 }}>{logo}</Link>
+          <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Co-branding-lockup (besluit 16 sep 2026, tweede keer): Quinn wil zichtbaar
+                houden dat het platform van VestaAI is, ook al draagt de rest van de
+                omgeving volledig de huisstijl van het kantoor. Vaste VestaAI-groen, niet
+                var(--merk) — dit ís het VestaAI-merk, niet het kantoor-merk. */}
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }} title="VestaAI">
+              <span style={{ width: 20, height: 20, borderRadius: 6, background: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontWeight: 800, fontSize: 11, letterSpacing: '-.04em' }}>V</span>
+              </span>
+              <span style={{ fontWeight: 700, fontSize: 12.5, letterSpacing: '-.01em', color: '#98A0A6', whiteSpace: 'nowrap' }}>
+                Vesta<span style={{ color: '#1A6B45' }}>AI</span>
+              </span>
+            </span>
+            <span style={{ color: '#D3D8DC', fontSize: 13 }} aria-hidden>×</span>
+            {logo}
+          </Link>
 
           <div className="topbar-menus">
             {menus.map(menu => {
