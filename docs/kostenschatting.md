@@ -18,7 +18,6 @@ Eén volledige run = alles wat VestaAI kan doen voor één pand:
 
 Niet meegenomen als "basisrun" (incidenteel gebruik):
 - Per-veld herschrijven (~€0,01 per rewrite)
-- Wijk-SEO-tekst (~€0,01 per tekst)
 
 ---
 
@@ -38,17 +37,17 @@ Niet meegenomen als "basisrun" (incidenteel gebruik):
 
 ---
 
-### 1. Hoofdgeneratie (17 content-types)
+### 1. Hoofdgeneratie (17 content-types, per taal)
 
 | | Tokens | Kosten |
 |---|---|---|
 | Input (systeem + user) | ~2.000 | $0,006 |
 | Output (alle 17 velden) | ~8.000 | $0,120 |
-| **Subtotaal** | | **~€0,12** |
+| **Subtotaal per taal** | | **~€0,12** |
 
 **Toelichting output:** funda_tekst (750 woorden), brochure_kort/lang, 3× Instagram, 2× LinkedIn, koper_email, buurtomschrijving, open_huis, 2× bezichtiging-followup, video_script, energie_advies, kopersvragen_faq, marktanalyse.
 
-⚠️ De CLAUDE.md noemde nog €0,08 per content-set — dat was vóór energie_advies, kopersvragen_faq en marktanalyse werden toegevoegd. De actuele schatting is **€0,12**.
+⚠️ **Sinds 16 sep 2026 draait de hoofdgeneratie altijd NL + EN parallel** (`generateContentBeideTalen`, besluit "elke tekst standaard NL+EN") — dat verdubbelt deze post naar **~€0,24 per pand** (de Engelse generatie is best-effort en telt hier toch mee als kostenpost, ook als hij een keer mislukt en leeg terugkomt). De keuzevinkjes voor optionele content (follow-up/video/energieadvies/kopersvragen/marktanalyse) filteren pas ná ontvangst — ze besparen dus nog geen tokens, alleen scherm-ruimte. Vóór 16 sep was dit €0,12; nog eerder (vóór energie_advies/kopersvragen_faq/marktanalyse) €0,08.
 
 Pro/Kantoor-klanten sturen ook huisstijl-voorbeeldteksten mee: +~1.000 input tokens = extra ~€0,003. Verwaarloosbaar.
 
@@ -93,13 +92,13 @@ De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opges
 
 | Feature | Kosten nu | Kosten na Gemini-betaling |
 |---------|-----------|--------------------------|
-| Hoofdgeneratie (Claude) | €0,12 | €0,12 |
+| Hoofdgeneratie (Claude, NL+EN) | €0,24 | €0,24 |
 | Virtual staging × 10 (Gemini) | **€0,00** | **€0,37** |
 | Document-assistent (1 PDF + 5 vragen) | €0,11 | €0,11 |
 | Prijswijziging (Claude) | €0,01 | €0,01 |
-| **TOTAAL** | **~€0,24** | **~€0,61** |
+| **TOTAAL** | **~€0,36** | **~€0,73** |
 
-> **Vuistregel:** zonder staging ~€0,24/pand; met staging (betaald) ~€0,61/pand.
+> **Vuistregel:** zonder staging ~€0,36/pand; met staging (betaald) ~€0,73/pand.
 
 ---
 
@@ -117,8 +116,8 @@ Aanname (voorlopig, niet gemeten): i4housing × ~15 objecten/mo = **15 runs/mo**
 
 | Scenario | Kosten/run | Totaal/mo |
 |----------|-----------|-----------|
-| Nu (Gemini gratis) | €0,24 | **~€4/mo** |
-| Na Gemini-betaling (alle objecten gestaged) | €0,61 | ~€9/mo |
+| Nu (Gemini gratis) | €0,36 | **~€5/mo** |
+| Na Gemini-betaling (alle objecten gestaged) | €0,73 | ~€11/mo |
 
 Op deze schaal is de variabele API-kost verwaarloosbaar t.o.v. de vaste infra-kosten
 hieronder — geen reden om hier nu op te sturen.

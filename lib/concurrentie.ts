@@ -1,4 +1,5 @@
 import type { TransactieRow } from './supabase'
+import { gemiddelde } from './utils'
 
 /**
  * Concurrentieanalyse (F6, besluit 16 sep 2026, zie CLAUDE.md §
@@ -27,7 +28,10 @@ export function marktaandeel(rijen: TransactieRow[]): MarktaandeelPunt[] {
   const totaal = rijen.length
   if (totaal === 0) return []
   const per = new Map<string, number>()
-  for (const r of rijen) per.set(kantoorNaam(r), (per.get(kantoorNaam(r)) ?? 0) + 1)
+  for (const r of rijen) {
+    const naam = kantoorNaam(r)
+    per.set(naam, (per.get(naam) ?? 0) + 1)
+  }
   return Array.from(per.entries())
     .map(([kantoor, aantal]) => ({ kantoor, aantal, aandeelPct: Math.round((aantal / totaal) * 1000) / 10 }))
     .sort((a, b) => b.aantal - a.aantal)
@@ -41,7 +45,8 @@ export function wieWintWelkSegment(rijen: TransactieRow[]): SegmentWinnaar[] {
   for (const r of rijen) {
     const segment = r.woningtype ?? 'Onbekend'
     const perKantoor = perSegment.get(segment) ?? new Map<string, number>()
-    perKantoor.set(kantoorNaam(r), (perKantoor.get(kantoorNaam(r)) ?? 0) + 1)
+    const naam = kantoorNaam(r)
+    perKantoor.set(naam, (perKantoor.get(naam) ?? 0) + 1)
     perSegment.set(segment, perKantoor)
   }
   return Array.from(perSegment.entries()).map(([segment, perKantoor]) => {
@@ -57,19 +62,14 @@ export type PrestatieVergelijking = {
   regioGemPrijsverschilPct: number | null
 }
 
-function gemiddelde(waarden: number[]): number | null {
-  if (waarden.length === 0) return null
-  return Math.round((waarden.reduce((s, v) => s + v, 0) / waarden.length) * 10) / 10
-}
-
 /** Eigen doorlooptijd en prijsverschil tegen het regiogemiddelde — het "wij verkopen sneller"-argument. */
 export function presterenWijBeter(rijen: TransactieRow[]): PrestatieVergelijking {
   const eigen = rijen.filter(r => r.eigen_verkoop)
   const regio = rijen.filter(r => !r.eigen_verkoop)
 
-  const looptijd = (set: TransactieRow[]) => gemiddelde(set.map(r => r.looptijd_dagen).filter((v): v is number => v !== null))
+  const looptijd = (set: TransactieRow[]) => gemiddelde(set.map(r => r.looptijd_dagen).filter((v): v is number => v !== null), 1)
   const verschil = (set: TransactieRow[]) =>
-    gemiddelde(set.filter(r => r.verkoopprijs && r.vraagprijs).map(r => ((r.verkoopprijs! - r.vraagprijs!) / r.vraagprijs!) * 100))
+    gemiddelde(set.filter(r => r.verkoopprijs && r.vraagprijs).map(r => ((r.verkoopprijs! - r.vraagprijs!) / r.vraagprijs!) * 100), 1)
 
   return {
     eigenGemLooptijd: looptijd(eigen),
@@ -107,7 +107,7 @@ export function concurrentProfielen(rijen: TransactieRow[]): ConcurrentProfiel[]
       return {
         kantoor,
         aantal: set.length,
-        gemiddeldePrijs: gemiddelde(prijzen),
+        gemiddeldePrijs: gemiddelde(prijzen, 1),
         topSegment,
       }
     })

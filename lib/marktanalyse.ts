@@ -1,4 +1,5 @@
 import type { TransactieRow } from './supabase'
+import { gemiddelde } from './utils'
 
 /**
  * Aggregatielogica voor de interactieve marktanalyse-explorer (F6, besluit 16
@@ -37,11 +38,6 @@ function kwartaalLabel(iso: string): string {
   const d = new Date(iso)
   const q = Math.floor(d.getMonth() / 3) + 1
   return `${d.getFullYear()}-K${q}`
-}
-
-function gemiddelde(waarden: number[]): number | null {
-  if (waarden.length === 0) return null
-  return Math.round((waarden.reduce((s, v) => s + v, 0) / waarden.length) * 100) / 100
 }
 
 /** Groepeert transacties per kwartaal en berekent de kerncijfers voor de grafieken. */

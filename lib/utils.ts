@@ -32,6 +32,13 @@ export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
+/** Gemiddelde, afgerond op `decimalen` (default 2) — `null` bij een lege set i.p.v. NaN. */
+export function gemiddelde(waarden: number[], decimalen = 2): number | null {
+  if (waarden.length === 0) return null
+  const factor = 10 ** decimalen
+  return Math.round((waarden.reduce((s, v) => s + v, 0) / waarden.length) * factor) / factor
+}
+
 export function truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max - 1) + '…' : str
 }
