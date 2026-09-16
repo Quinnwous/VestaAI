@@ -6,6 +6,15 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 
 > **Copyregel:** geen "Founding Member"-taal gebruiken.
 
+> 🎨 **Bouwregel (verplicht, geldt voor élke nieuwe UI).** Alles achter de login wordt meteen in
+> de huisstijl van het kantoor gebouwd — niet achteraf omgezet. Kleur via `var(--merk*)` (nooit
+> een hardgecodeerde hex of een Tailwind-kleurclass, want de `blue`-schaal rendert groen),
+> vorm en lettertype via `var(--merk-radius-*)`/`var(--merk-font-*)`, tekst informeel ("je/jouw")
+> zonder de naam VestaAI, en "woning" in plaats van "object". Volledige checklist:
+> `.claude/skills/kantoorhuisstijl/SKILL.md`. Een hook waarschuwt bij overtredingen.
+> Uitzonderingen die bewust VestaAI-groen blijven: landing, `/login`, `/contact`, `/admin`,
+> `LandingPageClient`, `PublicNav` en `components/ui/tokens.ts`.
+
 ## Hoofdstructuur
 
 Micro/macro-knip — volledige spec en bouwvolgorde in `docs/roadmap.md` § Hoofdstructuur:
