@@ -520,8 +520,19 @@ Details: `docs/besluiten.md`.
   *Spec:* functies `haalEigenVerkopen`, `marktanalyseReeks`,
   `marktanalyseSamenvatting`, `concurrentieMarktaandeel`,
   `concurrentieSegmenten`, `zoekTransacties`, `prijsindexKwartaal`,
-  `referentiesInStraal`, `dataTotEnMet()` (max verkoopdatum + laatste
-  importdatum). De pagina's schakelen over; de verkenners tonen tijdelijk
+  `referentiesInStraal`, `haalRegionaleSet`, `dataTotEnMet()` (max
+  verkoopdatum + laatste importdatum). **Contract met de rekenkern (al
+  gebouwd, § 3.3):** `referentiesInStraal` en `haalRegionaleSet` leveren rijen
+  in de vorm van `Kandidaat` uit `lib/waardering.ts` (id, adres, plaats,
+  woningtype_groep, woningtype_sub, verkoopprijs, woonoppervlak_m2, bouwjaar,
+  verkoopdatum, afstand_m, garage, tuin, energielabel, verkopend_kantoor);
+  `prijsindexKwartaal` levert de vorm van `bouwIndex()` in `lib/prijsindex.ts`
+  (kwartaal, n, mediaanM2) — de rekenkern doet zelf het gladstrijken.
+  `haalRegionaleSet(werkgebied, typegroep, { totDatum, maanden: 36 })` haalt
+  alleen de kolommen die `kenmerkEffectenV2()`/`grootteEffect()` nodig hebben
+  (± 6) in een range-lus op; enkele duizenden rijen, gerekend in de server
+  action — geen aparte RPC's voor klasseniveaus of de grootte-helling, zodat er
+  één implementatie van de methode is. De pagina's schakelen over; de verkenners tonen tijdelijk
   dezelfde UI op de nieuwe data-aanvoer (de visuele v2 komt in fase 6).
   *Tests:* guard; per RPC een vergelijkingstest tegen de pure functie (draait
   alleen met `SUPABASE_TEST=1`, anders overgeslagen); `dataTotEnMet`.
@@ -642,9 +653,9 @@ Details: `docs/besluiten.md`.
   `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
   in het paneel; `null` + uitleg bij n < 3.
   *Al klaar (17 sep):* `kenmerkEffectenV2()`, `grootteEffect()`,
-  `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:* RPC
-  die de regionale set (werkgebied + typegroep) als `Kandidaat[]` levert,
-  schakelaars en correctiekolom in het paneel (4.6).
+  `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:*
+  `haalRegionaleSet()` (2.2) als bron van `opties.regionaal`, schakelaars en
+  correctiekolom in het paneel (4.6). Geen RPC `kenmerk_paren` meer nodig.
 - [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie eerst →
   `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
   uitgangspunt voor die sessie)*

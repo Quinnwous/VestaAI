@@ -12,12 +12,24 @@
 | `kit.js` | Dezelfde primitives als gedrag, opmaak (`euro`/`procent`/`dagen`/`datum`), URL-state, taxonomie woningtypes, team, synthetische datagenerator, het echte i4-logo | klaar |
 | `marktanalyse.html` | Item 6.1 (+ 6.4 kwartaalbericht) | klaar (v2, 17 sep) |
 | `verkoopkaart.html` | Items 7.1-7.3 | klaar (v2, 17 sep) |
-| `concurrentie.html` | Item 6.3 | ontwerpsessie, vlak vóór 6.3 |
-| `transacties.html` | Item 6.2 | ontwerpsessie, vlak vóór 6.2 |
+| `concurrentie.html` | Item 6.3 — hero marktaandeel, wij vs. markt, trend per jaar (alle jaren), matrix "wie wint waar", ranglijst + concurrentprofiel-drawer met verbergen, lege staat "verkopend kantoor onbekend" | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
+| `transacties.html` | Item 6.2 — volledige filterset § 4, dichte tabel 50/pagina met sticky kop, detail-sheet met minikaart en "gebruik als referentie", CSV alleen eigen, skeleton bij serverlatency | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `waardebepaling.html` | Item 4.6 | ontwerpsessie, vlak vóór 4.6 |
 | `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) | ontwerpsessie, vlak vóór 3.4 |
 
 Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
+
+Bekende kit-beperking: de topbar heeft geen mobiele inklapstand, dus elk
+prototype overschrijdt op 390 px de viewport door de navigatie. Dat is geen
+spec: de app gebruikt zijn eigen responsieve `AppTopbar`. Beoordeel prototypes
+op 1280/1440 px; mobiel alleen op de inhoud onder de topbar.
+
+Lokale helpers die in de prototypes staan maar NIET geport worden (staan ook
+bovenaan elk bestand): fictieve kantoorlijst + toewijzing per rij
+(concurrentie, transacties — in de app `verkopend_kantoor_norm`), straatnamen-
+generator (transacties), eenzijdige range-slider (transacties; wordt een
+variant van de app-slider), rekenregel voor de waarde (waardebepaling — in de
+app `lib/waardering.ts`).
 
 ## 1. Ontwerprichting "i4 · zacht" (Apple-achtig, besluit Quinn 17 sep 2026)
 
