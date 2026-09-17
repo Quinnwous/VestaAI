@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { adresSleutel, parseAdresVrijeTekst, woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
+import { adresSleutel, parseAdresVrijeTekst, plaatsUitAdres, woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
 
 describe('parseAdresVrijeTekst', () => {
   it('splitst straat, huisnummer zonder toevoeging', () => {
@@ -28,6 +28,30 @@ describe('parseAdresVrijeTekst', () => {
 
   it('geeft alleen straat terug zonder herkenbaar huisnummer', () => {
     expect(parseAdresVrijeTekst('Onbekende Straat')).toEqual({ straat: 'Onbekende Straat', huisnummer: null, toevoeging: null })
+  })
+})
+
+describe('plaatsUitAdres', () => {
+  it('pakt de woonplaats uit het BAG-formaat (straat, postcode, plaats)', () => {
+    expect(plaatsUitAdres('Dorpsstraat 12, 2243 AB, Wassenaar')).toBe('Wassenaar')
+  })
+
+  it('pakt de plaats uit een handmatig adres met twee delen', () => {
+    expect(plaatsUitAdres('Dorpsstraat 12, Wassenaar')).toBe('Wassenaar')
+  })
+
+  it('geeft null zonder komma (geen plaats bekend)', () => {
+    expect(plaatsUitAdres('Dorpsstraat 12')).toBeNull()
+  })
+
+  it('geeft null als het laatste deel zelf een postcode is', () => {
+    expect(plaatsUitAdres('Dorpsstraat 12, 2243AB')).toBeNull()
+  })
+
+  it('geeft null voor leeg/ontbrekend adres', () => {
+    expect(plaatsUitAdres('')).toBeNull()
+    expect(plaatsUitAdres(null)).toBeNull()
+    expect(plaatsUitAdres(undefined)).toBeNull()
   })
 })
 

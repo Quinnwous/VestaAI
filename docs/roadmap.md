@@ -107,11 +107,14 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **Fase 4** (waardering die taxateurs overtuigt): rekenkern
-  staat al (`lib/waardering.ts` v2); nu RPC's/actions/UI aansluiten volgens
-  het prototype `docs/ontwerp/waardebepaling.html`. Let op § 8 actie 6: de
-  tussencheck met de taxateur hoort vóór 4.3. ⚠️ NL+EN-contentgeneratie duurt
-  ~3 min (limiet 300 s) → fase 8. 1.11 (push + merge) bij "rond af".
+- **Volgende item:** **4.6** premium waarderingspaneel (port van
+  `docs/ontwerp/waardebepaling.html`, incl. de puntwaarde bóven de band — die
+  ontbreekt nu) → **4.4** handmatige referenties → **4.7** waardebepaling-pdf.
+  4.1/4.2/4.3/4.5/4.8 klaar op 17-18 sep: paneel draait op echte data
+  (proef Wassenaar-villa € 4,2 mln uit 22 referenties), backtest op de fixture
+  **mediane fout 6,1 % · 76 % binnen de band** (demo-lat ≤ 7 % / ≥ 75 % gehaald,
+  `docs/waardering-backtest.md`). ⚠️ NL+EN-contentgeneratie ~3 min (limiet
+  300 s) → fase 8. 1.11 (push + merge) bij "rond af".
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -619,7 +622,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
 
 ### Fase 4 — Waardering die taxateurs overtuigt (5 sessies)
 
-- [ ] **4.1 Referentieselectie op locatie** *(§ 3.3)*
+- [x] **4.1 Referentieselectie op locatie** *(§ 3.3)*
   *Raakt:* RPC `referenties_in_straal` (migratie), `lib/transactiesQuery.ts`,
   `lib/waardering.ts` (`kiesReferenties` met auto-verbreding), tests.
   *Spec:* input subject `{ lat, lng, woningtype_groep, oppervlak_m2, bouwjaar }`;
@@ -628,7 +631,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   plaats + typegroep met waarschuwing "zonder locatie".
   *Al klaar (17 sep):* `kiesReferenties()` incl. ladder, peildatum, terugval,
   `metAfstand()`. *Open:* RPC + aansluiting (kandidaten als `Kandidaat[]`).
-- [ ] **4.2 Prijsindex** — RPC `prijsindex_kwartaal` + `lib/prijsindex.ts`
+- [x] **4.2 Prijsindex** — RPC `prijsindex_kwartaal` + `lib/prijsindex.ts`
   (`glad()`, `factor(vanKwartaal, naarKwartaal)`), CBS-terugval als losse
   functie `lib/cbsPrijsindex.ts` (zoek de actuele tabel "Prijsindex bestaande
   koopwoningen; regio" op via de CBS-OData-catalogus in deze sessie — niet uit
@@ -639,7 +642,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   in `lib/cbsPrijsindex.ts` met OData-aanwijzingen. *Open:* RPC in de vorm van
   `bouwIndex()`, ophaalscript `scripts/haal-cbs-prijsindex.mjs` (regiocode uit
   de metadata halen, niet raden).
-- [ ] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
+- [x] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
   gewogen mediaan/P25/P75, band-regels, `WaarderingUitkomst` v2 met `versie`,
   `peildatum`-parameter (referenties alleen vóór die datum — nodig voor de
   backtest), waarschuwingen. `waardering-actions.ts` schrijft v2 en migreert
@@ -651,7 +654,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   `DataTable`-light), opgeslagen in `waardering_json.handmatig`; de knop
   "gebruik als referentie" in `components/TransactiesZoeken.tsx` gaat eindelijk
   werken (kies dossier → voegt toe) en de verouderde melding verdwijnt.
-- [ ] **4.5 Kenmerk-effecten v2** — garage, tuin, energielabelklasse,
+- [x] **4.5 Kenmerk-effecten v2** — garage, tuin, energielabelklasse,
   bouwperiode via vergelijkbare paren op regionale set (RPC
   `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
   in het paneel; `null` + uitleg bij n < 3.
@@ -679,7 +682,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   disclaimer § 3.3, "opgesteld door [makelaar] op [datum]". Zonder kaart in v1
   (statische kaart → backlog). Knop in het paneel; < 10 s.
   *Hergebruik:* de bestaande pdf-route en `EmailPdfButton`-patroon.
-- [ ] **4.8 Backtest** — `scripts/backtest-waardering.mjs` + `docs/waardering-backtest.md`
+- [x] **4.8 Backtest** — `scripts/backtest-waardering.mjs` + `docs/waardering-backtest.md`
   (eerst op de fixture, opnieuw in 5.5 op echte data). Rapporteert per
   typegroep; faalt de demo-lat, dan staan de band-regels in de uitkomst ter
   discussie — noteer het besluit.

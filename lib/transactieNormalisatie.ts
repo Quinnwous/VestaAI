@@ -81,6 +81,25 @@ export function parseAdresVrijeTekst(adres: string): AdresOnderdelen {
 }
 
 /**
+ * Plaatsnaam uit een vrije adrestekst zoals de BAG-suggestie hem aanlevert
+ * (`app/api/bag/suggest/route.ts`: `"Straat 12, 2243 AB, Wassenaar"` — straat,
+ * postcode, woonplaats, met komma's gescheiden) of een handmatig getypt
+ * `"Straat 12, Wassenaar"` (twee delen). Gebruikt door de waarderingskern
+ * (item 4.1, `waardering-actions.ts`) als terugval-plaats wanneer een dossier
+ * geen lat/lng heeft. Geeft `null` als het laatste deel zelf een postcode is
+ * (adres zonder woonplaats) of de tekst leeg is — nooit gokken.
+ */
+export function plaatsUitAdres(adres: string | null | undefined): string | null {
+  if (!adres) return null
+  const delen = adres.split(',').map(d => d.trim()).filter(Boolean)
+  // Zonder komma is er alleen een straat/huisnummer bekend, geen plaats.
+  if (delen.length < 2) return null
+  const laatste = delen[delen.length - 1]
+  if (/^\d{4}\s?[A-Za-z]{2}$/.test(laatste)) return null
+  return laatste
+}
+
+/**
  * Genormaliseerde natuurlijke sleutel voor een transactierij, gebruikt in de
  * unieke index `(kantoor_id, adres_sleutel, verkoopdatum)` zodat een
  * herhaalde import dezelfde woning herkent ongeacht kleine verschillen in

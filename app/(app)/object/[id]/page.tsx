@@ -2,16 +2,16 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { unstable_cache } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
-import { haalEigenVerkopen, haalTransactiesVoorVerkenner, ALLE_TRANSACTIE_KOLOMMEN, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
+import { haalEigenVerkopen, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { DossierHeader } from '@/components/DossierHeader'
 import { InvoerToggle } from './InvoerToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { AppPagina } from '@/components/ui'
-import { woningtypeLabel, type ContentOutput, type ObjectContentStatus, type ObjectFase, type PropertyInput } from '@/lib/schemas'
-import type { Subject } from '@/lib/waardering'
-import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
+import type { ContentOutput, ObjectContentStatus, ObjectFase, PropertyInput } from '@/lib/schemas'
+import { migreerWaarderingJson } from '@/lib/waardering'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
   async (objectId: string) => {
@@ -54,25 +54,17 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   // transacties gaat sinds item 2.2 altijd via de sessie-gebonden client
   // (lib/transactiesQuery.ts) i.p.v. de service-client — RLS regelt de
   // kantoorscheiding, geen handmatig .eq('kantoor_id', …) meer nodig.
-  const [eigenVerkopen, transactieDataset] = await Promise.all([
-    geo
-      ? haalEigenVerkopen<TransactieMetCoordinaten>(supabase, MET_COORDINATEN_KOLOMMEN, { metCoordinaten: true })
-      : Promise.resolve([] as TransactieMetCoordinaten[]),
-    // Waardering (F7) draait op de volledige dataset, niet alleen eigen verkopen.
-    haalTransactiesVoorVerkenner<TransactieRow>(supabase, ALLE_TRANSACTIE_KOLOMMEN),
-  ])
+  // De waarderingskern v2 (item 4.3) haalt haar eigen kandidaten/regionale
+  // set op via de server action `berekenWaardering()`, dus deze pagina hoeft
+  // niet meer de volle transactiedataset te laden voor de waardering.
+  const eigenVerkopen = geo
+    ? await haalEigenVerkopen<TransactieMetCoordinaten>(supabase, MET_COORDINATEN_KOLOMMEN, { metCoordinaten: true })
+    : []
 
   const invoer = object.input_json as PropertyInput
-  const subject: Subject = {
-    woningtype: woningtypeLabel(invoer),
-    oppervlak_m2: invoer.oppervlak_m2,
-    bouwjaar: invoer.bouwjaar,
-    lat: object.lat,
-    lng: object.lng,
-  }
-  const heeftGarage = !!invoer.ligging_buitenruimte?.garage_parkeren && invoer.ligging_buitenruimte.garage_parkeren !== 'geen'
-  const heeftTuin = !!invoer.ligging_buitenruimte?.tuin_m2 && invoer.ligging_buitenruimte.tuin_m2 > 0
-  const waarderingCorrectie = (object.waardering_json as { correctie?: { waarde: number; motivatie: string; datum: string } } | null)?.correctie ?? null
+  const waarderingOpslag = migreerWaarderingJson(object.waardering_json)
+  const waarderingUitkomst = waarderingOpslag.uitkomst
+  const waarderingCorrectie = waarderingOpslag.correctie
   const uspsInitieel = (object.usps_structuur as string[] | null) ?? []
 
   return (
@@ -113,10 +105,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         userEmail={user.email ?? undefined}
         geo={geo}
         eigenVerkopen={eigenVerkopen}
-        subject={subject}
-        heeftGarage={heeftGarage}
-        heeftTuin={heeftTuin}
-        transactieDataset={transactieDataset}
+        waarderingUitkomst={waarderingUitkomst}
         waarderingCorrectie={waarderingCorrectie}
         uspsInitieel={uspsInitieel}
         contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}

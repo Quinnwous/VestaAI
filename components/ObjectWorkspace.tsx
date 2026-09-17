@@ -17,8 +17,8 @@ import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
 import type { ContentOutput, ObjectContentStatus, ObjectFase } from '@/lib/schemas'
-import type { Subject } from '@/lib/waardering'
-import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
+import type { WaarderingUitkomst } from '@/lib/waardering'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
@@ -59,13 +59,10 @@ const card: React.CSSProperties = {
 }
 
 function WaarderingSectie({
-  objectId, subject, heeftGarage, heeftTuin, dataset, correctie, uspsInitieel,
+  objectId, waarderingUitkomst, correctie, uspsInitieel,
 }: {
   objectId: string
-  subject: Subject
-  heeftGarage: boolean
-  heeftTuin: boolean
-  dataset: TransactieRow[]
+  waarderingUitkomst: WaarderingUitkomst | null
   correctie: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel: string[]
 }) {
@@ -73,10 +70,7 @@ function WaarderingSectie({
     <div style={{ display: 'grid', gap: 16 }}>
       <WaardebepalingPaneel
         objectId={objectId}
-        subject={subject}
-        heeftGarage={heeftGarage}
-        heeftTuin={heeftTuin}
-        dataset={dataset}
+        opgeslagenUitkomst={waarderingUitkomst}
         opgeslagenCorrectie={correctie}
       />
       <UspExtractorPaneel objectId={objectId} initieleUsps={uspsInitieel} />
@@ -95,10 +89,7 @@ export function ObjectWorkspace({
   userEmail,
   geo,
   eigenVerkopen = [],
-  subject,
-  heeftGarage,
-  heeftTuin,
-  transactieDataset = [],
+  waarderingUitkomst = null,
   waarderingCorrectie = null,
   uspsInitieel = [],
   contentStatus = 'klaar',
@@ -116,11 +107,9 @@ export function ObjectWorkspace({
   /** Coördinaat van dit adres (uit lib/verrijking.ts) — voedt de straal-uitsnede hieronder. */
   geo?: { lat: number; lng: number } | null
   eigenVerkopen?: TransactieMetCoordinaten[]
-  /** Kenmerken uit de intake die de referentieselectie en wat-als-blokken voeden (F7). */
-  subject: Subject
-  heeftGarage: boolean
-  heeftTuin: boolean
-  transactieDataset?: TransactieRow[]
+  /** Laatst opgeslagen waarderingsuitkomst v2 (item 4.3) — het paneel haalt bij mount zelf een
+   * verse uitkomst op via de server action `berekenWaardering()`; dit is alleen de eerste render. */
+  waarderingUitkomst?: WaarderingUitkomst | null
   waarderingCorrectie?: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel?: string[]
   /** Item 3.1 (docs/roadmap.md § 3.2): status van de contentgeneratie, stuurt
@@ -144,10 +133,7 @@ export function ObjectWorkspace({
   const waarderingSectie = (
     <WaarderingSectie
       objectId={objectId}
-      subject={subject}
-      heeftGarage={heeftGarage}
-      heeftTuin={heeftTuin}
-      dataset={transactieDataset}
+      waarderingUitkomst={waarderingUitkomst}
       correctie={waarderingCorrectie}
       uspsInitieel={uspsInitieel}
     />

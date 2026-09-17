@@ -6,6 +6,19 @@
 
 ---
 
+### 18 sep 2026 (sessie Opus/Sonnet) — fase 4 deel 1: waardering op echte data
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 4.1/4.3/4.5 aansluiting | Server action `berekenWaardering(objectId, opties)`: subject uit het dossier, kandidaten via `referentiesInStraal` (max 5 km) + `haalRegionaleSet`, dan `berekenWaarderingV2()`; opslag als v2 (`WaarderingOpslagSchema`), oude v1-json wordt bij lezen gemigreerd. Wat-als-schakelaars rekenen client-side door zonder nieuwe serveraanroep. v1 (`berekenWaardebepaling` c.s.) verwijderd. `page.tsx` laadt niet langer de volledige transactietabel per dossierbezoek | Sonnet |
+| Prijsindex-bron | `prijsindexKwartaal` (RPC) wordt **niet** gebruikt: die filtert alleen op subtype. `berekenWaarderingV2` bouwt de index zelf uit de regionale set (werkgebied + typegroep), gelijk aan § 3.3 en aan de backtest — productie en kalibratie blijven zo identiek | Sonnet |
+| CBS-terugval | `scripts/haal-cbs-prijsindex.mjs` haalt tabel 85792NED op (regio GM0518 's-Gravenhage, code uit de metadata); `lib/cbsPrijsindexData.json` wordt **wel** gecommit — er is geen build-stap die het script draait, anders heeft productie nooit een terugval | Sonnet + Opus |
+| Bug plaatsnamen | Werkgebied zegt "'s-Gravenhage", adressen zeggen "Den Haag": zonder normalisatie woog `plaatsFactorVoor()` elke referentie in dezelfde stad half mee en vond de terugval-zonder-locatie 0 kandidaten. Subject-plaats wordt nu gecanoniseerd met `plaatsenGelijk()` | Sonnet |
+| 4.8 backtest | `scripts/backtest-waardering.mjs` + `lib/backtest.ts` (meetlogica gedeeld met de vitest-vangrail) + `docs/waardering-backtest.md`: 400 woningen, peildatum = dag vóór verkoop, **mediane fout 6,1 %, 76 % binnen de band** — demo-lat (≤ 7 % / ≥ 75 %) gehaald, geen aanpassing aan de bandregels. Per typegroep blijft vrijstaand het zwakst (8 %) | Sonnet |
+| Mac wakker houden | Automatische hook ingetrokken op verzoek van Quinn (zie 17 sep); hij zet `caffeinate` zelf aan voor een gekozen duur | Quinn |
+
+---
+
 ### 17 sep 2026 (sessie Opus/Sonnet, deel 2) — items 1.9c, 1.9b, 1.10
 
 Twee Sonnet-agents parallel (1.9c app-code, 1.10 SEO — geen bestandsoverlap,
@@ -38,7 +51,7 @@ orchestrator zelf.
 | 3.4 dossierheader | `components/DossierHeader.tsx` vervangt `FaseToggle`: adres + kenmerken, fasestepper (alleen naastgelegen stappen klikbaar; terugzetten met bevestiging), "X dagen in fase" via nieuwe kolom `objecten.fase_sinds` (additieve migratie). Generatie-trigger bij In verkoop verhuisd, niet gedupliceerd. `VerkoopadviesPaneel`/`InAanbouw` weg tot fase 11 | Sonnet |
 | Fixes na review 3.x | (1) Backfill `content_status` telde lege demo-dossiers (structuur met lege strings, niet `{}`) als `klaar` → gecorrigeerd op `funda_tekst`, migratiebestand aangepast, seed-script zet de status nu zelf. (2) `woningtypeLabel()` normaliseert zelf oude `input_json` (de dossierpagina geeft ruwe JSON door; kenmerkenregel begon met "·") | Opus |
 | Werkwijze-les agents | Typecheck groen ≠ build groen: `next build` draait ook ESLint (ongebruikte variabelen in een test braken de build). Agents die geen build mogen draaien (parallel werk) laten de orchestrator altijd `npm run build` doen vóór commit | Opus |
-| Mac wakker | Globale SessionStart-hook `~/.claude/hooks/caffeinate-sessie.sh` houdt de Mac wakker zolang een Claude-sessie loopt (Quinn: "voortaan altijd automatisch") | Quinn |
+| Mac wakker (ingetrokken 18 sep) | Kort een SessionStart-hook gehad die `caffeinate` startte; op verzoek van Quinn weer volledig verwijderd (hook, script, geheugen) — hij zet het liever zelf handmatig aan voor een bepaalde duur | Quinn |
 | Migratiehistorie | De migraties van 16 sep (transacties, object_fase, …) staan niet in `supabase_migrations` — via de SQL-editor gedraaid. Echte staat daarom uit `information_schema` gehaald; `controleer-schema.mjs` bewaakt voortaan de verwachte kolommen | Opus |
 
 ---
