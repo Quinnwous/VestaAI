@@ -14,7 +14,7 @@
 | `verkoopkaart.html` | Items 7.1-7.3 | klaar (v2, 17 sep) |
 | `concurrentie.html` | Item 6.3 — hero marktaandeel, wij vs. markt, trend per jaar (alle jaren), matrix "wie wint waar", ranglijst + concurrentprofiel-drawer met verbergen, lege staat "verkopend kantoor onbekend" | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `transacties.html` | Item 6.2 — volledige filterset § 4, dichte tabel 50/pagina met sticky kop, detail-sheet met minikaart en "gebruik als referentie", CSV alleen eigen, skeleton bij serverlatency | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
-| `waardebepaling.html` | Item 4.6 | ontwerpsessie, vlak vóór 4.6 |
+| `waardebepaling.html` | Item 4.6 — dossierheader, hero met band en badges, WOZ-ijkpunt, makelaarscorrectie, SVG-referentiekaart met straalcirkel en beeldmerk-pins, referentietabel met uitsluiten/herstel, correctie-chips (drie standen), drawer referentie toevoegen, staten laden/weinig data/leeg/zonder locatie/met correcties; cijfers = rekenvoorbeeld `docs/waardering-methode.md` | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) — banner (teamfoto-placeholder neutraal), snelkoppelingen, kerncijfers met hero, recent bekeken, deze week; dossierheader met fasestepper, pitch-uitslag, waarde/content-blok, tabs; staten laden/weinig data/nieuw kantoor/in verkoop/verkocht/zonder foto | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 
 Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
@@ -172,7 +172,7 @@ uitleg en "Herstel filters"). Port ze exact.
    (wordt `useFilterState` met `useSearchParams`).
 6. Draai `ontwerpreview` (screenshot naast prototype) tot AKKOORD.
 
-## 9. Recept voor een nieuwe ontwerpsessie (de vier resterende prototypes)
+## 9. Recept voor een nieuwe ontwerpsessie (alle geplande prototypes zijn klaar; dit is voor een nieuw scherm)
 
 Gebruik `kit.css`/`kit.js` (geen nieuwe tokens zonder reden), dezelfde
 paginastructuur, dezelfde filterbalk-primitives, de staten via de

@@ -42,8 +42,12 @@
   tooling-oogst staat in item **1.9b**.
 - **Ook op 17 sep (Fable):** de rekenkern van fase 4 staat er al
   (`lib/waardering.ts` v2, `lib/prijsindex.ts`, backtest, `docs/waardering-methode.md`
-  — zie § 3.3); ontwerpsessies 6.2 en 6.3 gedaan (`docs/ontwerp/transacties.html`,
-  `concurrentie.html`).
+  — zie § 3.3); **alle vier resterende ontwerpsessies gedaan** (Sonnet
+  gebouwd, Fable gereviewd, één correctieronde elk): `docs/ontwerp/transacties.html`
+  (6.2), `concurrentie.html` (6.3), `startpagina.html` (2.5/3.4/10.2),
+  `waardebepaling.html` (4.6). Artifact-links in `docs/besluiten.md` 17 sep.
+  Bij het bouwen van die items is het prototype de spec (§ 3.8): eerst
+  `ontwerpreview` AKKOORD, dan pas afvinken.
 - **Volgende item:** **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
   **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
   bouwt nog tegen 0 rijen.
@@ -656,7 +660,7 @@ Details: `docs/besluiten.md`.
   `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:*
   `haalRegionaleSet()` (2.2) als bron van `opties.regionaal`, schakelaars en
   correctiekolom in het paneel (4.6). Geen RPC `kenmerk_paren` meer nodig.
-- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie eerst →
+- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
   uitgangspunt voor die sessie)*
   *Spec boven de vouw (1280 px):* links 5/12: waarde groot (`tabular-nums`),
@@ -774,13 +778,13 @@ Details: `docs/besluiten.md`.
   *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
   `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
   "markt").
-- [ ] **6.2 Transacties opzoeken v2** *(ontwerpsessie eerst →
+- [ ] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/transacties.html`, § 3.8)* — `DataTable` (TanStack,
   server-gepagineerd via `zoekTransacties`, 50/pagina, sorteerbaar, dichte
   rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
   referentie" (4.4), CSV-export uitsluitend eigen verkopen (client-side uit
   `haalEigenVerkopen`). URL-state.
-- [ ] **6.3 Concurrentie v2** *(ontwerpsessie eerst →
+- [ ] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/concurrentie.html`, § 3.8)* — marktaandeel per plaats/typegroep/prijsklasse
   met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
   wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
@@ -945,7 +949,7 @@ Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
 | 11 verkoopadvies | 3 (geblokkeerd) | 39 | — |
 | 12 demo-klaar | 3 | 42 | 10 |
 | 13 publieke site | 2 (parallel) | 44 | — |
-| Ontwerpsessies § 3.8 (concurrentie, transacties, waardebepaling, startpagina) | 4 | 48 | telkens vlak vóór het item |
+| Ontwerpsessies § 3.8 (concurrentie, transacties, waardebepaling, startpagina) | 0 (alle vier gedaan op 17 sep) | 0 | prototype = spec; alleen nog `ontwerpreview` per item |
 | Herwerk na ontwerpreviews (15 %) | ~7 | ~55 | |
 
 **Richtdatum demo:** begin tot half december 2026 (week 10-12 vanaf 22 sep),
@@ -1005,6 +1009,11 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby).
 5. Teamfoto i4housing goedkeuren (12.1) en de vijf namen + wachtwoorden
    aanleveren.
+6. **Tussencheck taxateur:** `docs/waardering-methode.md` (met het
+   rekenvoorbeeld en de vijf vragen in § 6) naar de taxateur van i4 Housing
+   sturen, samen met de link naar het prototype
+   https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling
+   aanzetten). Antwoorden verwerken in § 3.3 vóór item 4.3 het paneel omzet.
 6. Search Console + omleiding Vercel-alias (na 1.10).
 7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
 8. Contact voor de tussencheck M1 (welke taxateur, welk adres).

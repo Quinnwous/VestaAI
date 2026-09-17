@@ -6,6 +6,39 @@
 
 ---
 
+### 17 sep 2026 (laatste Fable-sessie) — rekenkern waardering, proefrit 1.9, vier ontwerpprototypes
+
+Laatste dag met Fable 5.1 als "brein" (daarna alleen Sonnet). Werkverdeling:
+Sonnet-subagents bouwden (op het abonnement, geverifieerd door Quinn), Fable
+schreef alleen de statistisch lastige module zelf en deed de reviews.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Rekenkern waardering (fase 4) | Gebouwd als pure TypeScript naast de `@deprecated` v1: `lib/waardering.ts` v2, `lib/prijsindex.ts`, `lib/cbsPrijsindex.ts`, schema's in `lib/schemas.ts`, 22 + 13 tests, synthetische backtest als vitest-vangrail (`lib/waardering.backtest.test.ts`, generator `lib/waardering.synthetisch.ts`). Methode in makelaarstaal met rekenvoorbeeld (= testcase) in `docs/waardering-methode.md`; dat document gaat naar de taxateur van i4 Housing voor de tussencheck (§ 8 actie 6) | Fable |
+| Bandbreedte | Gewogen **P10–P90** i.p.v. P25–P75: een interkwartielband dekt per definitie maar de helft van de uitkomsten en haalde in de backtest 72 %; P10–P90 haalt 78 %. `BAND_PERCENTIELEN` is de kalibratieknop voor de echte backtest (4.8). Minimale marge ± 5 / 10 / 15 % bij n ≥ 6 / 4-5 / < 4 (de "+5/+10 punt"-regel was dubbelzinnig) | Fable |
+| Correcties per referentie | Zonder correcties werden slecht gelabelde woningen 9 % en grotere woningen 3,6 % overschat. Daarom correcties zoals in een taxatierapport: prijsniveau per klasse (garage, tuin, labelklasse, bouwperiode) op de regionale set + Theil-Sen-helling voor grootte; alleen bij ≥ 30 verkopen per klasse, begrensd ± 15 % per kenmerk / ± 30 % totaal, per kenmerk schakelbaar en per referentie zichtbaar. Geen multivariate regressie (§ 3.3 blijft staan) | Fable |
+| Plaatsfactor | Een verkoop in een andere plaats telt voor de helft mee in het gewicht (prijsniveaus verschillen per gemeente meer dan afstand verklaart) | Fable |
+| Datalaag ↔ rekenkern | RPC's leveren `Kandidaat`-rijen en de `bouwIndex()`-vorm; `haalRegionaleSet()` vervangt de geplande RPC `kenmerk_paren` zodat er één implementatie van de methode is (roadmap 2.2/4.5) | Fable |
+| CBS-terugval | StatLine-tabel **85792NED** (prijsindex 2020=100, regio) vastgelegd in `lib/cbsPrijsindex.ts`; regiocode uit de metadata halen, niet raden | Fable |
+| Proefrit Sonnet (item 1.9) | Zie de entry hieronder. Uitkomst: specs en skills waren goed genoeg; het gat zat in de DoD-tooling (huisstijlcheck gaf groen op een gecrashte startpagina). Gefixt + item 1.9b | Fable/Sonnet |
+| Ontwerpsessies | Alle vier resterende prototypes gebouwd door Sonnet en door Fable gereviewd met één correctieronde elk: `concurrentie.html` (balkvulling, trend over alle jaren, korte namen, overlay zonder blur), `transacties.html` (kleurcodering ratio, paginascroll met sticky kop, overlay, kopregel), `startpagina.html` (placeholders neutraal zodat er één hero blijft, acquisitie als standaardstaat), `waardebepaling.html` (eyebrow, drie-standen-chips voor correcties i.p.v. vijf rode toggles). Overlays dimmen voortaan zonder blur; een groep schakelaars gebruikt chips, de rode kit-toggle blijft voor losse schakelaars | Fable |
+| README § 4 | Concurrentie filtert op plaats/wijk, type, periode en prijsklasse (5 klassen); "verkopend kantoor" is daar geen filter maar "verberg dit kantoor"; Segment B op Concurrentie naar backlog | Fable |
+| Kit-beperking | Topbar heeft geen mobiele stand; prototypes worden op 1280/1440 beoordeeld, de app heeft zijn eigen `AppTopbar`. Centraal oplossen in kit.css staat op de backlog | Fable |
+| Datums | Alles van de nacht 16→17 sep stond als 17-18/18 sep gelogd; git-log is leidend, overal gecorrigeerd | Fable |
+
+Artifact-links (prototypes, gepubliceerd 17 sep):
+concurrentie https://claude.ai/artifact/3Q3toKB4sENg3yRKmvVXoU ·
+transacties https://claude.ai/artifact/FU2FbGSxhrkurHkvEadQe5 ·
+startpagina https://claude.ai/artifact/Va49HD5pyFyAmafBVJnDzB ·
+waardebepaling https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm
+(marktanalyse en verkoopkaart: zie de entry van 17 sep "ontwerprichting").
+
+**Opgeleverd (17 sep, Fable):** commits 9824a37 (rekenkern), b5aa393 (1.9 +
+review), 5643720 (CBS), 1b101bb (6.2/6.3), c493fb9 (startpagina) en de
+slotcommit met waardebepaling. Synthetische backtest: 400 woningen, mediane
+fout 5,2 %, 78 % binnen de band. Volgende sessie (Sonnet): `/sessie-start` →
+item 1.9b.
+
 ## Besluiten
 
 ### 17 sep 2026 (proefrit) — item 1.9 bugs + fallback-opruiming gebouwd
