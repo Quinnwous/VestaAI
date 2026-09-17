@@ -12,21 +12,22 @@ type KantoorRij = {
   huisstijl_json: Record<string, unknown> | null
 } | null
 
-// Gedeeld door generateMetadata (tabbladtitel + favicon) en AppLayout (kleuren/logo in de
-// pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één request, zodat het
-// niet twee keer bevraagd wordt voor dezelfde requestcyclus.
-const haalMakelaarOp = cache(async (): Promise<{ kantoor: KantoorRij }> => {
+// Gedeeld door generateMetadata (tabbladtitel + favicon) en AppLayout (kleuren/logo +
+// avatarnaam in de pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één
+// request, zodat het niet twee keer bevraagd wordt voor dezelfde requestcyclus.
+const haalMakelaarOp = cache(async (): Promise<{ naam: string | null; kantoor: KantoorRij }> => {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { kantoor: null }
+  if (!user) return { naam: null, kantoor: null }
 
   const { data: makelaar } = await supabase
     .from('makelaars')
-    .select('kantoor_id, kantoren(name, logo_url, huisstijl_json)')
+    .select('name, kantoor_id, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', user.id)
     .single()
 
   return {
+    naam: makelaar?.name ?? null,
     kantoor: (makelaar?.kantoren as unknown as KantoorRij) ?? null,
   }
 })
@@ -65,7 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Platform-admins gebruiken de app niet als klant → naar het beheer.
   if (isPlatformAdmin(user.email)) redirect('/admin')
 
-  const { kantoor } = await haalMakelaarOp()
+  const { naam, kantoor } = await haalMakelaarOp()
 
   // Vanaf de ingelogde omgeving is de hele app van het kantoor: logo, kleuren, lettertype,
   // vormtaal — en straks ook het waarderingsrapport. Zie lib/branding.ts.
@@ -73,27 +74,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ ...brandingCssVars(branding), minHeight: '100vh', background: '#FAFBFB', fontFamily: 'var(--merk-font-body, var(--font-jakarta))' }}>
-      {(branding.telefoon || branding.email) && (
-        <div style={{ position: 'relative', zIndex: 1, background: 'var(--merk)', color: 'var(--merk-op)' }}>
-          <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '0 22px', height: 34, display: 'flex', alignItems: 'center', gap: 18, fontSize: 12.5, fontWeight: 600 }}>
-            {branding.telefoon && (
-              <a href={`tel:${branding.telefoon.replace(/[^\d+]/g, '')}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                {branding.telefoon}
-              </a>
-            )}
-            {branding.email && (
-              <a href={`mailto:${branding.email}`} style={{ color: 'inherit', textDecoration: 'none', opacity: .9 }}>
-                {branding.email}
-              </a>
-            )}
-          </div>
-        </div>
-      )}
-
+      {/* Contactbalk (telefoon/e-mail) verwijderd — masterplan fase 1.2, 16-17 sep 2026,
+          zie docs/roadmap.md. branding.telefoon/branding.email blijven bestaan voor
+          gebruik in pdf's en e-mails. */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-      <AppTopbar branding={branding} userEmail={user.email ?? null}>
+      <AppTopbar branding={branding} gebruiker={{ naam, email: user.email ?? null }}>
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
-          <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px 22px', textAlign: 'center' }}>
+          <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px var(--app-marge)', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
               Deze omgeving draait nog op de standaardstijl — huisstijl wordt door VestaAI ingesteld.
             </p>

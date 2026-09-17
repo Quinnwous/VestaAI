@@ -4,9 +4,13 @@
 
 @layer base {
   :root {
-    /* Breedte van de content-kolom in de ingelogde omgeving. De zijmarges die
-       hierbuiten vallen dragen het sfeerbeeld van het kantoor (zie (app)/layout.tsx). */
-    --app-breedte: 1240px;
+    /* Breedte van de content-kolom in de ingelogde omgeving. Fluïde tot 1680px
+       (besluit masterplan 16-17 sep 2026, docs/roadmap.md § Besluitenlogboek —
+       was 1240px, zonde van de ruimte op een normaal beeldscherm). Alleen op
+       ultrawide-schermen stopt hij, zodat tabellen niet absurd uitrekken.
+       Gebruik components/ui/AppPagina.tsx i.p.v. deze variabele los te zetten. */
+    --app-breedte: 1680px;
+    --app-marge: clamp(20px, 3vw, 48px);
   }
 
   html {
@@ -59,6 +63,28 @@
 
 .vui-navitem { transition: background .15s, color .15s; }
 .vui-navitem:hover { background: var(--merk-zacht, #F1F7F3) !important; }
+
+/* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
+   zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
+   laadstaat is geen statusmelding. */
+.vui-skeleton {
+  position: relative;
+  overflow: hidden;
+}
+.vui-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+  animation: vui-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vui-skeleton::after { animation: none; }
+}
+@keyframes vui-skeleton-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 
 /* Formulier: 2-koloms grid collaps op mobile */
 .form-grid-2 {

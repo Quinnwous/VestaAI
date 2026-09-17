@@ -8,10 +8,10 @@ export default function ObjectNotFound() {
         <h1 className="text-lg font-semibold text-gray-900 mb-2">Woning niet gevonden</h1>
         <p className="text-sm text-gray-500 mb-6">Deze woning bestaat niet of je hebt geen toegang.</p>
         <Link
-          href="/dashboard"
+          href="/woningen"
           className="text-sm text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] font-medium underline"
         >
-          ← Terug naar overzicht
+          ← Terug naar de portefeuille
         </Link>
       </div>
     </main>

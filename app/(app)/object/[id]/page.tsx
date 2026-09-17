@@ -9,7 +9,7 @@ import { FaseToggle } from './FaseToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
-import { Eyebrow, SerifTitle } from '@/components/ui'
+import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
 import type { ContentOutput, ObjectFase, PitchUitslag, PropertyInput } from '@/lib/schemas'
 import type { Subject } from '@/lib/waardering'
 import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
@@ -81,9 +81,9 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const uspsInitieel = (object.usps_structuur as string[] | null) ?? []
 
   return (
-    <main style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', padding: '44px 40px 80px' }}>
+    <AppPagina>
       <Link
-        href="/dashboard"
+        href="/woningen"
         style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
       >
         ← Terug naar de portefeuille
@@ -127,6 +127,6 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         waarderingCorrectie={waarderingCorrectie}
         uspsInitieel={uspsInitieel}
       />
-    </main>
+    </AppPagina>
   )
 }

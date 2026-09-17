@@ -213,7 +213,7 @@ export function ObjectWorkspace({
 
             {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
             <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
-              <ResultTabs data={outputs} dataEn={outputsEn} objectId={objectId} onResetHref="/dashboard" />
+              <ResultTabs data={outputs} dataEn={outputsEn} objectId={objectId} onResetHref="/woningen" />
               <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>

@@ -1,17 +1,16 @@
+import { berekenPitchCijfers, type PitchRow } from '@/lib/kerncijfers'
+
 /**
  * Scorebord voor de acquisitiefase (besluit 16 sep 2026, zie CLAUDE.md §
  * Hoofdstructuur): hoeveel pitches lopen er nog, hoeveel win je, waar verlies
  * je — stuurinformatie die geen enkele makelaarssoftware standaard geeft.
- * Verschijnt pas zodra er acquisitiedossiers zijn.
+ * Verschijnt pas zodra er acquisitiedossiers zijn. Rekenlogica in
+ * lib/kerncijfers.ts (gedeeld met de winratio-tegel op de startpagina).
  */
-export function PitchScorebord({ rows }: { rows: { pitch_uitslag: string | null }[] }) {
+export function PitchScorebord({ rows }: { rows: PitchRow[] }) {
   if (rows.length === 0) return null
 
-  const open = rows.filter(r => (r.pitch_uitslag ?? 'open') === 'open').length
-  const gewonnen = rows.filter(r => r.pitch_uitslag === 'gewonnen').length
-  const verloren = rows.filter(r => r.pitch_uitslag === 'verloren').length
-  const beslist = gewonnen + verloren
-  const winratio = beslist > 0 ? Math.round((gewonnen / beslist) * 100) : null
+  const { open, gewonnen, verloren, winratio } = berekenPitchCijfers(rows)
 
   const cijfers: { label: string; waarde: string | number }[] = [
     { label: 'Open pitches', waarde: open },
