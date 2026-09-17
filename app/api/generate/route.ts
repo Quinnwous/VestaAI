@@ -6,6 +6,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConf
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import type { HuisstijlConfig } from '@/lib/schemas'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 300
 
@@ -105,7 +106,10 @@ export async function POST(req: NextRequest) {
         // wie een makelaar-record heeft, mag genereren.
 
         const tVerrijkStart = Date.now()
-        const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
+        const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
+          meldFout('generate:verrijking', err, { adres: input.adres })
+          return null
+        })
         const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
         const verrijkMs = Date.now() - tVerrijkStart
 
@@ -160,7 +164,10 @@ export async function POST(req: NextRequest) {
     // Fallback: geen Supabase of geen makelaar-record — geen object om op te
     // slaan, dus hier volstaat de enkeltalige generatie (geen dubbele kosten
     // voor een resultaat dat toch nergens bewaard wordt).
-    const verrijkingFallback = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
+    const verrijkingFallback = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
+      meldFout('generate:verrijking-fallback', err, { adres: input.adres })
+      return null
+    })
     const verrijkingTekstFallback = verrijkingFallback ? verrijkingNaarPrompt(verrijkingFallback) : undefined
     const output = await generateContent(input, huisstijl, undefined, verrijkingTekstFallback)
     return NextResponse.json({ output, object_id: null })
@@ -172,8 +179,9 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       )
     }
+    const ref = meldFout('generate', error)
     const message = error instanceof Error ? error.message : 'Onbekende fout'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message, ref }, { status: 500 })
   } finally {
     // In-flight-lock altijd vrijgeven (succes én fout). De inline-releases hierboven
     // (cache-hit, geen toegang, limiet) zijn nu overbodig maar onschadelijk.

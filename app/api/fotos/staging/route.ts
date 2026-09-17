@@ -3,6 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import sharp from 'sharp'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 120
 
@@ -143,7 +144,7 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
         } catch (labelErr) {
           // Labeling is compliance-verrijking, geen kernfunctie — een gelukte generatie
           // mag niet mislukken omdat het watermerk niet kon worden toegepast.
-          console.error('AI-label toepassen mislukt, val terug op ongelabeld beeld:', labelErr)
+          meldFout('fotos/staging:label', labelErr, { stijl, ruimte })
           return NextResponse.json({
             image_base64: part.inlineData.data,
             mime_type: part.inlineData.mimeType,
@@ -156,16 +157,16 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
 
     return NextResponse.json({ error: 'Geen afbeelding ontvangen van Gemini — probeer opnieuw' }, { status: 502 })
   } catch (err) {
-    console.error('Gemini staging fout:', err)
+    const ref = meldFout('fotos/staging', err, { stijl, ruimte })
     // Rate limit (te veel aanvragen op de Gemini-tier) apart benoemen zodat de makelaar
     // een begrijpelijke melding krijgt i.p.v. een generieke fout.
     const msg = err instanceof Error ? err.message : ''
     if (/429|quota|rate/i.test(msg)) {
       return NextResponse.json(
-        { error: 'De staging-dienst is even druk (limiet bereikt). Probeer het over een minuut opnieuw.' },
+        { error: 'De staging-dienst is even druk (limiet bereikt). Probeer het over een minuut opnieuw.', ref },
         { status: 429 },
       )
     }
-    return NextResponse.json({ error: 'Staging mislukt — probeer opnieuw' }, { status: 502 })
+    return NextResponse.json({ error: 'Staging mislukt — probeer opnieuw', ref }, { status: 502 })
   }
 }

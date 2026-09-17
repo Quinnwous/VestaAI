@@ -6,11 +6,12 @@
  * kwam je nooit ingelogd op localhost terecht (proefrit 17 sep 2026).
  *
  * Vereiste env vars (.env.local): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
- * Optioneel: DOD_EMAIL (standaard het platform-admin-account van i4 Housing).
+ * Optioneel: DOD_EMAIL (standaard het demo-account uit scripts/seed-demo-kantoor.mjs,
+ * omdat dat kantoor data heeft; i4 Housing: DOD_EMAIL=quinn.berkouwer@icloud.com).
  */
 import { createClient } from '@supabase/supabase-js'
 
-export const DOD_EMAIL = process.env.DOD_EMAIL || 'quinn.berkouwer@icloud.com'
+export const DOD_EMAIL = process.env.DOD_EMAIL || 'demo@vestaai.nl'
 
 export function vereisEnv() {
   const ontbreekt = ['NEXT_PUBLIC_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'].filter((k) => !process.env[k])

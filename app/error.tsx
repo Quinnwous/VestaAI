@@ -10,7 +10,9 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    console.error(error)
+    // Server logt de volledige fout al gestructureerd (lib/fouten.ts). Hier alleen de
+    // referentie client-side loggen, zie app/(app)/error.tsx voor de toelichting.
+    console.error('[Error]', error.digest ?? error.message)
   }, [error])
 
   return (
@@ -23,9 +25,12 @@ export default function Error({
           </svg>
         </div>
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Er is iets misgegaan</h2>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-gray-500 mb-2">
           {error.message ?? 'Onverwachte fout. Probeer het opnieuw.'}
         </p>
+        {error.digest && (
+          <p className="text-xs text-gray-400 mb-6">Referentie: {error.digest}</p>
+        )}
         <div className="flex items-center justify-center gap-3">
           <button
             onClick={reset}

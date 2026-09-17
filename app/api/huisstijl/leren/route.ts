@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { distilleerBewerkingsregels } from '@/lib/claude'
 import type { HuisstijlConfig } from '@/lib/schemas'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 60
 
@@ -73,7 +74,8 @@ export async function POST() {
     )
     if (!regels) return NextResponse.json({ error: 'Kon geen regels afleiden. Probeer het later opnieuw.' }, { status: 502 })
     return NextResponse.json({ regels, ids: edits.map(e => e.id), aantal: edits.length })
-  } catch {
-    return NextResponse.json({ error: 'Analyse mislukt. Probeer het later opnieuw.' }, { status: 500 })
+  } catch (error) {
+    const ref = meldFout('huisstijl/leren', error, { kantoorId })
+    return NextResponse.json({ error: 'Analyse mislukt. Probeer het later opnieuw.', ref }, { status: 500 })
   }
 }

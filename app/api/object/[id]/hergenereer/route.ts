@@ -5,6 +5,7 @@ import { PropertyInputSchema, type HuisstijlConfig } from '@/lib/schemas'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 300
 
@@ -66,7 +67,10 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const huisstijl = kantoorData?.huisstijl_json ?? undefined
 
   try {
-    const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(() => null)
+    const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
+      meldFout('object/[id]/hergenereer:verrijking', err, { objectId: params.id, adres: input.adres })
+      return null
+    })
     const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
 
     const { nl: output, en: outputEn } = await generateContentBeideTalen(input, huisstijl, verrijkingTekst, docIds)
@@ -76,12 +80,16 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       .update({ outputs_json: output, outputs_json_en: outputEn })
       .eq('id', params.id)
       .eq('kantoor_id', makelaar.kantoor_id)
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) {
+      const ref = meldFout('object/[id]/hergenereer:opslaan', error, { objectId: params.id })
+      return NextResponse.json({ error: error.message, ref }, { status: 500 })
+    }
 
     revalidatePath(`/object/${params.id}`)
     return NextResponse.json({ output, output_en: outputEn })
   } catch (error) {
+    const ref = meldFout('object/[id]/hergenereer', error, { objectId: params.id })
     const message = error instanceof Error ? error.message : 'Onbekende fout'
-    return NextResponse.json({ error: message }, { status: 500 })
+    return NextResponse.json({ error: message, ref }, { status: 500 })
   }
 }

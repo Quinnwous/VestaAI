@@ -48,7 +48,13 @@ const card: React.CSSProperties = {
  * Na aanmaken gaat de makelaar daarom direct naar het nieuwe dossier, niet
  * naar een resultatenscherm.
  */
-export function NewObjectForm() {
+type Props = {
+  /** true buiten productie, of als het kantoor van de ingelogde makelaar
+   * instellingen_json.demo === true heeft (item 2.3, zie app/(app)/object/new/page.tsx). */
+  toonDemoKnop: boolean
+}
+
+export function NewObjectForm({ toonDemoKnop }: Props) {
   const router = useRouter()
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [countdown, setCountdown] = useState(0)
@@ -156,12 +162,11 @@ export function NewObjectForm() {
           </p>
 
           <div style={card}>
-            {/* Alleen buiten productie zichtbaar (roadmap 1.9): dit vult echte
-                Herengracht-demodata in, niets voor een live kantoor. Er is nog
-                geen `instellingen_json.demo`-vlag op kantoorniveau (komt in
-                fase 2 met de demo-fixture) — tot die tijd is NODE_ENV de enige
-                betrouwbare knop die geen wijziging in lib/schemas.ts vergt. */}
-            {process.env.NODE_ENV !== 'production' && (
+            {/* Zichtbaar buiten productie, of als het kantoor van de ingelogde
+                makelaar instellingen_json.demo === true heeft (item 2.3 —
+                `toonDemoKnop` wordt server-side bepaald in page.tsx). Vult
+                echte Herengracht-demodata in, niets voor een live kantoor. */}
+            {toonDemoKnop && (
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
                 <button
                   type="button"

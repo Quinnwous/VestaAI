@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { extraheerUsps } from '@/lib/claude'
 import type { PropertyInput } from '@/lib/schemas'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 30
 
@@ -32,7 +33,8 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     const usps = await extraheerUsps(vrijeTekst)
     await serviceClient.from('objecten').update({ usps_structuur: usps }).eq('id', params.id)
     return NextResponse.json({ usps })
-  } catch {
-    return NextResponse.json({ error: 'USP-extractie mislukt. Probeer het opnieuw.' }, { status: 500 })
+  } catch (error) {
+    const ref = meldFout('object/[id]/usps', error, { objectId: params.id })
+    return NextResponse.json({ error: 'USP-extractie mislukt. Probeer het opnieuw.', ref }, { status: 500 })
   }
 }

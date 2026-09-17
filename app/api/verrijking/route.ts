@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchVerrijking } from '@/lib/verrijking'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { meldFout } from '@/lib/fouten'
 
 export async function GET(req: NextRequest) {
   // Zie app/api/bag/route.ts — zelfde reden voor deze check (masterplan fase 0.5).
@@ -16,6 +17,11 @@ export async function GET(req: NextRequest) {
   const oppervlakParam = req.nextUrl.searchParams.get('oppervlak')
   const oppervlak = oppervlakParam ? Number(oppervlakParam) : undefined
 
-  const data = await fetchVerrijking(adres, oppervlak && !isNaN(oppervlak) ? oppervlak : undefined)
-  return NextResponse.json(data)
+  try {
+    const data = await fetchVerrijking(adres, oppervlak && !isNaN(oppervlak) ? oppervlak : undefined)
+    return NextResponse.json(data)
+  } catch (error) {
+    const ref = meldFout('verrijking', error, { adres })
+    return NextResponse.json({ error: 'Verrijking mislukt. Probeer het opnieuw.', ref }, { status: 500 })
+  }
 }

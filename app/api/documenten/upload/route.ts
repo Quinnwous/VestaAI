@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { extractDocxText, DOCX_MIME } from '@/lib/docx'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 60
 
@@ -52,8 +53,9 @@ export async function POST(req: NextRequest) {
       effectiveMime = 'text/plain'
       anthropicName = bestand.name.replace(/\.docx$/i, '.txt')
       body = new Blob([tekst], { type: effectiveMime })
-    } catch {
-      return NextResponse.json({ error: 'Het Word-bestand kon niet worden verwerkt.' }, { status: 400 })
+    } catch (error) {
+      const ref = meldFout('documenten/upload:docx', error, { bestandsnaam: bestand.name })
+      return NextResponse.json({ error: 'Het Word-bestand kon niet worden verwerkt.', ref }, { status: 400 })
     }
   } else {
     body = new Blob([rawArrayBuffer], { type: effectiveMime })
@@ -77,8 +79,9 @@ export async function POST(req: NextRequest) {
       file: new File([body], anthropicName, { type: effectiveMime }),
     })
     anthropicFileId = file.id
-  } catch {
+  } catch (error) {
     // Niet-blokkerend: als Files API mislukt, gebruiken we de bytes direct bij chat
+    meldFout('documenten/upload:anthropic-files', error, { bestandsnaam: bestand.name })
   }
 
   // 3. Record opslaan in DB

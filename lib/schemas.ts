@@ -61,6 +61,12 @@ export const KantoorInstellingenSchema = z.object({
   werkgebied: z.object({
     plaatsen: z.array(z.string().max(80)).max(30).default([]),
   }).optional(),
+  // Demo-kantoor-vlag (item 2.3, docs/roadmap.md § Fase 2): seed-/opruimscripts
+  // op de productiedatabase mogen uitsluitend een kantoor raken waarvan dit
+  // `true` is — de enige vangrail die voorkomt dat een fixture-script ooit
+  // i4housing of een ander echt kantoor treft. Zie scripts/seed-demo-kantoor.mjs
+  // en lib/demoFixtureGuard.ts.
+  demo: z.boolean().optional(),
 })
 
 export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>

@@ -7,6 +7,7 @@ import { PdfTemplate } from '@/components/PdfTemplate'
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
 import { bruikbaarLogo } from '@/lib/branding'
+import { meldFout } from '@/lib/fouten'
 import React from 'react'
 
 export const runtime = 'nodejs'
@@ -71,37 +72,43 @@ export async function POST(
     .limit(6)
   const fotos = (fotoRows ?? []).map(f => f.url as string)
 
-  const pdfBuffer = await renderToBuffer(React.createElement(PdfTemplate, {
-    address: object.address,
-    output: object.outputs_json as ContentOutput,
-    kantoor: kantoorData
-      ? { ...kantoorData, logo_url: await bruikbaarLogo(kantoorData.logo_url) }
-      : { name: 'VestaAI', logo_url: null, huisstijl_json: null },
-    fotos,
-  }) as React.ReactElement<ReactPDF.DocumentProps>)
+  try {
+    const pdfBuffer = await renderToBuffer(React.createElement(PdfTemplate, {
+      address: object.address,
+      output: object.outputs_json as ContentOutput,
+      kantoor: kantoorData
+        ? { ...kantoorData, logo_url: await bruikbaarLogo(kantoorData.logo_url) }
+        : { name: 'VestaAI', logo_url: null, huisstijl_json: null },
+      fotos,
+    }) as React.ReactElement<ReactPDF.DocumentProps>)
 
-  const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`
+    const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`
 
-  const resend = new Resend(resendKey)
-  const { error: sendError } = await resend.emails.send({
-    from: 'VestaAI <noreply@vestaai.nl>',
-    to: ontvangerEmail,
-    subject: `Content-suite: ${object.address}`,
-    html: `<p>Beste${makelaar.name ? ` ${makelaar.name}` : ''},</p>
+    const resend = new Resend(resendKey)
+    const { error: sendError } = await resend.emails.send({
+      from: 'VestaAI <noreply@vestaai.nl>',
+      to: ontvangerEmail,
+      subject: `Content-suite: ${object.address}`,
+      html: `<p>Beste${makelaar.name ? ` ${makelaar.name}` : ''},</p>
 <p>In de bijlage vindt u de gegenereerde content-suite voor <strong>${object.address}</strong>.</p>
 <p>U kunt de content ook altijd online bekijken en bewerken via uw VestaAI-dashboard.</p>
 <p>Met vriendelijke groet,<br/>Het VestaAI-team</p>`,
-    attachments: [
-      {
-        filename: bestandsnaam,
-        content: Buffer.from(pdfBuffer).toString('base64'),
-      },
-    ],
-  })
+      attachments: [
+        {
+          filename: bestandsnaam,
+          content: Buffer.from(pdfBuffer).toString('base64'),
+        },
+      ],
+    })
 
-  if (sendError) {
-    return NextResponse.json({ error: 'E-mail verzenden mislukt' }, { status: 500 })
+    if (sendError) {
+      meldFout('object/[id]/email-pdf:resend', sendError, { objectId: params.id })
+      return NextResponse.json({ error: 'E-mail verzenden mislukt' }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true, email: ontvangerEmail })
+  } catch (error) {
+    const ref = meldFout('object/[id]/email-pdf', error, { objectId: params.id })
+    return NextResponse.json({ error: 'E-mail verzenden mislukt', ref }, { status: 500 })
   }
-
-  return NextResponse.json({ ok: true, email: ontvangerEmail })
 }

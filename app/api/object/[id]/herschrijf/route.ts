@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import type { PropertyInput } from '@/lib/schemas'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 60
 
@@ -116,22 +117,27 @@ export async function POST(
 
   const prompt = buildHerschrijfPrompt(sleutel, input, huidigeTekst, instructie, taal)
 
-  const client = new Anthropic()
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: ctx.maxTokens,
-    messages: [{ role: 'user', content: prompt }],
-  })
+  try {
+    const client = new Anthropic()
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: ctx.maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    })
 
-  const nieuweTekst = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const nieuweTekst = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
 
-  // Sla de nieuwe tekst op in de outputs_json van dit object
-  const nieuweOutputs = { ...outputs, [sleutel]: nieuweTekst }
-  await serviceClient
-    .from('objecten')
-    .update({ outputs_json: nieuweOutputs })
-    .eq('id', params.id)
+    // Sla de nieuwe tekst op in de outputs_json van dit object
+    const nieuweOutputs = { ...outputs, [sleutel]: nieuweTekst }
+    await serviceClient
+      .from('objecten')
+      .update({ outputs_json: nieuweOutputs })
+      .eq('id', params.id)
 
-  revalidatePath(`/object/${params.id}`)
-  return NextResponse.json({ nieuweTekst })
+    revalidatePath(`/object/${params.id}`)
+    return NextResponse.json({ nieuweTekst })
+  } catch (error) {
+    const ref = meldFout('object/[id]/herschrijf', error, { objectId: params.id, sleutel })
+    return NextResponse.json({ error: 'Herschrijven mislukt. Probeer het opnieuw.', ref }, { status: 500 })
+  }
 }

@@ -652,7 +652,7 @@ Details: `docs/besluiten.md`.
   *Tests:* guard; per RPC een vergelijkingstest tegen de pure functie (draait
   alleen met `SUPABASE_TEST=1`, anders overgeslagen); `dataTotEnMet`.
   *Klaar als:* guard groen, geen `select('*')`, RPC's < 300 ms op de fixture.
-- [ ] **2.3 Demo-fixture `scripts/seed-demo-kantoor.mjs`**
+- [x] **2.3 Demo-fixture `scripts/seed-demo-kantoor.mjs`**
   *Doel:* een kantoor "Demo Makelaardij" met een geloofwaardige regio, zodat
   elke verkenner, waardering en kaart vanaf nu op data draait.
   *Raakt:* nieuw script, `scripts/seed-demo-kantoor.test.ts` (weigert een
@@ -681,7 +681,7 @@ Details: `docs/besluiten.md`.
   enkele met content (geen pitch-uitslagen: het concept vervalt, 1.9c).
   *Klaar als:* alle verkenners, kerncijfers, kaart en waardering tonen
   plausibele cijfers zonder lege staten; screenshots bewaard als referentie.
-- [ ] **2.4 Foutlogging vroeg** — `app/global-error.tsx`, `app/(app)/error.tsx`,
+- [x] **2.4 Foutlogging vroeg** — `app/global-error.tsx`, `app/(app)/error.tsx`,
   `lib/fouten.ts` (`meldFout(context, error, extra)` → gestructureerde
   `console.error` die in de Vercel-runtime-logs terechtkomt), gebruikt in alle
   API-routes' `catch`. Klein item, geen externe dienst (Sentry → backlog).
@@ -1159,7 +1159,10 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 
 **Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
 `handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`
-zijn via `/rest/v1/rpc` aan te roepen door `anon` → `revoke execute … from anon`
+zijn via `/rest/v1/rpc` aan te roepen door `anon`; de trigger `handle_new_user`
+maakt bovendien bij elke nieuwe auth-user een proefkantoor aan (erfenis van
+zelf-aanmelden, 17 sep gezien bij de demo-fixture) → trigger droppen
+(accounts ontstaan alleen via `/admin`, `plaatsInKantoor`) en `revoke execute … from anon`
 (en `rls_auto_enable` ook van `authenticated`); `object_fotos` en
 `stijl_bewerkingen` hebben RLS zonder policy (bewust service-role? nagaan);
 leaked-password-protection aan (§ 8 punt 3). Uiterlijk in fase 12.

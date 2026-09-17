@@ -62,7 +62,7 @@ export function ConcurrentieExplorer({ transacties }: { transacties: TransactieR
   const profielen = concurrentProfielen(gefilterd)
 
   return (
-    <div style={{ display: 'grid', gap: 28 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 28 }}>
       <div style={{ display: 'inline-flex', borderRadius: 10, overflow: 'hidden', border: '1px solid #E1E5E9', alignSelf: 'flex-start' }}>
         {[{ l: 'Alles', m: 0 }, { l: '12 mnd', m: 12 }, { l: '24 mnd', m: 24 }].map(p => (
           <button key={p.l} type="button" onClick={() => setPeriodeMaanden(p.m)} style={{ padding: '7px 13px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: periodeMaanden === p.m ? 'var(--merk)' : '#fff', color: periodeMaanden === p.m ? '#fff' : '#5C6470' }}>
