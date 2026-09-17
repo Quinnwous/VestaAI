@@ -65,7 +65,7 @@ function FaseBadge({ fase, pitchUitslag }: { fase: ObjectFase; pitchUitslag: str
   )
 }
 
-export function DashboardClient({ objecten, totalPages, currentPage, search, faseFilter, totalCount }: Props) {
+export function WoningenClient({ objecten, totalPages, currentPage, search, faseFilter, totalCount }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()

@@ -40,7 +40,7 @@ export default function AppError({
           >
             Probeer opnieuw
           </button>
-          <a href="/dashboard" style={{ fontSize: 14, color: '#5C6470', textDecoration: 'underline' }}>
+          <a href="/woningen" style={{ fontSize: 14, color: '#5C6470', textDecoration: 'underline' }}>
             Terug naar je woningen
           </a>
         </div>

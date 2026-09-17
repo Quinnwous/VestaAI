@@ -1,0 +1,94 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+
+/**
+ * Banner bovenaan de startpagina (masterplan fase 1.6, zie docs/roadmap.md):
+ * een grote teamfoto met een begroeting erover, zodat het na inloggen meteen
+ * voelt als "ons platform" i.p.v. direct in een werklijst te vallen.
+ *
+ * Gebruikt voorlopig `branding.achtergrondUrl` (hetzelfde sfeerbeeld als op
+ * /kantoor) — een los `bannerfoto`-veld in de admin volgt zodra er een
+ * goedgekeurde teamfoto is (zie docs/roadmap.md § Blokkades). Zonder
+ * sfeerbeeld valt de banner terug op een merkverloop, nooit op een
+ * gebroken-afbeelding-icoon (patroon uit KantoorBanner.tsx).
+ */
+export function StartBanner({
+  url,
+  naam,
+  kantoornaam,
+}: {
+  url: string | null
+  naam: string | null
+  kantoornaam: string
+}) {
+  const [kapot, setKapot] = useState(false)
+  const [zichtbaar, setZichtbaar] = useState(false)
+  const toonFoto = url && !kapot
+
+  useEffect(() => {
+    // Zachte fade-in i.p.v. een harde pop-in; direct op reduced-motion doelwit.
+    const verminderdeBeweging = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (verminderdeBeweging) { setZichtbaar(true); return }
+    const t = setTimeout(() => setZichtbaar(true), 20)
+    return () => clearTimeout(t)
+  }, [])
+
+  const begroeting = gebruikBegroeting()
+  const datum = new Date().toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        borderRadius: 'var(--merk-radius-card-lg, 18px)',
+        overflow: 'hidden',
+        marginBottom: 32,
+        aspectRatio: '16 / 5',
+        minHeight: 180,
+        background: toonFoto
+          ? undefined
+          : 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',
+        boxShadow: 'var(--merk-shadow-card)',
+        opacity: zichtbaar ? 1 : 0,
+        transition: 'opacity .4s ease-out',
+      }}
+    >
+      {toonFoto && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={url}
+          alt={`Het team van ${kantoornaam}`}
+          onError={() => setKapot(true)}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      )}
+      {toonFoto && (
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(0deg, rgba(14,20,17,.62) 0%, rgba(14,20,17,.08) 55%, rgba(14,20,17,0) 100%)',
+          }}
+        />
+      )}
+      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '20px 26px' }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 650, color: 'rgba(255,255,255,.82)', textTransform: 'capitalize' }}>
+          {datum}
+        </p>
+        <h1 style={{ margin: '2px 0 0', fontSize: 26, fontWeight: 700, color: '#fff', letterSpacing: '-.01em' }}>
+          {begroeting}{naam ? `, ${naam.split(' ')[0]}` : ''}
+        </h1>
+      </div>
+    </div>
+  )
+}
+
+/** Begroeting op tijdstip, Europe/Amsterdam (via de lokale kloktijd van de gebruiker). */
+function gebruikBegroeting(): string {
+  const uur = new Date().getHours()
+  if (uur < 6) return 'Goedenacht'
+  if (uur < 12) return 'Goedemorgen'
+  if (uur < 18) return 'Goedemiddag'
+  return 'Goedenavond'
+}

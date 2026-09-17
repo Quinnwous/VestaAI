@@ -1,5 +1,24 @@
 # VestaAI
 
+> ## 🚦 Begin hier bij elke sessie
+> **Lees eerst `docs/roadmap.md` § Stand van zaken** (fase, laatst opgeleverd, volgende
+> item, blokkades, open vragen) vóór je iets anders doet. Dat document is het masterplan
+> "demo-klaar" (opgesteld 16-17 sep 2026) met alle fases, klaar-als-criteria, het
+> besluitenlogboek, risico's en de vangrails voor de productiedatabase.
+>
+> **Definition of Done** (elk item, zie `docs/roadmap.md` § 4 voor de volledige versie):
+> `npm run typecheck && npm run test && npm run build` groen · huisstijl-hook schoon ·
+> `scripts/screenshots.mjs` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
+> aanwezig · geen kale `select('*')` op `transacties` · elke nieuwe tabel met RLS per kantoor ·
+> docs bijgewerkt.
+>
+> **Vangrails productiedatabase:** back-up (`scripts/backup-data.mjs`) vóór elke
+> risicovolle stap (migratie, import, bulk-update, opruimen); scripts dry-run als
+> standaard; migraties alleen na expliciet akkoord van Quinn.
+>
+> **Werkwijze:** Opus plant (`/model opusplan`), Sonnet bouwt. `/sessie-start` bij het
+> begin, `/sessie-afronden` bij het einde van elke sessie.
+
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Acquisitie → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
 
 > **Koerswijziging 15 september 2026.** VestaAI was een AI-contentplatform (Funda-teksten, brochures, virtual staging) en werd daarnaast een waarderingsplatform. Alle prijzen/abonnementen/Stripe zijn uit de code gehaald (niet bevroren — verwijderd).
@@ -22,7 +41,7 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.md`:
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
-  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. Het dashboard toont een scorebord (`PitchScorebord.tsx`) met winratio.
+  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. De woningenlijst (`/woningen`) toont een scorebord (`PitchScorebord.tsx`) met winratio; de startpagina (`/dashboard`) toont dezelfde winratio (laatste 12 maanden) als kerncijfer.
   - **In verkoop** — hetzelfde als Acquisitie, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. Content wordt in de achtergrond al gegenereerd zodra het dossier wordt aangemaakt (`/api/generate`), maar blijft verborgen tot deze fase.
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
@@ -34,12 +53,14 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.m
   - **Transacties opzoeken** (`components/TransactiesZoeken.tsx`) — zoeken/filteren over de dataset; "meenemen als referentie" wacht op verdere waarderings-integratie.
   - **Concurrentieanalyse** (`components/ConcurrentieExplorer.tsx` + `lib/concurrentie.ts`) — marktaandeel, wie wint welk segment, presteren wij beter, concurrent-profielen. Draait op `transacties.verkopend_kantoor`; toont een eerlijke lege staat zolang dat veld niet gevuld is.
   - **Verkoopkaart** (`app/(app)/marktanalyse/kaart/`, `components/VerkoopkaartExplorer.tsx`) — alleen eigen verkopen als vlaggetje, met live filters.
-- **Verhuur** — zichtbaar in de topbar, bewust op slot ("Binnenkort"). Niet gebouwd.
-- **Kantoor** (`app/(app)/kantoor/`) — read-only pagina achter het gebruikersmenu: huisstijl-preview, kantoorgegevens, team, statistieken. Bewerken kan alleen via `/admin/kantoor/[id]` (platform-admin).
+- **Verhuur** — volledig uit de app gehaald (fase 1.3, masterplan 16-17 sep 2026, zie `docs/roadmap.md`). Stond eerder als "Binnenkort" in de topbar; nu bewust níet gebouwd, geen restant meer in de navigatie.
+- **Kantoor** (`app/(app)/kantoor/`) — read-only pagina achter het profielmenu (avatar rechtsboven): huisstijl-preview, kantoorgegevens, team, statistieken. Bewerken kan alleen via `/admin/kantoor/[id]` (platform-admin). Eigen naam/wachtwoord staan sinds fase 1.7 op `/account`, niet meer hier.
 
 **Eén rol per kantoor** (besluit 16 sep 2026): iedereen met een login binnen een kantoor ziet en kan hetzelfde — geen kantoor-admin meer. De kolom `makelaars.role` bestaat nog maar stuurt geen rechten meer binnen het kantoor. Platform-admin (Quinn, `lib/admin.ts`) is een los concept.
 
-**Transactiedataset** (tabel `transacties`, zie "Datamodel") — i4housing's eigen Realworks-verkoopdata, aangevuld met verkopen van andere kantoren voor een grotere referentiebasis. Geïmporteerd door de platform-admin via `/admin/transacties` (CSV, kolomherkenning via aliassen in `lib/transactieImport.ts`, upsert op adres+datum voor herhaalbare herimport) — het kantoor importeert zelf niets (concierge-model, zie `docs/goals.md` § Bedieningsmodel). De kolom `eigen_verkoop` bepaalt wat op de verkoopkaart een vlaggetje krijgt (alleen eigen verkopen); de rest van de dataset voedt waardering en marktanalyse. `verkopend_kantoor` (optioneel) voedt de concurrentieanalyse zonder aparte Brainbay-import, zodra bevestigd dat de Realworks-export dit veld bevat.
+**Transactiedataset** (tabel `transacties`, zie "Datamodel") — i4housing's eigen Brainbay- en Realworks-verkoopdata. **Strikt per kantoor afgeschermd via RLS** (besluit masterplan 16-17 sep 2026, zie `docs/roadmap.md` § Besluitenlogboek): een ingelogde makelaar ziet alléén de transacties van zijn eigen kantoor, nooit die van een ander kantoor (ook niet het interne demo-/testkantoor). Dit verving een eerdere, bewust foute inrichting als "gedeelde referentiepool" die bij verificatie een live cross-tenant datalek bleek — zie de migratie `20260916213323_rls_kantoor_isolatie_transacties.sql` en `supabase/schema-baseline.sql` voor de volledige toedracht. Geïmporteerd door de platform-admin via `/admin/transacties` (CSV, kolomherkenning via aliassen in `lib/transactieImport.ts`, upsert op kantoor+adres+datum voor herhaalbare herimport) — het kantoor importeert zelf niets (concierge-model, zie `docs/goals.md` § Bedieningsmodel). De kolom `eigen_verkoop` bepaalt wat op de verkoopkaart een vlaggetje krijgt (alleen eigen verkopen); de rest van de dataset voedt waardering en marktanalyse. `verkopend_kantoor` (optioneel) voedt de concurrentieanalyse, zodra bevestigd dat de export dit veld bevat.
+
+⚠️ **Elke query op `transacties` (en de view `transacties_met_coordinaten`) via de sessie-gebonden client** (`createServerSupabaseClient()`) krijgt automatisch alléén het eigen kantoor terug dankzij RLS — reken hier niet op een handmatig `.eq('kantoor_id', …)`-filter als enige bescherming, en voeg bij een nieuwe view op deze tabel altijd `with (security_invoker = true)` toe (anders draait de view als de aanmakende rol en omzeilt hij RLS alsnog).
 
 **Huisstijl** (`lib/branding.ts`) — bouwt uit `kantoren.huisstijl_json` een volledig palet en zet dat als CSS-variabelen (`--merk*`) in `app/(app)/layout.tsx`: kleuren (`primaire_kleur`, `accent_kleur`), lettertype (`jakarta` · `gantari` · `nunito`), vormtaal (`zacht` · `strak`), favicon, contactgegevens en sfeerbeeld. Volledig **platform-admin-beheerd** sinds 16 sep 2026: bewerkbaar formulier in `app/admin/kantoor/HuisstijlForm.tsx` (bereikbaar via `/admin/kantoor/[id]`), het kantoor zelf ziet alleen een read-only preview op `/kantoor`. Componenten in de ingelogde omgeving gebruiken `var(--merk)` etc., nooit een hardgecodeerde merkkleur. **Kantoorinstellingen** (courtage, kantoorprofiel, werkgebied — `lib/schemas.ts` `KantoorInstellingenSchema`, kolom `kantoren.instellingen_json`) zijn eveneens platform-admin-beheerd via `app/admin/kantoor/InstellingenForm.tsx`.
 
@@ -48,6 +69,8 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.m
 Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger), knoppen zonder afronding (`vorm: 'strak'`). Quinn logt in als `quinn.berkouwer@icloud.com` (platform-admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
 
 ⚠️ **Nooit een absoluut pad als `logo_url`** — dat was de oorzaak van het "?"-logo: `/kantoren/i4housing/logo.png` bestond alleen lokaal en niet in de deploy. Assets horen in Storage, met een volledige URL.
+
+⚠️ **`var(--merk,#1A6B45)`-fallbacks maken een kapotte kantoor-lookup onzichtbaar**: bij een mislukte database-query valt de hele omgeving stil terug op VestaAI-groen, zonder foutmelding. Zie je onverwacht groen in de ingelogde omgeving, controleer dan eerst of de kantoor-query wel data teruggeeft — het is zelden een CSS-bug.
 
 **Landingspagina** (`components/LandingPageClient.tsx`) — het oorspronkelijke, uitgebreide marketingontwerp. Geen prijzen, geen zelf-aanmelden — CTA's wijzen naar `/contact` (toegang aanvragen) of `/login`. Nieuwe kantoren worden handmatig klaargezet via `/admin`.
 
@@ -105,28 +128,35 @@ VestaAI/
 │   ├── page.tsx               # landingspagina (LandingPageClient) — gesloten platform, geen prijzen
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
-│   │   ├── dashboard/          #   woningdossier-lijst, fase-filters, PitchScorebord
+│   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
+│   │   │                       #   StartBanner + Snelkoppelingen + Kerncijfers
+│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, PitchScorebord (verhuisd
+│   │   │                       #   van /dashboard hierheen in fase 1.6)
 │   │   ├── object/new · [id]/  #   gedeelde intake (PropertyForm) · woningdossier (ObjectWorkspace,
 │   │   │                       #   fase-afhankelijk: waardering/verkoopadvies altijd, content pas
 │   │   │                       #   vanaf "In verkoop")
 │   │   ├── marktanalyse/        #   4 interactieve explorers: marktanalyse · transacties ·
 │   │   │                       #   concurrentie · kaart
-│   │   └── kantoor/             #   read-only: huisstijl-preview, team, statistieken
+│   │   ├── kantoor/             #   read-only: huisstijl-preview, team, statistieken
+│   │   └── account/             #   "Mijn account" (fase 1.7): naam wijzigen, wachtwoord wijzigen
 │   ├── admin/                  # platform-admin: kantoor/account-beheer, per-kantoor huisstijl +
 │   │   ├── kantoor/[id]/        #   instellingen + team (HuisstijlForm/InstellingenForm/TeamBeheer),
 │   │   └── transacties/         #   transactie-CSV-import
 │   └── api/                    # generate (NL+EN), fotos/documenten/pdf/export, verrijking,
 │                                #   object/[id]/usps, stats, object, auth, me
 ├── components/
-│   ├── AppTopbar.tsx           # topbar: Woningdossier · Marktinzichten · Verhuur (op slot)
+│   ├── AppTopbar.tsx           # topbar (herbouwd fase 1.3): Woningdossier · Marktinzichten;
+│   │                           #   avatarmenu rechtsboven (Mijn account · Kantoor · Uitloggen).
+│   │                           #   Verhuur volledig uit de app (was hier "op slot")
 │   ├── ObjectWorkspace.tsx     # woningdossier, fase-afhankelijke weergave
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
 │   ├── Verkoopkaart.tsx / VerkoopkaartClient.tsx / VerkoopkaartExplorer.tsx / StraalKaartPaneel.tsx
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
-│   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies (Verhuur)
-│   └── ui/                     # design-system: tokens.ts + primitives
+│   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
+│   └── ui/                     # design-system: tokens.ts + primitives (o.a. AppPagina, StatTile,
+│                               #   EmptyState, Skeleton — sinds fase 1.1)
 ├── lib/
 │   ├── branding.ts             # kantoorpalet uit huisstijl_json → CSS-variabelen
 │   ├── waardering.ts           # referentieselectie, bandbreedte, kenmerk-effecten (vergelijkbare-paren)

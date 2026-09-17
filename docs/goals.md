@@ -39,8 +39,15 @@ onderbouwt de waarde met data en scenario's, en versnelt de content die daarna v
 
 **i4housing is momenteel de enige klant, en het product wordt op dit moment specifiek voor
 hen gebouwd — niet als "eerste pilot van velen", maar als de daadwerkelijke scope.** Er is
-geen actief verkoopdoel, geen wervingsplan en geen prijsmodel. Toegang is puur
-admin-beheerd (zie § Prijzen).
+geen wervingsplan voor andere kantoren. Toegang is puur admin-beheerd (zie § Prijzen).
+
+**Koerswijziging masterplan 16-17 sep 2026:** i4housing zal uiteindelijk gaan betalen voor
+het platform — dat is inmiddels wél een doel, alleen nog zonder vastgesteld bedrag of
+contractvorm (zie `docs/roadmap.md` § Blokkades & acties Quinn). De kern van de propositie:
+een prachtig, interactief systeem bovenop i4housing's éígen Brainbay- en Realworks-data
+(waardering, marktinzicht, concurrentieanalyse), plus content die uren scheelt — niet een
+generiek contentplatform. Prioritering blijft gericht op één demo bij i4housing, niet op
+meerdere kantoren tegelijk.
 
 Dat betekent niet dat de deur voorgoed dicht is: het datamodel is al multi-tenant
 (`kantoren`/`makelaars` in Supabase) en het white-label-systeem (`lib/branding.ts`) werkt
@@ -99,7 +106,7 @@ als zodanig worden aangenomen bij latere beslissingen.
 ## Strategisch voordeel van i4housing als eerste klant
 
 i4housing (Molenplein 2, Wassenaar — NVM, sterk op de expat-markt rond Den Haag) is niet
-zomaar een testklant: hun huisstijl (blauw `#0089D0`, accent rood `#C81E46`) is de eerste
+zomaar een testklant: hun huisstijl (blauw `#0080C8`, accent rood `#C61E45`, geverifieerd uit hun eigen theme-CSS, zie CLAUDE.md) is de eerste
 white-label-implementatie, en hun eigen Realworks-verkoopdata wordt de referentiedataset
 voor de waardering. Dat geeft:
 - Een echte, gebruikte omgeving in plaats van een demo — directe productfeedback.

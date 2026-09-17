@@ -186,3 +186,11 @@ export const PrijswijzigingOutputSchema = z.object({
 })
 
 export type PrijswijzigingOutput = z.infer<typeof PrijswijzigingOutputSchema>
+
+// Wachtwoord wijzigen op /account (masterplan fase 1.7, zie docs/roadmap.md).
+export const WachtwoordWijzigenSchema = z.object({
+  huidigWachtwoord: z.string().min(1, 'Vul je huidige wachtwoord in'),
+  nieuwWachtwoord: z.string().min(10, 'Minimaal 10 tekens'),
+})
+
+export type WachtwoordWijzigen = z.infer<typeof WachtwoordWijzigenSchema>

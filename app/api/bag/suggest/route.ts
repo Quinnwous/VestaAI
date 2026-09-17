@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 const BAG_BASE = 'https://api.bag.kadaster.nl/lvbag/individuelebevragingen/v2'
 
@@ -9,6 +10,11 @@ export interface BagSuggestie {
 }
 
 export async function GET(req: NextRequest) {
+  // Zie app/api/bag/route.ts — zelfde reden voor deze check (masterplan fase 0.5).
+  const supabase = createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
+
   const q = req.nextUrl.searchParams.get('q')
   if (!q || q.length < 3) {
     return NextResponse.json([] as BagSuggestie[])
