@@ -31,7 +31,23 @@ export function FaseToggle({
   const naarInVerkoop = () => {
     startTransition(async () => {
       const result = await setObjectFase(objectId, 'in_verkoop')
-      if (result.ok) setFase('in_verkoop')
+      if (result.ok) {
+        setFase('in_verkoop')
+        // Content-generatie start automatisch bij de fase-overgang, als er
+        // nog niets staat (item 3.1, docs/roadmap.md § 3.2) — fire-and-
+        // forget, niet awaiten: de makelaar hoeft niet te wachten, de
+        // Teksten-tab (ContentTekstenTab) pollt zelf op de status. Via de
+        // normale /api/generate-route (niet rechtstreeks lib/contentGeneratie.ts)
+        // zodat CONTENT_VERGRENDELD en de lock hetzelfde blijven werken als
+        // bij de handmatige knop.
+        if (result.contentStatus === 'geen') {
+          fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ objectId }),
+          }).catch(() => { /* de Teksten-tab ontdekt het resultaat via polling */ })
+        }
+      }
     })
   }
 

@@ -189,3 +189,21 @@ export function woningtypeGroep(ruweWaarde: string | null | undefined): Typegroe
 export function woningtypeSub(ruweWaarde: string | null | undefined): string | null {
   return zoekMapping(ruweWaarde)?.sub ?? null
 }
+
+export type WoningtypeGroepOpties = { groep: Typegroep; subs: string[] }
+
+const GROEP_VOLGORDE: Typegroep[] = ['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand']
+
+/**
+ * Groep → subtypes uit de taxonomie (docs/ontwerp/README.md § 5), afgeleid
+ * van dezelfde MAPPING die de transactie-import gebruikt om te normaliseren —
+ * één bron voor de taxonomie, zodat de woningtype-Select in de intake (item
+ * 3.2, componenten/PropertyForm.tsx via lib/woningtypeOpties.ts) nooit uit de
+ * pas kan lopen met de import-normalisatie hierboven.
+ */
+export function woningtypeTaxonomie(): WoningtypeGroepOpties[] {
+  return GROEP_VOLGORDE.map(groep => ({
+    groep,
+    subs: MAPPING.filter((entry): entry is TaxonomieEntry & { sub: string } => entry.groep === groep && entry.sub !== null).map(entry => entry.sub),
+  }))
+}

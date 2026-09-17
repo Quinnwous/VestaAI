@@ -1,21 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('@/lib/schemas', () => ({
-  PropertyInputSchema: {
-    parse: vi.fn(),
-  },
-}))
-
-vi.mock('@/lib/claude', () => ({
-  generateContent: vi.fn(),
-}))
-
-vi.mock('@/lib/supabase', () => ({
-  isSupabaseConfigured: vi.fn(() => false),
-  createServerSupabaseClient: vi.fn(),
-  createServiceSupabaseClient: vi.fn(),
-}))
-
 // De contentsuite is vergrendeld (koerswijziging sept 2026). De tests hieronder
 // beschrijven het gedrag van de route zelf en draaien daarom met het slot eraf;
 // dat het slot er in productie op zit, dekt de eerste test af.
@@ -25,32 +9,30 @@ vi.mock('@/lib/features', () => ({
     new Response(JSON.stringify({ error: 'vergrendeld' }), { status: 403 }),
 }))
 
+const genereerContentVoorObject = vi.fn()
+vi.mock('@/lib/contentGeneratie', () => ({
+  genereerContentVoorObject: (...args: unknown[]) => genereerContentVoorObject(...args),
+}))
+
+vi.mock('@/lib/fouten', () => ({
+  meldFout: vi.fn(() => 'ref123'),
+}))
+
+const authGetUser = vi.fn()
+const makelaarSingle = vi.fn()
+
+vi.mock('@/lib/supabase', () => ({
+  createServerSupabaseClient: vi.fn(() => ({
+    auth: { getUser: authGetUser },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: makelaarSingle,
+    })),
+  })),
+}))
+
 import { POST } from './route'
-import * as schemasModule from '@/lib/schemas'
-import * as claudeModule from '@/lib/claude'
-import { ZodError } from 'zod'
-import type { PropertyInput } from '@/lib/schemas'
-
-const validInput: PropertyInput = {
-  adres: 'Herengracht 1, Amsterdam',
-  woningtype: 'Appartement',
-  kamers: 3,
-  oppervlak_m2: 85,
-  bouwjaar: 1920,
-  energielabel: 'C',
-  vraagprijs: 450000,
-  usps: 'Prachtig uitzicht',
-  doelgroep: 'Jonge gezinnen',
-}
-
-const validOutput = {
-  funda_tekst: 'tekst', brochure_kort: 'kort', brochure_lang: 'lang',
-  instagram_emotioneel: 'em', instagram_informatief: 'inf', instagram_actie: 'act',
-  linkedin_kantoor: 'knt', linkedin_makelaar: 'mak', koper_email: 'mail',
-  buurtomschrijving: 'buurt',
-  open_huis: '', bezichtiging_followup_positief: '', bezichtiging_followup_negatief: '', video_script: '',
-  energie_advies: '', kopersvragen_faq: '', marktanalyse: '',
-}
 
 function makeRequest(body: unknown) {
   return new Request('http://localhost/api/generate', {
@@ -60,50 +42,61 @@ function makeRequest(body: unknown) {
   })
 }
 
-describe('POST /api/generate', () => {
+describe('POST /api/generate — "genereer voor dossier-id" (item 3.1)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    authGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    makelaarSingle.mockResolvedValue({ data: { kantoor_id: 'kantoor-1' } })
   })
 
-  it('returns 200 with content on valid input', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockReturnValue(validInput)
-    vi.mocked(claudeModule.generateContent).mockResolvedValue(validOutput)
-
-    const req = makeRequest(validInput)
-    const res = await POST(req as never)
-    const data = await res.json()
-
-    expect(res.status).toBe(200)
-    expect(data.output.funda_tekst).toBe('tekst')
-    expect(data.object_id).toBeNull()
-  })
-
-  it('returns 400 on Zod validation error', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const zodError = new ZodError([{ code: 'invalid_type', path: ['adres'], message: 'Required' } as any])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockImplementation(() => { throw zodError })
-
-    const req = makeRequest({ invalid: true })
-    const res = await POST(req as never)
+  it('returns 400 when objectId is missing', async () => {
+    const res = await POST(makeRequest({}) as never)
     const data = await res.json()
 
     expect(res.status).toBe(400)
-    expect(data.error).toBe('Ongeldige invoer')
-    expect(data.details).toBeDefined()
+    expect(data.error).toBeDefined()
+    expect(genereerContentVoorObject).not.toHaveBeenCalled()
   })
 
-  it('returns 500 when Claude fails', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(schemasModule.PropertyInputSchema.parse as any).mockReturnValue(validInput)
-    vi.mocked(claudeModule.generateContent).mockRejectedValue(new Error('API timeout'))
+  it('returns 401 when not logged in', async () => {
+    authGetUser.mockResolvedValue({ data: { user: null } })
 
-    const req = makeRequest(validInput)
-    const res = await POST(req as never)
+    const res = await POST(makeRequest({ objectId: 'obj-1' }) as never)
+    expect(res.status).toBe(401)
+    expect(genereerContentVoorObject).not.toHaveBeenCalled()
+  })
+
+  it('returns 409 when a generation is already running (active lock)', async () => {
+    genereerContentVoorObject.mockResolvedValue({ ok: false, status: 409, error: 'Er loopt al een generatie voor dit dossier' })
+
+    const res = await POST(makeRequest({ objectId: 'obj-1' }) as never)
     const data = await res.json()
 
-    expect(res.status).toBe(500)
-    expect(data.error).toBe('API timeout')
+    expect(res.status).toBe(409)
+    expect(data.error).toMatch(/al een generatie/)
+    expect(genereerContentVoorObject).toHaveBeenCalledWith('obj-1', 'kantoor-1')
+  })
+
+  it('does not return 409 when genereerContentVoorObject reports ok (lock not active / expired)', async () => {
+    // De route delegeert de verlooptijd-check volledig aan
+    // lib/contentGeneratie.ts (CONTENT_LOCK_VERLOOP_MS) — hier testen we dat
+    // de route een 'ok'-resultaat gewoon doorlaat.
+    genereerContentVoorObject.mockResolvedValue({ ok: true })
+
+    const res = await POST(makeRequest({ objectId: 'obj-1' }) as never)
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(data.ok).toBe(true)
+  })
+
+  it('returns 400 with "Vul eerst stap Verhaal in" when usps/doelgroep are missing', async () => {
+    genereerContentVoorObject.mockResolvedValue({ ok: false, status: 400, error: 'Vul eerst stap Verhaal in' })
+
+    const res = await POST(makeRequest({ objectId: 'obj-1' }) as never)
+    const data = await res.json()
+
+    expect(res.status).toBe(400)
+    expect(data.error).toBe('Vul eerst stap Verhaal in')
   })
 })

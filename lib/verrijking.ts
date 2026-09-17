@@ -46,6 +46,19 @@ function parsePdokCoord(centroide: string): { lat: number; lon: number } | null 
   return { lon: parseFloat(m[1]), lat: parseFloat(m[2]) }
 }
 
+/**
+ * Enkele, snelle coördinaatopzoeking (item 3.1, docs/roadmap.md § 3.2) — alleen
+ * de PDOK Locatieserver-call, geen WOZ/CBS/Overpass. Gebruikt door
+ * `POST /api/object` als de intake nog geen lat/lng meestuurde, zodat het
+ * dossier binnen de 5s-belofte blijft (de volle `fetchVerrijking` hieronder
+ * is te traag voor een aanmaakroute zonder Claude).
+ */
+export async function lookupCoordinaten(adres: string): Promise<{ lat: number; lng: number } | null> {
+  const pdok = await pdokLookup(adres)
+  const coord = pdok?.centroide_ll ? parsePdokCoord(pdok.centroide_ll) : null
+  return coord ? { lat: coord.lat, lng: coord.lon } : null
+}
+
 // ─── WOZ Waardeloket ─────────────────────────────────────────────────────────
 
 interface WozWaarde {

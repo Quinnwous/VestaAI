@@ -1,15 +1,20 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
+import type { ZodType } from 'zod'
+import { PropertyInputSchema, migreerOudWoningtype, type PropertyInput } from '@/lib/schemas'
+import { bouwWoningtypeOptieGroepen, woningtypeOptieWaarde, ontleedWoningtypeOptieWaarde } from '@/lib/woningtypeOpties'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { WoningdataPanel } from '@/components/WoningdataPanel'
 import type { VerrijkingData } from '@/lib/verrijking'
 import type { BagSuggestie } from '@/app/api/bag/suggest/route'
 
-const WONINGSTYPES = ['Appartement', 'Tussenwoning', 'Hoekwoning', 'Vrijstaand', 'Villa', 'Penthouse'] as const
+// Woningtype als groep + subtype i.p.v. de oude platte enum (item 3.2, zie
+// docs/roadmap.md § 5 fase 3.2 en docs/ontwerp/README.md § 5) — pure
+// optie-opbouw in lib/woningtypeOpties.ts, hier alleen gerenderd.
+const WONINGTYPE_OPTIE_GROEPEN = bouwWoningtypeOptieGroepen()
 const ENERGIELABELS = ['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] as const
 const DOELGROEPEN = ['Starters', 'Jonge gezinnen', 'Senioren', 'Investeerders', 'Anders'] as const
 
@@ -38,17 +43,20 @@ const STAPPEN = [
   { id: 2, label: 'Woning' },
   { id: 3, label: 'Staat & afwerking' },
   { id: 4, label: 'Ligging & buitenruimte' },
-  { id: 5, label: 'Verhaal' },
-  { id: 6, label: 'Commercieel' },
+  { id: 5, label: 'Verhaal', kanLater: true },
+  { id: 6, label: 'Commercieel', kanLater: true },
 ] as const
 
 const DRAFT_KEY = 'vestaai_form_draft'
 
+// Een opgeslagen concept kan van vóór item 3.2 zijn en nog het oude platte
+// woningtype-veld hebben — dezelfde migratie als PropertyInputSchema toepassen
+// zodat het concept met de nieuwe groep+subtype-vorm in de wizard laadt.
 function loadDraft(): Partial<PropertyInput> {
   try {
     const raw = localStorage.getItem(DRAFT_KEY)
     if (!raw) return {}
-    return JSON.parse(raw) as Partial<PropertyInput>
+    return migreerOudWoningtype(JSON.parse(raw)) as Partial<PropertyInput>
   } catch {
     return {}
   }
@@ -102,11 +110,19 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     trigger,
     formState: { errors },
   } = useForm<PropertyInput>({
-    resolver: zodResolver(PropertyInputSchema),
+    // PropertyInputSchema is een z.preprocess(...) (item 3.2: migreert de oude
+    // woningtype-enum) — de input-kant daarvan is `unknown`, wat niet
+    // structureel voldoet aan react-hook-form's FieldValues-constraint. De
+    // output-kant (na validatie) is wél gewoon PropertyInput, vandaar de
+    // dubbele cast (schema-argument én resolver-resultaat), via `unknown`
+    // i.p.v. `any` (project blijft strict, geen `any`).
+    resolver: zodResolver(PropertyInputSchema as unknown as ZodType<PropertyInput, PropertyInput>) as unknown as Resolver<PropertyInput>,
     defaultValues: { taal: 'nl', ...draft },
   })
 
   const adresValue = useWatch({ control, name: 'adres' }) ?? ''
+  const woningtypeGroepValue = useWatch({ control, name: 'woningtype_groep' })
+  const woningtypeSubValue = useWatch({ control, name: 'woningtype_sub' })
   const doelgroepValue = useWatch({ control, name: 'doelgroep' })
   const [duplicaat, setDuplicaat] = useState<{ object_id: string; created_at: string } | null>(null)
   const duplicaatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -126,10 +142,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   // vóór "Volgende", zodat een fout in een latere stap niet blokkeert.
   const STAP_VELDEN: Record<number, (keyof PropertyInput)[]> = {
     1: ['adres'],
-    2: ['woningtype', 'kamers', 'oppervlak_m2', 'bouwjaar', 'energielabel'],
+    2: ['woningtype_groep', 'kamers', 'oppervlak_m2', 'bouwjaar', 'energielabel'],
     3: [],
     4: [],
-    5: ['usps', 'doelgroep'],
+    // Stap 5 "Verhaal" en stap 6 "Commercieel" kunnen later (item 3.2): geen
+    // verplichte velden om verder te kunnen — usps/doelgroep zijn optioneel
+    // in PropertyInputSchema, de wizard blokkeert er niet meer op.
+    5: [],
     6: [],
   }
 
@@ -221,6 +240,11 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           >
             <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#5C6470' : '#98A0A6', whiteSpace: 'nowrap' }}>
               {s.id}. {s.label}
+              {'kanLater' in s && s.kanLater && (
+                <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#98A0A6', textTransform: 'none' }}>
+                  kan later
+                </span>
+              )}
             </span>
           </button>
         ))}
@@ -275,16 +299,32 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             {isEn ? 'Property type' : 'Woningtype'} <span style={{ color: '#DC2626' }}>*</span>
           </label>
           <select
-            {...register('woningtype')}
+            value={woningtypeGroepValue ? woningtypeOptieWaarde(woningtypeGroepValue, woningtypeSubValue) : ''}
+            onChange={e => {
+              if (!e.target.value) {
+                setValue('woningtype_groep', undefined as unknown as PropertyInput['woningtype_groep'], { shouldValidate: false })
+                setValue('woningtype_sub', undefined, { shouldValidate: false })
+                return
+              }
+              const { groep, sub } = ontleedWoningtypeOptieWaarde(e.target.value)
+              setValue('woningtype_groep', groep, { shouldValidate: true })
+              setValue('woningtype_sub', sub ?? undefined, { shouldValidate: true })
+            }}
             disabled={disabled}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
             onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk)')}
             onBlur={e => (e.target.style.borderColor = '#E1E5E9')}
           >
             <option value="">{isEn ? 'Choose type...' : 'Kies type...'}</option>
-            {WONINGSTYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            {WONINGTYPE_OPTIE_GROEPEN.map(groep => (
+              <optgroup key={groep.groep} label={groep.label}>
+                {groep.opties.map(optie => <option key={optie.waarde} value={optie.waarde}>{optie.label}</option>)}
+              </optgroup>
+            ))}
           </select>
-          {errors.woningtype && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.woningtype.message}</p>}
+          <input type="hidden" {...register('woningtype_groep')} />
+          <input type="hidden" {...register('woningtype_sub')} />
+          {errors.woningtype_groep && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.woningtype_groep.message}</p>}
         </div>
         <div>
           <label style={labelStyle}>
@@ -535,7 +575,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>
-            {isEn ? "USPs" : "USP's"} <span style={{ color: '#DC2626' }}>*</span>
+            {isEn ? "USPs" : "USP's"} <span style={{ color: '#98A0A6', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
           </label>
           <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#98A0A6', fontVariantNumeric: 'tabular-nums' }}>
             {uspsValue.length}/{MAX_USPS}
@@ -566,7 +606,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       {/* Doelgroep */}
       <div>
         <label style={labelStyle}>
-          {isEn ? 'Target audience' : 'Doelgroep'} <span style={{ color: '#DC2626' }}>*</span>
+          {isEn ? 'Target audience' : 'Doelgroep'} <span style={{ color: '#98A0A6', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
         </label>
         <select
           value={doelgroepAnders ? 'Anders' : doelgroepValue ?? ''}
@@ -630,10 +670,15 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
-            Prijsverwachting verkoper (€) <span style={{ color: '#DC2626' }}>*</span>
+            Prijsverwachting verkoper (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — kan later)</span>
           </label>
           <input
-            {...register('prijsverwachting_verkoper', { valueAsNumber: true })}
+            {...register('prijsverwachting_verkoper', {
+              // Niet valueAsNumber: bij een leeg (nooit ingevuld) veld geeft
+              // dat NaN i.p.v. undefined, wat de optionele validatie zou
+              // laten falen — juist onwenselijk nu stap 6 "kan later" is.
+              setValueAs: v => (v === '' || v === null || v === undefined ? undefined : Number(v)),
+            })}
             type="number" min={1} disabled={disabled} placeholder="450000"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />

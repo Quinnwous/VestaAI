@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
-import { ResultTabs } from '@/components/ResultTabs'
+import { ContentTekstenTab } from '@/components/ContentTekstenTab'
 import { NotitieVeld } from '@/components/NotitieVeld'
 import { StijlLerenPaneel } from '@/components/StijlLerenPaneel'
 import { VirtualStaging } from '@/components/VirtualStaging'
@@ -16,7 +16,7 @@ import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
-import type { ContentOutput, ObjectFase } from '@/lib/schemas'
+import type { ContentOutput, ObjectContentStatus, ObjectFase } from '@/lib/schemas'
 import type { Subject } from '@/lib/waardering'
 import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
 
@@ -117,6 +117,8 @@ export function ObjectWorkspace({
   transactieDataset = [],
   waarderingCorrectie = null,
   uspsInitieel = [],
+  contentStatus = 'klaar',
+  contentBezigSinds = null,
 }: {
   objectId: string
   address: string
@@ -137,6 +139,12 @@ export function ObjectWorkspace({
   transactieDataset?: TransactieRow[]
   waarderingCorrectie?: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel?: string[]
+  /** Item 3.1 (docs/roadmap.md § 3.2): status van de contentgeneratie, stuurt
+   * de EmptyState/skeleton/foutstaat in de Teksten-tab. Default 'klaar' voor
+   * bestaande call-sites/tests die deze prop nog niet meegeven. */
+  contentStatus?: ObjectContentStatus
+  /** Tijdstip waarop de huidige 'bezig'-lock is geclaimd — voedt de mm:ss-timer. */
+  contentBezigSinds?: string | null
 }) {
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
@@ -215,7 +223,13 @@ export function ObjectWorkspace({
 
             {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
             <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
-              <ResultTabs data={outputs} dataEn={outputsEn} objectId={objectId} onResetHref="/woningen" />
+              <ContentTekstenTab
+                objectId={objectId}
+                outputs={outputs}
+                outputsEn={outputsEn}
+                contentStatus={contentStatus}
+                contentBezigSinds={contentBezigSinds}
+              />
               <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>

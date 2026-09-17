@@ -107,8 +107,11 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **Fase 3** — 3.1 dossier aanmaken zonder Claude (+ 3.3
-  contentslot weg), 3.2 intake met typegroep, 3.4 dossierheader. 1.11 (push +
+- **Volgende item:** **3.4** dossierheader met fasestepper (3.1-3.3 klaar op
+  17 sep: dossier in 1,2 s aangemaakt, content op knopdruk of bij de overgang
+  naar In verkoop, woningtype als groep + subtype). ⚠️ Contentgeneratie NL+EN
+  duurde in de test **189 s** bij `maxDuration = 300` (Vercel-limiet): krap;
+  oppakken in fase 8 (NL en EN als aparte aanroepen of streamen). 1.11 (push +
   merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn 17 sep).
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
@@ -610,7 +613,7 @@ op transactiedata (2.5). Details en besluiten: `docs/besluiten.md` 17 sep.
 
 ### Fase 3 — Dossierkern: aanmaken zonder wachten (2 sessies)
 
-- [ ] **3.1 Dossier aanmaken zonder Claude** *(§ 3.2)*
+- [x] **3.1 Dossier aanmaken zonder Claude** *(§ 3.2)*
   *Raakt:* nieuw `app/api/object/route.ts` (POST), `app/api/generate/route.ts`
   (wordt "genereer voor id", lock per dossier), `app/(app)/object/new/NewObjectForm.tsx`,
   `components/ObjectWorkspace.tsx`, `components/ResultTabs.tsx`, migratie
@@ -625,14 +628,14 @@ op transactiedata (2.5). Details en besluiten: `docs/besluiten.md` 17 sep.
   *Tests:* route-test (`app/api/object/route.test.ts`): validatie, 401,
   aanmaak zonder Claude-call (mock); generate: 409 bij `bezig`.
   *Klaar als:* dossier aanmaken < 5 s op productie; content pas na de knop.
-- [ ] **3.2 Intake voor de verkoopadviesfase** — `usps`/`doelgroep` optioneel in het
+- [x] **3.2 Intake voor de verkoopadviesfase** — `usps`/`doelgroep` optioneel in het
   schema (generate eist ze); woningtype als **groep + subtype** (Select met
   groepen, taxonomie `docs/ontwerp/README.md` § 5; de oude 6-waarden-enum
   wordt gemapt in `transactieNormalisatie.ts` zodat bestaande dossiers geldig
   blijven); stap 5 en 6 gemarkeerd "kan later" in de
   wizard; concept-opslag blijft. *Raakt:* `components/PropertyForm.tsx`,
   `lib/schemas.ts`, tests.
-- [ ] **3.3 `object/new` uit het contentslot** — `CONTENT_VERGRENDELD` gate weg
+- [x] **3.3 `object/new` uit het contentslot** — `CONTENT_VERGRENDELD` gate weg
   uit `app/(app)/object/new/page.tsx`; volle breedte via `AppPagina` mag
   wachten op 10.5.
 - [ ] **3.4 Dossierheader met fasestepper** — `components/DossierHeader.tsx`:

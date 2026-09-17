@@ -32,18 +32,25 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
   const update: { fase: ObjectFase; status?: ObjectStatus } = { fase: nieuweFase }
   if (nieuweFase === 'verkocht') update.status = 'verkocht'
 
-  const { error } = await supabase
+  // content_status wordt hier niet gewijzigd — .select() erna geeft dus de
+  // ongewijzigde huidige waarde terug (item 3.1, docs/roadmap.md § 3.2): de
+  // aanroeper (FaseToggle.tsx) gebruikt die om te bepalen of de fire-and-
+  // forget-trigger naar /api/generate nodig is (alleen als er nog niets
+  // staat, i.e. 'geen').
+  const { data: updated, error } = await supabase
     .from('objecten')
     .update(update)
     .eq('id', objectId)
     .eq('kantoor_id', makelaar.kantoor_id)
+    .select('content_status')
+    .single()
 
   if (error) return { ok: false, error: error.message }
 
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
   revalidatePath('/woningen')
-  return { ok: true, fase: nieuweFase }
+  return { ok: true, fase: nieuweFase, contentStatus: updated?.content_status as string | undefined }
 }
 
 export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatus) {

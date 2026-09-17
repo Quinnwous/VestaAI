@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { PropertyInput } from '@/lib/schemas'
+import { woningtypeLabel, type PropertyInput } from '@/lib/schemas'
 
 type HoofdVeld = 'adres' | 'woningtype' | 'kamers' | 'oppervlak_m2' | 'bouwjaar' | 'energielabel' | 'vraagprijs' | 'usps' | 'doelgroep'
 
@@ -18,6 +18,13 @@ const LABELS: Record<HoofdVeld, string> = {
 }
 
 const HOOFD_VELDEN: HoofdVeld[] = ['adres', 'woningtype', 'kamers', 'oppervlak_m2', 'bouwjaar', 'energielabel', 'vraagprijs', 'usps', 'doelgroep']
+
+// woningtype is sinds item 3.2 groep+subtype i.p.v. één plat veld — hier
+// alleen gelezen (niet geschreven), dus we tonen het als leesbaar label.
+function waardeVoorVeld(key: HoofdVeld, invoer: PropertyInput): unknown {
+  if (key === 'woningtype') return woningtypeLabel(invoer)
+  return invoer[key as Exclude<HoofdVeld, 'woningtype'>]
+}
 
 function formatWaarde(key: HoofdVeld, val: unknown): string {
   if (key === 'vraagprijs') {
@@ -58,7 +65,7 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
               <div key={key}>
                 <dt className="text-xs text-gray-400">{LABELS[key]}</dt>
                 <dd className="text-xs font-medium text-gray-800 mt-0.5 break-words">
-                  {formatWaarde(key, invoer[key])}
+                  {formatWaarde(key, waardeVoorVeld(key, invoer))}
                 </dd>
               </div>
             ))}

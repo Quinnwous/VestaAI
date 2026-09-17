@@ -1,4 +1,34 @@
 import { z } from 'zod'
+import { woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
+
+// Woningtype-taxonomie (docs/ontwerp/README.md § 5, waardering § 3.3): groep is
+// hard vereist (de waarderingskern filtert kandidaten erop), subtype optioneel.
+// Vooraan gedefinieerd omdat PropertyInputSchema (verderop) er al naar verwijst.
+export const TypegroepSchema = z.enum(['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand'])
+export type Typegroep = z.infer<typeof TypegroepSchema>
+
+const TYPEGROEP_LABELS: Record<Typegroep, string> = {
+  appartement: 'Appartement',
+  rijwoning: 'Rijwoning',
+  halfvrijstaand: 'Halfvrijstaand',
+  vrijstaand: 'Vrijstaand',
+}
+
+/**
+ * Leesbaar woningtype-label voor overal waar je één string nodig hebt (Claude-
+ * prompts, exports, InvoerToggle e.d.): het subtype als dat er is ("Villa"),
+ * anders het groepslabel ("Vrijstaand"). Gebruik dit i.p.v. zelf
+ * woningtype_groep/woningtype_sub samen te voegen — zo hoeft een aanroeper
+ * maar één vorm te kennen.
+ */
+export function woningtypeLabel(input: { woningtype_groep: Typegroep; woningtype_sub?: string | null }): string {
+  return input.woningtype_sub || TYPEGROEP_LABELS[input.woningtype_groep]
+}
+
+/** Leesbaar label voor alleen de groep (optgroup-koppen e.d.), zie woningtypeLabel hierboven. */
+export function typegroepLabel(groep: Typegroep): string {
+  return TYPEGROEP_LABELS[groep]
+}
 
 export const HuisstijlSchema = z.object({
   schrijftoon: z.enum(['formeel', 'informeel', 'enthousiast']),
@@ -115,12 +145,40 @@ export const LiggingBuitenruimteSchema = z.object({
 })
 export type LiggingBuitenruimte = z.infer<typeof LiggingBuitenruimteSchema>
 
-export const PropertyInputSchema = z.object({
+// Migreert de oude woningtype-enum (6 waarden, vóór item 3.2 — zie
+// docs/roadmap.md § 3.2 en § 5 fase 3.2) naar de nieuwe groep+subtype-vorm.
+// Bestaande dossiers in `objecten.input_json` hebben nog het platte veld
+// `woningtype`; deze preprocess zet dat om via dezelfde taxonomie-mapping als
+// de transactiedataset (lib/transactieNormalisatie.ts), zodat ze zonder
+// migratie geldig blijven parsen. Nieuwe intakes leveren al woningtype_groep
+// (+ optioneel woningtype_sub) rechtstreeks aan; heeft de invoer per ongeluk
+// beide vormen (bv. een oud concept dat is aangevuld), dan wint de nieuwe.
+export function migreerOudWoningtype(data: unknown): unknown {
+  if (typeof data !== 'object' || data === null) return data
+  const obj = data as Record<string, unknown>
+  if (!('woningtype' in obj)) return obj
+  const { woningtype: oud, ...rest } = obj
+  if (obj.woningtype_groep != null) return rest
+  if (typeof oud !== 'string') return rest
+  const groep = woningtypeGroep(oud)
+  const sub = woningtypeSub(oud)
+  return {
+    ...rest,
+    ...(groep ? { woningtype_groep: groep } : {}),
+    ...(sub ? { woningtype_sub: sub } : {}),
+  }
+}
+
+export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
   adres: z.string().min(5),
-  woningtype: z.enum([
-    'Appartement', 'Tussenwoning', 'Hoekwoning',
-    'Vrijstaand', 'Villa', 'Penthouse',
-  ]),
+  // Groep+subtype i.p.v. de oude platte enum (item 3.2) — zelfde taxonomie
+  // als de transactiedataset (docs/ontwerp/README.md § 5), zodat de
+  // waardering vergelijkbare woningen kan vinden. Groep is hard vereist
+  // (zie TypegroepSchema hierboven), subtype optioneel (niet elk kantoor
+  // kiest een specifiek subtype, of de oude enum kon niet eenduidig gemapt
+  // worden — zie migreerOudWoningtype hierboven).
+  woningtype_groep: TypegroepSchema,
+  woningtype_sub: z.string().min(1).optional(),
   kamers: z.number().int().min(1).max(20),
   oppervlak_m2: z.number().int().min(1).max(9999),
   bouwjaar: z.number().int().min(1800).max(2035),
@@ -130,8 +188,13 @@ export const PropertyInputSchema = z.object({
   // prijsverwachting van de verkoper (zie prijsverwachting_verkoper
   // hieronder). Content-generatie valt terug op die prijsverwachting.
   vraagprijs: z.number().int().min(1).optional(),
-  usps: z.string().min(1).max(500),
-  doelgroep: z.string().min(1),
+  // Optioneel sinds item 3.2: in de verkoopadviesfase is er nog geen verhaal
+  // (dat komt pas als de woning in verkoop gaat, stap 5 "kan later" in
+  // PropertyForm) — ook een lege string (ongewijzigd wizard-veld) moet
+  // geldig blijven, geen `.min(1)` meer. `/api/generate` eist ze alsnog
+  // voordat het de contentsuite draait.
+  usps: z.string().max(500).optional(),
+  doelgroep: z.string().optional(),
   // Optioneel: open huis
   open_huis_datum: z.string().max(50).optional(),
   open_huis_tijd: z.string().max(20).optional(),
@@ -158,7 +221,7 @@ export const PropertyInputSchema = z.object({
   // veld (bestaande dossiers van vóór deze uitbreiding), dan blijft het oude
   // gedrag gelden: alle optionele content die Claude relevant acht.
   content_keuzes: z.array(z.enum(['followup', 'video', 'energieadvies', 'kopersvragen', 'marktanalyse'])).optional(),
-})
+}))
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>
 
@@ -185,6 +248,37 @@ export const ContentOutputSchema = z.object({
 
 export type ContentOutput = z.infer<typeof ContentOutputSchema>
 
+// Content-generatiestatus van een dossier (item 3.1, docs/roadmap.md § 3.2):
+// 'geen' meteen na het aanmaken zonder Claude, 'bezig' tijdens een lock (6
+// min verlooptijd, zie lib/contentGeneratie.ts CONTENT_LOCK_VERLOOP_MS),
+// 'klaar'/'fout' na afloop van de generatie.
+export const ObjectContentStatusSchema = z.enum(['geen', 'bezig', 'klaar', 'fout'])
+export type ObjectContentStatus = z.infer<typeof ObjectContentStatusSchema>
+
+// Lege, geldige ContentOutput voor een net aangemaakt dossier zonder content
+// (POST /api/object slaat deze op i.p.v. null) — `objecten.outputs_json`
+// blijft NOT NULL, zie migratie 20260917_object_content_status.sql voor de
+// afweging tegenover nullable maken.
+export const LEEG_CONTENT_OUTPUT: ContentOutput = {
+  funda_tekst: '',
+  brochure_kort: '',
+  brochure_lang: '',
+  instagram_emotioneel: '',
+  instagram_informatief: '',
+  instagram_actie: '',
+  linkedin_kantoor: '',
+  linkedin_makelaar: '',
+  koper_email: '',
+  buurtomschrijving: '',
+  open_huis: '',
+  bezichtiging_followup_positief: '',
+  bezichtiging_followup_negatief: '',
+  video_script: '',
+  energie_advies: '',
+  kopersvragen_faq: '',
+  marktanalyse: '',
+}
+
 // Schema voor prijswijziging-content (apart van de hoofd-output)
 export const PrijswijzigingOutputSchema = z.object({
   instagram_post: z.string(),
@@ -209,9 +303,6 @@ export type WachtwoordWijzigen = z.infer<typeof WachtwoordWijzigenSchema>
 // een WaarderingOpslag; v1-json ({ correctie }) wordt bij lezen gemigreerd
 // via migreerWaarderingJson().
 // ---------------------------------------------------------------------------
-
-export const TypegroepSchema = z.enum(['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand'])
-export type Typegroep = z.infer<typeof TypegroepSchema>
 
 export const KwartaalSchema = z.string().regex(/^\d{4}-Q[1-4]$/)
 

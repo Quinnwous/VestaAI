@@ -91,7 +91,15 @@ create table if not exists objecten (
   -- dezelfde migratie (besluit Quinn 17 sep 2026); bestaande rijen bijgewerkt.
   outputs_json_en jsonb,
   waardering_json jsonb,
-  usps_structuur  jsonb
+  usps_structuur  jsonb,
+  -- item 3.1 (migratie 20260917_object_content_status.sql): dossier
+  -- aanmaken is losgekoppeld van content genereren. outputs_json blijft
+  -- NOT NULL — een net aangemaakt dossier krijgt een lege, geldige
+  -- ContentOutput-structuur (lib/schemas.ts LEEG_CONTENT_OUTPUT) in plaats
+  -- van null, zie de migratie voor de afweging.
+  content_status         text not null default 'geen' check (content_status = any (array['geen','bezig','klaar','fout'])),
+  content_gegenereerd_op timestamptz,
+  content_bezig_sinds    timestamptz  -- lock-claim-tijdstip, verlopen na 6 min (lib/contentGeneratie.ts)
 );
 -- Policies: "makelaar ziet kantoor-objecten" (select, authenticated, kantoor_id = my_kantoor_id()),
 --           "makelaar mag object aanmaken" (insert, public, makelaar_id = auth.uid()),

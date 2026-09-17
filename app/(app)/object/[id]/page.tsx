@@ -11,7 +11,7 @@ import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
-import type { ContentOutput, ObjectFase, PropertyInput } from '@/lib/schemas'
+import { woningtypeLabel, type ContentOutput, type ObjectContentStatus, type ObjectFase, type PropertyInput } from '@/lib/schemas'
 import type { Subject } from '@/lib/waardering'
 import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
 
@@ -20,7 +20,7 @@ const getCachedObject = unstable_cache(
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur')
+      .select('id, kantoor_id, address, status, fase, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur, content_status, content_gegenereerd_op, content_bezig_sinds')
       .eq('id', objectId)
       .single()
     return data
@@ -71,7 +71,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
 
   const invoer = object.input_json as PropertyInput
   const subject: Subject = {
-    woningtype: invoer.woningtype,
+    woningtype: woningtypeLabel(invoer),
     oppervlak_m2: invoer.oppervlak_m2,
     bouwjaar: invoer.bouwjaar,
     lat: object.lat,
@@ -128,6 +128,8 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         transactieDataset={transactieDataset}
         waarderingCorrectie={waarderingCorrectie}
         uspsInitieel={uspsInitieel}
+        contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}
+        contentBezigSinds={object.content_bezig_sinds ?? null}
       />
     </AppPagina>
   )
