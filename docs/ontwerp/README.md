@@ -15,7 +15,7 @@
 | `concurrentie.html` | Item 6.3 — hero marktaandeel, wij vs. markt, trend per jaar (alle jaren), matrix "wie wint waar", ranglijst + concurrentprofiel-drawer met verbergen, lege staat "verkopend kantoor onbekend" | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `transacties.html` | Item 6.2 — volledige filterset § 4, dichte tabel 50/pagina met sticky kop, detail-sheet met minikaart en "gebruik als referentie", CSV alleen eigen, skeleton bij serverlatency | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `waardebepaling.html` | Item 4.6 | ontwerpsessie, vlak vóór 4.6 |
-| `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) | ontwerpsessie, vlak vóór 3.4 |
+| `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) — banner (teamfoto-placeholder neutraal), snelkoppelingen, kerncijfers met hero, recent bekeken, deze week; dossierheader met fasestepper, pitch-uitslag, waarde/content-blok, tabs; staten laden/weinig data/nieuw kantoor/in verkoop/verkocht/zonder foto | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 
 Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
 

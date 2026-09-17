@@ -1,0 +1,478 @@
+<title>Startpagina &amp; dossierheader i4 Housing</title>
+<!--
+  ONTWERP-PROTOTYPE v2 · Startpagina + dossierheader
+  ─────────────────────────────────────────────────────────────────
+  Dit bestand + kit.css + kit.js zijn de spec. Sonnet port ze 1-op-1 naar
+  Next.js: layout, staten, interacties, formattering. Huisstijl: i4 Housing,
+  vorm "zacht" (Apple-achtig). Zie docs/ontwerp/README.md voor tokens en
+  port-instructies. Twee delen, te wisselen via de proto-strip onderaan.
+
+  Item-nummers:
+  - Deel A "Startpagina" (scène 1 van de demo, docs/roadmap.md § 2): items
+    2.5 (kerncijfers op transactiedata) en 10.4 (Recent bekeken + tijdlijn
+    via een nieuwe tabel gebruik_events). Banner en snelkoppelingen bestaan
+    al (fase 1.6, app/(app)/dashboard/StartBanner.tsx en Snelkoppelingen.tsx)
+    — dit prototype is de v2-restyling ervan volgens README § 1, inclusief
+    lijn-iconen i.p.v. de huidige emoji's.
+  - Deel B "Dossierheader": items 3.4 (fasestepper + pitch-uitslag,
+    components/DossierHeader.tsx) en 10.2 (dossierheader v2: foto,
+    waarde/content-status, acties). De tabs eronder (Waardebepaling ·
+    Content · Documenten · Notities) horen bij het bestaande
+    ObjectWorkspace.tsx — hier alleen een lege "tab-inhoud"-placeholder.
+
+  NIET porten naar de app:
+  - de proto-strip onderaan (scherm- én staatschakelaar, twee segmented
+    controls in één balk — een lokale samenstelling van K.segmented, geen
+    wijziging van kit.js);
+  - de synthetische kerncijfers/dossiers/tijdlijn hieronder (JS-arrays) —
+    komen uit lib/kerncijfers.ts, lib/gebruik.ts (item 10.4) en
+    objecten/transacties;
+  - snelkoppelingen zijn hier <button> zonder navigatie (single-file
+    prototype); in de app zijn het next/link Link's naar /object/new,
+    /marktanalyse, /marktanalyse/transacties, /marktanalyse/kaart;
+  - de "voorbeeldfoto"-badge op de dossierfoto-placeholder (in de app: een
+    echte foto uit FotoBibliotheek of het merkverloop-fallback, zie het
+    bestaande KantoorBanner.tsx-patroon voor de onError-fallback);
+  - fictieve adressen en relatieve tijdstippen ("2 uur geleden" e.d.) zijn
+    hardcoded, niet echt berekend;
+  - kit.js' topbar() rendert altijd ook de Marktinzichten-subnav; die hoort
+    niet bij Overzicht/Woningdossier, dus verbergen we hem hier lokaal na
+    het aanroepen (geen wijziging aan kit.js — zie ook AppTopbar.tsx, dat nu
+    al dropdown-menu's gebruikt i.p.v. deze pil-subnav).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+  /* ── Lokale aanvullingen (pagina-specifiek, niet in kit.css) ───────── */
+
+  /* Kantoorbanner (in de app: teamfoto uit de huisstijl; hier een verloop) */
+  .kantoorbanner { position: relative; overflow: hidden; border-radius: var(--r-xl); min-height: 236px; margin-bottom: 24px; background: linear-gradient(135deg, #2C3238 0%, #46505A 100%); box-shadow: var(--schaduw-card); }
+  .kantoorbanner::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size: 36px 36px; }
+  .kantoorbanner::after { content: ""; position: absolute; top: -40%; right: -8%; width: 65%; height: 180%; background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.12) 52%, transparent 62%); }
+  .kantoorbanner-label { position: absolute; right: 16px; bottom: 16px; z-index: 1; font-size: 11px; font-weight: 700; color: rgba(255,255,255,.8); background: rgba(255,255,255,.14); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 5px 11px; border-radius: var(--r-pill); }
+  .kantoorbanner-tekst { position: absolute; left: 0; bottom: 0; z-index: 1; padding: 24px 32px; max-width: 640px; }
+  .kantoorbanner-eyebrow { margin: 0 0 4px; font-size: 12.5px; font-weight: 700; color: rgba(255,255,255,.82); }
+  .kantoorbanner-tekst h1 { margin: 0; font-size: 36px; font-weight: 800; letter-spacing: -.02em; color: #fff; line-height: 1.08; }
+  .kantoorbanner-context { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: rgba(255,255,255,.86); }
+  @media (max-width: 600px) { .kantoorbanner-tekst h1 { font-size: 27px; } .kantoorbanner { min-height: 200px; } }
+
+  /* kit.css' .topbar-in/.nav hebben geen mobiel-breekpunt (geverifieerd: marktanalyse.html
+     overflowt identiek naar ~598px breed op een 390px-viewport) — lokale workaround i.p.v.
+     kit.css aan te passen: het "VESTAAI ×"-lockupteksje verdwijnt en de pil-nav scrolt
+     zelf horizontaal, zodat de pagina niet meer breder wordt dan het scherm. Zie het
+     eindrapport voor de aanbeveling om dit centraal in kit.css op te lossen. */
+  @media (max-width: 560px) {
+    .topbar-in { gap: 10px; }
+    .lockup .vesta, .lockup .x { display: none; }
+    .nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .nav::-webkit-scrollbar { display: none; }
+  }
+
+  /* Snelkoppelingen */
+  .snelkoppelingen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
+  @media (max-width: 900px) { .snelkoppelingen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 480px) { .snelkoppelingen { grid-template-columns: 1fr; } }
+  .snelkop-kaart { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: var(--r-card-lg); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--schaduw-card); transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease); text-align: left; width: 100%; }
+  .snelkop-kaart:hover { box-shadow: var(--schaduw-hover); transform: translateY(-1px); }
+  .snelkop-kaart .ic { width: 38px; height: 38px; border-radius: var(--r-md); display: grid; place-items: center; flex: none; background: var(--merk-zacht); color: var(--merk); }
+  .snelkop-kaart .ic svg { width: 19px; height: 19px; }
+  .snelkop-kaart .lbl { font-size: 14px; font-weight: 700; color: var(--body-strong); }
+  .snelkop-kaart.primair { background: linear-gradient(180deg, #0A8AD2, var(--merk-hover)); border-color: transparent; box-shadow: 0 1px 2px rgba(20,24,27,.08), 0 10px 24px -10px rgba(var(--merk-rgb),.55); }
+  .snelkop-kaart.primair:hover { filter: brightness(1.04); }
+  .snelkop-kaart.primair .ic { background: rgba(255,255,255,.18); color: #fff; }
+  .snelkop-kaart.primair .lbl { color: #fff; }
+
+  /* Kerncijfers-kop + grid (6 tegels i.p.v. kit.css' standaard 5) */
+  .kerncijfers-kop { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
+  .kerncijfers-kop h2 { font-size: 15px; font-weight: 800; margin: 0; }
+  .tegels-start { grid-template-columns: repeat(6, minmax(0, 1fr)); margin-bottom: 24px; }
+  @media (max-width: 1360px) { .tegels-start { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .tegels-start { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* Twee kolommen: Recent bekeken (7/12) + Deze week (5/12) */
+  .tweekolommen { display: grid; grid-template-columns: 7fr 5fr; gap: 16px; align-items: start; }
+  @media (max-width: 900px) { .tweekolommen { grid-template-columns: 1fr; } }
+  .kaart-link { font-size: 12.5px; font-weight: 600; }
+
+  .dossierrij { display: flex; align-items: center; gap: 12px; padding: 8px 8px; border-radius: var(--r-sm); cursor: pointer; transition: background var(--t-hover); }
+  .dossierrij:hover { background: var(--surface-alt); }
+  .dossierrij .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+  .dossierrij .dot.klaar { background: var(--goed); }
+  .dossierrij .dot.bezig { background: var(--let); }
+  .dossierrij .dr-info { flex: 1; min-width: 0; }
+  .dossierrij .dr-adres { font-size: 13.5px; font-weight: 700; color: var(--body-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dossierrij .dr-plaats { font-size: 12px; color: var(--muted); }
+  .dossierrij .fase-pil { flex: none; }
+  .dossierrij .dr-tijd { flex: none; font-size: 11.5px; color: var(--muted); width: 96px; text-align: right; }
+  .dossierrij .chev { width: 14px; height: 14px; color: var(--muted); opacity: 0; transition: opacity var(--t-hover); flex: none; }
+  .dossierrij:hover .chev { opacity: 1; }
+  @media (max-width: 560px) { .dossierrij .dr-tijd { display: none; } }
+
+  .fase-pil { display: inline-flex; align-items: center; height: 22px; padding: 0 10px; border-radius: var(--r-pill); font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .fase-pil.acquisitie { background: var(--control); color: var(--body-strong); }
+  .fase-pil.in_verkoop { background: var(--merk-zacht); color: var(--merk-diep); }
+  .fase-pil.verkocht { background: var(--goed-zacht); color: var(--goed); }
+
+  .tl-item { display: flex; gap: 10px; padding: 9px 2px; border-bottom: 1px solid var(--border); }
+  .tl-item:last-child { border-bottom: 0; }
+  .tl-ic { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--merk-zacht); color: var(--merk); }
+  .tl-ic.goed { background: var(--goed-zacht); color: var(--goed); }
+  .tl-ic svg { width: 13px; height: 13px; }
+  .tl-tekst { font-size: 13px; font-weight: 600; color: var(--body-strong); }
+  .tl-tijd { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .kwartaal-kaart { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 12px 16px; border-radius: var(--r-md); background: var(--merk-zacht); border: 1px solid var(--merk-rand); }
+  .kwartaal-kaart span { font-size: 13px; font-weight: 700; color: var(--merk-diep); }
+
+  /* ── Dossierheader (deel B) ─────────────────────────────────────── */
+  .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+  .breadcrumb a { color: var(--muted); text-decoration: none; }
+  .breadcrumb a:hover { color: var(--merk); }
+  .breadcrumb svg { width: 11px; height: 11px; opacity: .6; }
+  .breadcrumb b { color: var(--body-strong); font-weight: 700; }
+  .dossier-hero { display: flex; justify-content: space-between; gap: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card-lg); padding: 24px; box-shadow: var(--schaduw-card); margin-bottom: 16px; flex-wrap: wrap; }
+  @media (max-width: 600px) { .dossier-hero { padding: 18px; gap: 18px; } }
+  .dossier-hero-links { display: flex; gap: 18px; align-items: flex-start; min-width: 0; }
+  .dossier-foto { width: 104px; height: 96px; border-radius: var(--r-lg); flex: none; position: relative; overflow: hidden; display: grid; place-items: center; }
+  .dossier-foto.met-foto { background: var(--control); color: var(--muted); }
+  .dossier-foto.met-foto::after { content: "voorbeeldfoto"; position: absolute; left: 0; right: 0; bottom: 0; padding: 3px 0; font-size: 8.5px; font-weight: 700; text-align: center; letter-spacing: .01em; color: rgba(255,255,255,.9); background: rgba(20,24,27,.4); }
+  .dossier-foto.zonder-foto { background: var(--surface-alt); border: 1.5px dashed var(--border-strong); color: var(--muted); flex-direction: column; gap: 4px; }
+  .dossier-foto.zonder-foto span { font-size: 10.5px; font-weight: 700; }
+  .dossier-foto svg { width: 30px; height: 30px; }
+  .dossier-info { min-width: 0; }
+  .dossier-info h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.02em; color: var(--text); line-height: 1.12; }
+  @media (max-width: 600px) { .dossier-info h1 { font-size: 23px; } }
+  .dossier-plaats { margin: 4px 0 10px; font-size: 13.5px; color: var(--body); font-weight: 600; }
+  .kenmerken-rij { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .kenmerk-pil { display: inline-flex; align-items: center; height: 25px; padding: 0 11px; background: var(--control); border-radius: var(--r-pill); font-size: 12px; font-weight: 600; color: var(--body-strong); }
+  .fase-stepper-rij { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .seg-uitslag button[data-k="gewonnen"][aria-checked="true"] { color: var(--goed); }
+  .seg-uitslag button[data-k="verloren"][aria-checked="true"] { color: var(--let); }
+  .dossier-hero-rechts { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; flex: none; }
+  @media (max-width: 600px) { .dossier-hero-rechts { align-items: flex-start; width: 100%; } }
+  .waarde-blok { text-align: right; }
+  @media (max-width: 600px) { .waarde-blok { text-align: left; } }
+  .waarde-blok .waarde-lbl { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
+  .waarde-blok .waarde-val { display: block; font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -.01em; }
+  .waarde-blok .content-status { display: block; margin-top: 2px; font-size: 12px; color: var(--body); font-weight: 600; }
+  .knoppenrij { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  @media (max-width: 600px) { .knoppenrij { justify-content: flex-start; width: 100%; } }
+  .btn[disabled] { opacity: .42; cursor: not-allowed; pointer-events: none; }
+  .dossier-tabs { display: inline-flex; gap: 2px; background: var(--control); padding: 3px; border-radius: var(--r-pill); margin-bottom: 14px; max-width: 100%; overflow-x: auto; }
+  .dossier-tabs button { border: 0; background: none; padding: 7px 16px; border-radius: var(--r-pill); font-weight: 600; font-size: 13px; color: var(--body); cursor: pointer; transition: all var(--t-hover); white-space: nowrap; }
+  .dossier-tabs button:hover { color: var(--merk); }
+  .dossier-tabs button[aria-current="true"] { background: var(--surface); color: var(--merk-diep); box-shadow: 0 1px 3px rgba(20,24,27,.12); }
+  .tab-inhoud-placeholder { border: 1px dashed var(--border-strong); border-radius: var(--r-card); padding: 80px 24px; text-align: center; color: var(--muted); font-size: 13px; background: var(--surface-alt); }
+</style>
+
+<main class="pagina" id="paginaStart">
+  <div class="kantoorbanner">
+    <div class="kantoorbanner-tekst">
+      <p class="kantoorbanner-eyebrow" id="bannerDatum">Donderdag 17 september</p>
+      <h1 id="bannerGroet">Goedemorgen, Marc</h1>
+      <p class="kantoorbanner-context">3 pitches deze week · 2 dossiers wachten op content</p>
+    </div>
+    <span class="kantoorbanner-label">teamfoto uit huisstijl</span>
+  </div>
+
+  <div class="snelkoppelingen">
+    <button type="button" class="snelkop-kaart primair"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 11 4.5l7.5 6.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1H10v-4.5h2"/><circle cx="18" cy="17" r="4.4"/><path d="M18 15v4M16 17h4"/></svg></span><span class="lbl">Woning toevoegen</span></button>
+    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5 9.5 11l4 4L20 7"/><path d="M14.5 7h5.5v5.5"/></svg></span><span class="lbl">Marktanalyse</span></button>
+    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m19 19-4.3-4.3"/></svg></span><span class="lbl">Transactie opzoeken</span></button>
+    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.6 7-12.4A7 7 0 0 0 5 8.6C5 13.4 12 21 12 21Z"/><circle cx="12" cy="8.6" r="2.4"/></svg></span><span class="lbl">Verkoopkaart</span></button>
+  </div>
+
+  <div class="kerncijfers-kop">
+    <h2>Kerncijfers</h2>
+    <span class="databadge"><span class="dot"></span>Data t/m <b>12 sep 2026</b></span>
+  </div>
+  <section class="tegels tegels-start" id="tegelsStart" aria-label="Kerncijfers"></section>
+  <div class="leeg" id="kerncijfersLeeg" hidden style="margin-bottom:24px">
+    <h3>Nog geen kerncijfers</h3>
+    <p>Zodra de eerste woningen zijn verkocht en pitches zijn beslist, verschijnen hier je verkochte aantallen, gemiddelde looptijd, marktaandeel en winratio — automatisch berekend uit je eigen dossiers.</p>
+  </div>
+
+  <div class="tweekolommen" id="tweekolommen">
+    <div class="kaart" aria-label="Recent bekeken">
+      <div class="kaart-kop"><div><h2>Recent bekeken</h2><div class="sub">de zes dossiers die je 't laatst opende</div></div><a href="#" class="link kaart-link">Alles bekijken</a></div>
+      <div id="recentBekekenLijst"></div>
+    </div>
+    <div class="kaart" aria-label="Deze week">
+      <div class="kaart-kop"><div><h2>Deze week</h2><div class="sub">wat er gebeurde sinds maandag</div></div></div>
+      <div id="dezeWeekLijst" class="tijdlijn"></div>
+      <div class="kwartaal-kaart" id="kwartaalKaart">
+        <span>Kwartaalbericht Q3 klaar om te versturen</span>
+        <button type="button" class="btn btn-primair btn-klein">Bekijken</button>
+      </div>
+    </div>
+  </div>
+  <div class="leeg" id="tweekolommenLeeg" hidden>
+    <h3>Voeg je eerste woning toe</h3>
+    <p>Recent bekeken dossiers en je weekoverzicht verschijnen hier zodra je aan de slag gaat met je eerste adres.</p>
+    <button type="button" class="btn btn-primair"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" style="width:15px;height:15px"><path d="M3.5 11 11 4.5l7.5 6.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1H10v-4.5h2"/><circle cx="18" cy="17" r="4.4"/><path d="M18 15v4M16 17h4"/></svg>Woning toevoegen</button>
+  </div>
+</main>
+
+<main class="pagina" id="paginaDossier" hidden>
+  <div class="breadcrumb"><a href="#">Woningen</a><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg><b>Dorpsstraat 12</b></div>
+
+  <div class="dossier-hero">
+    <div class="dossier-hero-links">
+      <div class="dossier-foto met-foto" id="dossierFoto"></div>
+      <div class="dossier-info">
+        <h1>Dorpsstraat 12</h1>
+        <p class="dossier-plaats">Wassenaar · Kerkstraat-buurt</p>
+        <div class="kenmerken-rij">
+          <span class="kenmerk-pil">Rijwoning</span>
+          <span class="kenmerk-pil">120 m²</span>
+          <span class="kenmerk-pil">Bouwjaar 1965</span>
+          <span class="kenmerk-pil">Garage</span>
+          <span class="kenmerk-pil">Tuin</span>
+          <span class="kenmerk-pil">Label C</span>
+        </div>
+        <div class="fase-stepper-rij">
+          <div id="segFase" aria-label="Fase"></div>
+          <div id="segUitslagWrap"><div id="segUitslag" aria-label="Pitch-uitslag"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="dossier-hero-rechts">
+      <div class="waarde-blok">
+        <span class="waarde-lbl">Waarde</span>
+        <span class="waarde-val num">€ 748.000</span>
+        <span class="content-status" id="contentStatus"></span>
+      </div>
+      <div class="knoppenrij">
+        <button type="button" class="btn btn-stil btn-klein"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h6.5L18 8v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M13.5 3.5V8H18"/></svg>Waardebepaling-pdf</button>
+        <button type="button" class="btn btn-stil btn-klein" id="btnBrochure"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h6.5L18 8v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M13.5 3.5V8H18"/></svg>Brochure</button>
+        <button type="button" class="btn btn-stil btn-klein"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.2"/><circle cx="17.5" cy="6" r="2.2"/><circle cx="17.5" cy="18" r="2.2"/><path d="m8 10.8 7.7-3.6M8 13.2l7.7 3.6"/></svg>Deel</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="dossier-tabs" role="tablist" aria-label="Dossieronderdelen">
+    <button type="button" role="tab" aria-current="true">Waardebepaling</button>
+    <button type="button" role="tab">Content</button>
+    <button type="button" role="tab">Documenten</button>
+    <button type="button" role="tab">Notities</button>
+  </nav>
+  <div class="tab-inhoud-placeholder" id="tabInhoud">tab-inhoud — Waardebepaling</div>
+</main>
+
+<script src="kit.js"></script>
+<script>
+(() => {
+  'use strict';
+  const K = window.Kit, { $, $$ } = K;
+
+  // ── Iconen (lijn-stijl, geen emoji) voor JS-gerenderde onderdelen ──
+  const ICONS = {
+    home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9"/></svg>',
+    foto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="6" width="17" height="13" rx="2.2"/><circle cx="9" cy="12.2" r="2.1"/><path d="M14.5 9.3h2.2M3.5 16.5l3.6-3.6a1.7 1.7 0 0 1 2.4 0l1.2 1.2M13 13.3l1-1a1.7 1.7 0 0 1 2.4 0l3.1 3.1"/></svg>',
+    check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 13 4 4L19 7"/></svg>',
+    doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h6.5L18 8v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M13.5 3.5V8H18"/></svg>',
+    bars: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V11M12 20V5M18 20v-6"/></svg>',
+    chev: '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+  };
+
+  // ── Formatters (nl-NL via Kit.opmaak) ──
+  const FORMATTERS = {
+    getal: v => K.nl.format(Math.round(v)),
+    dagen: v => K.dagen(v),
+    procent1: v => K.procent(v, false),
+    procent0: v => Math.round(v) + '%',
+  };
+
+  // ── Synthetische kerncijfers (in de app: lib/kerncijfers.ts op transacties + objecten, item 2.5) ──
+  const KERNCIJFERS = [
+    { key: 'verkocht', lbl: 'Verkocht laatste 12 maanden', val: 112, fmt: 'getal', hero: true, n: 112, deltaPct: 8.2, gunstig: 1, spark: [78, 82, 85, 90, 88, 94, 99, 101, 97, 104, 108, 112] },
+    { key: 'looptijd', lbl: 'Gem. looptijd', val: 26, fmt: 'dagen', n: 41, vergelijk: { markt: 36, eenheid: 'dgn', gunstig: -1 } },
+    { key: 'aandeel', lbl: 'Marktaandeel Wassenaar', val: 23.7, fmt: 'procent1', n: 473, periode: '24 mnd', weinigN: 5 },
+    { key: 'winratio', lbl: 'Winratio pitches', val: 68, fmt: 'procent0', n: 25, periode: 'laatste 12 mnd' },
+    { key: 'inverkoop', lbl: 'In verkoop', val: 14, fmt: 'getal', simple: true },
+    { key: 'acquisitie', lbl: 'Lopende acquisities', val: 6, fmt: 'getal', simple: true },
+  ];
+
+  // ── Synthetisch "Recent bekeken" (in de app: gebruik_events, item 10.4) ──
+  const RECENT = [
+    { adres: 'Dorpsstraat 12', plaats: 'Wassenaar', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: '2 uur geleden', content: 'klaar' },
+    { adres: 'Kerkstraat 12', plaats: 'Wassenaar', fase: 'verkocht', faseLabel: 'Verkocht', tijd: 'gisteren', content: 'klaar' },
+    { adres: 'Molenweg 3', plaats: 'Voorschoten', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: 'gisteren', content: 'bezig' },
+    { adres: 'Deijlerweg 41', plaats: 'Wassenaar', fase: 'acquisitie', faseLabel: 'Acquisitie', tijd: '3 dagen geleden', content: null },
+    { adres: 'Rijksstraatweg 88', plaats: 'Wassenaar', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: '4 dagen geleden', content: 'klaar' },
+    { adres: 'Prinsenweg 5', plaats: 'Voorschoten', fase: 'verkocht', faseLabel: 'Verkocht', tijd: 'vorige week', content: 'klaar' },
+  ];
+
+  // ── Synthetische tijdlijn "Deze week" ──
+  const DEZE_WEEK = [
+    { icon: 'check', goed: true, tekst: 'Pitch gewonnen — Kerkstraat 12', tijd: 'gisteren' },
+    { icon: 'doc', tekst: 'Brochure klaar — Molenweg 3', tijd: '2 dagen geleden' },
+    { icon: 'bars', tekst: '9 nieuwe transacties in Wassenaar', tijd: 'deze week' },
+  ];
+
+  // ── Sparkline-decoratie (zelfde lokale patroon als marktanalyse.html/concurrentie.html; geen gedeelde kit.js-helper) ──
+  function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
+  function sparklineSvg(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = gladSegmenten(pts).map(s => s.d).join(''); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
+
+  // ── Getal-tween bij laden: K.tween animeert alleen als de vorige waarde afwijkt, dus we zetten 'm eerst op 0 ──
+  function tweenBijLaden(el, naar, fmt) { K.tween(el, 0, fmt); requestAnimationFrame(() => K.tween(el, naar, fmt)); }
+
+  function skeletonTiles(n) { return Array.from({ length: n }).map(() => `<div class="tegel"><div class="skelet" style="height:12px;width:55%"></div><div class="skelet" style="height:30px;width:70%;margin-top:8px"></div><div class="skelet" style="height:14px;width:40%;margin-top:auto"></div></div>`).join(''); }
+
+  function tegelStartHtml(d, staat) {
+    const weinig = staat === 'weinig' && !d.simple;
+    let voet;
+    if (weinig) {
+      const n = d.weinigN ?? Math.max(2, Math.round((d.n || 6) / 10));
+      voet = `<div class="waarschuwing"><span>⚠︎</span><span>Te weinig data (n = ${n}) voor een betrouwbaar cijfer.</span></div>`;
+    } else if (d.simple) {
+      voet = `<div class="voet"><span class="n num">op dit moment</span></div>`;
+    } else if (d.vergelijk) {
+      const dl = d.val - d.vergelijk.markt; const r = dl > 0 ? 1 : dl < 0 ? -1 : 0; const cls = r && (r === d.vergelijk.gunstig ? ' op' : ' neer');
+      voet = `<div class="voet"><span class="delta num${cls || ''}">${r > 0 ? '▲' : '▼'} ${Math.abs(Math.round(dl))} ${d.vergelijk.eenheid} vs markt</span><span class="n num">markt ${d.vergelijk.markt} dgn · n = ${d.n}</span></div>`;
+    } else if (d.deltaPct != null) {
+      const r = d.deltaPct > 0 ? 1 : d.deltaPct < 0 ? -1 : 0; const cls = r && (r === d.gunstig ? ' op' : ' neer');
+      voet = `<div class="voet"><span class="delta num${cls || ''}">${r > 0 ? '▲' : '▼'} ${K.procent(d.deltaPct)}</span><span class="n num">n = ${d.n} · vorige 12 mnd</span></div>`;
+    } else {
+      voet = `<div class="voet"><span class="n num">n = ${d.n}${d.periode ? ' · ' + d.periode : ''}</span></div>`;
+    }
+    const sparkHtml = d.hero && !weinig ? sparklineSvg(d.spark) : '';
+    return `<div class="tegel${d.hero ? ' hero' : ''}${weinig ? ' warn' : ''}">
+      <div class="lbl">${d.lbl}</div>
+      <div class="val num">${weinig ? '<span>—</span>' : `<span class="v" data-target="${d.val}" data-fmt="${d.fmt}">0</span>`}</div>
+      ${voet}
+      ${sparkHtml}
+    </div>`;
+  }
+
+  function renderRecentBekeken() {
+    $('#recentBekekenLijst').innerHTML = RECENT.map(r => `
+      <div class="dossierrij" tabindex="0" role="button">
+        ${r.content ? `<span class="dot ${r.content}" title="Content ${r.content === 'klaar' ? 'klaar' : 'bezig'}"></span>` : '<span style="width:7px"></span>'}
+        <div class="dr-info"><div class="dr-adres">${r.adres}</div><div class="dr-plaats">${r.plaats}</div></div>
+        <span class="fase-pil ${r.fase}">${r.faseLabel}</span>
+        <span class="dr-tijd">${r.tijd}</span>
+        ${ICONS.chev}
+      </div>`).join('');
+  }
+
+  function renderDezeWeek() {
+    $('#dezeWeekLijst').innerHTML = DEZE_WEEK.map(i => `
+      <div class="tl-item">
+        <span class="tl-ic${i.goed ? ' goed' : ''}">${ICONS[i.icon]}</span>
+        <div><div class="tl-tekst">${i.tekst}</div><div class="tl-tijd">${i.tijd}</div></div>
+      </div>`).join('');
+  }
+
+  // ── Deel A: Startpagina ──
+  let STAAT_START = 'normaal'; // normaal | laden | weinig | nieuw
+  function renderStart() {
+    const staat = STAAT_START;
+    const tegelsHost = $('#tegelsStart'), kernLeeg = $('#kerncijfersLeeg');
+    const tweekolommen = $('#tweekolommen'), tweekolommenLeeg = $('#tweekolommenLeeg');
+
+    if (staat === 'nieuw') {
+      tegelsHost.hidden = true; kernLeeg.hidden = false;
+      tweekolommen.hidden = true; tweekolommenLeeg.hidden = false;
+      return;
+    }
+    tegelsHost.hidden = false; kernLeeg.hidden = true;
+    tweekolommen.hidden = false; tweekolommenLeeg.hidden = true;
+
+    if (staat === 'laden') {
+      tegelsHost.innerHTML = skeletonTiles(6);
+      $('#recentBekekenLijst').innerHTML = Array.from({ length: 6 }).map(() => `<div class="dossierrij"><span class="skelet" style="width:7px;height:7px;border-radius:50%"></span><div class="dr-info"><div class="skelet" style="height:12px;width:60%"></div><div class="skelet" style="height:10px;width:40%;margin-top:5px"></div></div><span class="skelet" style="width:76px;height:20px;border-radius:999px"></span></div>`).join('');
+      $('#dezeWeekLijst').innerHTML = Array.from({ length: 3 }).map(() => `<div class="tl-item"><span class="skelet" style="width:26px;height:26px;border-radius:50%"></span><div style="flex:1"><div class="skelet" style="height:12px;width:80%"></div><div class="skelet" style="height:10px;width:40%;margin-top:5px"></div></div></div>`).join('');
+      $('#kwartaalKaart').hidden = true;
+      return;
+    }
+    $('#kwartaalKaart').hidden = false;
+
+    tegelsHost.innerHTML = KERNCIJFERS.map(d => tegelStartHtml(d, staat)).join('');
+    if (staat === 'normaal') {
+      $$('.v[data-target]', tegelsHost).forEach(el => tweenBijLaden(el, +el.dataset.target, FORMATTERS[el.dataset.fmt]));
+    }
+    renderRecentBekeken();
+    renderDezeWeek();
+  }
+
+  // ── Deel B: Dossierheader ──
+  const FASES = [{ key: 'acquisitie', label: 'Acquisitie' }, { key: 'in_verkoop', label: 'In verkoop' }, { key: 'verkocht', label: 'Verkocht' }];
+  let DOS_FASE = 'in_verkoop', DOS_UITSLAG = 'open', DOS_FOTO = true;
+  let STAAT_DOSSIER = 'normaal'; // normaal | verkocht | zonderfoto
+
+  function renderFaseSegmented() {
+    const idx = FASES.findIndex(f => f.key === DOS_FASE);
+    const opties = FASES.map((f, i) => ({ key: f.key, label: (i < idx || DOS_FASE === 'verkocht') ? `<span style="color:var(--goed);margin-right:4px">✓</span>${f.label}` : f.label }));
+    K.segmented($('#segFase'), opties, DOS_FASE, k => { DOS_FASE = k; renderFaseSegmented(); tekenUitslagRij(); tekenWaardeBlok(); });
+  }
+  function tekenUitslagRij() {
+    const wrap = $('#segUitslagWrap'); wrap.hidden = DOS_FASE !== 'acquisitie';
+    if (DOS_FASE === 'acquisitie') {
+      K.segmented($('#segUitslag'), [{ key: 'open', label: 'Open' }, { key: 'gewonnen', label: 'Gewonnen' }, { key: 'verloren', label: 'Verloren' }], DOS_UITSLAG, k => { DOS_UITSLAG = k; }, { klasse: 'klein seg-uitslag' });
+    }
+  }
+  function tekenFoto() {
+    const el = $('#dossierFoto');
+    el.className = 'dossier-foto ' + (DOS_FOTO ? 'met-foto' : 'zonder-foto');
+    el.innerHTML = DOS_FOTO ? ICONS.home : ICONS.foto + '<span>Geen foto</span>';
+  }
+  function tekenWaardeBlok() {
+    const acquis = DOS_FASE === 'acquisitie';
+    $('#contentStatus').textContent = acquis ? 'Content volgt na gunning' : 'Content: 3 van 5 klaar';
+    const brochureBtn = $('#btnBrochure'); brochureBtn.toggleAttribute('disabled', acquis); brochureBtn.title = acquis ? 'Beschikbaar vanaf ‘In verkoop’' : '';
+  }
+  function renderDossier() {
+    const staat = STAAT_DOSSIER;
+    if (staat === 'inverkoop') { DOS_FASE = 'in_verkoop'; DOS_FOTO = true; }
+    else if (staat === 'verkocht') { DOS_FASE = 'verkocht'; DOS_FOTO = true; }
+    else if (staat === 'zonderfoto') { DOS_FASE = 'in_verkoop'; DOS_FOTO = false; }
+    else { DOS_FASE = 'acquisitie'; DOS_FOTO = true; DOS_UITSLAG = 'open'; } // 'normaal' = het demoscenario: scène 4 start in acquisitie
+    tekenFoto(); renderFaseSegmented(); tekenUitslagRij(); tekenWaardeBlok();
+  }
+  $$('.dossier-tabs button').forEach(b => b.onclick = () => {
+    $$('.dossier-tabs button').forEach(x => x.removeAttribute('aria-current'));
+    b.setAttribute('aria-current', 'true');
+    $('#tabInhoud').textContent = `tab-inhoud — ${b.textContent}`;
+  });
+
+  // ── Scène + topbar ──
+  let SCENE = 'start'; // start | dossier
+  function renderTopbar() {
+    $$('.topbar').forEach(el => el.remove()); $$('.subnav').forEach(el => el.remove());
+    K.topbar({ hoofd: SCENE === 'start' ? 'Overzicht' : 'Woningdossier' });
+    const subnav = $('.subnav'); if (subnav) subnav.remove(); // Overzicht/Woningdossier hebben geen Marktinzichten-subnav
+  }
+  function toonScene(s) {
+    SCENE = s;
+    $('#paginaStart').hidden = s !== 'start';
+    $('#paginaDossier').hidden = s !== 'dossier';
+    renderTopbar();
+    renderStaatStrip();
+  }
+
+  // ── Proto-strip: scherm + staat in één balk (lokale samenstelling van K.segmented, geen kit.js-wijziging) ──
+  function buildProtoBar() {
+    const el = document.createElement('div'); el.className = 'proto';
+    el.innerHTML = `<div class="proto-in"><b>Prototype-strip</b> (niet in de app) · scherm: <div id="segScene"></div><span style="width:1px;height:16px;background:var(--border-strong)"></span>staat: <div id="segStaat"></div><span id="protoUitleg"></span></div>`;
+    document.body.appendChild(el);
+    K.segmented($('#segScene'), [{ key: 'start', label: 'Startpagina' }, { key: 'dossier', label: 'Dossierheader' }], SCENE, k => toonScene(k), { klasse: 'klein' });
+    renderStaatStrip();
+  }
+  function renderStaatStrip() {
+    const host = $('#segStaat'); if (!host) return;
+    const opties = SCENE === 'start'
+      ? [{ key: 'normaal', label: 'Normaal' }, { key: 'laden', label: 'Laden' }, { key: 'weinig', label: 'Weinig data' }, { key: 'nieuw', label: 'Nieuw kantoor' }]
+      : [{ key: 'normaal', label: 'Normaal' }, { key: 'inverkoop', label: 'In verkoop' }, { key: 'verkocht', label: 'Verkocht' }, { key: 'zonderfoto', label: 'Zonder foto' }];
+    const huidig = SCENE === 'start' ? STAAT_START : STAAT_DOSSIER;
+    K.segmented(host, opties, huidig, k => { if (SCENE === 'start') { STAAT_START = k; renderStart(); } else { STAAT_DOSSIER = k; renderDossier(); } }, { klasse: 'klein' });
+    $('#protoUitleg').textContent = SCENE === 'start' ? 'Kerncijfers tweenen bij laden; "Weinig data" toont de waarschuwingsvariant per tegel.' : 'Fasestepper en pitch-uitslag blijven ook los bedienbaar; deze staten zetten alleen het startpunt.';
+  }
+
+  // ── Init ──
+  renderTopbar();
+  renderStart();
+  renderDossier();
+  buildProtoBar();
+})();
+</script>
