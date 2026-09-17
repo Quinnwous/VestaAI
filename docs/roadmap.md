@@ -17,19 +17,30 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.8 klaar; 1.9 · 1.10 · 1.11 open).
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 1.10 · 1.11 open).
   Plan v2 van kracht sinds 18 sep 2026.
-- **Laatst opgeleverd (18 sep):** plan v2 én het ontwerpspoor § 3.8: de
-  ontwerpkit `docs/ontwerp/kit.css` + `kit.js`, twee referentieprototypes v2
-  in de stijl "i4 · zacht" (Apple-achtig, dropdown-filters, beeldmerk-pins:
-  `marktanalyse.html`, `verkoopkaart.html`), de handleiding
-  `docs/ontwerp/README.md` (tokens, primitives, filtermodel, taxonomie, pin,
-  port-instructies) en de skill `ontwerpreview`. Besluit: i4 Housing gaat
-  van vorm `strak` naar `zacht` (item 1.9). Code ongewijzigd; branch
-  `feat/nieuwe-schil`.
-- **Volgende item:** **1.9** (bugs + `--merk`-fallback-opruiming) → **1.10**
-  (favicon/SEO) → **1.11** (PR mergen) → daarna **Fase 2** (datafundament +
-  demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog tegen 0 rijen.
+- **Laatst opgeleverd (17 sep, proefrit-sessie):** item **1.9 Bugs +
+  fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
+  `var(--merk-rgb, r,g,b)`-fallbacks in `app/(app)/` en `components/`
+  opgeruimd (behalve `components/ui/tokens.ts`, bewuste uitzondering); één
+  centrale VestaAI-groene fallback op `:root` in `app/globals.css`;
+  `.claude/hooks/huisstijl-check.sh` uitgebreid met een fallback-check;
+  verouderde comments in `StatTile.tsx` en `globals.css` gefixt; i4housing
+  `huisstijl_json.vorm` van `strak` naar `zacht` geschreven
+  (`scripts/repair-i4housing-branding.mjs --write`) en `lib/branding.ts`
+  uitgebreid met `--merk-licht`/`--merk-accent-zacht`/`-rand`/`-rgb`. Ook
+  gefixt: hardgecodeerd `bg-green-100`/`text-green-900` in `StatusToggle`/
+  `FaseToggle`/`StatistiekenPaneel`, een kapotte Tailwind-class in
+  `StatusToggle`, en de demo-knop in `NewObjectForm` (nu alleen buiten
+  productie zichtbaar). DoD groen (typecheck/test/build,
+  `controleer-huisstijl.mjs` schoon op 390/1280/1920 px, 9 pagina's).
+  Volledig besluiten- en bevindingenlog: `docs/besluiten.md` (17 sep,
+  proefrit). **Nieuw gevonden, niet gefixt (buiten scope 1.9):** `/dashboard`
+  gooit op elke breedte een harde runtime-fout (server→client
+  functie-prop in `Kerncijfers.tsx:37,46,53`) — zie besluiten.md.
+- **Volgende item:** **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
+  **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
+  bouwt nog tegen 0 rijen.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -161,42 +172,75 @@ schrapvolgorde.
 
 ### 3.3 Waarderingsmethode (vergelijkbare verkopen, uitlegbaar)
 
+> **Rekenkern gebouwd op 17 sep 2026 (Fable):** `lib/waardering.ts` (v2, naast
+> de `@deprecated` v1), `lib/prijsindex.ts`, `lib/cbsPrijsindex.ts` (stub met
+> TODO voor de tabel-id), schema's `WaarderingUitkomstSchema` /
+> `WaarderingOpslagSchema` in `lib/schemas.ts`, 22 + 13 tests en een
+> synthetische backtest (`lib/waardering.backtest.test.ts`, generator
+> `lib/waardering.synthetisch.ts`). Uitleg in makelaarstaal met rekenvoorbeeld:
+> `docs/waardering-methode.md`. De regels hieronder zijn daarop bijgewerkt;
+> Sonnet sluit in fase 4 alleen RPC's, actions en UI aan.
+
 - **Kandidaten:** `referenties_in_straal`, zelfde `woningtype_groep`
   (`appartement` · `rijwoning` = tussen/hoek/geschakeld · `halfvrijstaand` =
   twee-onder-een-kap · `vrijstaand` = vrijstaand/villa/bungalow/landhuis),
   oppervlak ± 35 %, bouwjaar ± 25 jaar (± 40 bij vrijstaand), verkoopdatum
-  ≤ 36 maanden terug. Straal start op 750 m en verbreedt automatisch
-  (1.000 → 2.000 → 5.000 m, daarna 60 maanden) tot n ≥ 8; de gebruikte straal
-  staat in de uitkomst.
+  ≤ 36 maanden terug én vóór de peildatum. Straal start op 750 m en verbreedt
+  automatisch (1.000 → 2.000 → 5.000 m, daarna 60 maanden) tot n ≥ 8; de
+  gebruikte straal staat in de uitkomst; maximaal de 25 best passende blijven
+  over. Zonder locatie: terugval op plaats + typegroep met waarschuwing.
 - **Per referentie, allemaal zichtbaar:** € per m², indexfactor (§ prijsindex)
-  → geïndexeerde € per m² → × oppervlak subject = **geïmpliceerde waarde**;
-  gewicht = gelijkenis (bestaande score type/oppervlak/bouwjaar) ×
-  1/(1 + afstand/500 m) × 1/(1 + maanden/12).
+  × correctiefactor (§ correcties) → × oppervlak subject = **geïmpliceerde
+  waarde**; gewicht = gelijkenis (score type/oppervlak/bouwjaar) ×
+  1/(1 + afstand/500 m) × 1/(1 + maanden/12) × 0,5 bij een andere plaats
+  (prijsniveaus verschillen per gemeente meer dan afstand verklaart).
 - **Uitkomst:** gewogen mediaan van de geïmpliceerde waarden; bandbreedte =
-  gewogen P25–P75, minimaal ± 5 %, + 5 punt bij n < 6, + 10 punt bij n < 4;
-  `weinigData` bij n < 6 met een zichtbare waarschuwing.
+  gewogen **P10–P90** (P25–P75 dekt per definitie maar de helft van de
+  uitkomsten; P10–P90 gekalibreerd op de synthetische backtest, `BAND_PERCENTIELEN`
+  is de kalibratieknop voor 4.8), minimaal ± 5 % (n ≥ 6), ± 10 % (n 4-5),
+  ± 15 % (n < 4); afgerond op € 1.000; `weinigData` bij n < 6 met een
+  zichtbare waarschuwing.
 - **Prijsindex:** `prijsindex_kwartaal(werkgebied, typegroep)` = mediaan € per
-  m² per kwartaal uit de eigen regionale dataset, gladgestreken (3-kwartaal
-  voortschrijdend), factor = index(nu) / index(kwartaal referentie). Bij
-  n < 30 per kwartaal: terugval op de CBS-prijsindex bestaande koopwoningen
-  (regio), en anders op "geen tijdcorrectie" mét waarschuwing.
-- **Kenmerk-effecten** (garage, tuin, energielabelklasse A-B / C-D / E-G,
-  bouwperiode) blijven vergelijkbare-paren, nu op de regionale set binnen
-  werkgebied + typegroep (n ≥ 3 per groep, anders `null`). Geen regressie.
+  m² per kwartaal uit de eigen regionale dataset (zelfde vorm als
+  `bouwIndex()` in `lib/prijsindex.ts`), gladgestreken over 3 kwartalen
+  gewogen naar n; betrouwbaar als het venster ≥ 30 verkopen telt; factor =
+  index(peildatum) / index(kwartaal referentie). Ontbreekt een betrouwbaar
+  kwartaal: dichtstbijzijnde binnen 2 kwartalen mét melding, daarna de
+  CBS-prijsindex bestaande koopwoningen (regio, `lib/cbsPrijsindex.ts`), en
+  anders "geen tijdcorrectie" mét waarschuwing.
+- **Kenmerk-effecten en correcties** (garage, tuin, energielabelklasse
+  A-B / C-D / E-G, bouwperiode < 1945 / 1945-1975 / 1975-2000 / 2000+):
+  prijsniveau (mediaan € per m²) per klasse op de regionale set binnen
+  werkgebied + typegroep (n ≥ 3 per klasse om te tonen). **Toegepast als
+  correctie per referentie** zoals de correctiekolommen in een taxatierapport:
+  niveau(klasse subject) / niveau(klasse referentie) waar beide klassen bekend,
+  verschillend en ≥ 30 verkopen groot zijn. **Grootte:** Theil-Sen-helling
+  van ln(€ per m²) op oppervlak binnen de typegroep, toegepast op het
+  m²-verschil. Begrenzing ± 15 % per kenmerk, ± 30 % totaal; per kenmerk een
+  schakelaar (`opties.correcties`, standaard aan) en per referentie zichtbaar
+  in `referenties[].correcties`. Geen multivariate regressie. (Backtest
+  zonder deze correcties: label E-G +9 %, grotere woningen +3,6 % overschat.)
 - **WOZ** (uit `lib/verrijking.ts`) staat als ijkpunt náást de waarde, met
   peildatum — nooit als invoer.
 - **Handmatig:** referenties uitsluiten/toevoegen; opgeslagen in
   `waardering_json.handmatig`; makelaarscorrectie met motivatie blijft.
-- **Datacontract** `WaarderingUitkomst` (versie 2) in `lib/schemas.ts`:
-  `{ versie, waarde, laag, hoog, n, straal_m, index_basis, referenties[{ id,
-  adres, afstand_m, verkoopdatum, prijs, m2, prijs_m2, index_factor, gewicht,
-  waarde_geimpliceerd, handmatig }], effecten, woz, waarschuwingen[] }`.
+- **Datacontract** `WaarderingUitkomstSchema` (versie 2) in `lib/schemas.ts`
+  — leidend is het schema, niet deze samenvatting: `{ versie, peildatum,
+  waarde, laag, hoog, n, weinigData, straal_m, maanden, methode, index_basis,
+  index_tm, referenties[{ id, adres, afstand_m, verkoopdatum, prijs, m2,
+  prijs_m2, index_factor, index_basis, correcties{}, correctie_factor, gewicht,
+  gelijkenis, maanden, waarde_geimpliceerd, handmatig }], effecten, grootte,
+  correcties{ aan, toegepast, toelichting }, woz, waarschuwingen[] }`.
+  Opslag in `objecten.waardering_json` als `WaarderingOpslagSchema`
+  `{ versie: 2, uitkomst, correctie, handmatig{ uitgesloten[], toegevoegd[] } }`;
+  v1-json (`{ correctie }`) wordt bij lezen gemigreerd (`migreerWaarderingJson`).
 - **Backtest** (`scripts/backtest-waardering.mjs`): elke eigen verkoop van de
   laatste 24 maanden wordt gewaardeerd met uitsluitend transacties van vóór
   haar verkoopdatum. Rapport in `docs/waardering-backtest.md`: mediaan
   absolute fout, % binnen bandbreedte, per typegroep. Demo-lat: mediaan fout
-  ≤ 7 %, ≥ 75 % binnen de band. Niet gehaald → bandbreedte verbreden, geen
-  schijnzekerheid.
+  ≤ 7 %, ≥ 75 % binnen de band. Niet gehaald → bandbreedte verbreden
+  (`BAND_PERCENTIELEN`), geen schijnzekerheid. Synthetisch (17 sep, 400
+  woningen, 7 % ruis): 5,2 % / 78 %; als vitest-vangrail vastgezet.
 - **Disclaimer** op elke uitkomst en pdf: indicatieve waardebepaling op basis
   van vergelijkbare verkopen, geen taxatie in de zin van NRVT/NWWI.
 
@@ -368,7 +412,7 @@ Details: `docs/besluiten.md`.
 
 ### Fase 1 — UI-fundament + nieuwe schil (1.1-1.8 ✅ · rest 1 sessie)
 
-- [ ] **1.9 Bugs + fallback-opruiming**
+- [x] **1.9 Bugs + fallback-opruiming**
   *Doel:* laatste zichtbare groen weg en het fallback-lek dichten.
   *Raakt:* `components/StatusToggle.tsx:10` (kapotte class),
   `components/FaseToggle.tsx:15,81` en `StatistiekenPaneel.tsx:89`
@@ -531,17 +575,23 @@ Details: `docs/besluiten.md`.
   output kandidaten met `afstand_m`; verbredingsladder uit § 3.3; uitkomst
   bevat `straal_m`. Zonder `lat/lng` (verrijking mislukt): terugval op
   plaats + typegroep met waarschuwing "zonder locatie".
+  *Al klaar (17 sep):* `kiesReferenties()` incl. ladder, peildatum, terugval,
+  `metAfstand()`. *Open:* RPC + aansluiting (kandidaten als `Kandidaat[]`).
 - [ ] **4.2 Prijsindex** — RPC `prijsindex_kwartaal` + `lib/prijsindex.ts`
   (`glad()`, `factor(vanKwartaal, naarKwartaal)`), CBS-terugval als losse
   functie `lib/cbsPrijsindex.ts` (zoek de actuele tabel "Prijsindex bestaande
   koopwoningen; regio" op via de CBS-OData-catalogus in deze sessie — niet uit
   het hoofd; sla de tabel-id in een constante op met bronvermelding). Tests op
   gladstrijken en factor, incl. randen (ontbrekend kwartaal).
+  *Al klaar (17 sep):* `lib/prijsindex.ts` + 13 tests. *Open:* RPC in de vorm
+  van `bouwIndex()`, `CBS_TABEL_ID` in `lib/cbsPrijsindex.ts`, ophaalscript.
 - [ ] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
   gewogen mediaan/P25/P75, band-regels, `WaarderingUitkomst` v2 met `versie`,
   `peildatum`-parameter (referenties alleen vóór die datum — nodig voor de
   backtest), waarschuwingen. `waardering-actions.ts` schrijft v2 en migreert
   v1-json bij lezen. ≥ 15 tests (bestaande 11 aanpassen, niet weggooien).
+  *Al klaar (17 sep):* `berekenWaarderingV2()`, schema's, `migreerWaarderingJson()`,
+  22 tests + rekenvoorbeeld. *Open:* actions en paneel op v2, v1 verwijderen.
 - [ ] **4.4 Referenties handmatig** — uitsluiten (kruisje in de tabel) en
   toevoegen (Drawer met `zoekTransacties`, primitive `Drawer` +
   `DataTable`-light), opgeslagen in `waardering_json.handmatig`; de knop
@@ -551,6 +601,10 @@ Details: `docs/besluiten.md`.
   bouwperiode via vergelijkbare paren op regionale set (RPC
   `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
   in het paneel; `null` + uitleg bij n < 3.
+  *Al klaar (17 sep):* `kenmerkEffectenV2()`, `grootteEffect()`,
+  `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:* RPC
+  die de regionale set (werkgebied + typegroep) als `Kandidaat[]` levert,
+  schakelaars en correctiekolom in het paneel (4.6).
 - [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie eerst →
   `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
   uitgangspunt voor die sessie)*
@@ -575,6 +629,9 @@ Details: `docs/besluiten.md`.
   (eerst op de fixture, opnieuw in 5.5 op echte data). Rapporteert per
   typegroep; faalt de demo-lat, dan staan de band-regels in de uitkomst ter
   discussie — noteer het besluit.
+  *Al klaar (17 sep):* synthetische backtest als vitest-vangrail
+  (`lib/waardering.backtest.test.ts`). *Open:* script op fixture/echte data,
+  `docs/waardering-backtest.md`; hergebruik de meetlogica uit de test.
 - **Klaar als:** backtest gedocumenteerd; elke waarde toont n/straal/index/
   correcties; handmatige referentie verandert de uitkomst direct; pdf < 10 s;
   scène 4 loopt van adres tot pdf zonder hapering.

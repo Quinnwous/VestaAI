@@ -194,3 +194,109 @@ export const WachtwoordWijzigenSchema = z.object({
 })
 
 export type WachtwoordWijzigen = z.infer<typeof WachtwoordWijzigenSchema>
+
+// ---------------------------------------------------------------------------
+// Waardering v2 — datacontract uit docs/roadmap.md § 3.3 (rekenkern gebouwd
+// 17 sep 2026 door Fable in lib/waardering.ts; Sonnet sluit in fase 4 de
+// RPC's, actions en het paneel aan). `waardering_json` op `objecten` bevat
+// een WaarderingOpslag; v1-json ({ correctie }) wordt bij lezen gemigreerd
+// via migreerWaarderingJson().
+// ---------------------------------------------------------------------------
+
+export const TypegroepSchema = z.enum(['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand'])
+export type Typegroep = z.infer<typeof TypegroepSchema>
+
+export const KwartaalSchema = z.string().regex(/^\d{4}-Q[1-4]$/)
+
+export const CorrectieNaamSchema = z.enum(['garage', 'tuin', 'energielabel', 'bouwperiode', 'grootte'])
+export type CorrectieNaam = z.infer<typeof CorrectieNaamSchema>
+export const KenmerkNaamSchema = z.enum(['garage', 'tuin', 'energielabel', 'bouwperiode'])
+export type KenmerkNaam = z.infer<typeof KenmerkNaamSchema>
+
+export const WaarderingReferentieSchema = z.object({
+  id: z.string(),
+  adres: z.string(),
+  afstand_m: z.number().nullable(),
+  verkoopdatum: z.string(),
+  prijs: z.number(),
+  m2: z.number(),
+  prijs_m2: z.number(),
+  index_factor: z.number(),
+  index_basis: z.enum(['eigen', 'cbs', 'geen']),
+  /** per kenmerk de toegepaste correctiefactor (alleen ≠ 1) */
+  correcties: z.partialRecord(CorrectieNaamSchema, z.number()),
+  /** product van alle correcties */
+  correctie_factor: z.number(),
+  gewicht: z.number(),
+  gelijkenis: z.number(),
+  maanden: z.number(),
+  waarde_geimpliceerd: z.number(),
+  handmatig: z.boolean(),
+})
+export type WaarderingReferentie = z.infer<typeof WaarderingReferentieSchema>
+
+/** Prijsniveau (mediaan € per m²) per klasse van een kenmerk op de regionale set. */
+export const KenmerkEffectV2Schema = z.object({
+  subjectKlasse: z.string().nullable(),
+  niveaus: z.record(z.string(), z.object({ mediaanM2: z.number(), n: z.number() })),
+  /** verschil in % van de klasse van het subject t.o.v. de referentieklasse ('zonder' resp. de middenklasse); null als niet bepaalbaar */
+  verschilPct: z.number().nullable(),
+  /** elke gebruikte klasse heeft n ≥ MIN_GROEP_CORRECTIE → automatisch toepasbaar */
+  betrouwbaar: z.boolean(),
+})
+export type KenmerkEffectV2 = z.infer<typeof KenmerkEffectV2Schema>
+
+export const GrootteEffectSchema = z.object({
+  /** verandering van de € per m² per extra m² woonoppervlak, in % (meestal negatief) */
+  perM2Pct: z.number(),
+  n: z.number(),
+  betrouwbaar: z.boolean(),
+})
+export type GrootteEffect = z.infer<typeof GrootteEffectSchema>
+
+export const CorrectieStatusSchema = z.object({
+  /** schakelaar (makelaar kan hem uitzetten) */
+  aan: z.boolean(),
+  /** op ten minste één referentie toegepast */
+  toegepast: z.boolean(),
+  toelichting: z.string(),
+})
+
+export const WaarderingUitkomstSchema = z.object({
+  versie: z.literal(2),
+  peildatum: z.string(),
+  waarde: z.number().nullable(),
+  laag: z.number().nullable(),
+  hoog: z.number().nullable(),
+  n: z.number(),
+  weinigData: z.boolean(),
+  straal_m: z.number().nullable(),
+  maanden: z.number(),
+  methode: z.enum(['straal', 'plaats']),
+  index_basis: z.enum(['eigen', 'cbs', 'geen']),
+  index_tm: KwartaalSchema.nullable(),
+  referenties: z.array(WaarderingReferentieSchema),
+  effecten: z.record(KenmerkNaamSchema, KenmerkEffectV2Schema.nullable()),
+  grootte: GrootteEffectSchema.nullable(),
+  correcties: z.record(CorrectieNaamSchema, CorrectieStatusSchema),
+  woz: z.object({ waarde: z.number(), peildatum: z.string() }).nullable(),
+  waarschuwingen: z.array(z.string()),
+})
+export type WaarderingUitkomst = z.infer<typeof WaarderingUitkomstSchema>
+
+export const WaarderingCorrectieSchema = z.object({
+  waarde: z.number(),
+  motivatie: z.string(),
+  datum: z.string(),
+})
+
+export const WaarderingOpslagSchema = z.object({
+  versie: z.literal(2),
+  uitkomst: WaarderingUitkomstSchema.nullable(),
+  correctie: WaarderingCorrectieSchema.nullable(),
+  handmatig: z.object({
+    uitgesloten: z.array(z.string()),
+    toegevoegd: z.array(z.string()),
+  }),
+})
+export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>
