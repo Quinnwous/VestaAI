@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 2 — Datafundament (2.1-2.4 klaar; **2.5** open). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
+- **Fase:** 3 — Dossierkern (fase 2 ✅ op 17 sep). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
   Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
   v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
@@ -107,10 +107,9 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **2.5** (kerncijfers op transactiedata) → fase 2
-  inklappen → **Fase 3** (dossierkern: aanmaken zonder wachten). 1.11
-  (push + merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn
-  17 sep).
+- **Volgende item:** **Fase 3** — 3.1 dossier aanmaken zonder Claude (+ 3.3
+  contentslot weg), 3.2 intake met typegroep, 3.4 dossierheader. 1.11 (push +
+  merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn 17 sep).
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -601,113 +600,13 @@ Details: `docs/besluiten.md`.
   balk/Verhuur, avatarmenu, startpagina, `/woningen`, account, kantoorpagina)
   blijft groen.
 
-### Fase 2 — Datafundament & demo-fixture (4 sessies) — vóór alles
+### Fase 2 — Datafundament & demo-fixture ✅ (17 sep 2026)
 
-- [x] **2.1 Schema `transacties` v2 + `imports`** — **plus `objecten.fase`:
-  waarde `acquisitie` → `verkoopadvies`** (enum/check-constraint, bestaande
-  rijen bijwerken, `ObjectFaseSchema` en alle vergelijkingen in code in
-  dezelfde commit; kolom `pitch_uitslag` laten vallen — besluit Quinn 17 sep)
-  *(migratie, geen echte data
-  geraakt: tabel is leeg)*
-  *Doel:* alles wat import, ontdubbelen, geocodering en kwaliteit nodig hebben
-  in één keer in het schema.
-  *Raakt:* `supabase/migrations/2026XXXX_transacties_pijplijn.sql`,
-  `supabase/schema-baseline.sql` (bijwerken), `lib/schemas.ts`.
-  *Spec:* kolommen op `transacties`: `bron text` (`brainbay` · `realworks` ·
-  `handmatig` · `fixture`), `import_id uuid references imports`,
-  `adres_sleutel text not null` (genormaliseerd: `postcode|huisnummer|
-  toevoeging`, terugval `straat|huisnummer|plaats`, lowercase, zonder
-  spaties), `huisnummer int`, `toevoeging text`, `woningtype_groep text`
-  (§ 3.3), `woningtype_sub text` (taxonomie `docs/ontwerp/README.md` § 5),
-  `geocode_status text` (`exact` · `benaderd` · `mislukt`),
-  `uitgesloten_reden text`, `aankopend_kantoor text`,
-  `verkopend_kantoor_norm text`, `prijs_m2 numeric generated always as
-  (verkoopprijs::numeric / nullif(woonoppervlak_m2,0)) stored`. Unieke index
-  → `(kantoor_id, adres_sleutel, verkoopdatum) nulls not distinct` (vervangt
-  de adres-gebaseerde). Indexen uit § 3.1. Tabel `imports` (`id`,
-  `kantoor_id`, `bron`, `bestandsnaam`, `aantal_rijen`, `aantal_nieuw`,
-  `aantal_bijgewerkt`, `aantal_uitgesloten`, `kwaliteitsrapport_json`,
-  `snapshot_json` (vorige waarden van bijgewerkte rijen, begrensd),
-  `status`, `gestart_op`, `klaar_op`, `teruggedraaid_op`) met RLS per
-  kantoor (lezen) en alleen service-role schrijven.
-  `app/admin/transacties/actions.ts` vult `adres_sleutel`, `bron =
-  'handmatig'` en `woningtype_groep` (helper `lib/transactieNormalisatie.ts`
-  + tests: adres-sleutel, typegroep-mapping van Brainbay/Realworks/eigen
-  enum-waarden).
-  *Klaar als:* migratie via `apply_migration`, baseline bijgewerkt,
-  `controleer-schema.mjs` groen, bestaande CSV-import werkt nog.
-- [x] **2.2 `lib/transactiesQuery.ts` + RPC's + guard**
-  *Doel:* § 3.1 afdwingen; de vijf kale `select('*')`'s verdwijnen.
-  *Raakt:* nieuw `lib/transactiesQuery.ts`, `lib/transactiesQuery.guard.test.ts`,
-  migratie `…_rpc_transacties.sql`, `lib/schemas.ts`
-  (`TransactieFilterSchema`), en de aanroepers `app/(app)/marktanalyse/page.tsx`,
-  `marktanalyse/kaart/page.tsx`, `marktanalyse/transacties/page.tsx`,
-  `marktanalyse/concurrentie/page.tsx`, `app/(app)/object/[id]/page.tsx`,
-  `app/(app)/dashboard/page.tsx`.
-  *Hergebruik:* de pure functies in `lib/marktanalyse.ts`, `lib/concurrentie.ts`,
-  `lib/kerncijfers.ts` blijven bestaan voor de eigen-verkopen-laag en als
-  referentie-implementatie: elke RPC krijgt een test die zijn uitkomst op de
-  fixture vergelijkt met de pure functie op dezelfde rijen.
-  *Spec:* functies `haalEigenVerkopen`, `marktanalyseReeks`,
-  `marktanalyseSamenvatting`, `concurrentieMarktaandeel`,
-  `concurrentieSegmenten`, `zoekTransacties`, `prijsindexKwartaal`,
-  `referentiesInStraal`, `haalRegionaleSet`, `dataTotEnMet()` (max
-  verkoopdatum + laatste importdatum). **Contract met de rekenkern (al
-  gebouwd, § 3.3):** `referentiesInStraal` en `haalRegionaleSet` leveren rijen
-  in de vorm van `Kandidaat` uit `lib/waardering.ts` (id, adres, plaats,
-  woningtype_groep, woningtype_sub, verkoopprijs, woonoppervlak_m2, bouwjaar,
-  verkoopdatum, afstand_m, garage, tuin, energielabel, verkopend_kantoor);
-  `prijsindexKwartaal` levert de vorm van `bouwIndex()` in `lib/prijsindex.ts`
-  (kwartaal, n, mediaanM2) — de rekenkern doet zelf het gladstrijken.
-  `haalRegionaleSet(werkgebied, typegroep, { totDatum, maanden: 36 })` haalt
-  alleen de kolommen die `kenmerkEffectenV2()`/`grootteEffect()` nodig hebben
-  (± 6) in een range-lus op; enkele duizenden rijen, gerekend in de server
-  action — geen aparte RPC's voor klasseniveaus of de grootte-helling, zodat er
-  één implementatie van de methode is. De pagina's schakelen over; de verkenners tonen tijdelijk
-  dezelfde UI op de nieuwe data-aanvoer (de visuele v2 komt in fase 6).
-  *Tests:* guard; per RPC een vergelijkingstest tegen de pure functie (draait
-  alleen met `SUPABASE_TEST=1`, anders overgeslagen); `dataTotEnMet`.
-  *Klaar als:* guard groen, geen `select('*')`, RPC's < 300 ms op de fixture.
-- [x] **2.3 Demo-fixture `scripts/seed-demo-kantoor.mjs`**
-  *Doel:* een kantoor "Demo Makelaardij" met een geloofwaardige regio, zodat
-  elke verkenner, waardering en kaart vanaf nu op data draait.
-  *Raakt:* nieuw script, `scripts/seed-demo-kantoor.test.ts` (weigert een
-  kantoor zonder `instellingen_json.demo === true`), `.gitignore` ongewijzigd,
-  `components/NewObjectForm.tsx` (de demo-knop "Vul een voorbeeld in" staat
-  sinds 1.9 alleen achter `NODE_ENV !== 'production'`; hier de tweede helft:
-  óók tonen als het kantoor `instellingen_json.demo === true` heeft).
-  *Hergebruik:* `lib/waardering.synthetisch.ts` (deterministische generator
-  met bekende grondwaarheid: plaatsen, typegroepen, tijdindex, kenmerken) als
-  rekenhart van de fixture — voeg straatnamen/wijken en `eigen_verkoop` toe,
-  schrijf geen tweede generator.
-  *Spec:* deterministisch (vaste seed); `--reset` verwijdert alleen rijen van
-  het demo-kantoor. Kantoor: neutrale huisstijl, `werkgebied.plaatsen =
-  [Wassenaar, 's-Gravenhage, Voorschoten, Leidschendam, Rijswijk]`, account
-  `demo@vestaai.nl` (wachtwoord via env). Transacties: ~8.000 rijen 2019-01 t/m
-  nu, verdeling Wassenaar 35 % · Den Haag (Benoordenhout, Statenkwartier,
-  Mariahoeve, Archipelbuurt) 40 % · Voorschoten/Leidschendam/Rijswijk 25 %;
-  coördinaten rond 12-15 buurtcentroïden met jitter (lijst met echte
-  lat/lng in het script); typegroepen per buurt plausibel (Wassenaar: 55 %
-  vrijstaand/halfvrijstaand); prijsniveaus realistisch (Wassenaar vrijstaand
-  € 1,2-3,5 mln; Den Haag appartement € 300-700 k); trend +4 %/jaar met een
-  dip 2022-Q4–2023-Q2; looptijd 20-90 dagen; 10 fictieve kantoren met
-  marktaandeel 3-18 %, `verkopend_kantoor` gevuld; `eigen_verkoop` ≈ 12 %
-  (≈150/jaar); `bron = 'fixture'`, `geocode_status = 'exact'`; ~2 % rijen
-  bewust met een `uitgesloten_reden`. Plus 15 dossiers verdeeld over de fases,
-  enkele met content (geen pitch-uitslagen: het concept vervalt, 1.9c).
-  *Klaar als:* alle verkenners, kerncijfers, kaart en waardering tonen
-  plausibele cijfers zonder lege staten; screenshots bewaard als referentie.
-- [x] **2.4 Foutlogging vroeg** — `app/global-error.tsx`, `app/(app)/error.tsx`,
-  `lib/fouten.ts` (`meldFout(context, error, extra)` → gestructureerde
-  `console.error` die in de Vercel-runtime-logs terechtkomt), gebruikt in alle
-  API-routes' `catch`. Klein item, geen externe dienst (Sentry → backlog).
-- [ ] **2.5 Kerncijfers op transactiedata** — `Kerncijfers` op `/dashboard`
-  krijgt uit `haalEigenVerkopen` + `marktanalyseSamenvatting`: verkocht
-  laatste 12 mnd, gem. looptijd, prijs t.o.v. vraagprijs, marktaandeel in de
-  eerste werkgebiedplaats (regionaal). Elke tegel: n + "data t/m".
-  *Hergebruik:* `lib/kerncijfers.ts` + tests uitbreiden.
-- **Klaar als:** fixture live; geen `select('*')`; guard groen; foutpagina's
-  aanwezig; dashboard toont echte kerncijfers uit de fixture.
+Schema v2 + `imports` (2.1), `lib/transactiesQuery.ts` met RPC's en guard (2.2),
+demo-fixture "Demo Makelaardij" (2.3), foutlogging `meldFout` (2.4), kerncijfers
+op transactiedata (2.5). Details en besluiten: `docs/besluiten.md` 17 sep.
+**Open tussenfase:** verkenners krijgen nog alle rijen via
+`haalTransactiesVoorVerkenner`; fase 6 zet ze op de RPC's.
 
 ### Fase 3 — Dossierkern: aanmaken zonder wachten (2 sessies)
 

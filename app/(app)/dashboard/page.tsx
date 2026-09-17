@@ -1,15 +1,30 @@
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngelogdeMakelaar'
 import { bouwBranding } from '@/lib/branding'
-import { filterOpLaatsteMaanden, tellFases, berekenVerkoopstatistieken, filterOpJaar, type EigenVerkoopRow } from '@/lib/kerncijfers'
-import { haalEigenVerkopen } from '@/lib/transactiesQuery'
+import {
+  tellFases,
+  filterOpLaatsteMaanden,
+  berekenVerkoopstatistieken,
+  berekenVerkochtMetDelta,
+  vergelijkLooptijdMetMarkt,
+  berekenMarktaandeel,
+  filterOpPlaatsLaatste12Mnd,
+  plaatsVarianten,
+  type EigenVerkoopPlaatsRow,
+} from '@/lib/kerncijfers'
+import { haalEigenVerkopen, marktanalyseSamenvatting, dataTotEnMet } from '@/lib/transactiesQuery'
+import { KantoorInstellingenSchema } from '@/lib/schemas'
 import { StartBanner } from './StartBanner'
 import { Kerncijfers } from './Kerncijfers'
 import { AppPagina } from '@/components/ui'
 
-const EIGEN_VERKOOP_KOLOMMEN = ['verkoopprijs', 'vraagprijs', 'looptijd_dagen', 'verkoopdatum'] as const
+const EIGEN_VERKOOP_KOLOMMEN = ['verkoopprijs', 'vraagprijs', 'looptijd_dagen', 'verkoopdatum', 'plaats'] as const
 
 export const metadata = { title: 'Overzicht' }
+
+function isoDag(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
 
 /**
  * Startpagina na inloggen (masterplan fase 1.6, zie docs/roadmap.md): een
@@ -17,6 +32,13 @@ export const metadata = { title: 'Overzicht' }
  * automatisch op de woningenlijst te landen. De lijst zelf staat op
  * /woningen. De snelkoppelingen zijn vervallen (item 1.9c, besluit Quinn
  * 17 sep 2026): rustigere startpagina, geen pitch-concept meer.
+ *
+ * Sinds item 2.5 (docs/roadmap.md § 5 Fase 2) komen de kerncijfers van de
+ * transactiedataset (via lib/transactiesQuery.ts) i.p.v. alleen `objecten`:
+ * verkocht laatste 12 mnd + delta, gem. looptijd vs. markt, marktaandeel in
+ * de eerste werkgebiedplaats en prijs t.o.v. vraagprijs — elke tegel met n
+ * en "data t/m". Dossier-tellingen (in verkoop, lopende verkoopadviezen)
+ * blijven op `objecten`.
  *
  * "Recent bekeken" (op basis van gebruik_events) en een los `bannerfoto`-veld
  * in de admin staan nog open — die vereisen een nieuwe migratie resp. een
@@ -30,21 +52,55 @@ export default async function DashboardPage() {
 
   const service = createServiceSupabaseClient()
   const sessie = createServerSupabaseClient()
-  const huidigJaar = new Date().getFullYear()
+  const nu = new Date()
 
-  const [{ data: objectenFase }, eigenVerkopen] = await Promise.all([
+  const [{ data: objectenFase }, { data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
     service.from('objecten').select('fase').eq('kantoor_id', makelaar.kantoorId),
-    haalEigenVerkopen<EigenVerkoopRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
+    service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
+    haalEigenVerkopen<EigenVerkoopPlaatsRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
+    dataTotEnMet(sessie),
   ])
 
   const fases = tellFases(objectenFase ?? [])
 
-  // "Verkocht dit jaar" is een kalenderjaar-telling; "Gem. looptijd" en
-  // "Prijs t.o.v. vraagprijs" draaien op een glijdend venster van de laatste
-  // 12 maanden (spec 1.9c d) — dezelfde n voor beide tegels.
-  const verkopenDitJaar = filterOpJaar(eigenVerkopen ?? [], huidigJaar)
-  const verkopenLaatste12Mnd = filterOpLaatsteMaanden(eigenVerkopen ?? [], 12, r => r.verkoopdatum)
-  const verkoopStatsLaatste12Mnd = berekenVerkoopstatistieken(verkopenLaatste12Mnd)
+  // Eigen verkopen: looptijd + prijs t.o.v. vraagprijs over de laatste 12
+  // maanden (glijdend venster), verkocht-telling + delta over dezelfde en de
+  // voorgaande 12 maanden (spec 2.5).
+  const verkopenLaatste12Mnd = filterOpLaatsteMaanden(eigenVerkopen ?? [], 12, r => r.verkoopdatum, nu)
+  const eigenStats = berekenVerkoopstatistieken(verkopenLaatste12Mnd)
+  const verkochtMetDelta = berekenVerkochtMetDelta(eigenVerkopen ?? [], nu)
+
+  // Werkgebied uit de kantoorinstellingen (platform-admin-beheerd) — de
+  // eerste plaats voedt de marktaandeel-tegel. Ontbreekt het werkgebied
+  // (bv. i4 Housing, nog niet ingesteld), dan blijft de tegel netjes leeg
+  // i.p.v. te crashen op een RPC zonder plaatsfilter.
+  const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
+  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+  const eerstePlaats = werkgebiedPlaatsen[0] ?? null
+
+  // Markt-looptijd + marktaandeel-noemer via dezelfde RPC (marktanalyseSamenvatting),
+  // gefilterd op de eerste werkgebiedplaats + laatste 12 mnd. plaatsVarianten()
+  // dekt een spellingsverschil tussen werkgebied en dataset (bv. "'s-Gravenhage"
+  // vs "Den Haag", zie lib/kerncijfers.ts) — de RPC vergelijkt exact.
+  let marktN = 0
+  let marktGemLooptijd: number | null = null
+  if (eerstePlaats) {
+    const twaalfTerug = new Date(nu)
+    twaalfTerug.setMonth(twaalfTerug.getMonth() - 12)
+    const samenvatting = await marktanalyseSamenvatting(sessie, {
+      plaatsen: plaatsVarianten(eerstePlaats),
+      datum_van: isoDag(twaalfTerug),
+      datum_tot: isoDag(nu),
+    })
+    marktN = samenvatting.huidig.n
+    marktGemLooptijd = samenvatting.huidig.mediaanLooptijd
+  }
+
+  const looptijdVsMarkt = vergelijkLooptijdMetMarkt(eigenStats.gemLooptijdDagen, marktGemLooptijd)
+  const eigenInPlaatsLaatste12Mnd = eerstePlaats
+    ? filterOpPlaatsLaatste12Mnd(eigenVerkopen ?? [], eerstePlaats, nu)
+    : []
+  const marktaandeel = berekenMarktaandeel(eigenInPlaatsLaatste12Mnd.length, marktN)
 
   const branding = bouwBranding(makelaar.kantoor)
 
@@ -54,10 +110,14 @@ export default async function DashboardPage() {
       <Kerncijfers
         lopendeVerkoopadviezen={fases.verkoopadvies}
         inVerkoop={fases.inVerkoop}
-        verkochtDitJaar={verkopenDitJaar.length}
-        gemLooptijdDagen={verkoopStatsLaatste12Mnd.gemLooptijdDagen}
-        gemPrijsTovVraagprijsPct={verkoopStatsLaatste12Mnd.gemPrijsTovVraagprijsPct}
-        nEigenVerkopenLaatste12Mnd={verkoopStatsLaatste12Mnd.aantal}
+        verkocht={verkochtMetDelta}
+        gemLooptijdDagen={eigenStats.gemLooptijdDagen}
+        nEigenVerkopenLaatste12Mnd={eigenStats.aantal}
+        looptijdVsMarkt={looptijdVsMarkt}
+        gemPrijsTovVraagprijsPct={eigenStats.gemPrijsTovVraagprijsPct}
+        marktaandeelPlaats={eerstePlaats}
+        marktaandeel={marktaandeel}
+        dataTotEnMet={dataTot.laatsteVerkoopdatum}
       />
     </AppPagina>
   )
