@@ -181,7 +181,12 @@ VestaAI/
 │   │                           #   besluiten, fases met Sonnet-klare item-specs, planning
 │   ├── besluiten.md            # besluitenlogboek + opleverlog (nieuwste bovenaan)
 │   ├── ontwerpprincipes.md     # layout/typografie/beweging/data-weergave (DoD-toetsing)
+│   ├── ontwerp/                # interactieve HTML-prototypes per hero-scherm = de spec
+│   │                           #   (roadmap § 3.8; Sonnet port 1-op-1; review via skill
+│   │                           #   `ontwerpreview`)
 │   ├── kostenschatting.md      # interne API-/infrakosten
+│   ├── voorstel-i4housing.html/.pdf  # klantvoorstel v1 (platform, kosten, prijs, afspraken), 17 sep 2026;
+│   │                           #   html is de bron (logo inline), pdf via Playwright gerenderd
 │   ├── i4housing-onderzoek.md  # klantonderzoek i4housing
 │   └── data-integraties/       # API-referenties (CBS-buurtdata etc.)
 ```

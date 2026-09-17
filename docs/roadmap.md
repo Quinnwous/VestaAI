@@ -19,10 +19,10 @@
 
 - **Fase:** 1 — UI-fundament (1.1 t/m 1.8 klaar; 1.9 · 1.10 · 1.11 open).
   Plan v2 van kracht sinds 18 sep 2026.
-- **Laatst opgeleverd:** plan v2 (alleen documentatie: `docs/roadmap.md`,
-  `docs/besluiten.md`, `docs/goals.md`, `CLAUDE.md`, sessieskills). Code
-  ongewijzigd; branch `feat/nieuwe-schil`, working tree schoon vóór deze
-  wijzigingen.
+- **Laatst opgeleverd:** plan v2 (documentatie) én het ontwerpspoor § 3.8:
+  twee referentieprototypes in `docs/ontwerp/` (`marktanalyse.html`,
+  `verkoopkaart.html`) plus de skill `ontwerpreview`. Code ongewijzigd;
+  branch `feat/nieuwe-schil`.
 - **Volgende item:** **1.9** (bugs + `--merk`-fallback-opruiming) → **1.10**
   (favicon/SEO) → **1.11** (PR mergen) → daarna **Fase 2** (datafundament +
   demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog tegen 0 rijen.
@@ -245,6 +245,50 @@ schrapvolgorde.
   geëxporteerd uit `components/ui/index.ts`, met een 5-regel gebruikscomment
   bovenaan. Geen showcasepagina.
 
+### 3.8 Ontwerpspoor voor interactieve verkenners (bindend voor hero-schermen)
+
+Waarom: een verkenner die uit een tekst-spec wordt gebouwd, wordt de meest
+letterlijke vertaling ervan — een formulierrij, een tabel en een grafiek met
+library-defaults. Dat oogt amateuristisch, hoe goed de data ook is. Daarom:
+
+- **Het prototype ís de spec.** Voor elk hero-scherm bestaat vóór de bouw een
+  interactief HTML-prototype in `docs/ontwerp/` (artifact-formaat, één
+  bestand, kantoorhuisstijl, synthetische data, álle staten via een
+  prototype-strip). Sonnet port het 1-op-1: layout, spacing, staten,
+  interacties, formattering — alleen de datalaag wordt
+  `lib/transactiesQuery.ts`. Klaar: `marktanalyse.html`, `verkoopkaart.html`.
+  Nog te maken (één ontwerpsessie per stuk, op een sterk ontwerpmodel —
+  Fable/Opus — of via Claude Design, daarna als bestand hier neergezet):
+  `concurrentie.html`, `transacties.html`, `waardebepaling.html`,
+  `startpagina.html` (dashboard + dossierheader).
+- **Interactieprimitives komen uit Radix** (shadcn/ui-patroon), niet uit
+  eigen bouw: `Slider`, `Popover`, `Select`/`Combobox`, `Sheet` (Drawer),
+  `Tooltip`, `Tabs`, `Command`; tabellen via TanStack Table. Gethemed via
+  `--merk*` (kleur, radius, font), zodat i4housing's vorm "strak" (radius
+  0-2 px) overal doorwerkt. Zelf bouwen mag alleen wat Radix niet levert
+  (`StatTile`, `ChartCard`, `FilterBar`, kaartlagen).
+- **Grafiekthema** (`lib/grafiekThema.ts`, recharts): geen library-defaults.
+  Geen legendabox waar directe eindlabels volstaan (met botsingscorrectie);
+  rasterlijnen dun en licht; eigen tooltipkaart met alle reeksen én n; y-as
+  met "mooie" stappen en korte labels (`€ 1,2 mln`); `tabular-nums`; "wij" =
+  merkkleur met licht vlak, "markt" = donker neutraal dun (context, geen
+  categorie — de dataviz-validator keurt neutraal af als *categorie*; hier is
+  het bewust de referentielijn), segment B = accent. Nooit een dubbele as.
+- **Interactiecontract** (checkbaar, geldt voor elke verkenner): filter →
+  zichtbaar resultaat < 100 ms client-side, skeleton alleen bij het eerste
+  laden; hover onthult altijd detail; klik op een grafiekelement filtert
+  (crossfilter, zichtbaar als chip in de filterbar); filterstand in de URL;
+  volledig toetsenbordbedienbaar met merkkleurige focusring; getal-tweens
+  400 ms; sticky filterbar; `prefers-reduced-motion`; lege/weinig-data/laad/
+  foutstaat exact als in het prototype.
+- **Kaart:** grijze PDOK-basiskaart zodat pins in merkkleur opvallen; eigen
+  pin-SVG met witte rand; hover-kaart; lijst en kaart wijzen naar elkaar;
+  tijdlijn met afspeelknop; vloeiend pannen/zoomen (MapLibre, § 3.5).
+- **Visuele review is onderdeel van de DoD:** skill `ontwerpreview`
+  (`.claude/skills/ontwerpreview/SKILL.md`) — screenshot van de app naast
+  screenshot van het prototype, beoordeeld door een subagent met vision plus
+  de checklist; pas AKKOORD sluit het item.
+
 ---
 
 ## 4. Werkwijze, Sonnet-protocol & Definition of Done
@@ -270,6 +314,8 @@ hook en skills niet):**
 - Lege, laad- en foutstaat aanwezig; skeletons, geen spinners; geen
   console-errors; elke statistiek toont n en "data t/m".
 - `transacties` alleen via `lib/transactiesQuery.ts` (guard-test groen).
+- Hero-schermen (§ 3.8): `ontwerpreview` AKKOORD — de gebouwde pagina naast
+  het prototype in `docs/ontwerp/`, alle afwijkingen opgelost.
 - Nieuwe tabel → RLS per kantoor, in een migratie via `apply_migration`.
 - Docs bijgewerkt: CLAUDE.md-architectuur als er iets structureels wijzigt,
   Stand van zaken altijd.
@@ -478,7 +524,9 @@ Details: `docs/besluiten.md`.
   bouwperiode via vergelijkbare paren op regionale set (RPC
   `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
   in het paneel; `null` + uitleg bij n < 3.
-- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpkeuze)*
+- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie eerst →
+  `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
+  uitgangspunt voor die sessie)*
   *Spec boven de vouw (1280 px):* links 5/12: waarde groot (`tabular-nums`),
   bandbreedte als balk, badges `n`, `straal`, `index t/m kwartaal`,
   `data t/m`; WOZ-ijkpunt eronder met peildatum; rechts 7/12: referentiekaart
@@ -550,13 +598,30 @@ Details: `docs/besluiten.md`.
   terugdraaien werkt; alle verkenners tonen echte, plausibele cijfers;
   backtest op echte data gedocumenteerd; tussencheck gedaan.
 
-### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht (6 sessies)
+### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht (7 sessies)
 
-- [ ] **6.1 Marktanalyse-explorer v2** *(ontwerpkeuze; bouwt `FilterBar`,
-  `ChartCard`, `useFilterState`, `lib/opmaak.ts`, `lib/grafiekThema.ts`)*
+- [ ] **6.0 Primitives-basis uit Radix** (1 sessie, § 3.8) — `npm i` van de
+  Radix-primitives via het shadcn/ui-patroon (`components/ui/` blijft de
+  barrel; geen aparte `ui`-map ernaast), thema-mapping van shadcn's CSS-
+  variabelen op `--merk*` (kleur, `--merk-radius-*`, font) in `globals.css`,
+  `Sheet`/`Popover`/`Slider`/`Tooltip`/`Select`/`Tabs` beschikbaar en
+  gethemed, TanStack Table geïnstalleerd. Eén werkend voorbeeld: de `Drawer`
+  (Sheet) die 6.2 en 4.4 gebruiken. ⚠️ De Tailwind-`blue`-remap in
+  `tailwind.config.ts` blijft staan; shadcn gebruikt semantische tokens, geen
+  `blue`-schaal.
+  *Klaar als:* elk van deze primitives rendert in i4housing-stijl (strak,
+  merkkleur) én in VestaAI-stijl (zacht, groen) zonder hardgecodeerde kleur.
+- [ ] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
+  — bouwt daarbij `FilterBar`, `ChartCard`, `useFilterState`, `lib/opmaak.ts`,
+  `lib/grafiekThema.ts`)*
   *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
   nieuwe primitives in `components/ui/`, `lib/opmaak.ts` (+ tests),
   `lib/grafiekThema.ts`, `hooks/useFilterState.ts` (+ test).
+  *Ontwerp:* het prototype is leidend voor layout, staten en interactie
+  (filterbar met chips/segmenten, 5 tegels met delta + sparkline langs de
+  onderrand, 2 lijngrafieken met vlak/crosshair/eindlabels, looptijd-staven
+  met wij-lijn, prijsklasse-balken met crossfilter, segment B als rode reeks,
+  kwartaalbericht-modal). Onderstaande tekst is de samenvatting, niet de bron.
   *Spec boven de vouw:* `FilterBar` (plaats/wijk multi-select met chips,
   typegroep-`SegmentedToggle`, periode-presets 12/24/36 mnd + eigen bereik,
   "vergelijk met segment B" als tweede rij) → rij van 5 `StatTile`s met delta
@@ -569,11 +634,14 @@ Details: `docs/besluiten.md`.
   *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
   `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
   "markt").
-- [ ] **6.2 Transacties opzoeken v2** — `DataTable` (server-gepagineerd via
-  `zoekTransacties`, 50/pagina, sorteerbaar), `Drawer` met alle velden +
-  minikaart, "gebruik als referentie" (4.4), CSV-export uitsluitend eigen
-  verkopen (client-side uit `haalEigenVerkopen`). URL-state.
-- [ ] **6.3 Concurrentie v2** — marktaandeel per plaats/typegroep/prijsklasse
+- [ ] **6.2 Transacties opzoeken v2** *(ontwerpsessie eerst →
+  `docs/ontwerp/transacties.html`, § 3.8)* — `DataTable` (TanStack,
+  server-gepagineerd via `zoekTransacties`, 50/pagina, sorteerbaar, dichte
+  rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
+  referentie" (4.4), CSV-export uitsluitend eigen verkopen (client-side uit
+  `haalEigenVerkopen`). URL-state.
+- [ ] **6.3 Concurrentie v2** *(ontwerpsessie eerst →
+  `docs/ontwerp/concurrentie.html`, § 3.8)* — marktaandeel per plaats/typegroep/prijsklasse
   met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
   wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
   (looptijd, prijs t.o.v. vraagprijs, € per m²); concurrentprofiel in een
@@ -598,10 +666,13 @@ Details: `docs/besluiten.md`.
   PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
   `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
   (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
-- [ ] **7.2 Verkoopkaart-explorer v2** — eigen verkopen, `RangeSlider`
-  (periode) met afspeelknop (schrapbaar), filters typegroep/prijsklasse,
-  zijlijst gesynchroniseerd met het kaartbeeld, URL-state; kaart en filters
-  reageren < 100 ms (client-side op `haalEigenVerkopen`).
+- [ ] **7.2 Verkoopkaart-explorer v2** *(port van `docs/ontwerp/verkoopkaart.html`,
+  § 3.8; het prototype gebruikt een statische PDOK-achtergrond omdat een
+  artifact geen tiles mag laden — in de app is dit MapLibre met live tiles)*
+  — eigen verkopen als pins in merkkleur, tijdlijn (`Slider`) met
+  afspeelknop (schrapbaar), filters typegroep/prijsklasse, kerncijfers "in
+  beeld", zijlijst gesynchroniseerd met kaart en hover, hover-kaart, URL-state;
+  kaart en filters reageren < 100 ms (client-side op `haalEigenVerkopen`).
 - [ ] **7.3 Straal per woning** — `StraalKaartPaneel` op `BasisKaart`, standaard
   500 m, schuiver 100-1.000 m, alleen eigen verkopen; de referentiekaart in de
   waardering (4.6) schakelt over naar `BasisKaart`.
@@ -723,18 +794,19 @@ Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
 | 3 dossierkern | 2 | 7 | 2 |
 | 4 waardering | 5 | 12 | 3-4 |
 | 5 echte data (parallel) | 4 | 16 | 3-5 |
-| 6 marktinzichten | 6 | 22 | 5-6 |
-| 7 kaart | 4 | 26 | 7 |
-| 8 content (parallel mogelijk) | 4 | 30 | 6-8 |
-| 9 white-label | 2 | 32 | 8 |
-| 10 dossier premium | 3 | 35 | 9 |
-| 11 verkoopadvies | 3 (geblokkeerd) | 38 | — |
-| 12 demo-klaar | 3 | 41 | 10 |
-| 13 publieke site | 2 (parallel) | 43 | — |
-| Herwerk na screenshotreviews (15 %) | ~6 | ~49 | |
+| 6 marktinzichten | 7 | 23 | 5-6 |
+| 7 kaart | 4 | 27 | 7 |
+| 8 content (parallel mogelijk) | 4 | 31 | 6-8 |
+| 9 white-label | 2 | 33 | 8 |
+| 10 dossier premium | 3 | 36 | 9 |
+| 11 verkoopadvies | 3 (geblokkeerd) | 39 | — |
+| 12 demo-klaar | 3 | 42 | 10 |
+| 13 publieke site | 2 (parallel) | 44 | — |
+| Ontwerpsessies § 3.8 (concurrentie, transacties, waardebepaling, startpagina) | 4 | 48 | telkens vlak vóór het item |
+| Herwerk na ontwerpreviews (15 %) | ~7 | ~55 | |
 
-**Richtdatum demo:** begin december 2026 (week 10-11 vanaf 22 sep), mits
-exports in week 1-3 binnen zijn. Loopt het uit: eerst schrappen, nooit de
+**Richtdatum demo:** begin tot half december 2026 (week 10-12 vanaf 22 sep),
+mits exports in week 1-3 binnen zijn. Loopt het uit: eerst schrappen, nooit de
 demo-minimum-lijn overschrijden.
 
 **Mijlpalen**
@@ -848,3 +920,6 @@ prijsadvies bij lange looptijd.
 - Elk nieuw scherm: niets breekt op 390 px; Lighthouse landing > 90/95.
 - Geen modelstring buiten `lib/aiModellen.ts`; geen Claude-call buiten
   `lib/claude.ts`.
+- Geen zelfgebouwde interactieprimitive waar Radix hem levert; geen
+  grafiek met library-defaults; geen hero-scherm zonder prototype en
+  `ontwerpreview` (§ 3.8).

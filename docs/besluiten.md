@@ -8,6 +8,35 @@
 
 ## Besluiten
 
+### 18 sep 2026 — ontwerpspoor voor interactieve verkenners (roadmap § 3.8)
+
+Aanleiding: Quinn wil dat de verkenners (marktanalyse, transacties,
+concurrentie, verkoopkaart) "Claude-artifact-achtig" professioneel worden en
+niet tekstueel/amateuristisch, in i4housing-huisstijl.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Prototype = spec | Voor elk hero-scherm bestaat vóór de bouw een interactief HTML-prototype in `docs/ontwerp/` (kantoorhuisstijl, synthetische data, alle staten). Sonnet port het 1-op-1; de tekst-spec is samenvatting, niet bron. v1's "direct bouwen, geen mockups" is hiermee herzien voor hero-schermen | plan v2 |
+| Wie ontwerpt | Ontwerpsessies op een sterk ontwerpmodel (Fable/Opus) of via Claude Design; 1 sessie per prototype; resultaat altijd als bestand in de repo | plan v2 |
+| Primitives | Interactieprimitives uit Radix (shadcn/ui-patroon) + TanStack Table, gethemed via `--merk*`; zelf bouwen alleen wat Radix niet levert. Nieuw item 6.0 | plan v2 |
+| Grafiekthema | Geen library-defaults; wij = merk met vlak, markt = donker neutraal (referentielijn, bewust geen categorie), segment B = accent; directe eindlabels met botsingscorrectie; eigen tooltipkaart | plan v2 |
+| Review | Skill `ontwerpreview`: screenshot app naast screenshot prototype, beoordeeld door subagent met vision + checklist; onderdeel van de DoD voor hero-schermen | plan v2 |
+| Eerste prototypes | `docs/ontwerp/marktanalyse.html` en `docs/ontwerp/verkoopkaart.html` opgeleverd (Fable, 18 sep) | plan v2 |
+
+### 17 sep 2026 — klantvoorstel v1 voor i4housing opgesteld (nog niet verstuurd)
+
+`docs/voorstel-i4housing.html` (bron, logo inline) + `.pdf` (Playwright-render,
+3 pagina's A4, i4housing-huisstijl): 1) platform en datakoppeling
+(Realworks + Brainbay + open data → afgeschermde dataset → waardering,
+marktanalyse, concurrentie, verkoopkaart → verkoopadvies-pdf/kwartaalbericht);
+2) kosten (platform ± € 100/mnd doorbelast, 5 uur/week beheer) en voorstel:
+bouw t/m demo = investering VestaAI (€ 0), vanaf livegang € 1.250/mnd excl.
+btw all-in, vast 12 mnd, meerwerk € 65/uur; 3) afspraken (6 mnd vast, daarna
+maandelijks; data blijft van i4housing, nooit gedeeld, niet voor training;
+verwerkersovereenkomst vóór import; EU-opslag), benodigdheden van i4housing
+met deadlines (exports vóór 10 okt) en de planning uit roadmap § 6. Bedragen
+zijn een voorstel van Claude; Quinn stelt ze vast vóór verzending.
+
 ### 17-18 sep 2026 — masterplan herzien naar v2 ("demo-backwards")
 
 Aanleiding: Quinn liet het masterplan van 16-17 sep kritisch tegen het licht
