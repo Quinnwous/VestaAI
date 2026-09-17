@@ -27,7 +27,16 @@
 > sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
 > te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
 > opnieuw toestemming te vragen. Reden: er is nog geen productiedata die verloren kan gaan.
-> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven). Productkeuzes zelf maken en in
+> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven).
+>
+> ⚠️ **Eén database, twee codeversies (les 17 sep 2026):** productie draait altijd de code
+> van `main`, en er is maar één (productie)database. Een migratie die iets **weghaalt of
+> hernoemt** (kolom droppen, enum-waarde wijzigen) breekt de live site zodra hij is toegepast
+> en `main` nog oude code heeft — zo crashte `/dashboard` op `pitch_uitslag` na migratie 2.1.
+> Regel: brekende migraties pas toepassen **samen met** push + merge van de code die erbij
+> hoort (in dezelfde ronde, direct achter elkaar), of eerst een additieve variant (kolom
+> toevoegen, code overzetten, later pas droppen). Additieve migraties (nieuwe tabel/kolom/
+> functie) mogen wel tussendoor. Productkeuzes zelf maken en in
 > `docs/besluiten.md` noteren; alleen blokkeren bij iets onomkeerbaars.
 
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Verkoopadvies → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
