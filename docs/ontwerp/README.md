@@ -87,18 +87,18 @@ Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
 | Woningtype | dropdown, groep-vinkje (indeterminate) + subtypes | `typen[]` (subtypes; leeg = alle) | ✓ | ✓ | ✓ | ✓ |
 | Periode | segmented 12/24/36/alles (+ aangepast bereik in Transacties) | `datum_van`, `datum_tot` | ✓ | ✓ | ✓ | tijdlijn (kwartaal van-tot + afspelen) |
 | Prijs | dropdown, dubbele schuiver 0-5 mln stap 25 k, "geen max" | `prijs_min`, `prijs_max` | ✓ | ✓ | ✓ | ✓ |
-| Woonoppervlak | dropdown, schuiver 30-500 m² | `opp_min`, `opp_max` | ✓ | ✓ | ✓ | ✓ |
-| Bouwjaar | in "Meer", schuiver 1900-2026 | `bouwjaar_min/max` | ✓ | ✓ | ✓ | ✓ |
+| Woonoppervlak | dropdown, schuiver 30-500 m² | `opp_min`, `opp_max` | ✓ | ✓ | – | ✓ |
+| Bouwjaar | in "Meer", schuiver 1900-2026 | `bouwjaar_min/max` | ✓ | ✓ | – | ✓ |
 | Energielabel | in "Meer", chips A+++…G | `energielabels[]` | ✓ | ✓ | – | ✓ |
 | Kamers | in "Meer", segmented 2+…6+ | `kamers_min` | ✓ | ✓ | – | ✓ |
 | Perceel | in "Meer", schuiver 0-5.000 m² (n.v.t. appartement) | `perceel_min/max` | ✓ | ✓ | – | – |
 | Kenmerken | in "Meer", vinkjes tuin/garage (later: balkon/dakterras, parkeren) | `tuin`, `garage` | ✓ | ✓ | – | ✓ |
-| T.o.v. vraagprijs | in "Meer", segmented alle/boven/op-of-onder | `tov_vraagprijs` | ✓ | ✓ | ✓ | – |
+| T.o.v. vraagprijs | in "Meer", segmented alle/boven/op-of-onder | `tov_vraagprijs` | ✓ | ✓ | – | – |
 | Looptijd | in "Meer" (Transacties), schuiver 0-365 dgn | `looptijd_max` | – | ✓ | – | – |
 | Verkocht door | dropdown, teamleden (alleen eigen verkopen) | `makelaars[]` | – | ✓ | – | ✓ |
-| Verkopend kantoor | dropdown met zoek (Concurrentie) | `kantoren[]` | – | ✓ | ✓ | – |
-| Prijsklasse (crossfilter) | klik in de grafiek → pil | `prijs_min/max` (afgeleid) | ✓ | – | ✓ | – |
-| Segment B | schakelaar + plaats/typegroep | tweede filterset | ✓ | – | ✓ (kantoor A vs B) | – |
+| Verkopend kantoor | dropdown met zoek (Transacties); op Concurrentie niet als filter maar als "verberg dit kantoor" in ranglijst/drawer (pil om te herstellen) | `kantoren[]` | – | ✓ | (verbergen) | – |
+| Prijsklasse | Marktanalyse: crossfilter (klik in de grafiek → pil); Concurrentie: dropdown met 5 klassen (< 500 k · 500-750 k · 750 k-1 M · 1-1,5 M · > 1,5 M) | `prijs_min/max` (afgeleid) | ✓ | – | ✓ | – |
+| Segment B | schakelaar + plaats/typegroep | tweede filterset | ✓ | – | – (backlog; ontwerpsessie 17 sep: de matrix + drawer dekken "kantoor A vs B" al) | – |
 
 Regels: elk actief filter is zichtbaar als pil onder de filterbalk met ×; een
 tel-badge op de trigger toont hoeveel filters in een dropdown actief zijn;

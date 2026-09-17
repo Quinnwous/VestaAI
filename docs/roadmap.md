@@ -620,8 +620,11 @@ Details: `docs/besluiten.md`.
   koopwoningen; regio" op via de CBS-OData-catalogus in deze sessie — niet uit
   het hoofd; sla de tabel-id in een constante op met bronvermelding). Tests op
   gladstrijken en factor, incl. randen (ontbrekend kwartaal).
-  *Al klaar (17 sep):* `lib/prijsindex.ts` + 13 tests. *Open:* RPC in de vorm
-  van `bouwIndex()`, `CBS_TABEL_ID` in `lib/cbsPrijsindex.ts`, ophaalscript.
+  *Al klaar (17 sep):* `lib/prijsindex.ts` + 13 tests; CBS-tabel opgezocht:
+  **85792NED** (prijsindex 2020=100, regio; provincie Zuid-Holland), vastgelegd
+  in `lib/cbsPrijsindex.ts` met OData-aanwijzingen. *Open:* RPC in de vorm van
+  `bouwIndex()`, ophaalscript `scripts/haal-cbs-prijsindex.mjs` (regiocode uit
+  de metadata halen, niet raden).
 - [ ] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
   gewogen mediaan/P25/P75, band-regels, `WaarderingUitkomst` v2 met `versie`,
   `peildatum`-parameter (referenties alleen vóór die datum — nodig voor de
