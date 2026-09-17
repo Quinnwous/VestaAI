@@ -587,7 +587,7 @@ Details: `docs/besluiten.md`.
 
 ### Fase 2 — Datafundament & demo-fixture (4 sessies) — vóór alles
 
-- [ ] **2.1 Schema `transacties` v2 + `imports`** — **plus `objecten.fase`:
+- [x] **2.1 Schema `transacties` v2 + `imports`** — **plus `objecten.fase`:
   waarde `acquisitie` → `verkoopadvies`** (enum/check-constraint, bestaande
   rijen bijwerken, `ObjectFaseSchema` en alle vergelijkingen in code in
   dezelfde commit; kolom `pitch_uitslag` laten vallen — besluit Quinn 17 sep)
@@ -1133,6 +1133,9 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 10. Akkoord op de opruimmigratie (na back-up).
 11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
     verwerkersovereenkomst, prijsafspraak.
+13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
+    pusht, merget en zet live bij "rond af" (besluit 17 sep, CLAUDE.md).
+    Wel daarna: Search Console (punt 6).
 12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
     bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
     Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
@@ -1153,6 +1156,13 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
+
+**Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
+`handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`
+zijn via `/rest/v1/rpc` aan te roepen door `anon` → `revoke execute … from anon`
+(en `rls_auto_enable` ook van `authenticated`); `object_fotos` en
+`stijl_bewerkingen` hebben RLS zonder policy (bewust service-role? nagaan);
+leaked-password-protection aan (§ 8 punt 3). Uiterlijk in fase 12.
 
 **Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
 (staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee

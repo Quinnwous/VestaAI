@@ -2,6 +2,12 @@
 -- VestaAI — Database-baseline (schema, RLS, policies)
 -- Vastgelegd: 17 sep 2026, via introspectie (Supabase-MCP `list_tables`,
 -- `pg_policies`, `pg_views`, `list_extensions`) van project uvpcjpejocjmlxxyhqyz.
+-- Bijgewerkt: 17 sep 2026 (item 2.1) naar de staat NA migratie
+-- `20260917_transacties_pijplijn.sql` — die migratie was op het moment van
+-- schrijven nog niet toegepast (de orchestrator maakt eerst een back-up en
+-- past hem daarna toe); dit bestand beschrijft dus de bedoelde staat, niet
+-- per se de live staat op het moment dat je dit leest. Ter controle:
+-- `scripts/controleer-schema.mjs`.
 --
 -- BELANGRIJK: dit is GEEN uitvoerbare migratie en geen letterlijke `pg_dump`
 -- (geen Supabase CLI/db-wachtwoord lokaal beschikbaar). Het is een leesbare
@@ -78,8 +84,11 @@ create table if not exists objecten (
   chat_foto_url   text,                             -- dood
   lat             double precision,
   lng             double precision,
-  fase            text not null default 'acquisitie' check (fase = any (array['acquisitie','in_verkoop','verkocht'])),
-  pitch_uitslag   text check (pitch_uitslag = any (array['open','gewonnen','verloren'])),
+  fase            text not null default 'verkoopadvies' check (fase = any (array['verkoopadvies','in_verkoop','verkocht'])),
+  -- pitch_uitslag VERVALLEN (migratie 20260917_transacties_pijplijn.sql, item
+  -- 2.1) — pitch-concept al uit de code sinds 1.9c (17 sep 2026), kolom nu ook
+  -- uit het schema. fase-waarde 'acquisitie' hernoemd naar 'verkoopadvies' in
+  -- dezelfde migratie (besluit Quinn 17 sep 2026); bestaande rijen bijgewerkt.
   outputs_json_en jsonb,
   waardering_json jsonb,
   usps_structuur  jsonb
@@ -97,7 +106,8 @@ create table if not exists objecten (
 --    probleem) of via de sessie-gebonden client (dan faalt een collega-edit
 --    stil, 0 rijen bijgewerkt, geen foutmelding).
 
--- transacties (RLS: aan — ZIE 20260917-migratie voor de RLS-fix)
+-- transacties (RLS: aan — ZIE 20260917213323-migratie voor de RLS-fix, en
+-- 20260917_transacties_pijplijn.sql (item 2.1) voor de pijplijn-kolommen hieronder)
 create table if not exists transacties (
   id                uuid primary key default gen_random_uuid(),
   kantoor_id        uuid not null references kantoren(id),
@@ -123,7 +133,20 @@ create table if not exists transacties (
   buitenruimte      text,
   eigen_verkoop     boolean not null default true,
   verkopend_kantoor text,
-  created_at        timestamptz not null default now()
+  created_at        timestamptz not null default now(),
+  -- ── vanaf hier: item 2.1, migratie 20260917_transacties_pijplijn.sql ──
+  bron                   text check (bron = any (array['brainbay','realworks','handmatig','fixture'])),
+  import_id              uuid references imports(id) on delete set null,
+  adres_sleutel          text not null,  -- postcode|huisnummer|toevoeging, terugval straat|huisnummer|plaats
+  huisnummer             integer,
+  toevoeging             text,
+  woningtype_groep       text,  -- appartement | rijwoning | halfvrijstaand | vrijstaand (§ 3.3), geen check (applicatielaag)
+  woningtype_sub         text,  -- taxonomie docs/ontwerp/README.md § 5, geen check (applicatielaag)
+  geocode_status         text check (geocode_status = any (array['exact','benaderd','mislukt'])),
+  uitgesloten_reden      text,
+  aankopend_kantoor      text,
+  verkopend_kantoor_norm text,
+  prijs_m2               numeric generated always as (verkoopprijs::numeric / nullif(woonoppervlak_m2, 0)) stored
 );
 -- Policy (na fix 17 sep 2026, migratie rls_kantoor_isolatie_transacties):
 --   "makelaar leest eigen kantoor-transacties" (select, authenticated,
@@ -131,12 +154,46 @@ create table if not exists transacties (
 -- Vóór de fix: "Ingelogde makelaars lezen de transactiedataset" (elk
 -- ingelogd account zag ALLE kantoren — bewust ontworpen als "gedeelde
 -- referentiepool", ingetrokken 17 sep 2026, zie besluitenlogboek).
+--
+-- Indexen (na item 2.1): transacties_geo_idx (gist geo),
+-- transacties_eigen_verkoop_idx (kantoor_id, eigen_verkoop),
+-- transacties_kantoor_verkoopdatum_idx (kantoor_id, verkoopdatum),
+-- transacties_kantoor_plaats_idx (kantoor_id, plaats),
+-- transacties_kantoor_woningtype_groep_idx (kantoor_id, woningtype_groep),
+-- transacties_natuurlijke_sleutel_idx UNIQUE (kantoor_id, adres_sleutel,
+-- verkoopdatum) NULLS NOT DISTINCT. transacties_kantoor_id_idx (kantoor_id)
+-- en transacties_verkoopdatum_idx (verkoopdatum) zijn gedropt — overbodig
+-- naast de kantoor_id-geleide composiet-indexen (RLS voegt altijd
+-- kantoor_id = … toe, dus verkoopdatum/kantoor_id worden nooit los bevraagd).
 
--- view: transacties_met_coordinaten (na fix 17 sep 2026)
+-- tabel imports (item 2.1, RLS: aan) — importlog per CSV-batch, alleen
+-- service-role schrijft (geen insert/update/delete-policies)
+create table if not exists imports (
+  id                      uuid primary key default gen_random_uuid(),
+  kantoor_id              uuid not null references kantoren(id) on delete cascade,
+  bron                    text not null check (bron = any (array['brainbay','realworks','handmatig','fixture'])),
+  bestandsnaam            text,
+  aantal_rijen            integer,
+  aantal_nieuw            integer,
+  aantal_bijgewerkt       integer,
+  aantal_uitgesloten      integer,
+  kwaliteitsrapport_json  jsonb,
+  snapshot_json           jsonb,
+  status                  text not null default 'bezig' check (status = any (array['bezig','klaar','mislukt','teruggedraaid'])),
+  gestart_op              timestamptz not null default now(),
+  klaar_op                timestamptz,
+  teruggedraaid_op        timestamptz
+);
+-- Policy: "makelaar leest eigen kantoor-imports" (select, authenticated,
+--   kantoor_id = (select kantoor_id from makelaars where id = auth.uid()))
+
+-- view: transacties_met_coordinaten (na fix 17 sep 2026, kolommen uitgebreid item 2.1)
 --   `with (security_invoker = true)` — was SECURITY DEFINER (eigenaar
 --   'postgres'), wat RLS op transacties volledig omzeilde voor iedereen die
 --   de view bevroeg, incl. de publieke anon-key. grant select alleen aan
---   authenticated (niet aan anon — de view is toch niet updatable).
+--   authenticated (niet aan anon — de view is toch niet updatable). Bevat nu
+--   ook de pijplijn-kolommen (bron, adres_sleutel, woningtype_groep/_sub,
+--   geocode_status, uitgesloten_reden, verkopend_kantoor_norm, prijs_m2, …).
 
 -- ── Tabellen die alleen via service-role gelezen/geschreven worden ────────
 -- (RLS aan, geen policies voor anon/authenticated — bevestigd tegen de

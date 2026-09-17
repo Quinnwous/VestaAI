@@ -26,7 +26,7 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
     .single()
   if (!makelaar) return { ok: false, error: 'Geen rechten' }
 
-  const GELDIGE_FASES: ObjectFase[] = ['acquisitie', 'in_verkoop', 'verkocht']
+  const GELDIGE_FASES: ObjectFase[] = ['verkoopadvies', 'in_verkoop', 'verkocht']
   if (!GELDIGE_FASES.includes(nieuweFase)) return { ok: false, error: 'Ongeldige fase' }
 
   const update: { fase: ObjectFase; status?: ObjectStatus } = { fase: nieuweFase }

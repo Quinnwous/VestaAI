@@ -30,9 +30,13 @@ chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
      `execute_sql` voor DDL — anders raakt de migratiehistorie los van de
      werkelijke database (zie de aanleiding in
      `supabase/schema-baseline.sql`). Daarna `scripts/controleer-schema.mjs`.
-2. **Commit + PR.** Featurebranch per fase, commitbericht in het Nederlands
-   zoals de rest van de geschiedenis, PR naar `main`. Na de merge: deploy
-   READY en geen runtime-errors (Vercel-MCP).
+2. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen**
+   (besluit Quinn 17 sep 2026, zie CLAUDE.md). Commitbericht in het
+   Nederlands zoals de rest van de geschiedenis. Push de featurebranch, maak
+   of werk de PR naar `main` bij, merge hem, en controleer daarna: deploy
+   READY en geen runtime-errors (Vercel-MCP). Tijdens de sessie zelf niet
+   tussendoor pushen. Uitzondering: een migratie die echte data raakt blijft
+   akkoord-plichtig.
 3. **Werk `docs/roadmap.md` bij:**
    - Vink afgeronde items af (`- [ ]` → `- [x]`) in het fase-blok. Is een
      hele fase af, klap hem in tot één regel met ✅ (zoals fase 0) en zet de

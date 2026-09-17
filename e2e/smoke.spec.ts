@@ -92,8 +92,9 @@ const TIMEOUT_CODES = [408, 502, 503, 504, 524]
 
 // "Woning toevoegen" is sinds 16 sep 2026 een zesstappenwizard (adres, woning, staat &
 // afwerking, ligging & buitenruimte, verhaal, commercieel) die het dossier direct in de
-// acquisitiefase aanmaakt en na succes doorstuurt naar /object/[id] — zie
-// components/PropertyForm.tsx en app/(app)/object/new/NewObjectForm.tsx.
+// Verkoopadvies-fase aanmaakt (interne waarde 'verkoopadvies' sinds item 2.1) en na succes
+// doorstuurt naar /object/[id] — zie components/PropertyForm.tsx en
+// app/(app)/object/new/NewObjectForm.tsx.
 test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async ({ browser }) => {
   test.skip(!hasAuth(), 'Geen auth state — stel E2E_TEST_EMAIL + Supabase-keys in om te activeren')
   test.skip(!RUN_GENERATE, 'Kostenbewaking: zet E2E_GENERATE=1 om de echte generatie te draaien')
@@ -138,9 +139,9 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
   expect(TIMEOUT_CODES, `/api/generate gaf time-out-status ${res.status()} na ${seconds}s`).not.toContain(res.status())
   expect(res.status(), 'verwacht HTTP 200 van /api/generate').toBe(200)
 
-  // Succesvolle aanmaak stuurt door naar het nieuwe dossier — fase Acquisitie.
+  // Succesvolle aanmaak stuurt door naar het nieuwe dossier — fase Verkoopadvies.
   await page.waitForURL(/\/object\/[a-f0-9-]+$/, { timeout: 20_000 })
-  await expect(page.getByText(/acquisitie/i).first()).toBeVisible({ timeout: 10_000 })
+  await expect(page.getByText(/verkoopadvies/i).first()).toBeVisible({ timeout: 10_000 })
   await expect(page.getByText(/duurde te lang|mislukt/i)).toHaveCount(0)
 
   await ctx.close()

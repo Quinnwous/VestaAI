@@ -40,9 +40,9 @@ export function filterOpLaatsteMaanden<T>(
 }
 
 /** Telt woningdossiers per fase. */
-export function tellFases(rows: ObjectFaseRow[]): { acquisitie: number; inVerkoop: number; verkocht: number } {
+export function tellFases(rows: ObjectFaseRow[]): { verkoopadvies: number; inVerkoop: number; verkocht: number } {
   return {
-    acquisitie: rows.filter(r => r.fase === 'acquisitie').length,
+    verkoopadvies: rows.filter(r => r.fase === 'verkoopadvies').length,
     inVerkoop: rows.filter(r => r.fase === 'in_verkoop').length,
     verkocht: rows.filter(r => r.fase === 'verkocht').length,
   }

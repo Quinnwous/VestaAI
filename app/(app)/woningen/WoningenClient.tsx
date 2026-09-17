@@ -10,7 +10,7 @@ type FaseFilter = '' | ObjectFase
 
 const FASE_TABS: { value: FaseFilter; label: string }[] = [
   { value: '', label: 'Alles' },
-  { value: 'acquisitie', label: 'Verkoopadvies' },
+  { value: 'verkoopadvies', label: 'Verkoopadvies' },
   { value: 'in_verkoop', label: 'In verkoop' },
   { value: 'verkocht', label: 'Verkocht' },
 ]
@@ -25,7 +25,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string; dot: string 
 // Geen pitch-concept meer (item 1.9c, besluit Quinn 17 sep 2026): de badge
 // toont alleen de fase, geen "Gewonnen/Verloren"-uitslag meer.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
-  acquisitie: { label: 'Verkoopadvies', color: '#D97706' },
+  verkoopadvies: { label: 'Verkoopadvies', color: '#D97706' },
   in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
@@ -194,7 +194,7 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#14181B' }}>{obj.address}</p>
                   <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} />
-                  {obj.fase !== 'acquisitie' && <StatusBadge status={obj.status ?? 'draft'} />}
+                  {obj.fase !== 'verkoopadvies' && <StatusBadge status={obj.status ?? 'draft'} />}
                 </div>
                 <p style={{ fontSize: 13, color: '#98A0A6', marginTop: 3 }}>{formatDatum(obj.created_at)}</p>
               </div>

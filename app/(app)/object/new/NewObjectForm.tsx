@@ -40,7 +40,8 @@ const card: React.CSSProperties = {
 
 /**
  * Woning toevoegen — start altijd in de Verkoopadvies-fase (interne waarde
- * `acquisitie`; besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur). Content
+ * `verkoopadvies`, hernoemd van `acquisitie` in item 2.1; besluit 16 sep 2026,
+ * zie CLAUDE.md § Hoofdstructuur). Content
  * wordt in de achtergrond al gegenereerd (dezelfde /api/generate-pijplijn als
  * voorheen — dat blijft waardevol: de tekst staat al klaar zodra de opdracht
  * binnen is), maar wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.

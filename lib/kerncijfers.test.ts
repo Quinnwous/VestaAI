@@ -31,12 +31,12 @@ describe('filterOpLaatsteMaanden', () => {
 
 describe('tellFases', () => {
   it('telt per fase', () => {
-    const rows = [{ fase: 'acquisitie' }, { fase: 'acquisitie' }, { fase: 'in_verkoop' }, { fase: 'verkocht' }]
-    expect(tellFases(rows)).toEqual({ acquisitie: 2, inVerkoop: 1, verkocht: 1 })
+    const rows = [{ fase: 'verkoopadvies' }, { fase: 'verkoopadvies' }, { fase: 'in_verkoop' }, { fase: 'verkocht' }]
+    expect(tellFases(rows)).toEqual({ verkoopadvies: 2, inVerkoop: 1, verkocht: 1 })
   })
 
   it('geeft nullen bij een lege lijst', () => {
-    expect(tellFases([])).toEqual({ acquisitie: 0, inVerkoop: 0, verkocht: 0 })
+    expect(tellFases([])).toEqual({ verkoopadvies: 0, inVerkoop: 0, verkocht: 0 })
   })
 })
 

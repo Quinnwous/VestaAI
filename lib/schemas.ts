@@ -67,8 +67,11 @@ export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>
 
 // Fases van een woningdossier (besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur):
 // één dossier per adres, drie fases. Welke modules zichtbaar zijn hangt af van
-// de fase — zie components/ObjectWorkspace.tsx.
-export const ObjectFaseSchema = z.enum(['acquisitie', 'in_verkoop', 'verkocht'])
+// de fase — zie components/ObjectWorkspace.tsx. Waarde 'acquisitie' hernoemd
+// naar 'verkoopadvies' in item 2.1 (besluit Quinn 17 sep 2026; het label was
+// al eerder "Verkoopadvies", zie 1.9c) — migratie 20260917_transacties_pijplijn.sql
+// werkt bestaande rijen bij.
+export const ObjectFaseSchema = z.enum(['verkoopadvies', 'in_verkoop', 'verkocht'])
 export type ObjectFase = z.infer<typeof ObjectFaseSchema>
 
 // Staat & afwerking en Ligging & buitenruimte (besluit 16 sep 2026, F3 —

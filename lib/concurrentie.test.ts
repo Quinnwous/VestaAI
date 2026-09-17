@@ -28,6 +28,18 @@ function maakRij(overrides: Partial<TransactieRow>): TransactieRow {
     eigen_verkoop: false,
     verkopend_kantoor: null,
     created_at: '2026-02-16T00:00:00Z',
+    bron: null,
+    import_id: null,
+    adres_sleutel: 'hoofdstraat|1|',
+    huisnummer: 1,
+    toevoeging: null,
+    woningtype_groep: 'rijwoning',
+    woningtype_sub: 'Tussenwoning',
+    geocode_status: null,
+    uitgesloten_reden: null,
+    aankopend_kantoor: null,
+    verkopend_kantoor_norm: null,
+    prijs_m2: null,
     ...overrides,
   }
 }

@@ -6,7 +6,7 @@ import { colors } from '@/components/ui'
 import { setObjectFase } from './actions'
 
 const FASE_LABEL: Record<ObjectFase, string> = {
-  acquisitie: 'Verkoopadvies',
+  verkoopadvies: 'Verkoopadvies',
   in_verkoop: 'In verkoop',
   verkocht: 'Verkocht',
 }
@@ -42,11 +42,11 @@ export function FaseToggle({
     })
   }
 
-  if (fase === 'acquisitie') {
+  if (fase === 'verkoopadvies') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 12px', fontSize: 12.5, fontWeight: 600, background: 'var(--merk-zacht)', color: 'var(--merk-hover)' }}>
-          {FASE_LABEL.acquisitie}
+          {FASE_LABEL.verkoopadvies}
         </span>
         <button
           type="button"

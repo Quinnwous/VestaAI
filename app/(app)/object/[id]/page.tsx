@@ -94,7 +94,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <FaseToggle objectId={object.id} fase={fase} />
-            {fase !== 'acquisitie' && (
+            {fase !== 'verkoopadvies' && (
               <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
             )}
             <span style={{ fontSize: 13, color: '#98A0A6' }}>{formatDatum(object.created_at)}</span>

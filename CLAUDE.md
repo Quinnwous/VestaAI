@@ -21,7 +21,13 @@
 >
 > **Werkwijze:** Sonnet plant én bouwt vanuit de item-spec (mini-plan van ≤10 regels in de
 > chat, plan mode alleen bij items gemarkeerd *(ontwerpkeuze)*). `/sessie-start` bij het
-> begin, `/sessie-afronden` bij het einde van elke sessie. Productkeuzes zelf maken en in
+> begin, `/sessie-afronden` bij het einde van elke sessie.
+>
+> **Push/merge/live (besluit Quinn 17 sep 2026, geldt tot hij anders zegt):** tijdens een
+> sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
+> te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
+> opnieuw toestemming te vragen. Reden: er is nog geen productiedata die verloren kan gaan.
+> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven). Productkeuzes zelf maken en in
 > `docs/besluiten.md` noteren; alleen blokkeren bij iets onomkeerbaars.
 
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Verkoopadvies → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).

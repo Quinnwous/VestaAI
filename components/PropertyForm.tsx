@@ -625,7 +625,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       </div>
       </div>
 
-      {/* Stap 6 — Commercieel (acquisitiefase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
+      {/* Stap 6 — Commercieel (Verkoopadvies-fase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
       <div style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       <div className="form-grid-2">
         <div>

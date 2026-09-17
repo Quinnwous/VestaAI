@@ -24,10 +24,10 @@ import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
  * Eén dossier per adres doorloopt drie fases (besluit 16 sep 2026):
  *
- * - **Verkoopadvies** (interne waarde `acquisitie`) — alleen waardebepaling
- *   en verkoopadvies zijn zichtbaar. Er zijn nog geen foto's of een vaste
- *   vraagprijs; content hoort hier niet. Geen pitch-concept meer (item 1.9c,
- *   besluit Quinn 17 sep 2026).
+ * - **Verkoopadvies** (interne waarde `verkoopadvies`, hernoemd van
+ *   `acquisitie` in item 2.1) — alleen waardebepaling en verkoopadvies zijn
+ *   zichtbaar. Er zijn nog geen foto's of een vaste vraagprijs; content hoort
+ *   hier niet. Geen pitch-concept meer (item 1.9c, besluit Quinn 17 sep 2026).
  * - **In verkoop** — content en media (Module A) komen erbij, naast
  *   waardering. Gated op `CONTENT_VERGRENDELD` (lib/features.ts) als extra,
  *   losstaande noodschakelaar.
@@ -163,7 +163,7 @@ export function ObjectWorkspace({
 
   // Verkoopadvies-fase: er zijn nog geen foto's of een vaste vraagprijs —
   // alleen waardebepaling en verkoopadvies zijn relevant, geen tabbalk nodig.
-  if (fase === 'acquisitie') {
+  if (fase === 'verkoopadvies') {
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         {waarderingSectie}

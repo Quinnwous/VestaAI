@@ -52,7 +52,7 @@ export default async function DashboardPage() {
     <AppPagina>
       <StartBanner url={branding.achtergrondUrl} naam={makelaar.naam} kantoornaam={branding.naam} />
       <Kerncijfers
-        lopendeVerkoopadviezen={fases.acquisitie}
+        lopendeVerkoopadviezen={fases.verkoopadvies}
         inVerkoop={fases.inVerkoop}
         verkochtDitJaar={verkopenDitJaar.length}
         gemLooptijdDagen={verkoopStatsLaatste12Mnd.gemLooptijdDagen}

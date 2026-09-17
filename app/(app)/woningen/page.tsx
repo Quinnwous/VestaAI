@@ -43,7 +43,7 @@ export default async function WoningenPage({
 
   const search = searchParams.search ?? ''
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
-  const geldigeFases: FaseFilter[] = ['acquisitie', 'in_verkoop', 'verkocht']
+  const geldigeFases: FaseFilter[] = ['verkoopadvies', 'in_verkoop', 'verkocht']
   const faseFilter: FaseFilter = geldigeFases.includes(searchParams.fase as FaseFilter) ? searchParams.fase as FaseFilter : ''
   const from = (page - 1) * PER_PAGE
   const to = from + PER_PAGE - 1
