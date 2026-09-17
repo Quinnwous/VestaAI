@@ -188,7 +188,7 @@ schrapvolgorde.
   "Genereer content". De 7-daagse cache-op-identieke-invoer vervalt.
 - `CONTENT_VERGRENDELD` vergrendelt alleen content-tabs en `/api/generate`,
   nooit meer het aanmaken van een dossier (`object/new`).
-- Intake in de acquisitiefase vraagt minimaal: adres, woningtype, oppervlak,
+- Intake in de verkoopadviesfase vraagt minimaal: adres, woningtype, oppervlak,
   bouwjaar. `usps` en `doelgroep` worden optioneel in `PropertyInputSchema`;
   `/api/generate` eist ze alsnog (400 met "Vul eerst stap Verhaal in").
 
@@ -484,8 +484,8 @@ Details: `docs/besluiten.md`.
   kit, want het raakt alle prototypes); `startpagina.html` zonder
   snelkoppelingen, zonder winratio-tegel (→ "Prijs t.o.v. vraagprijs"), zonder
   "pitches deze week"/"pitch gewonnen" (→ "verkoopadvies verstuurd"), en de
-  dossierheader zonder pitch-uitslag-schakelaar; `waardebepaling.html`
-  dossierheader idem.
+  dossierheader zonder pitch-uitslag-schakelaar en met fasestap "Verkoopadvies"
+  i.p.v. "Acquisitie"; `waardebepaling.html` dossierheader idem.
   *Spec marktanalyse/verkoopkaart:* kaartkoppen en tegels op de norm brengen,
   placeholders neutraal, 2-3 rode microdetails per scherm (databadge-stip,
   tel-badges, pin-ring op de kaart, accentstreepje bij het kwartaalbericht),
@@ -513,7 +513,10 @@ Details: `docs/besluiten.md`.
   `PitchScorebord`, winratio-tegel, uitslag-schakelaar in `FaseToggle`, de
   server action voor de uitslag, `PitchUitslagSchema`; de kolom
   `objecten.pitch_uitslag` blijft tot 2.1 in de database staan (geen migratie
-  nu) maar wordt nergens meer gelezen of geschreven. De fasestap Acquisitie →
+  nu) maar wordt nergens meer gelezen of geschreven. (f) **Fase "Acquisitie"
+  heet overal "Verkoopadvies"** (besluit Quinn 17 sep): labels in
+  `FaseToggle`, `ObjectWorkspace`, `/woningen`-filters, lege staten, seed-
+  content en hints; de interne waarde `acquisitie` blijft tot 2.1. De fasestap Verkoopadvies →
   In verkoop zet de makelaar handmatig (bestaande `FaseToggle`). (d) De
   vrijgekomen kerncijfer-tegel wordt "Prijs t.o.v. vraagprijs" (eigen verkopen,
   12 mnd, met n). (e) Teksten die "pitch" zeggen (hints, lege staten,
@@ -552,7 +555,11 @@ Details: `docs/besluiten.md`.
 
 ### Fase 2 — Datafundament & demo-fixture (4 sessies) — vóór alles
 
-- [ ] **2.1 Schema `transacties` v2 + `imports`** *(migratie, geen echte data
+- [ ] **2.1 Schema `transacties` v2 + `imports`** — **plus `objecten.fase`:
+  waarde `acquisitie` → `verkoopadvies`** (enum/check-constraint, bestaande
+  rijen bijwerken, `ObjectFaseSchema` en alle vergelijkingen in code in
+  dezelfde commit; kolom `pitch_uitslag` laten vallen — besluit Quinn 17 sep)
+  *(migratie, geen echte data
   geraakt: tabel is leeg)*
   *Doel:* alles wat import, ontdubbelen, geocodering en kwaliteit nodig hebben
   in één keer in het schema.
@@ -671,7 +678,7 @@ Details: `docs/besluiten.md`.
   *Tests:* route-test (`app/api/object/route.test.ts`): validatie, 401,
   aanmaak zonder Claude-call (mock); generate: 409 bij `bezig`.
   *Klaar als:* dossier aanmaken < 5 s op productie; content pas na de knop.
-- [ ] **3.2 Intake voor acquisitie** — `usps`/`doelgroep` optioneel in het
+- [ ] **3.2 Intake voor de verkoopadviesfase** — `usps`/`doelgroep` optioneel in het
   schema (generate eist ze); woningtype als **groep + subtype** (Select met
   groepen, taxonomie `docs/ontwerp/README.md` § 5; de oude 6-waarden-enum
   wordt gemapt in `transactieNormalisatie.ts` zodat bestaande dossiers geldig
@@ -682,10 +689,10 @@ Details: `docs/besluiten.md`.
   uit `app/(app)/object/new/page.tsx`; volle breedte via `AppPagina` mag
   wachten op 10.5.
 - [ ] **3.4 Dossierheader met fasestepper** — `components/DossierHeader.tsx`:
-  adres, plaats, typegroep · oppervlak · bouwjaar, fasestepper (Acquisitie →
+  adres, plaats, typegroep · oppervlak · bouwjaar, fasestepper (Verkoopadvies →
   In verkoop → Verkocht, klikbaar waar toegestaan), dagen in huidige fase
   (geen pitch-uitslag: vervallen, 1.9c). Het `VerkoopadviesPaneel` (`InAanbouw`)
-  verdwijnt uit de acquisitieweergave tot fase 11 bestaat.
+  verdwijnt uit de verkoopadviesweergave tot fase 11 bestaat.
   *Hergebruik:* `FaseToggle.tsx`, `PageHeader`, `StatusBadge`.
 - **Klaar als:** scène 4 tot en met "dossier staat er direct" loopt zonder
   wachten; 390 px breekt niet; screenshots beoordeeld.
@@ -967,7 +974,7 @@ Datacontract alvast vast: `VerkoopadviesInput = { dossier (intake),
 waardering (v2), kantoor (instellingen: courtage, profiel, werkgebied),
 marktcontext (marktanalyseSamenvatting voor plaats + typegroep), makelaar }`.
 Losse, herschikbare secties in `@react-pdf/renderer` in kantoorstijl; het
-`VerkoopadviesPaneel` komt terug in de acquisitieweergave zodra dit bestaat.
+`VerkoopadviesPaneel` komt terug in de verkoopadviesweergave zodra dit bestaat.
 **Klaar als:** binnen 1 minuut klaar en structureel gelijk aan het voorbeeld.
 Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 
