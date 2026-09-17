@@ -19,10 +19,14 @@
 
 - **Fase:** 1 — UI-fundament (1.1 t/m 1.8 klaar; 1.9 · 1.10 · 1.11 open).
   Plan v2 van kracht sinds 18 sep 2026.
-- **Laatst opgeleverd:** plan v2 (documentatie) én het ontwerpspoor § 3.8:
-  twee referentieprototypes in `docs/ontwerp/` (`marktanalyse.html`,
-  `verkoopkaart.html`) plus de skill `ontwerpreview`. Code ongewijzigd;
-  branch `feat/nieuwe-schil`.
+- **Laatst opgeleverd (18 sep):** plan v2 én het ontwerpspoor § 3.8: de
+  ontwerpkit `docs/ontwerp/kit.css` + `kit.js`, twee referentieprototypes v2
+  in de stijl "i4 · zacht" (Apple-achtig, dropdown-filters, beeldmerk-pins:
+  `marktanalyse.html`, `verkoopkaart.html`), de handleiding
+  `docs/ontwerp/README.md` (tokens, primitives, filtermodel, taxonomie, pin,
+  port-instructies) en de skill `ontwerpreview`. Besluit: i4 Housing gaat
+  van vorm `strak` naar `zacht` (item 1.9). Code ongewijzigd; branch
+  `feat/nieuwe-schil`.
 - **Volgende item:** **1.9** (bugs + `--merk`-fallback-opruiming) → **1.10**
   (favicon/SEO) → **1.11** (PR mergen) → daarna **Fase 2** (datafundament +
   demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog tegen 0 rijen.
@@ -115,8 +119,12 @@ schrapvolgorde.
   2. **Regionale dataset, geaggregeerd in Postgres.** Alles wat over de hele
      regio gaat (duizenden tot tienduizenden rijen) loopt via RPC's met één
      `p_filters jsonb`-parameter (Zod-schema `TransactieFilterSchema` in
-     `lib/schemas.ts`: `plaatsen[]`, `wijken[]`, `typegroepen[]`, `datum_van`,
-     `datum_tot`, `prijs_min/max`, `opp_min/max`, `alleen_eigen`):
+     `lib/schemas.ts`: `plaatsen[]`, `wijken[]`, `typen[]` (subtypes uit de
+     taxonomie), `datum_van`, `datum_tot`, `prijs_min/max`, `opp_min/max`,
+     `perceel_min/max`, `bouwjaar_min/max`, `energielabels[]`, `kamers_min`,
+     `tuin`, `garage`, `tov_vraagprijs`, `looptijd_max`, `makelaars[]`,
+     `kantoren[]`, `alleen_eigen` — volledig filtermodel in
+     `docs/ontwerp/README.md` § 4):
      `marktanalyse_reeks` (kwartaalrijen: n, mediaan prijs, mediaan € per m²,
      mediaan looptijd, % t.o.v. vraagprijs), `marktanalyse_samenvatting`
      (dezelfde cijfers voor de hele periode + de vorige periode voor de
@@ -216,8 +224,8 @@ schrapvolgorde.
 
 ### 3.5 Kaart
 
-- **MapLibre GL + PDOK BRT-Achtergrondkaart vectortiles** (stijl grijs/pastel,
-  zodat merkkleur-markers opvallen). Eén stack: `components/kaart/BasisKaart.tsx`
+- **MapLibre GL + PDOK BRT-Achtergrondkaart vectortiles** (stijl **pastel** —
+  besluit 18 sep: iets meer kleur; de beeldmerk-pins blijven leesbaar). Eén stack: `components/kaart/BasisKaart.tsx`
   (dynamic import, geen SSR) + lagen als props. Gebruikt door verkoopkaart,
   straalpaneel én de referentiekaart in de waardering. Leaflet verdwijnt na de
   migratie.
@@ -256,17 +264,28 @@ library-defaults. Dat oogt amateuristisch, hoe goed de data ook is. Daarom:
   bestand, kantoorhuisstijl, synthetische data, álle staten via een
   prototype-strip). Sonnet port het 1-op-1: layout, spacing, staten,
   interacties, formattering — alleen de datalaag wordt
-  `lib/transactiesQuery.ts`. Klaar: `marktanalyse.html`, `verkoopkaart.html`.
+  `lib/transactiesQuery.ts`. Klaar (v2, 18 sep): `marktanalyse.html`,
+  `verkoopkaart.html`, plus de gedeelde kit `kit.css` + `kit.js` (tokens,
+  primitives, opmaak, woningtype-taxonomie, echt logo). **Handleiding:
+  `docs/ontwerp/README.md`** — ontwerprichting "i4 · zacht" (Apple-achtig,
+  blauw primair + rood accent zichtbaar), tokens → app, primitives → Radix,
+  het filtermodel per verkenner, de taxonomie, de pin en port-instructies.
   Nog te maken (één ontwerpsessie per stuk, op een sterk ontwerpmodel —
-  Fable/Opus — of via Claude Design, daarna als bestand hier neergezet):
-  `concurrentie.html`, `transacties.html`, `waardebepaling.html`,
-  `startpagina.html` (dashboard + dossierheader).
+  Fable/Opus — of via Claude Design, daarna als bestand hier neergezet, op
+  dezelfde kit): `concurrentie.html`, `transacties.html`,
+  `waardebepaling.html`, `startpagina.html` (dashboard + dossierheader).
 - **Interactieprimitives komen uit Radix** (shadcn/ui-patroon), niet uit
   eigen bouw: `Slider`, `Popover`, `Select`/`Combobox`, `Sheet` (Drawer),
   `Tooltip`, `Tabs`, `Command`; tabellen via TanStack Table. Gethemed via
-  `--merk*` (kleur, radius, font), zodat i4housing's vorm "strak" (radius
-  0-2 px) overal doorwerkt. Zelf bouwen mag alleen wat Radix niet levert
-  (`StatTile`, `ChartCard`, `FilterBar`, kaartlagen).
+  `--merk*` (kleur, radius, font), zodat de vorm van het kantoor overal
+  doorwerkt (i4 Housing sinds 18 sep: "zacht", radius 10-20 px, Apple-achtig —
+  was "strak"). Zelf bouwen mag alleen wat Radix niet levert (`StatTile`,
+  `ChartCard`, `FilterBar`, `FilterPills`, kaartlagen). Filters zijn
+  dropdown-popovers met samenvatting en tel-badge; elk actief filter is een
+  pil met ×; het volledige filtermodel (plaats/wijk, woningtype-taxonomie met
+  subtypes, prijs, oppervlak, perceel, bouwjaar, energielabel, kamers,
+  kenmerken, t.o.v. vraagprijs, looptijd, verkocht door, verkopend kantoor,
+  segment B) staat in `docs/ontwerp/README.md` § 4.
 - **Grafiekthema** (`lib/grafiekThema.ts`, recharts): geen library-defaults.
   Geen legendabox waar directe eindlabels volstaan (met botsingscorrectie);
   rasterlijnen dun en licht; eigen tooltipkaart met alle reeksen én n; y-as
@@ -281,9 +300,11 @@ library-defaults. Dat oogt amateuristisch, hoe goed de data ook is. Daarom:
   volledig toetsenbordbedienbaar met merkkleurige focusring; getal-tweens
   400 ms; sticky filterbar; `prefers-reduced-motion`; lege/weinig-data/laad/
   foutstaat exact als in het prototype.
-- **Kaart:** grijze PDOK-basiskaart zodat pins in merkkleur opvallen; eigen
-  pin-SVG met witte rand; hover-kaart; lijst en kaart wijzen naar elkaar;
-  tijdlijn met afspeelknop; vloeiend pannen/zoomen (MapLibre, § 3.5).
+- **Kaart:** PDOK-basiskaart in pastelstijl (iets meer kleur); pin = mini-
+  beeldmerk zoals het i4-logo (blauwe ruit, rode omlijning, rood stokje —
+  SVG in `docs/ontwerp/README.md` § 6); frosted hover-kaart; lijst en kaart
+  wijzen naar elkaar; tijdlijn met afspeelknop; vloeiend pannen/zoomen
+  (MapLibre, § 3.5).
 - **Visuele review is onderdeel van de DoD:** skill `ontwerpreview`
   (`.claude/skills/ontwerpreview/SKILL.md`) — screenshot van de app naast
   screenshot van het prototype, beoordeeld door een subagent met vision plus
@@ -362,7 +383,11 @@ Details: `docs/besluiten.md`.
   op 3 pagina's. (d) Verouderde verwijzingen in code-comments bijwerken:
   `components/ui/StatTile.tsx:11` (`motion` fase 2.2 → geen library, zie
   ontwerpprincipes) en `app/globals.css:8` (`roadmap.md § Besluitenlogboek` →
-  `docs/besluiten.md`).
+  `docs/besluiten.md`). (e) **i4 Housing `huisstijl_json.vorm` van `strak`
+  naar `zacht`** (besluit 18 sep, Apple-achtig) via
+  `scripts/repair-i4housing-branding.mjs --write`, en `lib/branding.ts`
+  uitbreiden met `--merk-diep`, `--merk-licht`, `--merk-accent-zacht/-rand/-rgb`
+  (afgeleid uit primaire/accentkleur; zie `docs/ontwerp/README.md` § 2).
   *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
   `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
 - [ ] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
@@ -388,7 +413,8 @@ Details: `docs/besluiten.md`.
   `adres_sleutel text not null` (genormaliseerd: `postcode|huisnummer|
   toevoeging`, terugval `straat|huisnummer|plaats`, lowercase, zonder
   spaties), `huisnummer int`, `toevoeging text`, `woningtype_groep text`
-  (§ 3.3), `geocode_status text` (`exact` · `benaderd` · `mislukt`),
+  (§ 3.3), `woningtype_sub text` (taxonomie `docs/ontwerp/README.md` § 5),
+  `geocode_status text` (`exact` · `benaderd` · `mislukt`),
   `uitgesloten_reden text`, `aankopend_kantoor text`,
   `verkopend_kantoor_norm text`, `prijs_m2 numeric generated always as
   (verkoopprijs::numeric / nullif(woonoppervlak_m2,0)) stored`. Unieke index
@@ -478,9 +504,10 @@ Details: `docs/besluiten.md`.
   aanmaak zonder Claude-call (mock); generate: 409 bij `bezig`.
   *Klaar als:* dossier aanmaken < 5 s op productie; content pas na de knop.
 - [ ] **3.2 Intake voor acquisitie** — `usps`/`doelgroep` optioneel in het
-  schema (generate eist ze); woningtype-enum uitgebreid met
-  `Twee-onder-een-kap`, `Herenhuis`, `Bungalow` (+ mapping in
-  `transactieNormalisatie.ts`); stap 5 en 6 gemarkeerd "kan later" in de
+  schema (generate eist ze); woningtype als **groep + subtype** (Select met
+  groepen, taxonomie `docs/ontwerp/README.md` § 5; de oude 6-waarden-enum
+  wordt gemapt in `transactieNormalisatie.ts` zodat bestaande dossiers geldig
+  blijven); stap 5 en 6 gemarkeerd "kan later" in de
   wizard; concept-opslag blijft. *Raakt:* `components/PropertyForm.tsx`,
   `lib/schemas.ts`, tests.
 - [ ] **3.3 `object/new` uit het contentslot** — `CONTENT_VERGRENDELD` gate weg
@@ -617,11 +644,16 @@ Details: `docs/besluiten.md`.
   *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
   nieuwe primitives in `components/ui/`, `lib/opmaak.ts` (+ tests),
   `lib/grafiekThema.ts`, `hooks/useFilterState.ts` (+ test).
-  *Ontwerp:* het prototype is leidend voor layout, staten en interactie
-  (filterbar met chips/segmenten, 5 tegels met delta + sparkline langs de
-  onderrand, 2 lijngrafieken met vlak/crosshair/eindlabels, looptijd-staven
-  met wij-lijn, prijsklasse-balken met crossfilter, segment B als rode reeks,
-  kwartaalbericht-modal). Onderstaande tekst is de samenvatting, niet de bron.
+  *Ontwerp:* het prototype (+ `kit.css`/`kit.js`, `docs/ontwerp/README.md`)
+  is leidend voor layout, staten en interactie: frosted filterbalk met
+  dropdown-filters (plaats/wijk met zoekveld, woningtype-taxonomie met
+  subtypes, prijs- en oppervlakschuivers, "Meer filters" met bouwjaar/
+  energielabel/kamers/perceel/kenmerken/t.o.v. vraagprijs), periode-segmented,
+  actieve filterpillen, segment B; hero-tegel in merkblauw + 4 tegels met
+  delta en sparkline; 2 vloeiende lijngrafieken met verloopvlak/crosshair/
+  eindlabels; looptijd-staven met wij-lijn; prijsklasse-balken met
+  crossfilter; kwartaalbericht-modal. Onderstaande tekst is de samenvatting,
+  niet de bron.
   *Spec boven de vouw:* `FilterBar` (plaats/wijk multi-select met chips,
   typegroep-`SegmentedToggle`, periode-presets 12/24/36 mnd + eigen bereik,
   "vergelijk met segment B" als tweede rij) → rij van 5 `StatTile`s met delta
@@ -669,9 +701,12 @@ Details: `docs/besluiten.md`.
 - [ ] **7.2 Verkoopkaart-explorer v2** *(port van `docs/ontwerp/verkoopkaart.html`,
   § 3.8; het prototype gebruikt een statische PDOK-achtergrond omdat een
   artifact geen tiles mag laden — in de app is dit MapLibre met live tiles)*
-  — eigen verkopen als pins in merkkleur, tijdlijn (`Slider`) met
-  afspeelknop (schrapbaar), filters typegroep/prijsklasse, kerncijfers "in
-  beeld", zijlijst gesynchroniseerd met kaart en hover, hover-kaart, URL-state;
+  — eigen verkopen als mini-beeldmerk-pins (blauwe ruit, rode omlijning) op
+  de pastel-basiskaart, tijdlijn (`Slider`) met afspeelknop (schrapbaar),
+  dropdown-filters (woningtype-taxonomie, prijs, oppervlak, verkocht door
+  teamlid, meer), actieve filterpillen, kerncijfers "in beeld" met hero-tegel,
+  zijlijst (sorteren datum/prijs/looptijd) gesynchroniseerd met kaart en
+  hover, frosted hover-kaart, URL-state;
   kaart en filters reageren < 100 ms (client-side op `haalEigenVerkopen`).
 - [ ] **7.3 Straal per woning** — `StraalKaartPaneel` op `BasisKaart`, standaard
   500 m, schuiver 100-1.000 m, alleen eigen verkopen; de referentiekaart in de

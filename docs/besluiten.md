@@ -8,6 +8,24 @@
 
 ## Besluiten
 
+### 18 sep 2026 (later) — ontwerprichting "i4 · zacht" + filtermodel
+
+Quinns reactie op de eerste prototypes: meer i4housing (blauw én rood
+zichtbaar), afgeronde hoeken, professionele Apple-achtige stijl, véél meer
+filteropties met dropdowns en meer variabelen, kaart met iets meer kleur en
+huisjes die op het logo lijken. Niet bouwen, wél alles vastleggen zodat het
+morgen in één keer goed gaat.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Vorm i4 Housing | `huisstijl_json.vorm` van `strak` naar **`zacht`** (radius 10-20 px). Wordt gezet in item 1.9 via het repair-script; CLAUDE.md-tekst "knoppen zonder afronding" is achterhaald | Quinn |
+| Stijlrichting | **Apple-achtig**: frosted balken, segmented met schuivende thumb, dropdown-filters als pillen, zachte schaduw met zweem merkkleur, hero-tegel in blauw verloop, ambient-verlopen op de achtergrond. Vastgelegd in `docs/ontwerp/README.md` § 1 en `docs/ontwerpprincipes.md` | Quinn / plan v2 |
+| Rood terug | Accentkleur zichtbaar: echt logo in de topbar, live-stip, tel-badges op filters, segment B, pin-omlijning + stokje, schakelaar-aan. Nooit semantisch (ongunstig = amber) | plan v2 |
+| Filtermodel | Dropdown-popovers met samenvatting en tel-badge; plaats/wijk met zoekveld; woningtype-taxonomie (4 groepen × 20 subtypes); schuivers voor prijs/oppervlak/bouwjaar/perceel; energielabel-chips; kamers; kenmerken; t.o.v. vraagprijs; looptijd; verkocht door (teamlid); verkopend kantoor; actieve filterpillen; alles in de URL. Tabel per verkenner in `README.md` § 4; `TransactieFilterSchema` en kolom `woningtype_sub` volgen eruit (roadmap § 3.1, 2.1, 3.2) | plan v2 |
+| Kaart | PDOK **pastel** i.p.v. grijs; pin = **mini-beeldmerk** (blauwe ruit, rode omlijning, wit hart, rood stokje) afgeleid van het i4-logo (`i4-Housing-logo-231x77-1.png` van i4housing.nl); hover-kaart met makelaar; filter "Verkocht door" | Quinn / plan v2 |
+| Gedeelde kit | `docs/ontwerp/kit.css` + `kit.js` = tokens en primitives voor álle prototypes én de spec voor `globals.css`/`components/ui`; nieuwe tokens `--merk-diep/-licht/-accent-zacht/-rand/-rgb`, `--control`, `--goed/--let` | plan v2 |
+| Artifacts v2 | Marktanalyse https://claude.ai/artifact/W3319zFnBY52XkspasLFfi · Verkoopkaart https://claude.ai/artifact/Qy5Ny5c9Hs39GTNxUFJkNm (zelfde URL's als v1, opnieuw gepubliceerd met de kit) | plan v2 |
+
 ### 18 sep 2026 — ontwerpspoor voor interactieve verkenners (roadmap § 3.8)
 
 Aanleiding: Quinn wil dat de verkenners (marktanalyse, transacties,
@@ -26,16 +44,16 @@ niet tekstueel/amateuristisch, in i4housing-huisstijl.
 ### 17 sep 2026 — klantvoorstel v1 voor i4housing opgesteld (nog niet verstuurd)
 
 `docs/voorstel-i4housing.html` (bron, logo inline) + `.pdf` (Playwright-render,
-3 pagina's A4, i4housing-huisstijl): 1) platform en datakoppeling
-(Realworks + Brainbay + open data → afgeschermde dataset → waardering,
-marktanalyse, concurrentie, verkoopkaart → verkoopadvies-pdf/kwartaalbericht);
-2) kosten (platform ± € 100/mnd doorbelast, 5 uur/week beheer) en voorstel:
-bouw t/m demo = investering VestaAI (€ 0), vanaf livegang € 1.250/mnd excl.
-btw all-in, vast 12 mnd, meerwerk € 65/uur; 3) afspraken (6 mnd vast, daarna
-maandelijks; data blijft van i4housing, nooit gedeeld, niet voor training;
-verwerkersovereenkomst vóór import; EU-opslag), benodigdheden van i4housing
-met deadlines (exports vóór 10 okt) en de planning uit roadmap § 6. Bedragen
-zijn een voorstel van Claude; Quinn stelt ze vast vóór verzending.
+2 pagina's A4, i4housing-huisstijl, informele toon, "ik"-vorm). Pagina 1:
+datakoppeling (Realworks + NVM/Brainbay + open data → dataset alleen van
+i4housing → waardering, marktanalyse, concurrentie, i4housing-kaart), het
+verkoopadvies dat voortaan op die vier is gebaseerd, en "het wordt steeds
+beter" (leert van verkopen, tekstaanpassingen, pitches). Pagina 2: één
+kostenlijst (Vercel Pro, Supabase Pro, Claude API, Claude Pro, domein/e-mail,
+beheer 5 uur/mnd à € 20 = € 100), bij elkaar ± € 200, afgerond naar boven
+€ 250/mnd excl. btw; bouw t/m demo € 0; maandelijks, geen looptijd. Bewust
+weggelaten (Quinn, 17 sep): afspraken, benodigdheden, planning, handtekening,
+virtual staging.
 
 ### 17-18 sep 2026 — masterplan herzien naar v2 ("demo-backwards")
 

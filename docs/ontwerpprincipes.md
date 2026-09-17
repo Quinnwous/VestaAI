@@ -18,8 +18,14 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   springt.
 - **Claude-artifacts** — interactieve verkenners die direct reageren op een
   schuiver of knop, zonder laadscherm ertussen.
-- **Apple / Airbnb** — alléén voor beeldmomenten (de startbanner, een
-  dossierfoto). Niet voor datatabellen — daar wint Stripe.
+- **Apple (iOS-/macOS-instellingen, Wallet)** — sinds 18 sep 2026 leidend
+  voor het *gevoel* van de kantooromgeving van i4 Housing: afgeronde kaarten
+  (vorm "zacht"), frosted sticky balken, segmented controls met schuivende
+  thumb, dropdown-filters als pillen, zachte schaduw met een zweem merkkleur,
+  één hero-moment per pagina in merkblauw, rood alleen als accent. Uitgewerkt
+  in `docs/ontwerp/README.md` § 1 en `docs/ontwerp/kit.css`. Voor
+  datadichtheid blijft Stripe het kompas.
+- **Airbnb** — alléén voor beeldmomenten (de startbanner, een dossierfoto).
 
 ## Layout
 
@@ -49,10 +55,22 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   (gebouwd bij zijn eerste gebruiker, roadmap v2 item 6.1) i.p.v. los
   `.toLocaleString()` overal.
 
+## Vorm
+
+- Radius uitsluitend via `var(--merk-radius-*)` (schaal per kantoor in
+  `lib/branding.ts`). i4 Housing staat sinds 18 sep 2026 op **zacht**
+  (kaart 16 px, control 12 px, chips/pillen rond) — nooit een hardgecodeerde
+  radius, zodat een "strak" kantoor met dezelfde componenten strak oogt.
+
 ## Kleur
 
 - Uitsluitend `var(--merk*)` + neutraal grijs (`colors` uit
   `components/ui/tokens.ts`) — zie de huisstijlskill voor de volledige regel.
+- Beide merkkleuren mogen zichtbaar zijn: primair voor knoppen, actieve
+  staten, "wij"-reeksen, pins en de hero-tegel; accent voor de live-stip,
+  tel-badges, segment B, de pin-omlijning en de schakelaar-aan-staat. Twee
+  zachte ambient-verlopen op `body` (primair linksboven, accent rechtsboven)
+  voorkomen een grijze pagina.
 - Semantische kleuren (succes/waarschuwing/fout) staan vast en los van
   `--merk-accent` — bij i4housing is de accentkleur rood, en een afgevinkte
   stap in rood leest als een foutmelding.
@@ -61,8 +79,9 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 
 ## Beweging
 
+- Eén curve: `cubic-bezier(.2,.8,.2,1)` (`--ease`), 220 ms (`--t`).
 - Hover/focus: 150ms.
-- Panelen open/dicht, tabwissel: 200-250ms, ease-out.
+- Panelen open/dicht, tabwissel, popover (scale .96 → 1 + fade): 180-250ms.
 - Getal-tweens (StatTile): ~400ms, ease-out cubic — niet lineair, dat oogt
   mechanisch.
 - Geen bounce/spring-effecten — die passen niet bij "zakelijk en rustig".

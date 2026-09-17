@@ -71,7 +71,7 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten
 
 **Stijl leren** (`stijl_bewerkingen`-tabel) — als een makelaar een gegenereerde tekst handmatig bijwerkt, kan het kantoor zelf de daaruit gedestilleerde schrijfregels goedkeuren via `components/StijlLerenPaneel.tsx`, gemount in het woningdossier zelf (niet in een instellingenscherm — dat is sinds 16 sep 2026 platform-admin-gebied).
 
-Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger), knoppen zonder afronding (`vorm: 'strak'`). Quinn logt in als `quinn.berkouwer@icloud.com` (platform-admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
+Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger). Vorm: sinds 18 sep 2026 **`zacht`** (afgeronde, Apple-achtige stijl — besluit Quinn, zie `docs/besluiten.md`; was `strak`, wordt omgezet in roadmap-item 1.9). Ontwerpkit en prototypes: `docs/ontwerp/` (README = spec voor tokens, primitives, filtermodel, pin). Quinn logt in als `quinn.berkouwer@icloud.com` (platform-admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
 
 ⚠️ **Nooit een absoluut pad als `logo_url`** — dat was de oorzaak van het "?"-logo: `/kantoren/i4housing/logo.png` bestond alleen lokaal en niet in de deploy. Assets horen in Storage, met een volledige URL.
 
@@ -185,7 +185,7 @@ VestaAI/
 │   │                           #   (roadmap § 3.8; Sonnet port 1-op-1; review via skill
 │   │                           #   `ontwerpreview`)
 │   ├── kostenschatting.md      # interne API-/infrakosten
-│   ├── voorstel-i4housing.html/.pdf  # klantvoorstel v1 (platform, kosten, prijs, afspraken), 17 sep 2026;
+│   ├── voorstel-i4housing.html/.pdf  # klantvoorstel v1 (datakoppeling + één kostenlijst, 2 p.), 17 sep 2026;
 │   │                           #   html is de bron (logo inline), pdf via Playwright gerenderd
 │   ├── i4housing-onderzoek.md  # klantonderzoek i4housing
 │   └── data-integraties/       # API-referenties (CBS-buurtdata etc.)
