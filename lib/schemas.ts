@@ -307,3 +307,46 @@ export const WaarderingOpslagSchema = z.object({
   }),
 })
 export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>
+
+// ---------------------------------------------------------------------------
+// Transactiefilter (item 2.2, docs/roadmap.md § 3.1 + docs/ontwerp/README.md
+// § 4 "Filtermodel") — voedt `p_filters jsonb` van elke RPC in
+// `lib/transactiesQuery.ts`. Alle velden optioneel: een lege filterset
+// betekent "hele dataset" (min uitgesloten_reden). `wijken` gebruikt de
+// samengestelde vorm "plaats|wijk" zoals het filtermodel voorschrijft.
+//
+// ⚠️ `makelaars` staat in het filtermodel ("Verkocht door") maar de
+// transactietabel heeft geen makelaar-kolom — de RPC's/`transacties_gefilterd`
+// negeren dit veld tot die koppeling bestaat (zie docs/roadmap.md § 3.1 en de
+// opleverrapportage van item 2.2 voor de open actie).
+// ---------------------------------------------------------------------------
+
+export const TovVraagprijsSchema = z.enum(['alle', 'boven', 'op_of_onder'])
+export type TovVraagprijs = z.infer<typeof TovVraagprijsSchema>
+
+export const TransactieFilterSchema = z.object({
+  plaatsen: z.array(z.string()).optional(),
+  wijken: z.array(z.string()).optional(),
+  typen: z.array(z.string()).optional(),
+  datum_van: z.string().optional(),
+  datum_tot: z.string().optional(),
+  prijs_min: z.number().optional(),
+  prijs_max: z.number().optional(),
+  opp_min: z.number().optional(),
+  opp_max: z.number().optional(),
+  perceel_min: z.number().optional(),
+  perceel_max: z.number().optional(),
+  bouwjaar_min: z.number().optional(),
+  bouwjaar_max: z.number().optional(),
+  energielabels: z.array(z.string()).optional(),
+  kamers_min: z.number().optional(),
+  tuin: z.boolean().optional(),
+  garage: z.boolean().optional(),
+  tov_vraagprijs: TovVraagprijsSchema.optional(),
+  looptijd_max: z.number().optional(),
+  /** ⚠️ nog niet toegepast in de RPC's — geen makelaar-kolom op transacties, zie hierboven. */
+  makelaars: z.array(z.string()).optional(),
+  kantoren: z.array(z.string()).optional(),
+  alleen_eigen: z.boolean().optional(),
+})
+export type TransactieFilter = z.infer<typeof TransactieFilterSchema>

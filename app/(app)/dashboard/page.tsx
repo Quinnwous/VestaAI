@@ -1,10 +1,13 @@
-import { createServiceSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngelogdeMakelaar'
 import { bouwBranding } from '@/lib/branding'
-import { filterOpLaatsteMaanden, tellFases, berekenVerkoopstatistieken, filterOpJaar } from '@/lib/kerncijfers'
+import { filterOpLaatsteMaanden, tellFases, berekenVerkoopstatistieken, filterOpJaar, type EigenVerkoopRow } from '@/lib/kerncijfers'
+import { haalEigenVerkopen } from '@/lib/transactiesQuery'
 import { StartBanner } from './StartBanner'
 import { Kerncijfers } from './Kerncijfers'
 import { AppPagina } from '@/components/ui'
+
+const EIGEN_VERKOOP_KOLOMMEN = ['verkoopprijs', 'vraagprijs', 'looptijd_dagen', 'verkoopdatum'] as const
 
 export const metadata = { title: 'Overzicht' }
 
@@ -26,15 +29,12 @@ export default async function DashboardPage() {
   if (!makelaar) return <AccountWordtKlaargezet />
 
   const service = createServiceSupabaseClient()
+  const sessie = createServerSupabaseClient()
   const huidigJaar = new Date().getFullYear()
 
-  const [{ data: objectenFase }, { data: eigenVerkopen }] = await Promise.all([
+  const [{ data: objectenFase }, eigenVerkopen] = await Promise.all([
     service.from('objecten').select('fase').eq('kantoor_id', makelaar.kantoorId),
-    service
-      .from('transacties')
-      .select('verkoopprijs, vraagprijs, looptijd_dagen, verkoopdatum')
-      .eq('kantoor_id', makelaar.kantoorId)
-      .eq('eigen_verkoop', true),
+    haalEigenVerkopen<EigenVerkoopRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
   ])
 
   const fases = tellFases(objectenFase ?? [])

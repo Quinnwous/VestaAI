@@ -2,6 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { unstable_cache } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { haalEigenVerkopen, haalTransactiesVoorVerkenner, ALLE_TRANSACTIE_KOLOMMEN, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { InvoerToggle } from './InvoerToggle'
 import { StatusToggle } from './StatusToggle'
@@ -57,13 +58,15 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
 
-  const service = createServiceSupabaseClient()
-  const [{ data: eigenVerkopen }, { data: transactieDataset }] = await Promise.all([
+  // transacties gaat sinds item 2.2 altijd via de sessie-gebonden client
+  // (lib/transactiesQuery.ts) i.p.v. de service-client — RLS regelt de
+  // kantoorscheiding, geen handmatig .eq('kantoor_id', …) meer nodig.
+  const [eigenVerkopen, transactieDataset] = await Promise.all([
     geo
-      ? service.from('transacties_met_coordinaten').select('*').eq('kantoor_id', object.kantoor_id).eq('eigen_verkoop', true)
-      : Promise.resolve({ data: [] as TransactieMetCoordinaten[] }),
+      ? haalEigenVerkopen<TransactieMetCoordinaten>(supabase, MET_COORDINATEN_KOLOMMEN, { metCoordinaten: true })
+      : Promise.resolve([] as TransactieMetCoordinaten[]),
     // Waardering (F7) draait op de volledige dataset, niet alleen eigen verkopen.
-    service.from('transacties').select('*').eq('kantoor_id', object.kantoor_id),
+    haalTransactiesVoorVerkenner<TransactieRow>(supabase, ALLE_TRANSACTIE_KOLOMMEN),
   ])
 
   const invoer = object.input_json as PropertyInput
@@ -118,11 +121,11 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         notitie={(object as unknown as { notitie: string | null }).notitie ?? null}
         userEmail={user.email ?? undefined}
         geo={geo}
-        eigenVerkopen={(eigenVerkopen ?? []) as TransactieMetCoordinaten[]}
+        eigenVerkopen={eigenVerkopen}
         subject={subject}
         heeftGarage={heeftGarage}
         heeftTuin={heeftTuin}
-        transactieDataset={(transactieDataset ?? []) as TransactieRow[]}
+        transactieDataset={transactieDataset}
         waarderingCorrectie={waarderingCorrectie}
         uspsInitieel={uspsInitieel}
       />

@@ -17,8 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 2 — Datafundament (2.1, 2.3, 2.4 klaar; **2.2** in aanbouw; 2.5
-  open). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
+- **Fase:** 2 — Datafundament (2.1-2.4 klaar; **2.5** open). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
   Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
   v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
@@ -27,8 +26,16 @@
   dossiers, account `demo@vestaai.nl`, wachtwoord in `.env.local`); **2.4**
   `meldFout` in alle API-routes + `global-error.tsx`. `dod:screens` draait nu
   standaard met het demo-account. ⚠️ **Bekende bug tot 2.2 af is:** de
-  verkenners halen max. 1.000 rijen (PostgREST-plafond) → cijfers in
-  marktanalyse/concurrentie/transacties/kaart zijn een deelverzameling.
+  verkenners haalden max. 1.000 rijen — **opgelost in 2.2** (zie hieronder).
+- **Ook 17 sep, deel 4:** **2.2** `lib/transactiesQuery.ts` (enige plek die
+  `transacties` bevraagt, sessie-client + RLS) met 7 RPC's (75-200 ms op de
+  fixture) en range-lussen; guard-test; alle pagina's omgezet. Tussenfase
+  (bewust): de verkenners krijgen nog alle rijen via
+  `haalTransactiesVoorVerkenner` (~1,2-1,6 s) en houden hun oude UI; fase 6
+  zet ze op de RPC's. Transactietabel pagineert per 50. Fixture-generator
+  maakte 33 verkopen ná vandaag → gerepareerd (vaste peildatum) en opnieuw
+  geseed. **Productie-incident** opgelost: main had oude code tegen schema v2
+  (crash `/dashboard`); nieuwe code gemerged (PR #19), alle schermen 200.
 - **Eerder op 17 sep (sessie Opus/Sonnet, deel 2):**
   **1.9c** — pitch-concept uit de code (scorebord, winratio, uitslag,
   `setPitchUitslag`, `PitchUitslagSchema`), topbar plat met zes pillen en een
@@ -100,8 +107,7 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **2.2** afronden (query-laag, RPC's, guard; lost het
-  1.000-rijen-plafond op) → **2.5** (kerncijfers op transactiedata) → fase 2
+- **Volgende item:** **2.5** (kerncijfers op transactiedata) → fase 2
   inklappen → **Fase 3** (dossierkern: aanmaken zonder wachten). 1.11
   (push + merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn
   17 sep).
@@ -630,7 +636,7 @@ Details: `docs/besluiten.md`.
   enum-waarden).
   *Klaar als:* migratie via `apply_migration`, baseline bijgewerkt,
   `controleer-schema.mjs` groen, bestaande CSV-import werkt nog.
-- [ ] **2.2 `lib/transactiesQuery.ts` + RPC's + guard**
+- [x] **2.2 `lib/transactiesQuery.ts` + RPC's + guard**
   *Doel:* § 3.1 afdwingen; de vijf kale `select('*')`'s verdwijnen.
   *Raakt:* nieuw `lib/transactiesQuery.ts`, `lib/transactiesQuery.guard.test.ts`,
   migratie `…_rpc_transacties.sql`, `lib/schemas.ts`
