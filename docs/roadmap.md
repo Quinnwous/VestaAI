@@ -1,513 +1,760 @@
-# VestaAI — Roadmap (Masterplan "demo-klaar")
+# VestaAI — Roadmap v2 (masterplan "demo-klaar", herzien 17-18 sep 2026)
 
-> Dit is het leidende plan voor de komende weken. **Begin elke sessie hier** bij
-> § Stand van zaken. Volledige context, besluiten en motivatie: zie de secties
-> hieronder. Werkwijze: `npm run typecheck && npm run test` groen vóór elke
-> commit; feature-branch per fase → PR → merge naar `main` (Vercel-deploy).
-> Opus plant (`/model opusplan`), Sonnet bouwt.
+> **Dit is het leidende plan.** Begin elke sessie bij § 📍 Stand van zaken.
+> Besluiten en opleveringen staan in `docs/besluiten.md` (logboek), strategie in
+> `docs/goals.md`, ontwerpregels in `docs/ontwerpprincipes.md`.
+>
+> **Voor Sonnet — zo gebruik je dit document.** Neem het item dat in Stand van
+> zaken als "volgende" staat. Elk item heeft *Doel · Raakt · Hergebruik · Spec ·
+> Tests · Klaar als*. Schrijf eerst een mini-plan van ≤10 regels in de chat
+> (bestanden, volgorde, tests), bouw dan, en rond af met `/sessie-afronden`.
+> Botsen spec en code, dan wint de code-realiteit — noteer de afwijking in
+> Stand van zaken. § 3 (architectuurbesluiten) is bindend voor élk item.
+> Twijfel je over een productkeuze: kies zelf, noteer het in `docs/besluiten.md`,
+> blokkeer alleen bij iets onomkeerbaars (migratie op echte data, verwijderen).
 
 ---
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament + nieuwe schil (1.1 t/m 1.8 klaar, 1.9-1.10 nog open)
-- **Laatst opgeleverd:** fase 0 volledig afgerond (zie § Opgeleverd) én fase 1's
-  kern: topbar herbouwd (groter logo, Verhuur weg, avatarmenu), blauwe balk
-  weg, volle breedte op de meeste schermen, de woningenlijst verhuisd naar
-  `/woningen` en een nieuwe startpagina op `/dashboard` (banner + kerncijfers
-  + snelkoppelingen), `/account` (naam + wachtwoord), kantoorpagina
-  opgeschoond. Alles op branch `feat/nieuwe-schil`, gecommit en gepusht.
-- **Bewust nog niet gedaan binnen fase 1** (zie de aantekeningen bij 1.4/1.6/1.8
-  hieronder voor waarom): `RecentBekeken` + tabel `gebruik_events`, het losse
-  `bannerfoto`-veld in de admin, de tweekoloms intake-redesign
-  (`object/new` blijft op 900px tot dan), de Tailwind→ui-primitives-slag op
-  de kantoorpagina.
-- **Volgende item:** eerst **1.9** (drie kleine kleurbugs +
-  demo-knop-gating) en **1.10** (favicon/SEO — vroeg belangrijk, Google
-  ververst traag), dan de Fase 1 "Klaar als"-criteria nalopen met
-  `scripts/screenshots.mjs` (vereist `E2E_TEST_EMAIL` + een echt account) en
-  de PR openen. Daarna verder met fase 2.
-- **Blokkades:**
-  - Verwerkersovereenkomst met i4housing (concept staat klaar:
-    `docs/verwerkersovereenkomst-concept.md`) moet juridisch getoetst en
-    getekend zijn vóórdat de volledige Brainbay-/Realworks-exports
-    geïmporteerd worden (fase 4.8) — blokkeert fase 4, niet fase 1-3.
-  - Volledige exports van Brainbay + Realworks nog niet ontvangen (toegezegd:
-    week 1) — blokkeert fase 4, niet fase 1-3.
-  - Voorbeeld-verkoopadvies van Quinn nog niet ontvangen (blokkeert fase 10).
-  - **Twee handmatige Supabase Auth-instellingen** (niet via de MCP te zetten,
-    alleen via het dashboard): self-signup uitzetten (Auth → Providers →
-    Email) en "Leaked password protection" aanzetten (Auth → Policies). Beide
-    blokkeren geen code-werk, maar staan nog open.
-- **Open vragen:** geen.
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.8 klaar; 1.9 · 1.10 · 1.11 open).
+  Plan v2 van kracht sinds 18 sep 2026.
+- **Laatst opgeleverd:** plan v2 (alleen documentatie: `docs/roadmap.md`,
+  `docs/besluiten.md`, `docs/goals.md`, `CLAUDE.md`, sessieskills). Code
+  ongewijzigd; branch `feat/nieuwe-schil`, working tree schoon vóór deze
+  wijzigingen.
+- **Volgende item:** **1.9** (bugs + `--merk`-fallback-opruiming) → **1.10**
+  (favicon/SEO) → **1.11** (PR mergen) → daarna **Fase 2** (datafundament +
+  demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog tegen 0 rijen.
+- **Blokkades (geen van alle blokkeert fase 1-4):**
+  - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
+    juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
+  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1).
+  - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
+    regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
+  - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
+  - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
+    leaked-password-protection aan.
+  - Vercel-team staat op **Hobby** (gecontroleerd 17 sep via de Vercel-MCP):
+    vóór de demo naar Pro, zie § 8.
+- **Open vragen:** geen. (Vier vragen beantwoord op 17 sep — `docs/besluiten.md`.)
 
 ---
 
-## 1. Context
+## 1. Waarom v2 — wat er structureel anders is dan v1
 
-VestaAI is op 15 en 16 sep 2026 omgebouwd naar een fasemodel voor één klant,
-i4housing (Wassenaar, NVM). De code liep voor op de documentatie, delen oogden
-onaf en functies draaiden op lege data. Een onafhankelijke review en eigen
-verificatie (17 sep 2026) leverden bovendien **vier structurele problemen** op
-die vóór elke nieuwe functie opgelost moeten worden:
+v1 (16-17 sep) was een goed geordende werklijst, maar bouwde weken lang
+verkenners en waardering tegen een lege tabel, plande UI-primitives vóór hun
+eerste gebruiker, en liet de demo pas in de laatste fase vorm krijgen. v2:
 
-1. **Datalek-risico.** Elke ingelogde makelaar van élk kantoor mocht alle
-   transacties lezen (`supabase/migrations/20260916_transacties_rls.sql:15-18`,
-   bewust ingericht als "gedeelde pool"). De view `transacties_met_coordinaten`
-   omzeilde RLS (geen `security_invoker`). Zodra het demo-kantoor bestaat, kan
-   dat account de Brainbay-data van i4housing opvragen.
-2. **Import faalt op echte bestanden.** De upsert
-   `onConflict: 'kantoor_id,adres,verkoopdatum'`
-   (`app/admin/transacties/actions.ts:68`) past niet op de unieke index met
-   `coalesce(verkoopdatum, …)` (`20260916_transacties.sql:58-59`). Verder alleen
-   CSV (geen XLSX), via een server action met een limiet van 1 MB, en geen
-   geocodering (`lib/transactieImport.ts:185-187`).
-3. **Analyses kappen stil af op 1.000 rijen.** `select('*')` zonder paginering
-   (`marktanalyse/page.tsx:25`, `object/[id]/page.tsx:64,67`, idem concurrentie
-   en kaart), terwijl Supabase standaard hooguit 1.000 rijen teruggeeft.
-4. **Waardering zonder locatie en tijd.** `lib/waardering.ts` gebruikt `lat`/`lng`
-   niet (alleen gedeclareerd, `:26-27`) en corrigeert niet voor de verkoopdatum.
-   Een referentie in Leiden weegt even zwaar als de buurwoning, een verkoop uit
-   2021 alsof hij van vandaag is.
-
-**Waarom i4housing gaat betalen** (kwaliteitslat "€500/mnd", en ze gaan
-uiteindelijk ook echt betalen): ze hebben Brainbay- en Realworks-data maar
-krijgen er moeizaam inzicht uit. Ze betalen voor **een prachtig, interactief
-systeem bovenop hun eigen data**, plus content die uren scheelt, in een
-omgeving die voelt als hun eigen. De Brainbay-licentie is geregeld (volgens
-Quinn).
-
-**Eerlijke doorlooptijd:** ±50–60 sessies, dus **10–12 weken bij dagelijks
-werken**, inclusief ruimte voor herwerk na screenshotreviews. Loopt het uit,
-dan geldt de schrapvolgorde in § 8.
+1. **Demo-backwards.** § 2 beschrijft de demo in zes scènes. Elke fase dient
+   een scène; wat in geen scène zit is polish en staat in de schrapvolgorde.
+2. **Data eerst.** Fase 2 zet een realistische synthetische demo-fixture neer
+   (werkgebied Wassenaar e.o., ~8.000 regionale rijen) vóórdat er één
+   verkenner wordt aangeraakt. Echte data (fase 5) vervangt hem zodra de
+   exports er zijn — de demo draait op i4housing's eigen data.
+3. **Datalagen vastgelegd** (§ 3.1). Eén module bevraagt `transacties`;
+   regionaal wordt in Postgres geaggregeerd; een test bewaakt dat.
+4. **Dossier los van content** (§ 3.2). Een dossier aanmaken duurt seconden,
+   niet minuten; content komt op verzoek. Dit is een echte bug in het
+   fasemodel zoals het nu staat (`/api/generate` blokkeert het aanmaken).
+5. **Waardering die een taxateur herkent** (§ 3.3): locatie, tijd via een
+   prijsindex uit de eigen dataset, transparante correcties per referentie,
+   WOZ als ijkpunt, handmatige referenties, backtest, en één tussencheck bij
+   hun taxateur.
+6. **Content in hún format** (§ 3.4): het 4SALE!-sjabloon uit
+   `docs/i4housing-onderzoek.md` wordt een gestructureerd model, de outputset
+   is teruggesnoeid tot wat ze gebruiken, en er komt een
+   sneak-preview-WhatsApp-bericht en een kwartaalbericht op echte cijfers bij.
+7. **Import via script** (concierge-model), niet via een 1 MB-upload.
+8. **Geen primitives-fase.** Elke primitive wordt gebouwd bij zijn eerste
+   gebruiker. Foutlogging naar voren.
+9. **Sonnet-klare item-specs** en een scherpe demo-minimum-lijn (§ 6).
 
 ---
 
-## 2. Productdoel: vier dingen die het product moet waarmaken
+## 2. De demo — zes scènes
 
-Dit zijn de doelen van het product, geen letterlijke demoreacties. De demo
-zelf (één grote demo "als het af is", laptop/groot scherm) toont de
-datafuncties in het neutrale kantoor "Demo Makelaardij" en de look-and-feel in
-de i4housing-omgeving, via twee voorbereide Chrome-profielen.
+Eén demo bij i4housing (laptop op groot scherm), in hun eigen omgeving, op hun
+eigen data. ±25 minuten. Elke scène noemt de items die hem dragen.
 
-| Doel | Waar het zit | Fases |
-|---|---|---|
-| **"Dit is óns platform"** | Inlogpagina in hun stijl, startpagina met hun teamfoto, logo en kleuren overal, teksten in hun eigen sjabloon, pdf's en e-mails in hun stijl | 1, 3, 9 |
-| **"Eindelijk snappen we onze data"** | Import met kwaliteitsrapport, marktanalyse, concurrentie en verkoopkaart als interactieve verkenners, AI-marktsamenvatting | 4, 6, 7 |
-| **"Hiermee winnen we opdrachten"** | Acquisitiedossier: waardering op locatie + index met referenties, wat-als, straal van 500 m, één pagina waarde-onderbouwing, pitchscorebord, (verkoopadvies) | 5, 6, 10 |
-| **"Dit scheelt ons uren"** | Intake → Funda/brochure/social/e-mail in NL+EN in hun format binnen minuten (met zichtbare timer), virtual staging | 9 |
+| # | Scène | Wat ze zien | Belofte | Gedragen door |
+|---|---|---|---|---|
+| 1 | **"Dit is óns platform"** (2 min) | `/login/i4housing` in hun stijl → startpagina "Goedemorgen Marc" met teamfoto, kerncijfers uit hún data (verkocht 12 mnd, gem. looptijd, marktaandeel Wassenaar, winratio pitches), snelkoppelingen, recent bekeken | Het is hun platform | 1.9 · 1.10 · 2.5 · 9.1 · 10.4 · 12.1 |
+| 2 | **"Eindelijk snappen we onze data"** (5 min) | Marktinzichten → filters (Wassenaar · vrijstaand · 24 mnd) → kerncijfers met delta t.o.v. vorige periode, grafieken prijs/€ per m²/looptijd, segment A vs B → knop **Kwartaalbericht** → Claude schrijft hun Q3-marktupdate in hun toon met de echte cijfers | Inzicht + uren bespaard | 2.2 · 6.1 · 6.4 |
+| 3 | **"Wie wint waar"** (3 min) | Concurrentie → marktaandeel in Wassenaar, wie wint vrijstaand > € 1 mln, i4housing vs. markt op looptijd en prijs t.o.v. vraagprijs, profiel van één concurrent | Positie in de regio | 6.3 (vereist verkopend kantoor in Brainbay) |
+| 4 | **"Hiermee winnen we opdrachten"** (7 min) | Nieuw dossier: adres typen → BAG/WOZ vullen voor → dossier staat er *direct* → waardering: referenties op de kaart binnen de straal, tabel met correcties (tijd · m² · afstand), bandbreedte, WOZ ernaast, wat-als (garage/tuin/label), één referentie uitsluiten → waarde verandert live → makelaarscorrectie met motivatie → **Waardebepaling (pdf)** in hun stijl in < 10 s → pitch gewonnen → fase In verkoop | Opdrachten winnen | 3.1-3.4 · 4.1-4.8 · 7.3 |
+| 5 | **"Dit scheelt ons uren"** (5 min) | In het dossier: **Genereer content** → timer en skeletons → Funda-tekst in 4SALE!-format NL en EN naast elkaar, brochure-pdf in hun stijl, Instagram, LinkedIn, sneak-preview-WhatsApp-bericht, koper-e-mail → inline bewerken → "stijl leren" | Uren bespaard | 8.1-8.4 |
+| 6 | **"Onze verkopen op de kaart"** (2 min, afsluiter) | Verkoopkaart: eigen verkopen als vlaggetjes in merkkleur, periode-schuiver 2019 → nu, hover-card, filter op type | Trots + overzicht | 7.1 · 7.2 |
 
----
-
-## 3. Besluitenlogboek
-
-### 17 sep 2026 — fase 0 uitgevoerd: twee live beveiligingsproblemen gevonden en gefixt
-
-Bij het uitvoeren van fase 0.1 (databasestatus via de Supabase-MCP) bleek het
-risico uit het masterplan geen toekomstig risico te zijn, maar een **actief,
-live probleem**:
-
-- **Cross-tenant datalek in `transacties`.** De policy "Ingelogde makelaars
-  lezen de transactiedataset" liet elke ingelogde makelaar van élk kantoor
-  alle transacties van alle kantoren lezen — en de pagina's
-  `marktanalyse/page.tsx`, `transacties/page.tsx` en `concurrentie/page.tsx`
-  bevragen `transacties` al met de sessie-gebonden client (niet service-role).
-  Dit was dus geen theoretisch risico voor zodra het demo-kantoor bestaat,
-  maar een bug die vandaag al fout gaat zodra twee kantoren allebei data
-  hebben.
-- **RLS-omzeiling via de view.** `transacties_met_coordinaten` was aangemaakt
-  als `SECURITY DEFINER` (eigenaar `postgres`), wat RLS op de onderliggende
-  tabel volledig omzeilt voor wie de view bevraagt — vastgesteld met
-  `grant`-informatie dat zowel `anon` als `authenticated` een SELECT-recht op
-  de view hadden. Zonder de fix zou dit ook via de publieke anon-key
-  (zonder inloggen) uitleesbaar zijn geweest zodra er rijen in stonden.
-- **Fix:** migratie `20260916213323_rls_kantoor_isolatie_transacties.sql` —
-  nieuwe policy scoped op `kantoor_id`, view herschapen met
-  `security_invoker = true`, `grant select` alleen aan `authenticated`.
-  Getest met een rolled-back transactie: twee test-kantoren, de policy geeft
-  aantoonbaar alleen het eigen kantoor terug.
-- Op hetzelfde moment ontdekt en gefixt: de import-upsert in
-  `app/admin/transacties/actions.ts` gebruikte
-  `onConflict: 'kantoor_id,adres,verkoopdatum'`, wat niet matchte met de
-  bestaande functionele index (`coalesce(verkoopdatum, …)`) — élke import met
-  een botsende rij faalde met Postgres-foutcode 42P10. Gereproduceerd en
-  gefixt via migratie `20260916213816_fix_transacties_upsert_sleutel.sql`
-  (`nulls not distinct`-index).
-- Ook vastgesteld: `handle_new_user()` (de oude self-signup-trigger die
-  automatisch een kantoor+makelaar aanmaakt) bestaat nog als functie, maar is
-  **niet meer als trigger gekoppeld** aan `auth.users` — het zelf-registratie-
-  risico via de database is dus kleiner dan aangenomen in het masterplan
-  (self-signup op providerniveau uitzetten blijft wel een actie, zie § Stand
-  van zaken, als tweede verdedigingslinie).
-- Alle betrokken tabellen waren op het moment van de fix leeg (0 rijen), dus
-  geen back-up nodig vóór deze specifieke actie — het back-upscript (0.2)
-  is desondanks gebouwd en getest, voor elke volgende risicovolle stap.
-
-**Les voor de rest van het plan:** DDL die buiten `apply_migration` om wordt
-uitgevoerd (bijvoorbeeld via de SQL Editor) komt niet in de migratiehistorie
-terecht — dit is precies hoe de 16-sep-migraties "onzichtbaar" konden blijven
-terwijl hun effect allang op de database stond. Vanaf nu gaat elke
-schemawijziging via `apply_migration` (zie sessie-afronden-skill).
-
-### 16-17 sep 2026 — masterplan "demo-klaar"
-
-| Onderwerp | Besluit |
-|---|---|
-| Blauwe balk | Weg |
-| Verhuur | Volledig uit de app. Bewust níet doen (voorlopig) |
-| Navigatie | Overzicht · Woningdossier · Marktinzichten. **Kantoor alleen in het profielmenu** (avatar met initiaal → Mijn account · Kantoor · Uitloggen) |
-| Breedte | Fluïde, max 1680 px. Ontworpen voor 1280–1920 px + 1080p-scherm. Mobiel: niets breekt, geen polijstwerk |
-| "Aan de slag"-blok | Weg |
-| Na inloggen | Startpagina: teambanner (adminveld `bannerfoto`), begroeting + snelkoppelingen, kerncijfers, recent bekeken |
-| Mijn account | Naam wijzigen, e-mail tonen, wachtwoord wijzigen |
-| Kaart | **Alleen eigen verkopen, ook in het straalpaneel**. Standaardstraal per woning **500 m** (schuiver 100–1000 m) |
-| Transactiedata | **Strikt per kantoor afgeschermd** (RLS). De "gedeelde referentiepool" vervalt; verkopen van andere kantoren staan toch al onder het kantoor-id van i4housing |
-| Kern van het product | Waarde · markt · concurrentie op eigen Brainbay- en Realworks-data. Content is een volwaardig onderdeel |
-| Exports | **Volledige** Brainbay- + Realworks-exports in week 1, na een verwerkersovereenkomst (AVG) |
-| Demo | Eén grote demo; neutraal demo-kantoor voor data, i4housing-omgeving voor look-and-feel |
-| Verkoopadvies | Wacht op het voorbeelddocument van Quinn |
-| Ontwerp | Direct bouwen, geen mockups. Compensatie: harde ontwerpstandaard + zelfreview via screenshots |
-| Database | Blijft productie. **Supabase Pro zo lang mogelijk uitstellen**, daarom eigen back-ups + vangrails (§ 4) |
-| Hosting | Beide gratis. Vercel Pro vóór het eerste betaalde contract |
-| Apparaten | Laptop/desktop. Keukentafel-modus → backlog |
-| Idee-bundel (waardecheck-widget, ROI-dashboard, prijsadvies) | Geparkeerd |
-| Werkwijze | Opus plant, Sonnet bouwt (`/model opusplan`); dagelijks een sessie |
-
-### 16 sep 2026 — fasemodel-herstructurering
-
-- Micro/macro-navigatie vervangen door een **fasemodel**: één woningdossier per
-  adres met fases Acquisitie → In verkoop → Verkocht.
-- **Eén rol per kantoor** (geen kantoor-admin meer); huisstijl, courtage en
-  team zijn platform-admin-beheerd via `/admin`.
-- Echte **transactiedataset** (tabel `transacties`, CSV-import via
-  `/admin/transacties`) voedt waardering, marktinzichten en verkoopkaart.
-- Content genereert standaard **NL + EN** tegelijk.
-- Kantoor-admin-rol vervangen — niet terugzetten.
-- Regressie voor kenmerk-effecten bewust vermeden — vergelijkbare-paren-methode
-  blijft de standaard (zie `docs/goals.md` § Risico's).
-- Koperskant expliciet buiten scope — VestaAI dient de verkoperskant.
-
-### 15 sep 2026 — koerswijziging naar waardering
-
-- VestaAI was een AI-contentplatform; wordt een multi-featureplatform
-  (waardering + marktinzichten naast content).
-- Alle prijzen/abonnementen/Stripe volledig verwijderd (niet bevroren — weg).
-- Toegang puur admin-beheerd, geen self-signup, geen proefperiode.
-- Content-kalender, foto-verbetering en object-chatbot volledig verwijderd.
+**Demo-minimum** (de lijn waaronder niets geschrapt mag worden): scènes 1, 2, 4
+en 5 volledig; scène 3 zodra Brainbay het verkopend kantoor blijkt te bevatten;
+scène 6 met alleen 7.1-7.3 (afspeelknop mag vervallen). Zie § 6 voor de
+schrapvolgorde.
 
 ---
 
-## 4. Werkwijze
+## 3. Architectuurbesluiten (bindend voor elk item)
 
-**Sessieritme (dagelijks)**
-1. Open VestaAI als eigen VS Code-workspace. Alleen dan laden de huisstijl-hook
-   in `.claude/settings.json` en de projectskills gegarandeerd.
-2. `/model opusplan` → `/sessie-start`: leest § Stand van zaken, geeft de
-   status in ≤8 regels, noemt blokkades en stelt vragen (AskUserQuestion) tot
-   het volgende item eenduidig is.
-3. Plan mode (Opus): item-spec met bestanden, hergebruik en klaar-als.
-4. Uitvoering op Sonnet (automatisch via opusplan). Zelfstandige deelklussen
-   gaan naar subagents (`model: sonnet`, op de achtergrond, `isolation:
-   worktree` waar het parallel kan zonder overlappende bestanden).
-5. `/sessie-afronden`: Definition of Done → commit/PR → stand van zaken +
-   besluitenlogboek bijwerken → `/clear`.
+### 3.1 Datalagen — één module bevraagt `transacties`
 
-**Definition of Done (elk item)**
-- `npm run typecheck && npm run test && npm run build` groen; nieuwe
-  rekenlogica als pure functie in `lib/` met een vitest-test.
+- **`lib/transactiesQuery.ts` is de enige plek** in `app/`, `components/` en
+  `lib/` waar `.from('transacties')`, `.from('transacties_met_coordinaten')`
+  of een `rpc()` op transactiedata voorkomt. Een vitest-guard
+  (`lib/transactiesQuery.guard.test.ts`) grept de codebase en faalt bij een
+  tweede plek. Scripts (`scripts/`) zijn uitgezonderd.
+- **Drie toegangspatronen:**
+  1. **Eigen verkopen, compact, client-side.** `haalEigenVerkopen(kolommen)`
+     haalt in een `.range()`-lus (blokken van 1.000) alleen
+     `eigen_verkoop = true` en `uitgesloten_reden is null` op, met een
+     expliciete kolommenlijst. ±150 rijen/jaar → ≤ 2.000 rijen → de bestaande
+     pure functies (`lib/marktanalyse.ts`, `lib/kerncijfers.ts`, `lib/geo.ts`)
+     filteren client-side binnen 100 ms. Gebruikt door: kerncijfers,
+     verkoopkaart, straalpaneel, CSV-export. (Het pitchscorebord draait op
+     `objecten`, niet op `transacties`.)
+  2. **Regionale dataset, geaggregeerd in Postgres.** Alles wat over de hele
+     regio gaat (duizenden tot tienduizenden rijen) loopt via RPC's met één
+     `p_filters jsonb`-parameter (Zod-schema `TransactieFilterSchema` in
+     `lib/schemas.ts`: `plaatsen[]`, `wijken[]`, `typegroepen[]`, `datum_van`,
+     `datum_tot`, `prijs_min/max`, `opp_min/max`, `alleen_eigen`):
+     `marktanalyse_reeks` (kwartaalrijen: n, mediaan prijs, mediaan € per m²,
+     mediaan looptijd, % t.o.v. vraagprijs), `marktanalyse_samenvatting`
+     (dezelfde cijfers voor de hele periode + de vorige periode voor de
+     delta), `concurrentie_marktaandeel`, `concurrentie_segmenten`,
+     `transacties_zoeken` (gepagineerd, gesorteerd) en `prijsindex_kwartaal`.
+     Elke RPC: `language sql`, `stable`, `security invoker`,
+     `set search_path = public`, filtert altijd `uitgesloten_reden is null`.
+     RLS doet de kantoorscheiding (invoker). Budget: < 300 ms bij 100.000
+     rijen; indexen op `(kantoor_id, verkoopdatum)`, `(kantoor_id, plaats)`,
+     `(kantoor_id, woningtype_groep)`, gist op `geo`.
+  3. **Referenties op locatie.** `referenties_in_straal(p_lat, p_lng,
+     p_straal_m, p_filters)` via `ST_DWithin` op `geo`, geeft `afstand_m` mee.
+- **Geen kale `select('*')`, nergens.** Elke query noemt kolommen.
+- `transacties_met_coordinaten` blijft de view voor lat/lng (met
+  `security_invoker = true`); elke nieuwe view op `transacties` krijgt dat ook.
+
+### 3.2 Dossier los van content
+
+- `POST /api/object` maakt een dossier aan uit de intake **zonder Claude**:
+  `input_json`, `fase = 'acquisitie'`, `lat/lng` uit de verrijking die de
+  intake al deed bij adreskeuze (`NewObjectForm` stuurt ze mee; ontbreken ze,
+  dan doet de route zelf `pdokLookup` uit `lib/verrijking.ts`). Antwoord in
+  < 5 s, redirect naar het dossier.
+- `POST /api/generate` wordt "genereer voor dossier-id": idempotent, lock per
+  dossier (niet per gebruiker), zet `objecten.content_status`
+  (`geen` · `bezig` · `klaar` · `fout`) en `content_gegenereerd_op`.
+  Triggers: fase → In verkoop (automatisch, als status `geen`) en de knop
+  "Genereer content". De 7-daagse cache-op-identieke-invoer vervalt.
+- `CONTENT_VERGRENDELD` vergrendelt alleen content-tabs en `/api/generate`,
+  nooit meer het aanmaken van een dossier (`object/new`).
+- Intake in de acquisitiefase vraagt minimaal: adres, woningtype, oppervlak,
+  bouwjaar. `usps` en `doelgroep` worden optioneel in `PropertyInputSchema`;
+  `/api/generate` eist ze alsnog (400 met "Vul eerst stap Verhaal in").
+
+### 3.3 Waarderingsmethode (vergelijkbare verkopen, uitlegbaar)
+
+- **Kandidaten:** `referenties_in_straal`, zelfde `woningtype_groep`
+  (`appartement` · `rijwoning` = tussen/hoek/geschakeld · `halfvrijstaand` =
+  twee-onder-een-kap · `vrijstaand` = vrijstaand/villa/bungalow/landhuis),
+  oppervlak ± 35 %, bouwjaar ± 25 jaar (± 40 bij vrijstaand), verkoopdatum
+  ≤ 36 maanden terug. Straal start op 750 m en verbreedt automatisch
+  (1.000 → 2.000 → 5.000 m, daarna 60 maanden) tot n ≥ 8; de gebruikte straal
+  staat in de uitkomst.
+- **Per referentie, allemaal zichtbaar:** € per m², indexfactor (§ prijsindex)
+  → geïndexeerde € per m² → × oppervlak subject = **geïmpliceerde waarde**;
+  gewicht = gelijkenis (bestaande score type/oppervlak/bouwjaar) ×
+  1/(1 + afstand/500 m) × 1/(1 + maanden/12).
+- **Uitkomst:** gewogen mediaan van de geïmpliceerde waarden; bandbreedte =
+  gewogen P25–P75, minimaal ± 5 %, + 5 punt bij n < 6, + 10 punt bij n < 4;
+  `weinigData` bij n < 6 met een zichtbare waarschuwing.
+- **Prijsindex:** `prijsindex_kwartaal(werkgebied, typegroep)` = mediaan € per
+  m² per kwartaal uit de eigen regionale dataset, gladgestreken (3-kwartaal
+  voortschrijdend), factor = index(nu) / index(kwartaal referentie). Bij
+  n < 30 per kwartaal: terugval op de CBS-prijsindex bestaande koopwoningen
+  (regio), en anders op "geen tijdcorrectie" mét waarschuwing.
+- **Kenmerk-effecten** (garage, tuin, energielabelklasse A-B / C-D / E-G,
+  bouwperiode) blijven vergelijkbare-paren, nu op de regionale set binnen
+  werkgebied + typegroep (n ≥ 3 per groep, anders `null`). Geen regressie.
+- **WOZ** (uit `lib/verrijking.ts`) staat als ijkpunt náást de waarde, met
+  peildatum — nooit als invoer.
+- **Handmatig:** referenties uitsluiten/toevoegen; opgeslagen in
+  `waardering_json.handmatig`; makelaarscorrectie met motivatie blijft.
+- **Datacontract** `WaarderingUitkomst` (versie 2) in `lib/schemas.ts`:
+  `{ versie, waarde, laag, hoog, n, straal_m, index_basis, referenties[{ id,
+  adres, afstand_m, verkoopdatum, prijs, m2, prijs_m2, index_factor, gewicht,
+  waarde_geimpliceerd, handmatig }], effecten, woz, waarschuwingen[] }`.
+- **Backtest** (`scripts/backtest-waardering.mjs`): elke eigen verkoop van de
+  laatste 24 maanden wordt gewaardeerd met uitsluitend transacties van vóór
+  haar verkoopdatum. Rapport in `docs/waardering-backtest.md`: mediaan
+  absolute fout, % binnen bandbreedte, per typegroep. Demo-lat: mediaan fout
+  ≤ 7 %, ≥ 75 % binnen de band. Niet gehaald → bandbreedte verbreden, geen
+  schijnzekerheid.
+- **Disclaimer** op elke uitkomst en pdf: indicatieve waardebepaling op basis
+  van vergelijkbare verkopen, geen taxatie in de zin van NRVT/NWWI.
+
+### 3.4 Contentsjabloon-model
+
+- `HuisstijlSchema.tekstsjabloon` (optioneel): `{ opening_label, secties:
+  [{ kop, instructie }], slotzin, doel_woorden, engels: { opening_label,
+  koppen[] } }`. i4housing-preset: `4SALE!` · `WOONCOMFORT` · `BUITENLEVEN` ·
+  `LOCATIE` · `GOED OM TE WETEN` (bullets "- ") · slotzin "Enthousiast over
+  deze woning? Neem contact op met ons kantoor. Wij plannen graag een afspraak
+  met je in." · 480 woorden · EN: `4SALE!` · `LIVING COMFORT` · `OUTDOOR
+  LIVING` · `LOCATION` · `GOOD TO KNOW`.
+- De promptbouwer rendert het sjabloon als harde structuur; een validator
+  controleert koppen (volgorde) en slotzin en laat één keer opnieuw genereren.
+  Zonder sjabloon geldt het huidige generieke format.
+- **Outputset v2.** Kern (één call): `funda_tekst` (sjabloon), `brochure_tekst`,
+  `instagram`, `linkedin_kantoor`, `sneak_preview` (WhatsApp, ≤ 600 tekens,
+  NL), `koper_email`, `buurtomschrijving`. Extra (aparte call, op knopdruk):
+  `open_huis`, `followup_positief`, `followup_negatief`, `video_script`,
+  `kopersvragen_faq`, `energie_advies`. Vervalt: 2 van de 3 Instagram-varianten
+  (herschrijven dekt dat), `linkedin_makelaar`, `marktanalyse` (vervangen door
+  het kwartaalbericht op echte cijfers). Oude sleutels blijven optioneel in
+  `ContentOutputSchema` zodat bestaande dossiers geldig blijven.
+- Engels blijft best-effort parallel; NL is leidend voor bewerken/herschrijven.
+
+### 3.5 Kaart
+
+- **MapLibre GL + PDOK BRT-Achtergrondkaart vectortiles** (stijl grijs/pastel,
+  zodat merkkleur-markers opvallen). Eén stack: `components/kaart/BasisKaart.tsx`
+  (dynamic import, geen SSR) + lagen als props. Gebruikt door verkoopkaart,
+  straalpaneel én de referentiekaart in de waardering. Leaflet verdwijnt na de
+  migratie.
+- CSP (`next.config.mjs`): `worker-src 'self' blob:` en `connect-src` +
+  `https://api.pdok.nl` (en het tile-/style-domein dat de proof oplevert).
+- Proof van één uur aan het begin van fase 7; faalt CSP of soepelheid, dan
+  Leaflet met canvas-renderer en dezelfde `BasisKaart`-API.
+
+### 3.6 AI-modellen
+
+- `lib/aiModellen.ts` centraliseert: `CONTENT` (nu `claude-sonnet-4-6`;
+  kandidaat: nieuwste Sonnet, na blinde vergelijking), `EXTRACTIE` (Haiku),
+  `SAMENVATTING` (Sonnet). Nergens anders een modelstring.
+- Prompt caching (`cache_control`) op het systeemprompt + stijlprofiel: NL en
+  EN delen dezelfde prefix.
+- Modelwissel alleen na de blinde evaluatieset (8.1).
+
+### 3.7 URL-state, opmaak en primitives
+
+- `useFilterState(schema)` (Zod-getypte querystring) voor elke verkenner;
+  `lib/opmaak.ts` (`euro`, `procent`, `dagen`, `datum`, `m2`, `nlNL`) voor
+  élk getal; `lib/grafiekThema.ts` voor recharts (merkkleuren, `--merk-accent`
+  alleen als tweede reeks).
+- Nieuwe primitives worden gebouwd in de sessie van hun eerste gebruiker,
+  geëxporteerd uit `components/ui/index.ts`, met een 5-regel gebruikscomment
+  bovenaan. Geen showcasepagina.
+
+---
+
+## 4. Werkwijze, Sonnet-protocol & Definition of Done
+
+**Sessieritme (dagelijks, VestaAI als eigen VS Code-workspace — anders laden
+hook en skills niet):**
+1. `/sessie-start` — leest Stand van zaken, geeft status in ≤ 8 regels.
+2. Neem het volgende item. Mini-plan (≤ 10 regels) in de chat: bestanden,
+   volgorde, tests, wat je hergebruikt. Plan mode alleen bij items gemarkeerd
+   *(ontwerpkeuze)*.
+3. Bouwen: rekenlogica eerst als pure functie in `lib/` mét vitest-test, dan
+   de UI. Grote, parallelle deelklussen zonder bestandsoverlap → subagent
+   (`model: sonnet`, `isolation: worktree`), expliciet genoemd bij het item.
+4. Definition of Done (hieronder) + `scripts/screenshots.mjs`.
+5. `/sessie-afronden` — DoD, commit/PR, Stand van zaken, `docs/besluiten.md`.
+
+**Definition of Done (elk item):**
+- `npm run typecheck && npm run test && npm run build` groen.
 - Huisstijl-hook schoon: `var(--merk*)`, "je/jouw", geen "VestaAI" achter de
-  login, geen groene grijstinten.
-- `scripts/screenshots.mjs` (Playwright) op 1280 en 1920 px, beoordeeld tegen
-  `docs/ontwerpprincipes.md`; afwijkingen eerst zelf oplossen.
-- Lege, laad- en foutstaat aanwezig; geen console-errors; op 390 px breekt
-  niets.
-- Elke query op `transacties` selecteert expliciete kolommen en pagineert of
-  aggregeert in de database. Nooit een kale `select('*')`.
-- Elke nieuwe tabel krijgt RLS per kantoor (`kantoor_id` = kantoor van
-  `auth.uid()`), in een migratie in `supabase/migrations/`.
-- Docs bijgewerkt (CLAUDE.md-architectuur, roadmap-status).
+  login, geen groene grijzen, geen `var(--merk…, #hex)`-fallbacks.
+- `scripts/screenshots.mjs` op 1280 en 1920 px, beoordeeld tegen
+  `docs/ontwerpprincipes.md`; op 390 px breekt niets.
+- Lege, laad- en foutstaat aanwezig; skeletons, geen spinners; geen
+  console-errors; elke statistiek toont n en "data t/m".
+- `transacties` alleen via `lib/transactiesQuery.ts` (guard-test groen).
+- Nieuwe tabel → RLS per kantoor, in een migratie via `apply_migration`.
+- Docs bijgewerkt: CLAUDE.md-architectuur als er iets structureels wijzigt,
+  Stand van zaken altijd.
 
-**Vangrails voor de productiedatabase** (zonder Supabase Pro zijn er geen
-herstelbare back-ups)
-- **Back-up vóór elke risicovolle stap** (migratie, import, bulk-update,
-  opruimen): `scripts/backup-data.mjs` exporteert `kantoren`, `makelaars`,
-  `objecten`, `transacties` en `stijl_bewerkingen` via de service-role naar
-  `VestaAI/backups/<datum-tijd>/` (gitignored), en controleert daarna het
-  aantal rijen. Geen back-up, geen actie.
-- Scripts: dry-run als standaard, `--write` expliciet. Seed- en
-  opruimscripts raken uitsluitend kantoren met `instellingen_json.demo ===
-  true`, afgedwongen met een test.
-- Imports krijgen een `import_id` en zijn met één knop terug te draaien.
-- Migraties alleen na expliciet akkoord van Quinn, via de Supabase-MCP (Quinn
-  autoriseert eenmalig via `/mcp`). De destructieve opruimmigratie
-  (`20260916_opruimen_ongebruikt.sql`) blijft liggen tot er een back-up is en
-  Quinn akkoord geeft.
-- `scripts/controleer-schema.mjs` vergelijkt `supabase/schema-baseline.sql` +
-  migraties met de database en draait in `/sessie-afronden`.
-- Nieuwe code valt terug als een tabel of kolom nog ontbreekt; een deploy
-  breekt nooit.
-- Pauzerisico van gratis Supabase (na 7 dagen inactiviteit): bij dagelijks
-  werken geen probleem; de dag voor de demo controleren.
+**Vangrails productiedatabase** (geen Supabase Pro, dus geen herstelpunten):
+back-up (`scripts/backup-data.mjs`) vóór elke migratie/import/bulk-update;
+scripts dry-run standaard, `--write` expliciet; seed-/opruimscripts raken
+alleen kantoren met `instellingen_json.demo === true` (afgedwongen met een
+test); imports hebben een `import_id` en zijn terug te draaien; migraties via
+`apply_migration` en alleen na akkoord van Quinn als ze echte data raken;
+`scripts/controleer-schema.mjs` in `/sessie-afronden`; de opruimmigratie
+`20260916_opruimen_ongebruikt.sql` blijft liggen tot back-up + akkoord.
 
-**Git:** featurebranch per fase → PR → `main` (Vercel-productiedeploy) → live
-nalopen via de Vercel-MCP (deployment READY, geen runtime-errors).
+**Git:** featurebranch per fase → PR → `main` → Vercel-deploy READY en geen
+runtime-errors (Vercel-MCP).
 
 ---
 
-## 5. Ontwerpstandaard → `docs/ontwerpprincipes.md` (fase 1, leidend voor Sonnet)
+## 5. Fases
 
-**Referenties:** Stripe Dashboard (datadichtheid met rust) · Linear (snelheid,
-subtiele beweging) · Claude-artifacts (verkenners die direct reageren) ·
-Apple/Airbnb (alléén voor beeldmomenten).
+Volgorde: 1 → 2 → 3 → 4 → (5 zodra exports binnen zijn, parallel aan 4 vanaf
+4.3) → 6 → 7 → 8 (parallel via subagent vanaf fase 3) → 9 → 10 → 11 (geblokkeerd)
+→ 12. Fase 13 parallel na de merge van fase 1.
 
-**Regels (samengevat, volledige versie in `docs/ontwerpprincipes.md`):**
-- **Layout:** fluïde, max 1680 px, 12-koloms grid, spacing in stappen van 4/8.
-- **Typografie:** lettertype van het kantoor; cijfers `tabular-nums`; opmaak
-  `nl-NL` (`€ 1.250.000`, `4,2%`, `12 dgn`).
-- **Kleur:** alleen `--merk*` + neutraal grijs. Semantisch los van
-  `--merk-accent`.
-- **Beweging:** hover 150 ms; panelen 200–250 ms; getal-tweens 400 ms; geen
-  bounce; `prefers-reduced-motion`.
-- **Data:** elke statistiek toont n + badge "data t/m [datum]"; te weinig
-  data → waarschuwing, geen schijnzeker getal; filters <100 ms; skeletons,
-  nooit spinners.
-- **Interactie:** elke filterstand in de URL; toetsenbord + focusring.
-- **Afbeeldingen:** nooit een gebroken-afbeelding-icoon; vaste
-  beeldverhoudingen.
+### Fase 0 — Veiligheid, fundament & documentatie ✅ (17 sep 2026)
+RLS-datalek en SECURITY DEFINER-view gefixt, import-upsert gefixt, auth-checks,
+CSP, back-upscript, schemabaseline, sessieskills, concept-verwerkersovereenkomst.
+Details: `docs/besluiten.md`.
+
+### Fase 1 — UI-fundament + nieuwe schil (1.1-1.8 ✅ · rest 1 sessie)
+
+- [ ] **1.9 Bugs + fallback-opruiming**
+  *Doel:* laatste zichtbare groen weg en het fallback-lek dichten.
+  *Raakt:* `components/StatusToggle.tsx:10` (kapotte class),
+  `components/FaseToggle.tsx:15,81` en `StatistiekenPaneel.tsx:89`
+  (hardgecodeerd groen), demo-knop alleen in dev/demo, `app/globals.css`,
+  `.claude/hooks/huisstijl-check.sh`.
+  *Spec:* (a) alle `var(--merk…, #hex)`-fallbacks in `app/(app)/` en
+  `components/` (behalve de uitzonderingen uit CLAUDE.md) → `var(--merk…)`;
+  (b) de fallbacks één keer centraal in `globals.css` op `:root` (VestaAI-groen
+  als default, zodat een kapotte kantoor-lookup wél zichtbaar groen wordt maar
+  niet meer per component verstopt zit); (c) hook uitbreiden met een check op
+  `var\(--merk[a-z-]*,\s*#`. Doe (a) met één zoek-vervang plus visuele controle
+  op 3 pagina's. (d) Verouderde verwijzingen in code-comments bijwerken:
+  `components/ui/StatTile.tsx:11` (`motion` fase 2.2 → geen library, zie
+  ontwerpprincipes) en `app/globals.css:8` (`roadmap.md § Besluitenlogboek` →
+  `docs/besluiten.md`).
+  *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
+  `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
+- [ ] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
+  `apple-icon.png`; manifest repareren; canonical + JSON-LD; opengraph-image;
+  robots/sitemap (met `/woningen`, `/account`, `/dashboard` in disallow).
+  *Klaar als:* alle icoon-URL's geven 200 op productie.
+- [ ] **1.11 PR `feat/nieuwe-schil` → `main`**; deploy READY; screenshots van
+  dashboard, woningen, dossier, marktanalyse bewaard als referentie.
+- **Klaar als:** 1.9-1.11 gedaan en de "klaar als"-lijst van v1 (geen blauwe
+  balk/Verhuur, avatarmenu, startpagina, `/woningen`, account, kantoorpagina)
+  blijft groen.
+
+### Fase 2 — Datafundament & demo-fixture (4 sessies) — vóór alles
+
+- [ ] **2.1 Schema `transacties` v2 + `imports`** *(migratie, geen echte data
+  geraakt: tabel is leeg)*
+  *Doel:* alles wat import, ontdubbelen, geocodering en kwaliteit nodig hebben
+  in één keer in het schema.
+  *Raakt:* `supabase/migrations/2026XXXX_transacties_pijplijn.sql`,
+  `supabase/schema-baseline.sql` (bijwerken), `lib/schemas.ts`.
+  *Spec:* kolommen op `transacties`: `bron text` (`brainbay` · `realworks` ·
+  `handmatig` · `fixture`), `import_id uuid references imports`,
+  `adres_sleutel text not null` (genormaliseerd: `postcode|huisnummer|
+  toevoeging`, terugval `straat|huisnummer|plaats`, lowercase, zonder
+  spaties), `huisnummer int`, `toevoeging text`, `woningtype_groep text`
+  (§ 3.3), `geocode_status text` (`exact` · `benaderd` · `mislukt`),
+  `uitgesloten_reden text`, `aankopend_kantoor text`,
+  `verkopend_kantoor_norm text`, `prijs_m2 numeric generated always as
+  (verkoopprijs::numeric / nullif(woonoppervlak_m2,0)) stored`. Unieke index
+  → `(kantoor_id, adres_sleutel, verkoopdatum) nulls not distinct` (vervangt
+  de adres-gebaseerde). Indexen uit § 3.1. Tabel `imports` (`id`,
+  `kantoor_id`, `bron`, `bestandsnaam`, `aantal_rijen`, `aantal_nieuw`,
+  `aantal_bijgewerkt`, `aantal_uitgesloten`, `kwaliteitsrapport_json`,
+  `snapshot_json` (vorige waarden van bijgewerkte rijen, begrensd),
+  `status`, `gestart_op`, `klaar_op`, `teruggedraaid_op`) met RLS per
+  kantoor (lezen) en alleen service-role schrijven.
+  `app/admin/transacties/actions.ts` vult `adres_sleutel`, `bron =
+  'handmatig'` en `woningtype_groep` (helper `lib/transactieNormalisatie.ts`
+  + tests: adres-sleutel, typegroep-mapping van Brainbay/Realworks/eigen
+  enum-waarden).
+  *Klaar als:* migratie via `apply_migration`, baseline bijgewerkt,
+  `controleer-schema.mjs` groen, bestaande CSV-import werkt nog.
+- [ ] **2.2 `lib/transactiesQuery.ts` + RPC's + guard**
+  *Doel:* § 3.1 afdwingen; de vijf kale `select('*')`'s verdwijnen.
+  *Raakt:* nieuw `lib/transactiesQuery.ts`, `lib/transactiesQuery.guard.test.ts`,
+  migratie `…_rpc_transacties.sql`, `lib/schemas.ts`
+  (`TransactieFilterSchema`), en de aanroepers `app/(app)/marktanalyse/page.tsx`,
+  `marktanalyse/kaart/page.tsx`, `marktanalyse/transacties/page.tsx`,
+  `marktanalyse/concurrentie/page.tsx`, `app/(app)/object/[id]/page.tsx`,
+  `app/(app)/dashboard/page.tsx`.
+  *Hergebruik:* de pure functies in `lib/marktanalyse.ts`, `lib/concurrentie.ts`,
+  `lib/kerncijfers.ts` blijven bestaan voor de eigen-verkopen-laag en als
+  referentie-implementatie: elke RPC krijgt een test die zijn uitkomst op de
+  fixture vergelijkt met de pure functie op dezelfde rijen.
+  *Spec:* functies `haalEigenVerkopen`, `marktanalyseReeks`,
+  `marktanalyseSamenvatting`, `concurrentieMarktaandeel`,
+  `concurrentieSegmenten`, `zoekTransacties`, `prijsindexKwartaal`,
+  `referentiesInStraal`, `dataTotEnMet()` (max verkoopdatum + laatste
+  importdatum). De pagina's schakelen over; de verkenners tonen tijdelijk
+  dezelfde UI op de nieuwe data-aanvoer (de visuele v2 komt in fase 6).
+  *Tests:* guard; per RPC een vergelijkingstest tegen de pure functie (draait
+  alleen met `SUPABASE_TEST=1`, anders overgeslagen); `dataTotEnMet`.
+  *Klaar als:* guard groen, geen `select('*')`, RPC's < 300 ms op de fixture.
+- [ ] **2.3 Demo-fixture `scripts/seed-demo-kantoor.mjs`**
+  *Doel:* een kantoor "Demo Makelaardij" met een geloofwaardige regio, zodat
+  elke verkenner, waardering en kaart vanaf nu op data draait.
+  *Raakt:* nieuw script, `scripts/seed-demo-kantoor.test.ts` (weigert een
+  kantoor zonder `instellingen_json.demo === true`), `.gitignore` ongewijzigd.
+  *Spec:* deterministisch (vaste seed); `--reset` verwijdert alleen rijen van
+  het demo-kantoor. Kantoor: neutrale huisstijl, `werkgebied.plaatsen =
+  [Wassenaar, 's-Gravenhage, Voorschoten, Leidschendam, Rijswijk]`, account
+  `demo@vestaai.nl` (wachtwoord via env). Transacties: ~8.000 rijen 2019-01 t/m
+  nu, verdeling Wassenaar 35 % · Den Haag (Benoordenhout, Statenkwartier,
+  Mariahoeve, Archipelbuurt) 40 % · Voorschoten/Leidschendam/Rijswijk 25 %;
+  coördinaten rond 12-15 buurtcentroïden met jitter (lijst met echte
+  lat/lng in het script); typegroepen per buurt plausibel (Wassenaar: 55 %
+  vrijstaand/halfvrijstaand); prijsniveaus realistisch (Wassenaar vrijstaand
+  € 1,2-3,5 mln; Den Haag appartement € 300-700 k); trend +4 %/jaar met een
+  dip 2022-Q4–2023-Q2; looptijd 20-90 dagen; 10 fictieve kantoren met
+  marktaandeel 3-18 %, `verkopend_kantoor` gevuld; `eigen_verkoop` ≈ 12 %
+  (≈150/jaar); `bron = 'fixture'`, `geocode_status = 'exact'`; ~2 % rijen
+  bewust met een `uitgesloten_reden`. Plus 15 dossiers verdeeld over de fases
+  met pitch-uitslagen en enkele met content.
+  *Klaar als:* alle verkenners, kerncijfers, kaart en waardering tonen
+  plausibele cijfers zonder lege staten; screenshots bewaard als referentie.
+- [ ] **2.4 Foutlogging vroeg** — `app/global-error.tsx`, `app/(app)/error.tsx`,
+  `lib/fouten.ts` (`meldFout(context, error, extra)` → gestructureerde
+  `console.error` die in de Vercel-runtime-logs terechtkomt), gebruikt in alle
+  API-routes' `catch`. Klein item, geen externe dienst (Sentry → backlog).
+- [ ] **2.5 Kerncijfers op transactiedata** — `Kerncijfers` op `/dashboard`
+  krijgt uit `haalEigenVerkopen` + `marktanalyseSamenvatting`: verkocht
+  laatste 12 mnd, gem. looptijd, prijs t.o.v. vraagprijs, marktaandeel in de
+  eerste werkgebiedplaats (regionaal). Elke tegel: n + "data t/m".
+  *Hergebruik:* `lib/kerncijfers.ts` + tests uitbreiden.
+- **Klaar als:** fixture live; geen `select('*')`; guard groen; foutpagina's
+  aanwezig; dashboard toont echte kerncijfers uit de fixture.
+
+### Fase 3 — Dossierkern: aanmaken zonder wachten (2 sessies)
+
+- [ ] **3.1 Dossier aanmaken zonder Claude** *(§ 3.2)*
+  *Raakt:* nieuw `app/api/object/route.ts` (POST), `app/api/generate/route.ts`
+  (wordt "genereer voor id", lock per dossier), `app/(app)/object/new/NewObjectForm.tsx`,
+  `components/ObjectWorkspace.tsx`, `components/ResultTabs.tsx`, migratie
+  `objecten.content_status` + `content_gegenereerd_op`, `lib/schemas.ts`.
+  *Spec:* NewObjectForm → `POST /api/object` → redirect `/object/[id]`;
+  in In verkoop toont de tab Teksten bij `content_status = 'geen'` een
+  `EmptyState` met knop "Genereer content" (ook NL+EN), bij `bezig` een timer
+  (mm:ss) + skeleton per tab (poll `/api/object/[id]/status` elke 3 s), bij
+  `fout` een foutstaat met "Opnieuw". Fase-overgang naar In verkoop start de
+  generatie automatisch. Rate-limit-map per gebruiker verdwijnt; de lock is
+  `content_status = 'bezig'` met een verlooptijd van 6 minuten.
+  *Tests:* route-test (`app/api/object/route.test.ts`): validatie, 401,
+  aanmaak zonder Claude-call (mock); generate: 409 bij `bezig`.
+  *Klaar als:* dossier aanmaken < 5 s op productie; content pas na de knop.
+- [ ] **3.2 Intake voor acquisitie** — `usps`/`doelgroep` optioneel in het
+  schema (generate eist ze); woningtype-enum uitgebreid met
+  `Twee-onder-een-kap`, `Herenhuis`, `Bungalow` (+ mapping in
+  `transactieNormalisatie.ts`); stap 5 en 6 gemarkeerd "kan later" in de
+  wizard; concept-opslag blijft. *Raakt:* `components/PropertyForm.tsx`,
+  `lib/schemas.ts`, tests.
+- [ ] **3.3 `object/new` uit het contentslot** — `CONTENT_VERGRENDELD` gate weg
+  uit `app/(app)/object/new/page.tsx`; volle breedte via `AppPagina` mag
+  wachten op 10.5.
+- [ ] **3.4 Dossierheader met fasestepper** — `components/DossierHeader.tsx`:
+  adres, plaats, typegroep · oppervlak · bouwjaar, fasestepper (Acquisitie →
+  In verkoop → Verkocht, klikbaar waar toegestaan), pitch-uitslag als
+  `StatusBadge`, dagen in huidige fase. Het `VerkoopadviesPaneel` (`InAanbouw`)
+  verdwijnt uit de acquisitieweergave tot fase 11 bestaat.
+  *Hergebruik:* `FaseToggle.tsx`, `PageHeader`, `StatusBadge`.
+- **Klaar als:** scène 4 tot en met "dossier staat er direct" loopt zonder
+  wachten; 390 px breekt niet; screenshots beoordeeld.
+
+### Fase 4 — Waardering die taxateurs overtuigt (5 sessies)
+
+- [ ] **4.1 Referentieselectie op locatie** *(§ 3.3)*
+  *Raakt:* RPC `referenties_in_straal` (migratie), `lib/transactiesQuery.ts`,
+  `lib/waardering.ts` (`kiesReferenties` met auto-verbreding), tests.
+  *Spec:* input subject `{ lat, lng, woningtype_groep, oppervlak_m2, bouwjaar }`;
+  output kandidaten met `afstand_m`; verbredingsladder uit § 3.3; uitkomst
+  bevat `straal_m`. Zonder `lat/lng` (verrijking mislukt): terugval op
+  plaats + typegroep met waarschuwing "zonder locatie".
+- [ ] **4.2 Prijsindex** — RPC `prijsindex_kwartaal` + `lib/prijsindex.ts`
+  (`glad()`, `factor(vanKwartaal, naarKwartaal)`), CBS-terugval als losse
+  functie `lib/cbsPrijsindex.ts` (zoek de actuele tabel "Prijsindex bestaande
+  koopwoningen; regio" op via de CBS-OData-catalogus in deze sessie — niet uit
+  het hoofd; sla de tabel-id in een constante op met bronvermelding). Tests op
+  gladstrijken en factor, incl. randen (ontbrekend kwartaal).
+- [ ] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
+  gewogen mediaan/P25/P75, band-regels, `WaarderingUitkomst` v2 met `versie`,
+  `peildatum`-parameter (referenties alleen vóór die datum — nodig voor de
+  backtest), waarschuwingen. `waardering-actions.ts` schrijft v2 en migreert
+  v1-json bij lezen. ≥ 15 tests (bestaande 11 aanpassen, niet weggooien).
+- [ ] **4.4 Referenties handmatig** — uitsluiten (kruisje in de tabel) en
+  toevoegen (Drawer met `zoekTransacties`, primitive `Drawer` +
+  `DataTable`-light), opgeslagen in `waardering_json.handmatig`; de knop
+  "gebruik als referentie" in `components/TransactiesZoeken.tsx` gaat eindelijk
+  werken (kies dossier → voegt toe) en de verouderde melding verdwijnt.
+- [ ] **4.5 Kenmerk-effecten v2** — garage, tuin, energielabelklasse,
+  bouwperiode via vergelijkbare paren op regionale set (RPC
+  `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
+  in het paneel; `null` + uitleg bij n < 3.
+- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpkeuze)*
+  *Spec boven de vouw (1280 px):* links 5/12: waarde groot (`tabular-nums`),
+  bandbreedte als balk, badges `n`, `straal`, `index t/m kwartaal`,
+  `data t/m`; WOZ-ijkpunt eronder met peildatum; rechts 7/12: referentiekaart
+  (bestaande Leaflet tot fase 7, dan `BasisKaart`) met subject-marker en
+  referenties in merkkleur, straalcirkel. Onder de vouw: referentietabel
+  (adres · afstand · datum · prijs · m² · € per m² · index · gewicht →
+  geïmpliceerde waarde; uitsluiten-kruisje; handmatig-badge), wat-als-rij,
+  makelaarscorrectie (bestaand), waarschuwingen als `EmptyState`-variant.
+  Lege staat: "Nog geen referenties binnen 5 km" met knop "Referentie
+  toevoegen". Alles reageert < 100 ms client-side na de eerste RPC.
+- [ ] **4.7 Waardebepaling-pdf (één pagina)** — `app/api/pdf/waardebepaling/route.ts`
+  met `@react-pdf/renderer` in kantoorstijl (logo, `--merk`-kleuren, lettertype
+  met pdf-veilige terugval): kop met adres + kenmerken, waarde + band,
+  referentietabel (top 6), kenmerk-effecten, makelaarscorrectie + motivatie,
+  disclaimer § 3.3, "opgesteld door [makelaar] op [datum]". Zonder kaart in v1
+  (statische kaart → backlog). Knop in het paneel; < 10 s.
+  *Hergebruik:* de bestaande pdf-route en `EmailPdfButton`-patroon.
+- [ ] **4.8 Backtest** — `scripts/backtest-waardering.mjs` + `docs/waardering-backtest.md`
+  (eerst op de fixture, opnieuw in 5.5 op echte data). Rapporteert per
+  typegroep; faalt de demo-lat, dan staan de band-regels in de uitkomst ter
+  discussie — noteer het besluit.
+- **Klaar als:** backtest gedocumenteerd; elke waarde toont n/straal/index/
+  correcties; handmatige referentie verandert de uitkomst direct; pdf < 10 s;
+  scène 4 loopt van adres tot pdf zonder hapering.
+
+### Fase 5 — Echte data: import i4housing (4 sessies; start zodra de exports er zijn, parallel aan fase 4 vanaf 4.3)
+
+- [ ] **5.1 Exportanalyse** → `docs/data/exportanalyse.md`: per bestand
+  (Brainbay, Realworks) kolommen + voorbeeldwaarden, datumdefinities
+  (aanmelding/transactie/overdracht), verkopend én aankopend kantoor,
+  coördinaten (RD X/Y of lat/lng of alleen postcode), aantal rijen, periode,
+  plaatsen, woningtype-waarden, encoding en scheidingsteken. Beantwoordt:
+  bevat Brainbay i4housing's eigen verkopen ook (→ ontdubbelen)? Hoe heet
+  i4housing in de kantoorkolom (aliassen)?
+- [ ] **5.2 Importscript** `scripts/import-transacties.mjs --bron brainbay|realworks --bestand <pad> [--write]`
+  *Raakt:* nieuw script, `lib/importProfielen.ts` (kolomaliassen per bron,
+  bovenop de bestaande `ALIASSEN` uit `lib/transactieImport.ts`), `lib/rd.ts`
+  (RD → WGS84; test met het RD-nulpunt Amersfoort (155000, 463000) →
+  52,155172 N / 5,387203 O), `lib/kantoorNormalisatie.ts` (naam → norm:
+  lowercase, zonder B.V./Makelaars/NVM/leestekens; aliaslijst eigen kantoor in
+  `instellingen_json.kantoor_aliassen` → `eigen_verkoop`), plausibiliteitsregels
+  in `lib/transactieKwaliteit.ts` (prijs € 50 k–10 mln, oppervlak 20-1.000 m²,
+  € per m² 500-15.000, bouwjaar 1600-2027, verkoopdatum binnen bereik,
+  verplichte velden) → `uitgesloten_reden`; ontdubbelen Realworks vs Brainbay
+  op `adres_sleutel` + verkoopdatum ± 90 dagen (Realworks-rij wint, ontbrekende
+  velden aangevuld uit Brainbay); XLSX én CSV (SheetJS als devDependency, alleen
+  in het script). Weigert zonder back-up van vandaag. Dry-run print het
+  kwaliteitsrapport (aantallen per reden, top-10 voorbeelden, per plaats/jaar);
+  `--write` upsert in batches van 500 met `import_id`, schrijft de `imports`-rij.
+  *Tests:* rd, normalisatie, kwaliteit, ontdubbelen, profiel-mapping (pure
+  functies).
+- [ ] **5.3 Geocodering** `scripts/geocodeer-transacties.mjs`: hergebruik
+  `pdokLookup` uit `lib/verrijking.ts`; postcode + huisnummer → `exact`,
+  straat + plaats → `benaderd`, anders `mislukt`; hervatbaar op
+  `geocode_status is null`; ~10 verzoeken/s; rapport; alleen rijen zonder `geo`.
+- [ ] **5.4 `/admin/transacties` v2** — importhistorie (bron, datum, nieuw/
+  bijgewerkt/uitgesloten, geocode-%), kwaliteitsrapport per import, knop
+  "Laatste import terugdraaien" (verwijdert rijen met dat `import_id`, herstelt
+  bijgewerkte rijen uit `snapshot_json`, zet `teruggedraaid_op`), de bestaande
+  CSV-vorm blijft voor kleine correcties. "Data t/m"-badge leest hieruit.
+- [ ] **5.5 Import uitvoeren** (na back-up + getekende verwerkersovereenkomst
+  + licentiebevestiging): dry-run → rapport bespreken → `--write` → geocoderen
+  → backtest opnieuw → **Mijlpaal M1: tussencheck** — één waardebepaling-pdf
+  van een recente eigen verkoop naar hun taxateur met de vraag "klopt dit
+  ongeveer?". Antwoord vastleggen in `docs/besluiten.md`.
+- [ ] **5.6 Fixture herijken** (optioneel): verdelingen van de fixture in lijn
+  brengen met de echte data, zodat de fixture een eerlijke terugval blijft.
+- **Klaar als:** ≥ 95 % `exact` gegeocodeerd; herimport levert 0 dubbelen;
+  terugdraaien werkt; alle verkenners tonen echte, plausibele cijfers;
+  backtest op echte data gedocumenteerd; tussencheck gedaan.
+
+### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht (6 sessies)
+
+- [ ] **6.1 Marktanalyse-explorer v2** *(ontwerpkeuze; bouwt `FilterBar`,
+  `ChartCard`, `useFilterState`, `lib/opmaak.ts`, `lib/grafiekThema.ts`)*
+  *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
+  nieuwe primitives in `components/ui/`, `lib/opmaak.ts` (+ tests),
+  `lib/grafiekThema.ts`, `hooks/useFilterState.ts` (+ test).
+  *Spec boven de vouw:* `FilterBar` (plaats/wijk multi-select met chips,
+  typegroep-`SegmentedToggle`, periode-presets 12/24/36 mnd + eigen bereik,
+  "vergelijk met segment B" als tweede rij) → rij van 5 `StatTile`s met delta
+  t.o.v. de vorige periode (mediaan prijs, mediaan € per m², mediaan looptijd,
+  % t.o.v. vraagprijs, aantal) → twee `ChartCard`s naast elkaar (prijs & € per
+  m² per kwartaal; looptijd per kwartaal), daaronder verdeling naar
+  prijsklasse (staven, klik = filter → crossfilter) en typegroep. Elke kaart:
+  n, "data t/m", skeleton bij laden. Standaardfilter = werkgebied van het
+  kantoor. Filterstand in de URL.
+  *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
+  `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
+  "markt").
+- [ ] **6.2 Transacties opzoeken v2** — `DataTable` (server-gepagineerd via
+  `zoekTransacties`, 50/pagina, sorteerbaar), `Drawer` met alle velden +
+  minikaart, "gebruik als referentie" (4.4), CSV-export uitsluitend eigen
+  verkopen (client-side uit `haalEigenVerkopen`). URL-state.
+- [ ] **6.3 Concurrentie v2** — marktaandeel per plaats/typegroep/prijsklasse
+  met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
+  wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
+  (looptijd, prijs t.o.v. vraagprijs, € per m²); concurrentprofiel in een
+  `Drawer` (top 8, schrapbaar). Werkt op `verkopend_kantoor_norm`; eerlijke
+  lege staat als dat veld leeg is. *Hergebruik:* `lib/concurrentie.ts` als
+  referentie-implementatie voor de RPC-tests.
+- [ ] **6.4 Kwartaalbericht** — knop "Schrijf kwartaalbericht" in de
+  marktanalyse: `lib/kwartaalbericht.ts` bouwt een feitenblad (uitsluitend
+  cijfers uit `marktanalyseSamenvatting` + reeks: mediaan prijs, € per m²,
+  looptijd, aantal, delta's, eigen aandeel), Claude schrijft 250-350 woorden in
+  de kantoortoon (stijlprofiel), NL en optioneel EN; **guardrail:** elk getal
+  in de tekst moet in het feitenblad voorkomen (controle na generatie; anders
+  één keer opnieuw); resultaat in een `Modal` met kopiëren en download `.md`.
+  Geen opslag. Model via `lib/aiModellen.ts`.
+- **Klaar als:** de kernvragen uit scène 2 en 3 in ≤ 3 klikken; filters in de
+  URL; delta's kloppen (test tegen pure functie); kwartaalbericht bevat geen
+  cijfer dat niet in het feitenblad staat.
+
+### Fase 7 — Kaart (4 sessies)
+
+- [ ] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
+  PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
+  `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
+  (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
+- [ ] **7.2 Verkoopkaart-explorer v2** — eigen verkopen, `RangeSlider`
+  (periode) met afspeelknop (schrapbaar), filters typegroep/prijsklasse,
+  zijlijst gesynchroniseerd met het kaartbeeld, URL-state; kaart en filters
+  reageren < 100 ms (client-side op `haalEigenVerkopen`).
+- [ ] **7.3 Straal per woning** — `StraalKaartPaneel` op `BasisKaart`, standaard
+  500 m, schuiver 100-1.000 m, alleen eigen verkopen; de referentiekaart in de
+  waardering (4.6) schakelt over naar `BasisKaart`.
+- [ ] **7.4 Leaflet opruimen** — `Verkoopkaart.tsx`/`VerkoopkaartClient.tsx`,
+  `leaflet`/`react-leaflet`/`@types/leaflet` uit `package.json`, CSP-regels.
+- **Klaar als:** vloeiend met de volledige eigen dataset; geen CSP-fouten;
+  één kaartstack in de codebase.
+
+### Fase 8 — Content in i4housing-format (4 sessies; parallel via subagent in een worktree zodra fase 3 is gemerged — raakt `lib/claude.ts`, `lib/schemas.ts` (alleen `ContentOutputSchema`/`HuisstijlSchema`), `components/ResultTabs.tsx`, pdf-routes, `HuisstijlForm.tsx`)
+
+- [ ] **8.1 `lib/aiModellen.ts` + prompt caching + evaluatieset** —
+  modelconstanten (§ 3.6), `cache_control` op systeemprompt; `docs/evaluatie/`
+  met 5 dossiers (JSON-fixtures, echte i4housing-achtige woningen) en
+  `scripts/evalueer-content.mjs` dat per dossier twee anonieme varianten
+  (A/B: huidig vs kandidaat-model of oud vs nieuw sjabloon) naar
+  `docs/evaluatie/rondes/<datum>/` schrijft voor een blind oordeel door Quinn.
+- [ ] **8.2 Tekstsjabloon-model** *(§ 3.4)* — schema, promptbouwer (rendert
+  koppen als harde structuur, `doel_woorden`), validator + één herkansing,
+  admin-formulier in `app/admin/kantoor/HuisstijlForm.tsx` (label, secties,
+  slotzin, doel_woorden, EN-koppen), i4housing-preset via
+  `scripts/repair-i4housing-branding.mjs` (uitbreiden; dry-run). Tests op
+  promptrender en validator.
+- [ ] **8.3 Outputset v2 + ervaring** — `ContentOutputSchema` v2 (oude sleutels
+  optioneel), `sneak_preview`, extra's via `POST /api/object/[id]/extra?type=`,
+  `ResultTabs`: kern-tabs + "Meer…"-menu voor extra's, timer + skeleton per tab
+  (3.1), Funda-tekst NL en EN náást elkaar op ≥ 1280 px, kopieerknop per veld.
+- [ ] **8.4 Brochure-pdf in kantoorstijl** — logo, kleuren, lettertype, foto's
+  uit `FotoBibliotheek`, kenmerkentabel uit de intake, `brochure_stijl.slot_tekst`;
+  vergelijk naast een echte i4housing-brochure (uit `seed-i4housing-content.mjs`).
+- [ ] **8.5 Virtual staging model-check** (schrapbaar) — `gemini-2.0-flash-exp`
+  pinnen of vervangen door het huidige stabiele beeldmodel; één testrun.
+- **Klaar als:** blinde vergelijking gewonnen (Quinn); i4housing-tekst volgt het
+  sjabloon 1-op-1 in NL en EN; brochure niet te onderscheiden van hun eigen werk;
+  scène 5 loopt met timer.
+
+### Fase 9 — White-label-wow (2 sessies)
+
+- [ ] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
+  `app/login/[slug]/page.tsx` (logo, kleuren, sfeerbeeld, tabtitel/favicon van
+  het kantoor), middleware laat `/login/` door, na uitloggen terug naar de
+  laatst gebruikte slug (cookie), `/login` zonder slug blijft VestaAI-groen.
+- [ ] **9.2 Reset-mail in kantoorstijl** (schrapbaar) — `generateLink` +
+  Resend-sjabloon met logo/kleuren.
+- [ ] **9.3 Consistentiecontrole** — `scripts/controleer-huisstijl.mjs` draaien
+  op alle routes incl. pdf's en lege staten; alles wat groen doorlaat fixen.
+- **Klaar als:** van inloglink tot pdf nergens VestaAI-groen of de naam
+  (behalve de topbar-lockup).
+
+### Fase 10 — Woningdossier premium (3 sessies)
+
+- [ ] **10.1 `/woningen` v2** — tabel- en kaartweergave (`BasisKaart`), zoeken,
+  filters fase/makelaar, URL-state; `PitchScorebord` blijft.
+- [ ] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
+  merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
+  (pdf, content, fase).
+- [ ] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
+  CBS-buurtcijfers, voorzieningen (uit `lib/verrijking.ts`, al opgehaald bij
+  de intake; opslaan in `objecten.verrijking_json` via migratie).
+- [ ] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
+  `gebruik_events` (kantoor_id, makelaar_id, object_id, type, created_at; RLS),
+  `lib/gebruik.ts` `logGebruik()`, `RecentBekeken` op `/dashboard`;
+  dossiertijdlijn (schrapbaar).
+- [ ] **10.5 Intake tweekoloms** (schrapbaar) — wizard links, `WoningdataPanel`
+  rechts, `AppPagina` volle breedte op `object/new`.
+- [ ] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
+  teller "3 bewerkingen wachten op je oordeel".
+- **Klaar als:** dossier leest als één verhaal; fase in één oogopslag.
+
+### Fase 11 — Verkoopadvies (2-3 sessies; **geblokkeerd** tot Quinns voorbeeld er is)
+
+Datacontract alvast vast: `VerkoopadviesInput = { dossier (intake),
+waardering (v2), kantoor (instellingen: courtage, profiel, werkgebied),
+marktcontext (marktanalyseSamenvatting voor plaats + typegroep), makelaar }`.
+Losse, herschikbare secties in `@react-pdf/renderer` in kantoorstijl; het
+`VerkoopadviesPaneel` komt terug in de acquisitieweergave zodra dit bestaat.
+**Klaar als:** binnen 1 minuut klaar en structureel gelijk aan het voorbeeld.
+Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
+
+### Fase 12 — Demo-klaar & productierijp (3 sessies)
+
+- [ ] **12.1 Team-accounts i4housing** — via `/admin/kantoor/[id]` de vijf
+  makelaars met hun echte naam (wachtwoorden van Quinn); begroeting op
+  `/dashboard` met voornaam; teamfoto als banner via het bestaande
+  `achtergrond_url`-veld in `HuisstijlForm.tsx` (geen apart `bannerfoto`-veld
+  nodig; Quinn keurt de foto goed).
+- [ ] **12.2 E2e** — `e2e/`: login via slug, dossier aanmaken (< 5 s),
+  waardering toont n en pdf-knop, kaart laadt zonder CSP-fout, content
+  (`E2E_GENERATE=1`), admin-importhistorie, **RLS-test** met twee kantoren
+  (fixture + i4housing) via REST: kantoor A ziet 0 rijen van B.
+- [ ] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
+  (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
+  op echte data gelogd in `docs/data/performance.md`.
+- [ ] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
+  Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
+- [ ] **12.5 Demo-voorbereiding** — `docs/demoscript.md` (§ 2 uitgewerkt tot
+  klik-voor-klik, met terugvalplan per scène), drie demo-dossiers uit echte
+  recente adressen (één per fase), Vercel Pro actief, Supabase-check de dag
+  ervoor, demo-freeze (branch `demo`, 48 uur geen deploys), generale repetitie
+  met screenshots.
+- **Klaar als:** alle "klaar als" van fase 1-10 gehaald; generale repetitie
+  zonder haperingen; alle checks groen.
+
+### Fase 13 — Publieke site (parallel via subagent, 2-3 sessies; niet kritiek)
+
+Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
+- [ ] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
+- [ ] 13.2 `LandingPageClient.tsx` herpositioneren naar het nieuwe verhaal
+  (data + waardering + content, één klant, geen prijzen).
+- **Klaar als:** geen claim in strijd met het huidige model; Lighthouse > 90/95.
 
 ---
 
-## 6. Fases
+## 6. Planning, mijlpalen & schrapvolgorde
 
-Volgorde: 0 → 1 → 2 → 3 → 4 (volledige exports in week 1) → 5 → 6 → 7 → 8 → 9
-→ 10 (wacht op voorbeelddocument) → 11. Fase 12 loopt parallel via een
-subagent zodra fase 1 gemerged is.
+| Fase | Sessies | Cumulatief | Week (bij dagelijks werken) |
+|---|---|---|---|
+| 1 rest | 1 | 1 | 1 |
+| 2 datafundament | 4 | 5 | 1-2 |
+| 3 dossierkern | 2 | 7 | 2 |
+| 4 waardering | 5 | 12 | 3-4 |
+| 5 echte data (parallel) | 4 | 16 | 3-5 |
+| 6 marktinzichten | 6 | 22 | 5-6 |
+| 7 kaart | 4 | 26 | 7 |
+| 8 content (parallel mogelijk) | 4 | 30 | 6-8 |
+| 9 white-label | 2 | 32 | 8 |
+| 10 dossier premium | 3 | 35 | 9 |
+| 11 verkoopadvies | 3 (geblokkeerd) | 38 | — |
+| 12 demo-klaar | 3 | 41 | 10 |
+| 13 publieke site | 2 (parallel) | 43 | — |
+| Herwerk na screenshotreviews (15 %) | ~6 | ~49 | |
 
-### Fase 0: Veiligheid, fundament & documentatie (2 sessies)
-- [x] 0.1 **Stand van de database** via de Supabase-MCP: `20260916_*`-migraties
-      bleken NIET getrackt maar hun DDL WEL al toegepast (los uitgevoerd, buiten
-      de migratiehistorie om — zie `supabase/schema-baseline.sql`); security
-      advisors gedraaid (resultaten hieronder); **baseline-schemadump**
-      geschreven naar `supabase/schema-baseline.sql`. Self-signup uitzetten en
-      "leaked password protection" aanzetten kunnen niet via de MCP (alleen
-      dashboard) — blijven open als handmatige actie Quinn, zie § Stand van
-      zaken.
-- [x] 0.2 **Back-upscript** `scripts/backup-data.mjs` + `backups/` in `.gitignore`;
-      eerste back-up gedraaid en geverifieerd (rijaantallen kloppen).
-- [x] 0.3 **RLS per kantoor**: bij verificatie bleek dit een live, actief
-      probleem, niet alleen een risico voor de toekomst — gefixt via migratie
-      `20260916213323_rls_kantoor_isolatie_transacties.sql`: nieuwe policy
-      `kantoor_id = (select kantoor_id from makelaars where id = auth.uid())`,
-      view `transacties_met_coordinaten` herschapen met
-      `security_invoker = true`. Getest met een rolled-back transactie (twee
-      test-kantoren, policy geeft alleen het eigen kantoor terug).
-      `spatial_ref_sys` (PostGIS-systeemtabel) kon niet gefixt worden — eigendom
-      van de extensie, "must be owner"-fout; laag risico (alleen
-      SRID-referentiedata), genoteerd in de baseline.
-- [x] 0.4 **Import-bug**: gereproduceerd (foutcode 42P10: de oude
-      `coalesce(verkoopdatum, …)`-index matchte niet met
-      `onConflict: 'kantoor_id,adres,verkoopdatum'`) en gefixt via migratie
-      `20260916213816_fix_transacties_upsert_sleutel.sql` (`nulls not
-      distinct`-index). Getest: herimport update i.p.v. dupliceert, ook bij
-      een ontbrekende verkoopdatum.
-- [x] 0.5 **Beveiliging tweede laag**: `auth.getUser()` → 401 toegevoegd aan
-      `app/api/bag/route.ts`, `bag/suggest/route.ts` en `verrijking/route.ts`.
-      CSP in `next.config.mjs` opgeschoond: alle Stripe-referenties eruit
-      (`script-src`, `frame-src`, `connect-src` — niet alleen `api.stripe.com`).
-- [x] 0.6 **Documentatie**: dit document herschreven tot masterplan;
-      `CLAUDE.md` sessieprotocol/DoD/vangrails bovenaan + de
-      "gedeelde-referentiepool"-tekst gecorrigeerd naar de RLS-per-kantoor-
-      realiteit (was feitelijk onjuist na 0.3); `docs/goals.md` hexwaarden
-      gecorrigeerd + betaalintentie toegevoegd; root-`CLAUDE.md`
-      VestaAI-beschrijving geactualiseerd (Stripe/BE/"8 velden"/`VestaAI.html`
-      waren allemaal verouderd).
-- [x] 0.7 **Geheugen opschonen**: `vestaai-setup-status.md` en
-      `vestaai-eerste-tester.md` verwijderd (achterhaald); uit
-      `vestaai-huisstijl.md`/`vestaai-whitelabel-i4housing.md` bleek alleen de
-      `var(--merk,#hex)`-fallback-valkuil nog niet gedocumenteerd — die is
-      toegevoegd aan CLAUDE.md, de rest was al gedekt door de code/CLAUDE.md
-      of achterhaald (font is inmiddels Newsreader, niet Playfair/Lora); beide
-      bestanden verwijderd; `vestaai-masterplan.md` toegevoegd als pointer;
-      `MEMORY.md` bijgewerkt.
-- [x] 0.8 **Projectskills** `.claude/skills/sessie-start/SKILL.md` en
-      `.claude/skills/sessie-afronden/SKILL.md` geschreven.
-- [x] 0.9 **Concept-verwerkersovereenkomst** `docs/verwerkersovereenkomst-concept.md`
-      geschreven — expliciet gemarkeerd als "niet ondertekenen zonder
-      juridische toetsing".
-- **Klaar als:** een ingelogd demo-account kan via de REST-API aantoonbaar géén
-  transacties van een ander kantoor lezen (✅ geverifieerd met een
-  rolled-back testtransactie; een volledige REST-test met twee échte accounts
-  volgt in fase 11.3 zodra er meerdere kantoren met accounts bestaan); er
-  staat een back-up en een baseline (✅); `/sessie-start` in een nieuwe chat
-  weet zonder uitleg waar we staan (✅, dit document + de skill).
+**Richtdatum demo:** begin december 2026 (week 10-11 vanaf 22 sep), mits
+exports in week 1-3 binnen zijn. Loopt het uit: eerst schrappen, nooit de
+demo-minimum-lijn overschrijden.
 
-### Fase 1: UI-fundament + nieuwe schil (4 sessies, ~1 sessie nog te gaan)
-- [x] 1.1 **Fundament eerst**: `docs/ontwerpprincipes.md`; `scripts/screenshots.mjs`;
-      basisprimitives `AppPagina`/`StatTile`/`EmptyState`/`Skeleton`;
-      `--app-breedte: 1680px` + `--app-marge`.
-- [x] 1.2 **Blauwe balk weg**: `app/(app)/layout.tsx`.
-- [x] 1.3 **Topbar**: lockup groter (26px-blok, 15px-tekst, 38px-kantoorlogo);
-      menu's Woningdossier · Marktinzichten (Verhuur volledig verwijderd, geen
-      slot/binnenkort-restant); avatar-dropdown met initiaal (Mijn account ·
-      Kantoor · Uitloggen), klik-buiten/Escape/mobiel werken.
-- [x] 1.4 **Volle breedte**: `AppPagina` toegepast op `/woningen`,
-      `object/[id]`, `marktanalyse/layout`, `/kantoor`. **Bewust nog niet
-      gedaan:** `object/new` (900px) — dat vereist eerst de tweekoloms
-      intake-redesign (wizard + WoningdataPanel naast elkaar); losstaand
-      breder maken zou een wizard in een leeg vlak laten zweven.
-- [x] 1.5 **"Aan de slag" weg**: `components/FeatureKaarten.tsx` verwijderd,
-      vervangen door `Snelkoppelingen` op de nieuwe startpagina.
-- [x] 1.6 **Startpagina — kern**: lijst verhuisd naar `/woningen`
-      (`WoningenClient.tsx`, `PitchScorebord.tsx`, `loading.tsx`); nieuwe
-      `/dashboard` met `StartBanner` (begroeting + datum, valt terug op het
-      bestaande sfeerbeeld of een merkverloop) en `Kerncijfers` (6 tegels,
-      `lib/kerncijfers.ts` + 11 tests: lopende acquisities, winratio 12mnd,
-      in verkoop, verkocht dit jaar, gem. looptijd, prijs t.o.v. vraagprijs —
-      elk met een eerlijke waarschuwing bij te weinig data). Gedeelde
-      auth/self-heal-logica geëxtraheerd naar `lib/haalIngelogdeMakelaar.tsx`
-      (gebruikt door zowel `/dashboard` als `/woningen`).
-      **Bewust nog niet gedaan** (vereist een nieuwe migratie resp. een door
-      Quinn goedgekeurde foto — hoort niet in dezelfde sessie als de
-      mechanische routingwissel):
-      - `RecentBekeken` + tabel `gebruik_events` + `lib/gebruik.ts`
-        (`logGebruik()`);
-      - los `bannerfoto`-veld in de admin (`AfbeeldingUpload`,
-        `HuisstijlForm.tsx`) — de banner gebruikt voorlopig het bestaande
-        sfeerbeeld (`achtergrondUrl`).
-- [x] 1.7 **Mijn account** (`/account`, nieuw): naam wijzigen, e-mail
-      read-only, wachtwoord wijzigen (`wijzigWachtwoord`-action verifieert
-      eerst het huidige wachtwoord via `signInWithPassword`). Zod-schema
-      `WachtwoordWijzigenSchema` in `lib/schemas.ts`.
-- [x] 1.8 **Kantoorpagina**: "VestaAI" 4× eruit → "je platformbeheerder";
-      profielsectie en uitlogknop verwijderd (nu op `/account` resp. in het
-      profielmenu). **Bewust nog niet gedaan:** Tailwind-grijs →
-      ui-primitives, tweekoloms grid — dat is een visuele herontwerp-taak,
-      geen bugfix, en de pagina werkt correct zoals hij nu is.
-- [ ] 1.9 **Bugs**: `StatusToggle.tsx:10` kapotte class, `FaseToggle.tsx:15,81`
-      en `StatistiekenPaneel.tsx:89` hardgecodeerd groen; demo-knop alleen in
-      dev/demo. **Nog te doen.**
-- [ ] 1.10 **Google-logo & SEO-basis**: `app/icon.png`/`favicon.ico`/`apple-icon.png`;
-      manifest repareren; canonical + JSON-LD; opengraph-image; robots/sitemap
-      (nu ook `/woningen`/`/account` toevoegen aan de disallow-lijst).
-      **Nog te doen** — belangrijk om vroeg te doen, Google ververst favicons traag.
-- **Klaar als:** geen blauwe balk en geen Verhuur ✅; avatarmenu werkt overal ✅;
-  startpagina met banner/kerncijfers zonder fouten bij lege data ✅
-  (recent bekeken volgt nog); `/woningen` compleet ✅; account wijzigt naam en
-  wachtwoord ✅; kantoorpagina zonder "VestaAI" ✅; favicons geven 200 ❌ (1.10
-  nog te doen); DoD (typecheck/test/build) groen ✅.
+**Mijlpalen**
+- **M0** (eind week 2): fase 1 gemerged, fixture live, guard groen.
+- **M1** (week 5): waardering v2 op echte data + tussencheck-pdf naar de
+  taxateur.
+- **M2** (week 7): marktinzichten, concurrentie en kwartaalbericht op echte
+  data.
+- **M3** (week 9): kaart + content in i4housing-format + login in kantoorstijl.
+- **M4** (week 10-11): dossier premium, generale repetitie → demo.
 
-### Fase 2: Interactieve primitives (2 sessies)
-- [ ] 2.1 `RangeSlider`/`ToggleGroup`/`Chip`/`ChartCard`/`FilterBar`/`Drawer`/`DataTable`.
-- [ ] 2.2 `motion`, `lib/grafiekThema.ts`, `useFilterState`, `lib/opmaak.ts` (nl-NL).
-- [ ] 2.3 Interne voorbeeldpagina `/admin/ui`.
-- **Klaar als:** elke primitive staat op `/admin/ui`, toetsenbordbedienbaar,
-  volgt de ontwerpprincipes, geen console-waarschuwingen.
+**Schrapvolgorde bij uitloop** (eerst geschrapt bovenaan): fase 13 → na de
+demo · 10.4 tijdlijn (Recent bekeken blijft) · 7.2 afspeelknop · 9.2
+reset-mail · 10.5 intake tweekoloms · 6.3 concurrentprofiel-drawer (matrix en
+aandeel blijven) · 8.5 staging-check · 12.4 gebruiksoverzicht · 5.6 fixture
+herijken.
 
-### Fase 3: White-label-wow (1–2 sessies)
-- [ ] 3.1 **Inloggen in kantoorstijl**: `/login/[kantoor-slug]`; middleware
-      `/login/`-prefix doorlaten.
-- [ ] 3.2 **Auth-mails in kantoorstijl** via Resend + `generateLink`.
-- [ ] 3.3 **Consistentiecontrole**: tabtitel, favicon, e-mails, lege staten.
-- **Klaar als:** van inloglink tot reset-mail nergens VestaAI-groen of de naam
-  VestaAI (behalve de afgesproken lockup).
-
-### Fase 4: Datapijplijn, datakwaliteit & demo-kantoor (6–8 sessies)
-- [ ] 4.1 **Exportanalyse** (volledige exports, week 1): kolommen, formaten,
-      datumdefinities; bevat Brainbay het verkopend kantoor?
-- [ ] 4.2 **Performance-architectuur**: aggregaties in Postgres (RPC's/views),
-      `ST_DWithin` voor kaart/straal, geen `select('*')` meer.
-- [ ] 4.3 **Import**: XLSX/CSV via Storage-bucket + route handler in batches;
-      bronprofielen Brainbay/Realworks; tabel `imports` + terugdraaiknop.
-- [ ] 4.4 **Ontdubbelen**: `adres_sleutel` + verkoopdatum-venster ±90 dagen;
-      unieke index en upsert definitief gelijk.
-- [ ] 4.5 **Datakwaliteit**: plausibiliteitsregels → `uitgesloten_reden`;
-      kwaliteitsrapport na elke import.
-- [ ] 4.6 **Geocodering**: `lib/pdok.ts` + `lib/geocodering.ts`; hervatbaar via
-      `geocode_status`.
-- [ ] 4.7 Migratie `transacties_pijplijn` + vitest-tests.
-- [ ] 4.8 **Import i4housing** (na back-up + verwerkersovereenkomst).
-- [ ] 4.9 **Demo-kantoor** `scripts/seed-demo-kantoor.mjs`: ~1.500 verkopen,
-      8 fictieve concurrenten, ~15 dossiers, account "Demo Makelaardij".
-- **Klaar als:** volledige exports importeren; herimport geen dubbelen;
-  terugdraaien werkt; ≥95% geocodering "exact"; kwaliteitsrapport klopt; geen
-  ongepagineerde query; demo-kantoor vult alle verkenners plausibel.
-
-### Fase 5: Waardering die taxateurs overtuigt (4 sessies)
-- [ ] 5.1 **Locatie**: referentiekandidaten via PostGIS `ST_DWithin`.
-- [ ] 5.2 **Prijsindex**: CBS-index bestaande koopwoningen, regionaal.
-- [ ] 5.3 **Referenties handmatig** toevoegen/uitsluiten.
-- [ ] 5.4 Kenmerk-effecten uitbreiden (energielabel, bouwperiode).
-- [ ] 5.5 **Backtest op echte i4housing-data** → `docs/waardering-backtest.md`.
-- [ ] 5.6 `WaardebepalingPaneel` premium (uitlegbare opbouw, wat-als).
-- [ ] 5.7 **Waarde-onderbouwing, één pagina** (pdf).
-- **Klaar als:** backtest gedocumenteerd; elke waarde toont n/afstand/index/
-  correcties; handmatige referentie verandert de uitkomst direct; one-pager
-  binnen 10s klaar.
-
-### Fase 6: Kaart (4–5 sessies)
-- [ ] 6.1 **Spike**: MapLibre + PDOK-vectortiles vs. Leaflet + PDOK-raster
-      (CSP, soepelheid, bundel).
-- [ ] 6.2 `components/kaart/BasisKaart.tsx` + lagen (vlaggetjes, hovercard,
-      wijkgrenzen).
-- [ ] 6.3 **Verkoopkaart-explorer**: periode-schuiver + afspeelknop, filters,
-      zijlijst.
-- [ ] 6.4 **Straal per woning**: standaard 500 m, schuiver 100–1000 m.
-- [ ] 6.5 Oude kaartcode opruimen na de keuze.
-- **Klaar als:** vloeiend met volledige dataset; filters/straal reageren
-  direct; geen CSP-fouten.
-
-### Fase 7: Marktinzichten & concurrentie (6–7 sessies)
-- [ ] 7.1 **Marktanalyse**: FilterBar, kerncijfers met delta, crossfilter.
-- [ ] 7.2 **Transacties opzoeken**: DataTable, detail-drawer, "gebruik als
-      referentie", CSV-export alleen eigen verkopen.
-- [ ] 7.3 **Concurrentie** (afhankelijk van 4.1): marktaandeel, vergelijker,
-      matrix "wie wint waar".
-- [ ] 7.4 **AI-marktsamenvatting**: knop → Claude schrijft alinea over
-      filterselectie.
-- **Klaar als:** kernvragen in ≤3 klikken beantwoord; filters in URL; eerlijke
-  lege/weinig-data-staten.
-
-### Fase 8: Woningdossier premium (3 sessies)
-- [ ] 8.1 `/woningen`: kaart- en tabelweergave.
-- [ ] 8.2 Dossierheader met fasestepper.
-- [ ] 8.3 Verrijkingsdata terug in het dossier.
-- [ ] 8.4 Dossiertijdlijn uit `gebruik_events`.
-- [ ] 8.5 `StijlLerenPaneel` vindbaar maken.
-- **Klaar als:** dossier leest als één verhaal; fase in één oogopslag
-  duidelijk.
-
-### Fase 9: Content op i4housing-niveau (5 sessies)
-- [ ] 9.1 **AI-modellen centraal** (`lib/aiModellen.ts`), upgrade Sonnet,
-      blinde evaluatieset.
-- [ ] 9.2 **Kantoor-tekstsjabloon** (i4housing-preset: 4SALE!/WOONCOMFORT/…).
-- [ ] 9.3 **Brochure-pdf** volledig in kantoorstijl.
-- [ ] 9.4 **Virtual staging**: model-check/upgrade.
-- [ ] 9.5 `ResultTabs` premium + generatietimer.
-- **Klaar als:** blinde vergelijking gewonnen; i4housing-tekst volgt sjabloon
-  1-op-1; brochure niet te onderscheiden van hun eigen werk.
-
-### Fase 10: Verkoopadvies (2–3 sessies, geblokkeerd op voorbeeld Quinn)
-Losse, herschikbare secties in `@react-pdf/renderer`, volledig in kantoorstijl.
-**Klaar als:** verkoopadvies binnen 1 minuut klaar, structureel gelijk aan het
-voorbeeld. Zonder voorbeeld: demo zonder dit onderdeel.
-
-### Fase 11: Demo-klaar & productierijp (3 sessies)
-- [ ] 11.1 **Foutlogging** (`global-error.tsx` + wrapper, geen `instrumentation.ts`
-      op Next 14.2).
-- [ ] 11.2 **Feedbackknop** + gebruiksoverzicht in `/admin`.
-- [ ] 11.3 **E2e** uitbreiden (login, dossier, waardering, kaart, content,
-      admin-import, RLS-test).
-- [ ] 11.4 **Performance**: Lighthouse, bundelanalyse.
-- [ ] 11.5 **Demo-voorbereiding**: `docs/demoscript.md`, generale repetitie,
-      demo-freeze.
-- **Klaar als:** alle klaar-als-criteria gehaald; generale repetitie zonder
-  haperingen; alle checks groen.
-
-### Fase 12: Publieke site (parallel, subagent, 2–3 sessies; niet kritiek pad)
-Start pas als fase 1 gemerged is (voorkomt mergeconflict in `app/layout.tsx`).
-- [ ] 12.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
-- [ ] 12.2 `LandingPageClient.tsx` herpositioneren naar het nieuwe verhaal.
-- **Klaar als:** geen claim in strijd met het huidige model; Lighthouse >90/95.
+**Parallel werk (subagents, `model: sonnet`, `isolation: worktree`):** fase 8
+zodra fase 3 is gemerged (bestanden zonder overlap met fase 4-7); fase 13
+zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ---
 
@@ -515,123 +762,89 @@ Start pas als fase 1 gemerged is (voorkomt mergeconflict in `app/layout.tsx`).
 
 | Risico | Mitigatie |
 |---|---|
-| Dataverlies op productie zonder Pro | Back-up vóór elke risicovolle stap, imports terug te draaien |
-| Datalek tussen kantoren / licentie | RLS per kantoor + `security_invoker` in fase 0, test met twee accounts |
-| Exports groter of rommeliger dan gedacht | Volledige exports in week 1, database-aggregatie, kwaliteitsregels |
-| Brainbay zonder verkopend kantoor | Vroeg vaststellen (4.1); concurrentie met eerlijke lege staat |
-| Taxateurs vertrouwen de waardering niet | Locatie + index, transparante opbouw, backtest op echte data |
-| Grote demo zonder tussentijdse feedback | Scherpe klaar-als-criteria, screenshotreviews, generale repetitie |
-| Nieuw AI-model verandert de toon | Blinde evaluatieset (9.1) |
-| Kaarttechniek botst met CSP/performance | Spike test CSP eerst; Leaflet-rasteralternatief |
-| Supabase pauzeert vlak voor de demo | Dagelijks gebruik + check de dag ervoor |
-| Uitloop (10–12 weken) | Schrapvolgorde § 8; nieuwe ideeën → backlog |
+| Exports komen laat of zijn rommeliger dan gedacht | Fixture (2.3) houdt het werk gaande; 5.1 exportanalyse vóór er één regel importcode wordt geschreven; kwaliteitsregels + rapport |
+| Brainbay-licentie staat tonen in een platform van een derde niet toe | Schriftelijke bevestiging vóór 5.5 (§ 8); tot die tijd alleen fixture-data in de omgeving |
+| Brainbay bevat i4housing's eigen verkopen dubbel t.o.v. Realworks | Ontdubbelen op `adres_sleutel` + ± 90 dagen (5.2), test op de fixture |
+| Kantoornamen inconsistent ("i4 Housing B.V." vs "i4housing") | `kantoorNormalisatie` + aliaslijst per kantoor (5.2) |
+| Taxateurs vertrouwen de waardering niet | Locatie + index + transparante tabel + WOZ-ijkpunt + backtest + tussencheck M1 |
+| Regionale set groter dan verwacht (> 100 k rijen) | RPC-aggregatie is het ontwerp; indexen; timings gelogd in 12.3; werkgebied-filter als standaard |
+| Vercel Hobby kapt lange functies af tijdens de demo | Vercel Pro vóór de demo (§ 8); generatie is sinds fase 3 losgekoppeld van het aanmaken en toont een timer |
+| Supabase gratis pauzeert na 7 dagen inactiviteit | Dagelijks gebruik; check de dag vóór de demo (12.5) |
+| Dataverlies op productie zonder Pro | Back-up vóór elke risicovolle stap; imports terug te draaien |
+| Datalek tussen kantoren | RLS + `security_invoker` (fase 0); REST-test met twee kantoren (12.2) |
+| Nieuw AI-model verandert de toon | Blinde evaluatieset (8.1) vóór elke wissel |
+| Kaarttechniek botst met CSP of performance | Proof van één uur (7.1); Leaflet-terugval achter dezelfde API |
+| Grote demo zonder tussentijdse feedback | Scherpe klaar-als-criteria, screenshotreviews, tussencheck M1, generale repetitie |
+| Uitloop | Schrapvolgorde § 6; nieuwe ideeën → backlog, nooit het lopende item |
 
-## 8. Blokkades & acties Quinn
+## 8. Acties Quinn
 
-1. **Vandaag:** Supabase-MCP autoriseren via `/mcp`.
-2. **Week 1:** verwerkersovereenkomst met i4housing → volledige Brainbay- en
-   Realworks-exports.
-3. Teamfoto i4housing goedkeuren (fase 1).
-4. Search Console + omleiding Vercel-alias (na 1.10).
-5. Blind oordeel in de evaluatieset (fase 9).
-6. Voorbeeld-verkoopadvies (vóór fase 10).
-7. Akkoord op de opruimmigratie (na back-up).
-8. Vóór het eerste contract: Vercel Pro, Supabase Pro, definitieve
-   verwerkersovereenkomst.
+1. **Vóór fase 5.5:** verwerkersovereenkomst juridisch laten toetsen en
+   tekenen; **Brainbay-licentievoorwaarden schriftelijk** laten bevestigen
+   (tonen van regionale NVM-data in VestaAI aan i4housing zelf).
+2. **Week 1-3:** volledige Brainbay- en Realworks-exports ophalen (liefst
+   XLSX/CSV, alle jaren, met verkopend én aankopend kantoor en coördinaten als
+   dat kan).
+3. **Supabase-dashboard:** self-signup uit (Auth → Providers → Email) en
+   leaked-password-protection aan (Auth → Policies).
+4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby).
+5. Teamfoto i4housing goedkeuren (12.1) en de vijf namen + wachtwoorden
+   aanleveren.
+6. Search Console + omleiding Vercel-alias (na 1.10).
+7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
+8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
+9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
+10. Akkoord op de opruimmigratie (na back-up).
+11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
+    verwerkersovereenkomst, prijsafspraak.
 
-## 9. Schrapvolgorde bij uitloop, backlog & geparkeerd
+## 9. Backlog & geparkeerd
 
-**Schrapvolgorde** (eerst geschrapt bovenaan): fase 12 publieke site → na de
-demo · dossiertijdlijn (8.4) · afspeelknop op de kaart · AI-marktsamenvatting
-(7.4) · kantoor-tegen-kantoor-vergelijker (7.3, matrix blijft) · auth-mails in
-kantoorstijl (3.2).
+**Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
+content naar de UI (nu: timer + skeletons) · statische kaart in de
+waardebepaling-pdf · A/B-segmentvergelijking uitbreiden · keukentafel-/
+presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
+Resend-melding — zie v1) · ⌘K zoeken · Next 15-upgrade · jaarlijkse
+CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
+vernederlandsen · dossiers aanmaken uit een Realworks-objectexport (hun huidige
+aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaart
+(CBS via PDOK) · 4RENT!-variant van het sjabloon (zie observatie Verhuur in
+`docs/besluiten.md`).
 
-**Backlog na de demo:** A/B-segmentvergelijking · keukentafel-/
-presentatiemodus · kwartaalcijfers-generator · maatwerkverzoeken-flow (zie
-hieronder) · ⌘K zoeken · Next 15-upgrade · jaarlijkse CBS-jaargang bijwerken
-(`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
-vernederlandsen · kaart eigen marker-icoon i.p.v. cirkel.
+**Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
+`scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
 
-**Maatwerkverzoeken-flow** (uit oude roadmap, nog niet gebouwd, bewust
-"Binnenkort"): i4housing vraagt binnen de app handwerk aan (artist impression,
-bewerkte staging-foto); Quinn ziet het in `/admin`, werkt het extern uit,
-resultaat komt terug in het dossier. Nog te ontwerpen: tabel `verzoeken`
-(kantoor_id, object_id optioneel, type, toelichting, bijlage-url, status,
-resultaat-url), statusflow (open → in behandeling → klaar), Resend-melding bij
-afronding.
+**Geparkeerd (16 sep):** waardecheck-widget op hun site · ROI-dashboard ·
+prijsadvies bij lange looptijd.
 
-**Periodieke actie (geen bouwwerk):** Realworks-/Brainbay-herimport is met het
-bestaande importscherm te herhalen (upsert-gebaseerd) — een terugkerende
-actie voor Quinn, geen nieuwe feature.
+## 10. Bewust níet doen
 
-**Geparkeerd (niet aansprekend voor Quinn, 16 sep):** waardecheck-widget op
-hun site · ROI-dashboard · prijsadvies bij lange looptijd.
-
----
-
-## Bewust níet doen
-
-- ❌ **Verhuur** — volledig uit de app gehaald (masterplan 16-17 sep 2026).
-  Niet terugzetten zonder besluit.
+- ❌ **Verhuur** — uit de app (16-17 sep). Niet terugzetten zonder besluit
+  (observatie in `docs/besluiten.md`: i4housing doet aantoonbaar verhuur).
 - ❌ **Regiolaag op de verkoopkaart** — alleen eigen verkopen, ook in het
-  straalpaneel (bevestigd 16-17 sep 2026). Regionale data voedt wél waardering
-  en marktanalyse.
-- ❌ **Content-kalender, foto-verbetering en object-chatbot** — op 15 sep 2026
-  volledig verwijderd. Niet opnieuw bouwen zonder expliciet besluit van Quinn.
-- ❌ **Zelf aanmelden / publiek geprijsde site / abonnementen** — bewust
-  geschrapt 15 sep. Nieuwe kantoren, accounts én teamleden altijd via `/admin`.
-  Niet terugzetten zonder besluit.
-- ❌ **Kantoor-admin-rol** — op 16 sep 2026 vervangen door één rol per kantoor.
-  Niet terugzetten.
-- ❌ **Regressie voor kenmerk-effecten** — bewust gekozen voor
-  vergelijkbare-paren i.p.v. regressie (zie `docs/goals.md` § Risico's: een
-  regressie op deze schaal suggereert een schijnzekerheid die de data niet
-  waarmaakt).
-- ❌ Koperskant: geen kopersdatabase, zoekprofielen, bezichtigingsplanning of
-  leadopvolging (besluit 16 sep 2026 — VestaAI dient de verkoperskant, niet de
-  koperskant).
-- ❌ Externe live koppelingen: geen live Realworks-API, geen
-  Funda-publicatie, geen automatisch posten op social, geen
-  WordPress-koppeling. Alles via kopiëren/plakken of een bestandsimport totdat
-  er een expliciet besluit valt over een echte API-koppeling.
-- ❌ Facturatie en boekhouding — courtage wordt berekend en getoond, er komen
-  geen facturen.
-- ❌ Geen AI-inbox (e-mail/WhatsApp) — kernproduct HousApp, jaar voorsprong +
-  funding.
-- ❌ Geen bezichtigingsplanner.
+  straalpaneel. Regionale data voedt wél waardering, marktanalyse en de
+  referentiekaart in het dossier (dat is geen regiolaag maar de onderbouwing
+  van één waarde).
+- ❌ **Content-kalender, foto-verbetering, object-chatbot** — verwijderd 15 sep.
+- ❌ **Zelf aanmelden / prijzen / abonnementen** — geschrapt 15 sep; alles via
+  `/admin`.
+- ❌ **Kantoor-admin-rol** — vervangen door één rol per kantoor (16 sep).
+- ❌ **Regressie voor kenmerk-effecten** — vergelijkbare-paren blijft.
+- ❌ **Koperskant** (kopersdatabase, zoekprofielen, bezichtigingen, leads).
+- ❌ **Live koppelingen** (Realworks-API, Funda-publicatie, auto-posten,
+  WordPress) — alles via kopiëren/plakken of bestandsimport.
+- ❌ **Facturatie/boekhouding**, **AI-inbox**, **bezichtigingsplanner**.
+- ❌ **Losse primitives-fase of showcasepagina** (v2).
+- ❌ **Upload-UI voor grote imports** — script is de weg (v2).
 
----
+## 11. Permanente kwaliteit
 
-## Permanente kwaliteit
-
-- `npm run typecheck` + `npm run test` altijd groen vóór elke commit.
-- Lighthouse landing: >90 performance, >95 accessibility.
-- Elk nieuw scherm mobile-responsive checken (niets breekt op 390 px).
-- Elke query op `transacties` gepagineerd of geaggregeerd, nooit een kale
-  `select('*')`.
-- Elke nieuwe tabel met persoonsgegevens/transactiedata krijgt RLS per
-  kantoor.
-
----
-
-## Opgeleverd
-
-- 16 sep 2026 — masterplan "demo-klaar" opgesteld en vastgelegd in
-  `docs/roadmap.md`, verwijzing toegevoegd bovenaan `CLAUDE.md` (PR #15).
-- 17 sep 2026 — fase 0 (0.1 t/m 0.9) volledig doorlopen: RLS-datalek in
-  `transacties` + SECURITY DEFINER-view gefixt, kapotte import-upsert gefixt,
-  auth-check toegevoegd aan 3 API-routes, CSP opgeschoond (Stripe eruit),
-  back-upscript gebouwd en getest, baseline-schemadump geschreven,
-  documentatie (CLAUDE.md/goals.md/root-CLAUDE.md) geactualiseerd, geheugen
-  opgeschoond, sessieskills (`sessie-start`/`sessie-afronden`) en de
-  concept-verwerkersovereenkomst geschreven. `typecheck`/`test`/`build` groen.
-- 17 sep 2026 — fase 1.1 t/m 1.8: `docs/ontwerpprincipes.md`,
-  `scripts/screenshots.mjs`, ui-primitives (`AppPagina`/`StatTile`/
-  `EmptyState`/`Skeleton`); topbar herbouwd (groter logo, Verhuur weg,
-  avatarmenu); blauwe contactbalk weg; volle breedte op `/woningen`,
-  `object/[id]`, marktanalyse, `/kantoor`; "Aan de slag"-blok weg; lijst
-  verhuisd naar `/woningen`, nieuwe startpagina op `/dashboard` (banner +
-  kerncijfers, `lib/kerncijfers.ts` + 11 tests) met gedeelde auth-helper
-  `lib/haalIngelogdeMakelaar.tsx`; nieuwe `/account`-pagina (naam + wachtwoord);
-  kantoorpagina opgeschoond ("VestaAI" eruit, profiel/uitloggen verhuisd).
-  `typecheck`/`test` (114 tests)/`build` groen.
+- `npm run typecheck && npm run test` groen vóór elke commit; `build` vóór
+  elke PR.
+- `transacties` uitsluitend via `lib/transactiesQuery.ts` (guard-test).
+- Elke nieuwe tabel met persoons- of transactiedata: RLS per kantoor; elke
+  nieuwe view: `security_invoker = true`.
+- Elke statistiek toont n en "data t/m"; te weinig data → waarschuwing.
+- Elk nieuw scherm: niets breekt op 390 px; Lighthouse landing > 90/95.
+- Geen modelstring buiten `lib/aiModellen.ts`; geen Claude-call buiten
+  `lib/claude.ts`.

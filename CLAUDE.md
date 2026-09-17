@@ -1,29 +1,34 @@
 # VestaAI
 
 > ## 🚦 Begin hier bij elke sessie
-> **Lees eerst `docs/roadmap.md` § Stand van zaken** (fase, laatst opgeleverd, volgende
+> **Lees eerst `docs/roadmap.md` § 📍 Stand van zaken** (fase, laatst opgeleverd, volgende
 > item, blokkades, open vragen) vóór je iets anders doet. Dat document is het masterplan
-> "demo-klaar" (opgesteld 16-17 sep 2026) met alle fases, klaar-als-criteria, het
-> besluitenlogboek, risico's en de vangrails voor de productiedatabase.
+> "demo-klaar" **v2** (herzien 17-18 sep 2026): het demoscript in zes scènes (§ 2), de
+> bindende architectuurbesluiten (§ 3), en per item een Sonnet-klare spec (*Doel · Raakt ·
+> Hergebruik · Spec · Tests · Klaar als*). Besluiten en opleveringen staan in
+> `docs/besluiten.md` (logboek, nieuwste bovenaan).
 >
 > **Definition of Done** (elk item, zie `docs/roadmap.md` § 4 voor de volledige versie):
 > `npm run typecheck && npm run test && npm run build` groen · huisstijl-hook schoon ·
 > `scripts/screenshots.mjs` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
-> aanwezig · geen kale `select('*')` op `transacties` · elke nieuwe tabel met RLS per kantoor ·
-> docs bijgewerkt.
+> aanwezig · `transacties` uitsluitend via `lib/transactiesQuery.ts` (vanaf fase 2, guard-test) ·
+> elke nieuwe tabel met RLS per kantoor · docs bijgewerkt.
 >
 > **Vangrails productiedatabase:** back-up (`scripts/backup-data.mjs`) vóór elke
 > risicovolle stap (migratie, import, bulk-update, opruimen); scripts dry-run als
-> standaard; migraties alleen na expliciet akkoord van Quinn.
+> standaard; migraties via `apply_migration` en alleen na expliciet akkoord van Quinn als
+> ze echte data raken.
 >
-> **Werkwijze:** Opus plant (`/model opusplan`), Sonnet bouwt. `/sessie-start` bij het
-> begin, `/sessie-afronden` bij het einde van elke sessie.
+> **Werkwijze:** Sonnet plant én bouwt vanuit de item-spec (mini-plan van ≤10 regels in de
+> chat, plan mode alleen bij items gemarkeerd *(ontwerpkeuze)*). `/sessie-start` bij het
+> begin, `/sessie-afronden` bij het einde van elke sessie. Productkeuzes zelf maken en in
+> `docs/besluiten.md` noteren; alleen blokkeren bij iets onomkeerbaars.
 
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Acquisitie → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
 
 > **Koerswijziging 15 september 2026.** VestaAI was een AI-contentplatform (Funda-teksten, brochures, virtual staging) en werd daarnaast een waarderingsplatform. Alle prijzen/abonnementen/Stripe zijn uit de code gehaald (niet bevroren — verwijderd).
 >
-> **Herstructurering 16 september 2026** (zie `docs/roadmap.md` voor het volledige besluitenlogboek): de micro/macro-navigatie is vervangen door een **fasemodel** — één woningdossier per adres met fases Acquisitie → In verkoop → Verkocht, in plaats van een los "Content"-hoofdmenu. Daarnaast: **één rol per kantoor** (geen kantoor-admin meer; huisstijl, courtage en team zijn platform-admin-beheerd via `/admin`), een echte **transactiedataset** (tabel `transacties`, CSV-import via `/admin/transacties`) die de waardering, marktinzichten en de verkoopkaart voedt, en content die standaard **NL + EN** tegelijk genereert.
+> **Herstructurering 16 september 2026** (zie `docs/besluiten.md` voor het volledige besluitenlogboek): de micro/macro-navigatie is vervangen door een **fasemodel** — één woningdossier per adres met fases Acquisitie → In verkoop → Verkocht, in plaats van een los "Content"-hoofdmenu. Daarnaast: **één rol per kantoor** (geen kantoor-admin meer; huisstijl, courtage en team zijn platform-admin-beheerd via `/admin`), een echte **transactiedataset** (tabel `transacties`, CSV-import via `/admin/transacties`) die de waardering, marktinzichten en de verkoopkaart voedt, en content die standaard **NL + EN** tegelijk genereert.
 
 > **Copyregel:** geen "Founding Member"-taal gebruiken.
 
@@ -38,15 +43,15 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 
 ## Hoofdstructuur
 
-Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.md`:
+Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten.md`:
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
   - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. De woningenlijst (`/woningen`) toont een scorebord (`PitchScorebord.tsx`) met winratio; de startpagina (`/dashboard`) toont dezelfde winratio (laatste 12 maanden) als kerncijfer.
-  - **In verkoop** — hetzelfde als Acquisitie, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. Content wordt in de achtergrond al gegenereerd zodra het dossier wordt aangemaakt (`/api/generate`), maar blijft verborgen tot deze fase.
+  - **In verkoop** — hetzelfde als Acquisitie, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. ⚠️ Content wordt **nu nog synchroon** gegenereerd bij het aanmaken van het dossier (`/api/generate` doet intake → Claude NL+EN → insert, dus aanmaken duurt 1-2 minuten en kost tokens voor elke pitch, ook een verloren pitch). Roadmap v2 fase 3 koppelt dit los: `POST /api/object` maakt direct aan, content komt op knopdruk of bij de overgang naar In verkoop (`objecten.content_status`).
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
   - **AI USP-extractor** — `lib/claude.ts` `extraheerUsps()` + `/api/object/[id]/usps`: vertaalt de vrije intaketekst naar gestructureerde USP's (`components/UspExtractorPaneel.tsx`, kolom `objecten.usps_structuur`).
-  - **Verkoopadvies** — nog te bouwen (`docs/roadmap.md` § Blokkades: wacht op een voorbeelddocument van Quinn). Alle onderliggende data (waardering, buurtkaart, kantoorprofiel, courtage) is al beschikbaar.
+  - **Verkoopadvies** — nog te bouwen (`docs/roadmap.md` fase 11, bewust geblokkeerd tot Quinns voorbeelddocument er is; het datacontract staat daar al). Alle onderliggende data (waardering, buurtkaart, kantoorprofiel, courtage) is al beschikbaar.
   - **Verkoopkaart, straal-uitsnede** (`components/StraalKaartPaneel.tsx`) — 250/500/1000 m rond het adres, alleen eigen verkopen.
 - **Marktinzichten** (`app/(app)/marktanalyse/`, los van één woning) — vier interactieve explorers, geen statische dashboards:
   - **Marktanalyse** (`components/MarktanalyseExplorer.tsx` + `lib/marktanalyse.ts`) — filters op type/wijk/periode, segmentvergelijking, recharts-grafieken (prijs, m²-prijs, doorlooptijd).
@@ -58,7 +63,7 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/roadmap.m
 
 **Eén rol per kantoor** (besluit 16 sep 2026): iedereen met een login binnen een kantoor ziet en kan hetzelfde — geen kantoor-admin meer. De kolom `makelaars.role` bestaat nog maar stuurt geen rechten meer binnen het kantoor. Platform-admin (Quinn, `lib/admin.ts`) is een los concept.
 
-**Transactiedataset** (tabel `transacties`, zie "Datamodel") — i4housing's eigen Brainbay- en Realworks-verkoopdata. **Strikt per kantoor afgeschermd via RLS** (besluit masterplan 16-17 sep 2026, zie `docs/roadmap.md` § Besluitenlogboek): een ingelogde makelaar ziet alléén de transacties van zijn eigen kantoor, nooit die van een ander kantoor (ook niet het interne demo-/testkantoor). Dit verving een eerdere, bewust foute inrichting als "gedeelde referentiepool" die bij verificatie een live cross-tenant datalek bleek — zie de migratie `20260916213323_rls_kantoor_isolatie_transacties.sql` en `supabase/schema-baseline.sql` voor de volledige toedracht. Geïmporteerd door de platform-admin via `/admin/transacties` (CSV, kolomherkenning via aliassen in `lib/transactieImport.ts`, upsert op kantoor+adres+datum voor herhaalbare herimport) — het kantoor importeert zelf niets (concierge-model, zie `docs/goals.md` § Bedieningsmodel). De kolom `eigen_verkoop` bepaalt wat op de verkoopkaart een vlaggetje krijgt (alleen eigen verkopen); de rest van de dataset voedt waardering en marktanalyse. `verkopend_kantoor` (optioneel) voedt de concurrentieanalyse, zodra bevestigd dat de export dit veld bevat.
+**Transactiedataset** (tabel `transacties`, zie "Datamodel") — i4housing's eigen Brainbay- en Realworks-verkoopdata. **Strikt per kantoor afgeschermd via RLS** (besluit masterplan 16-17 sep 2026, zie `docs/besluiten.md`): een ingelogde makelaar ziet alléén de transacties van zijn eigen kantoor, nooit die van een ander kantoor (ook niet het interne demo-/testkantoor). Dit verving een eerdere, bewust foute inrichting als "gedeelde referentiepool" die bij verificatie een live cross-tenant datalek bleek — zie de migratie `20260916213323_rls_kantoor_isolatie_transacties.sql` en `supabase/schema-baseline.sql` voor de volledige toedracht. Geïmporteerd door de platform-admin via `/admin/transacties` (CSV, kolomherkenning via aliassen in `lib/transactieImport.ts`, upsert op kantoor+adres+datum voor herhaalbare herimport) — het kantoor importeert zelf niets (concierge-model, zie `docs/goals.md` § Bedieningsmodel). De kolom `eigen_verkoop` bepaalt wat op de verkoopkaart een vlaggetje krijgt (alleen eigen verkopen); de rest van de dataset voedt waardering en marktanalyse. `verkopend_kantoor` (optioneel) voedt de concurrentieanalyse, zodra bevestigd dat de export dit veld bevat.
 
 ⚠️ **Elke query op `transacties` (en de view `transacties_met_coordinaten`) via de sessie-gebonden client** (`createServerSupabaseClient()`) krijgt automatisch alléén het eigen kantoor terug dankzij RLS — reken hier niet op een handmatig `.eq('kantoor_id', …)`-filter als enige bescherming, en voeg bij een nieuwe view op deze tabel altijd `with (security_invoker = true)` toe (anders draait de view als de aanmakende rol en omzeilt hij RLS alsnog).
 
@@ -172,7 +177,10 @@ VestaAI/
 │   └── supabase.ts · email.ts
 ├── docs/
 │   ├── goals.md                # strategie & doelen (leidend, koerswijziging 15 sep)
-│   ├── roadmap.md              # open to-do's per fase (klaar = weg) — incl. besluitenlogboek
+│   ├── roadmap.md              # masterplan v2: stand van zaken, demoscript, architectuur-
+│   │                           #   besluiten, fases met Sonnet-klare item-specs, planning
+│   ├── besluiten.md            # besluitenlogboek + opleverlog (nieuwste bovenaan)
+│   ├── ontwerpprincipes.md     # layout/typografie/beweging/data-weergave (DoD-toetsing)
 │   ├── kostenschatting.md      # interne API-/infrakosten
 │   ├── i4housing-onderzoek.md  # klantonderzoek i4housing
 │   └── data-integraties/       # API-referenties (CBS-buurtdata etc.)
@@ -180,7 +188,7 @@ VestaAI/
 
 ## To-do-conventie
 
-`docs/roadmap.md` bevat alleen open items. Voltooide items worden verwijderd — geen ✅-archief. Zo blijft de roadmap een werklijst, geen logboek.
+`docs/roadmap.md` is het werkplan: items binnen een fase worden afgevinkt (`- [ ]` → `- [x]`); een volledig afgeronde fase wordt ingeklapt tot één regel met ✅ (zoals fase 0). Wat is opgeleverd en welke besluiten zijn genomen staat in `docs/besluiten.md` — niet in de roadmap, zodat die elke sessie goedkoop te lezen blijft. Nieuwe ideeën gaan naar roadmap § 9 Backlog, nooit het lopende item in.
 
 ## Conventies
 

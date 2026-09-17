@@ -46,7 +46,8 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   niet "danst" bij het herladen (`components/ui/StatTile.tsx` doet dit al).
 - Opmaak in `nl-NL`: `€ 1.250.000` (geen `$` of `1,250,000`), `4,2%` (komma,
   niet punt), `12 dgn` in plaats van `12 days`. Centraliseren in `lib/opmaak.ts`
-  (fase 2.2) i.p.v. los `.toLocaleString()` overal.
+  (gebouwd bij zijn eerste gebruiker, roadmap v2 item 6.1) i.p.v. los
+  `.toLocaleString()` overal.
 
 ## Kleur
 
@@ -67,9 +68,9 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 - Geen bounce/spring-effecten — die passen niet bij "zakelijk en rustig".
 - Alles respecteert `prefers-reduced-motion: reduce` (direct naar eindstaat,
   geen animatie).
-- Fase 1 bouwt dit met kleine, doelgerichte CSS-transities en een losse
-  `requestAnimationFrame`-tween waar nodig (zie `StatTile.tsx`); fase 2.2
-  voegt `motion` toe voor paginaovergangen en het in/uitklappen van panelen.
+- Kleine, doelgerichte CSS-transities en een losse `requestAnimationFrame`-tween
+  waar nodig (zie `StatTile.tsx`). Een animatielibrary komt er alleen als een
+  concreet item hem nodig heeft (roadmap v2: geen losse primitives-fase).
 
 ## Data-weergave
 
@@ -85,14 +86,15 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 - **Grafieken:** hooguit 5 reeksen tegelijk, directe labels waar het kan
   (i.p.v. alleen een legenda), een tooltip die alle onderliggende waarden
   toont. Zie de skill `dataviz` voor kleurformules en vormheuristiek; het
-  gedeelde thema komt in `lib/grafiekThema.ts` (fase 2.3).
+  gedeelde thema komt in `lib/grafiekThema.ts` (roadmap v2 item 6.1).
 - **Lege staten wijzen naar een volgende actie** — `components/ui/EmptyState.tsx`
   i.p.v. losse "geen resultaten"-teksten per explorer.
 
 ## Interactie
 
 - Elke filterstand hoort in de URL (querystring), zodat een view deelbaar is
-  en de terugknop werkt — hook `useFilterState` (fase 2.2).
+  en de terugknop werkt — hook `useFilterState` (roadmap v2 item 6.1, daarna
+  verplicht voor elke verkenner).
 - Toetsenbord: elk interactief element bereikbaar met Tab, focusring in de
   merkkleur (niet de browserstandaard-blauw, dat botst met een niet-blauw
   kantoor).
