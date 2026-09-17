@@ -15,7 +15,7 @@
 | `concurrentie.html` | Item 6.3 — hero marktaandeel, wij vs. markt, trend per jaar (alle jaren), matrix "wie wint waar", ranglijst + concurrentprofiel-drawer met verbergen, lege staat "verkopend kantoor onbekend" | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `transacties.html` | Item 6.2 — volledige filterset § 4, dichte tabel 50/pagina met sticky kop, detail-sheet met minikaart en "gebruik als referentie", CSV alleen eigen, skeleton bij serverlatency | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 | `waardebepaling.html` | Item 4.6 — dossierheader, hero met band en badges, WOZ-ijkpunt, makelaarscorrectie, SVG-referentiekaart met straalcirkel en beeldmerk-pins, referentietabel met uitsluiten/herstel, correctie-chips (drie standen), drawer referentie toevoegen, staten laden/weinig data/leeg/zonder locatie/met correcties; cijfers = rekenvoorbeeld `docs/waardering-methode.md` | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
-| `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) — banner (teamfoto-placeholder neutraal), snelkoppelingen, kerncijfers met hero, recent bekeken, deze week; dossierheader met fasestepper, pitch-uitslag, waarde/content-blok, tabs; staten laden/weinig data/nieuw kantoor/in verkoop/verkocht/zonder foto | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
+| `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) — banner (teamfoto-placeholder neutraal), kerncijfers met hero, recent bekeken, deze week; dossierheader met fasestepper, waarde/content-blok, tabs; ⚠️ nog bij te werken in item 0.1: snelkoppelingen, winratio en pitch-uitslag eruit (besluit 17 sep), topbar plat; staten laden/weinig data/nieuw kantoor/in verkoop/verkocht/zonder foto | klaar (17 sep, Sonnet gebouwd, Fable AKKOORD na 1 ronde) |
 
 Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
 
@@ -63,7 +63,7 @@ app `lib/waardering.ts`).
    kleine accentrode details, nooit grote vlakken en nooit als categorie- of
    statuskleur. De toegestane set: de live-stip in de databadge, de tel-badge
    op een filterpil, de ring en het stokje van de beeldmerk-pin (subject op de
-   kaart), de notificatie-stip (bv. "3 pitches deze week", "kwartaalbericht
+   kaart), de notificatie-stip (bv. "2 verkoopadviezen wachten", "kwartaalbericht
    klaar"), het "×" in de VestaAI × kantoor-lockup, een 3 px accentstreepje
    links van een kaartkop die aandacht vraagt (waarschuwingen, makelaars-
    correctie), en de aan-staat van een lósse schakelaar. Groepen schakelaars

@@ -46,7 +46,7 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten.md`:
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
-  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). Bevat een pitch-uitslag (open/gewonnen/verloren, `FaseToggle.tsx`) — "gewonnen" schuift het dossier door naar In verkoop. De woningenlijst (`/woningen`) toont een scorebord (`PitchScorebord.tsx`) met winratio; de startpagina (`/dashboard`) toont dezelfde winratio (laatste 12 maanden) als kerncijfer.
+  - **Acquisitie** — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). **Geen pitch-concept meer (besluit Quinn 17 sep 2026):** de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat; er bestaan geen "gewonnen/verloren pitches", geen winratio, geen scorebord. `pitch_uitslag`, `FaseToggle`'s uitslag-schakelaar, `PitchScorebord.tsx` en de winratio in `lib/kerncijfers.ts`/`Kerncijfers.tsx` verdwijnen in roadmap-item 1.9c; de kolom vervalt in schema v2 (2.1). De makelaar zet het dossier zelf door naar In verkoop.
   - **In verkoop** — hetzelfde als Acquisitie, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. ⚠️ Content wordt **nu nog synchroon** gegenereerd bij het aanmaken van het dossier (`/api/generate` doet intake → Claude NL+EN → insert, dus aanmaken duurt 1-2 minuten en kost tokens voor elke pitch, ook een verloren pitch). Roadmap v2 fase 3 koppelt dit los: `POST /api/object` maakt direct aan, content komt op knopdruk of bij de overgang naar In verkoop (`objecten.content_status`).
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
@@ -134,8 +134,8 @@ VestaAI/
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
 │   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
-│   │   │                       #   StartBanner + Snelkoppelingen + Kerncijfers
-│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, PitchScorebord (verhuisd
+│   │   │                       #   StartBanner + Kerncijfers (+ recent bekeken; snelkoppelingen vervallen, 1.9c)
+│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, knop Woning toevoegen (1.9c; PitchScorebord vervalt
 │   │   │                       #   van /dashboard hierheen in fase 1.6)
 │   │   ├── object/new · [id]/  #   gedeelde intake (PropertyForm) · woningdossier (ObjectWorkspace,
 │   │   │                       #   fase-afhankelijk: waardering/verkoopadvies altijd, content pas
@@ -150,7 +150,7 @@ VestaAI/
 │   └── api/                    # generate (NL+EN), fotos/documenten/pdf/export, verrijking,
 │                                #   object/[id]/usps, stats, object, auth, me
 ├── components/
-│   ├── AppTopbar.tsx           # topbar (herbouwd fase 1.3): Woningdossier · Marktinzichten;
+│   ├── AppTopbar.tsx           # topbar (herbouwd 1.3; plat vanaf 1.9c): Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie · Verkoopkaart, geen dropdowns;
 │   │                           #   avatarmenu rechtsboven (Mijn account · Kantoor · Uitloggen).
 │   │                           #   Verhuur volledig uit de app (was hier "op slot")
 │   ├── ObjectWorkspace.tsx     # woningdossier, fase-afhankelijke weergave

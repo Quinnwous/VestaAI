@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 0.1 · 1.9b · 1.10 · 1.11 open).
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 0.1 · 1.9c · 1.9b · 1.10 · 1.11 open).
   Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, proefrit-sessie):** item **1.9 Bugs +
   fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
@@ -55,7 +55,12 @@
   accentdetails. Vastgelegd in `docs/ontwerp/README.md` § 1 (referentiebeeld,
   regel 2b). **Mini-item 0.1 hieronder** doet de bijwerking; Sonnet kan dat
   zelfstandig met een Sonnet-agent per bestand en `ontwerpreview` als check.
-- **Volgende item:** **0.1** (prototypes bijtrekken, 1 korte sessie) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
+- **Besluit Quinn 17 sep (avond), verwerkt als item 1.9c en in 0.1:** geen
+  pitch-concept meer (geen winratio, scorebord of uitslag), navigatie plat
+  (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
+  Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
+  snelkoppelingen op de startpagina.
+- **Volgende item:** **0.1** (prototypes bijtrekken, 1 korte sessie) → **1.9c** (geen pitch, platte navigatie) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
   **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
   bouwt nog tegen 0 rijen.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
@@ -112,10 +117,10 @@ eigen data. ±25 minuten. Elke scène noemt de items die hem dragen.
 
 | # | Scène | Wat ze zien | Belofte | Gedragen door |
 |---|---|---|---|---|
-| 1 | **"Dit is óns platform"** (2 min) | `/login/i4housing` in hun stijl → startpagina "Goedemorgen Marc" met teamfoto, kerncijfers uit hún data (verkocht 12 mnd, gem. looptijd, marktaandeel Wassenaar, winratio pitches), snelkoppelingen, recent bekeken | Het is hun platform | 1.9 · 1.10 · 2.5 · 9.1 · 10.4 · 12.1 |
+| 1 | **"Dit is óns platform"** (2 min) | `/login/i4housing` in hun stijl → startpagina "Goedemorgen Marc" met teamfoto, kerncijfers uit hún data (verkocht 12 mnd, gem. looptijd, marktaandeel Wassenaar, prijs t.o.v. vraagprijs), recent bekeken, deze week — geen snelkoppelingen (besluit 17 sep) | Het is hun platform | 1.9 · 1.10 · 2.5 · 9.1 · 10.4 · 12.1 |
 | 2 | **"Eindelijk snappen we onze data"** (5 min) | Marktinzichten → filters (Wassenaar · vrijstaand · 24 mnd) → kerncijfers met delta t.o.v. vorige periode, grafieken prijs/€ per m²/looptijd, segment A vs B → knop **Kwartaalbericht** → Claude schrijft hun Q3-marktupdate in hun toon met de echte cijfers | Inzicht + uren bespaard | 2.2 · 6.1 · 6.4 |
 | 3 | **"Wie wint waar"** (3 min) | Concurrentie → marktaandeel in Wassenaar, wie wint vrijstaand > € 1 mln, i4housing vs. markt op looptijd en prijs t.o.v. vraagprijs, profiel van één concurrent | Positie in de regio | 6.3 (vereist verkopend kantoor in Brainbay) |
-| 4 | **"Hiermee winnen we opdrachten"** (7 min) | Nieuw dossier: adres typen → BAG/WOZ vullen voor → dossier staat er *direct* → waardering: referenties op de kaart binnen de straal, tabel met correcties (tijd · m² · afstand), bandbreedte, WOZ ernaast, wat-als (garage/tuin/label), één referentie uitsluiten → waarde verandert live → makelaarscorrectie met motivatie → **Waardebepaling (pdf)** in hun stijl in < 10 s → pitch gewonnen → fase In verkoop | Opdrachten winnen | 3.1-3.4 · 4.1-4.8 · 7.3 |
+| 4 | **"Hiermee zetten we het verkoopadvies op papier"** (7 min) | Nieuw dossier: adres typen → BAG/WOZ vullen voor → dossier staat er *direct* → waardering: referenties op de kaart binnen de straal, tabel met correcties (tijd · m² · afstand), bandbreedte, WOZ ernaast, wat-als (garage/tuin/label), één referentie uitsluiten → waarde verandert live → makelaarscorrectie met motivatie → **Waardebepaling (pdf)** in hun stijl in < 10 s → makelaar zet het dossier door naar In verkoop | Het verkoopadvies staat, de opdracht volgt | 3.1-3.4 · 4.1-4.8 · 7.3 |
 | 5 | **"Dit scheelt ons uren"** (5 min) | In het dossier: **Genereer content** → timer en skeletons → Funda-tekst in 4SALE!-format NL en EN naast elkaar, brochure-pdf in hun stijl, Instagram, LinkedIn, sneak-preview-WhatsApp-bericht, koper-e-mail → inline bewerken → "stijl leren" | Uren bespaard | 8.1-8.4 |
 | 6 | **"Onze verkopen op de kaart"** (2 min, afsluiter) | Verkoopkaart: eigen verkopen als vlaggetjes in merkkleur, periode-schuiver 2019 → nu, hover-card, filter op type | Trots + overzicht | 7.1 · 7.2 |
 
@@ -142,7 +147,7 @@ schrapvolgorde.
      expliciete kolommenlijst. ±150 rijen/jaar → ≤ 2.000 rijen → de bestaande
      pure functies (`lib/marktanalyse.ts`, `lib/kerncijfers.ts`, `lib/geo.ts`)
      filteren client-side binnen 100 ms. Gebruikt door: kerncijfers,
-     verkoopkaart, straalpaneel, CSV-export. (Het pitchscorebord draait op
+     verkoopkaart, straalpaneel, CSV-export. (Dossier-tellingen draaien op
      `objecten`, niet op `transacties`.)
   2. **Regionale dataset, geaggregeerd in Postgres.** Alles wat over de hele
      regio gaat (duizenden tot tienduizenden rijen) loopt via RPC's met één
@@ -473,6 +478,14 @@ Details: `docs/besluiten.md`.
   losse dropdown; rode microdetails: live-stip, tel-badges, notificatie-stip
   op "Exporteer CSV" als er een export klaarstaat. De dichte tabel, sheet en
   filters blijven zoals ze zijn.
+  *Spec navigatie en startpagina (besluit Quinn 17 sep, avond):* `kit.js`
+  `topbar()` wordt plat — zes pillen Overzicht · Woningdossier · Marktanalyse ·
+  Transacties · Concurrentie · Verkoopkaart, geen subnav meer (centraal in de
+  kit, want het raakt alle prototypes); `startpagina.html` zonder
+  snelkoppelingen, zonder winratio-tegel (→ "Prijs t.o.v. vraagprijs"), zonder
+  "pitches deze week"/"pitch gewonnen" (→ "verkoopadvies verstuurd"), en de
+  dossierheader zonder pitch-uitslag-schakelaar; `waardebepaling.html`
+  dossierheader idem.
   *Spec marktanalyse/verkoopkaart:* kaartkoppen en tegels op de norm brengen,
   placeholders neutraal, 2-3 rode microdetails per scherm (databadge-stip,
   tel-badges, pin-ring op de kaart, accentstreepje bij het kwartaalbericht),
@@ -481,6 +494,33 @@ Details: `docs/besluiten.md`.
   beoordeeld (vision-subagent, checklist `ontwerpreview`) met AKKOORD in
   `docs/besluiten.md`; geen console-fouten; kit.css/kit.js alleen aangepast
   als een regel in álle prototypes terugkomt (dan centraal, met notitie).
+- [ ] **1.9c Geen pitch-concept, platte navigatie, startpagina zonder snelkoppelingen** *(besluit Quinn 17 sep, avond)*
+  *Doel:* het product vertelt niet meer dat er een pitch gewonnen moet worden;
+  de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat.
+  Navigatie wordt plat en de startpagina rustiger.
+  *Raakt:* `components/AppTopbar.tsx`, `app/(app)/dashboard/page.tsx` +
+  `Snelkoppelingen.tsx` (weg) + `Kerncijfers.tsx`, `lib/kerncijfers.ts` (+ test),
+  `app/(app)/woningen/page.tsx` + `WoningenClient.tsx` + `PitchScorebord.tsx`
+  (weg), `app/(app)/object/[id]/FaseToggle.tsx` + `actions.ts` + `page.tsx`,
+  `lib/schemas.ts` (`PitchUitslagSchema` weg), `lib/supabase.ts` (type),
+  `app/(app)/marktanalyse/layout*` (subnav weg), CLAUDE.md § Fasemodel.
+  *Spec:* (a) topbar plat, zes pillen zonder dropdowns: Overzicht ·
+  Woningdossier (→ `/woningen`) · Marktanalyse · Transacties · Concurrentie ·
+  Verkoopkaart; de subnav van marktinzichten vervalt; actieve pil zoals in de
+  prototypes (`docs/ontwerp/kit.js` `topbar()` na item 0.1). (b) "Woning
+  toevoegen" verhuist naar de kop van `/woningen` als primaire knop; de
+  snelkoppelingen op de startpagina verdwijnen. (c) Pitch-concept weg:
+  `PitchScorebord`, winratio-tegel, uitslag-schakelaar in `FaseToggle`, de
+  server action voor de uitslag, `PitchUitslagSchema`; de kolom
+  `objecten.pitch_uitslag` blijft tot 2.1 in de database staan (geen migratie
+  nu) maar wordt nergens meer gelezen of geschreven. De fasestap Acquisitie →
+  In verkoop zet de makelaar handmatig (bestaande `FaseToggle`). (d) De
+  vrijgekomen kerncijfer-tegel wordt "Prijs t.o.v. vraagprijs" (eigen verkopen,
+  12 mnd, met n). (e) Teksten die "pitch" zeggen (hints, lege staten,
+  seed-content) herschrijven naar "verkoopadvies".
+  *Klaar als:* `grep -ri pitch app components lib` geeft 0 treffers buiten
+  historische comments; typecheck/test groen; screenshots van dashboard,
+  woningen en topbar op 1280 px; CLAUDE.md-boom klopt.
 - [ ] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
   *Doel:* de Definition of Done moet zonder handwerk uitvoerbaar zijn, anders
   wordt hij overgeslagen — precies wat de proefrit liet zien.
@@ -598,8 +638,8 @@ Details: `docs/besluiten.md`.
   dip 2022-Q4–2023-Q2; looptijd 20-90 dagen; 10 fictieve kantoren met
   marktaandeel 3-18 %, `verkopend_kantoor` gevuld; `eigen_verkoop` ≈ 12 %
   (≈150/jaar); `bron = 'fixture'`, `geocode_status = 'exact'`; ~2 % rijen
-  bewust met een `uitgesloten_reden`. Plus 15 dossiers verdeeld over de fases
-  met pitch-uitslagen en enkele met content.
+  bewust met een `uitgesloten_reden`. Plus 15 dossiers verdeeld over de fases,
+  enkele met content (geen pitch-uitslagen: het concept vervalt, 1.9c).
   *Klaar als:* alle verkenners, kerncijfers, kaart en waardering tonen
   plausibele cijfers zonder lege staten; screenshots bewaard als referentie.
 - [ ] **2.4 Foutlogging vroeg** — `app/global-error.tsx`, `app/(app)/error.tsx`,
@@ -643,8 +683,8 @@ Details: `docs/besluiten.md`.
   wachten op 10.5.
 - [ ] **3.4 Dossierheader met fasestepper** — `components/DossierHeader.tsx`:
   adres, plaats, typegroep · oppervlak · bouwjaar, fasestepper (Acquisitie →
-  In verkoop → Verkocht, klikbaar waar toegestaan), pitch-uitslag als
-  `StatusBadge`, dagen in huidige fase. Het `VerkoopadviesPaneel` (`InAanbouw`)
+  In verkoop → Verkocht, klikbaar waar toegestaan), dagen in huidige fase
+  (geen pitch-uitslag: vervallen, 1.9c). Het `VerkoopadviesPaneel` (`InAanbouw`)
   verdwijnt uit de acquisitieweergave tot fase 11 bestaat.
   *Hergebruik:* `FaseToggle.tsx`, `PageHeader`, `StatusBadge`.
 - **Klaar als:** scène 4 tot en met "dossier staat er direct" loopt zonder
@@ -903,7 +943,8 @@ Details: `docs/besluiten.md`.
 ### Fase 10 — Woningdossier premium (3 sessies)
 
 - [ ] **10.1 `/woningen` v2** — tabel- en kaartweergave (`BasisKaart`), zoeken,
-  filters fase/makelaar, URL-state; `PitchScorebord` blijft.
+  filters fase/makelaar, URL-state, knop "Woning toevoegen" in de kop (sinds
+  1.9c); `PitchScorebord` is vervallen.
 - [ ] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
   merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
   (pdf, content, fase).
