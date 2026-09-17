@@ -12,7 +12,7 @@ export const maxDuration = 300
  * is nu `{ objectId }` i.p.v. de volledige intake; de kernlogica (lock,
  * Claude-call, opslaan) zit in lib/contentGeneratie.ts zodat ook de
  * fire-and-forget-trigger bij de fase-overgang naar In verkoop
- * (app/(app)/object/[id]/FaseToggle.tsx) 'm via deze route kan aanroepen.
+ * (components/DossierHeader.tsx) 'm via deze route kan aanroepen.
  */
 export async function POST(req: NextRequest) {
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.

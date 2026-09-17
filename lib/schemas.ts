@@ -22,7 +22,9 @@ const TYPEGROEP_LABELS: Record<Typegroep, string> = {
  * maar één vorm te kennen.
  */
 export function woningtypeLabel(input: { woningtype_groep: Typegroep; woningtype_sub?: string | null }): string {
-  return input.woningtype_sub || TYPEGROEP_LABELS[input.woningtype_groep]
+  // Ook ruwe `objecten.input_json` van vóór 3.2 (plat `woningtype`) komt hier langs zonder parse.
+  const genormaliseerd = migreerOudWoningtype(input) as { woningtype_groep?: Typegroep; woningtype_sub?: string | null }
+  return genormaliseerd.woningtype_sub || (genormaliseerd.woningtype_groep ? TYPEGROEP_LABELS[genormaliseerd.woningtype_groep] : '')
 }
 
 /** Leesbaar label voor alleen de groep (optgroup-koppen e.d.), zie woningtypeLabel hierboven. */

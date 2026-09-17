@@ -64,6 +64,8 @@ const EXPECTED_COLUMNS = {
     'waardering_json', 'usps_structuur',
     // item 3.1, migratie 20260917_object_content_status.sql
     'content_status', 'content_gegenereerd_op', 'content_bezig_sinds',
+    // item 3.4, migratie 20260917_object_fase_sinds.sql
+    'fase_sinds',
   ],
 }
 

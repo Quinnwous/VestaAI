@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 3 — Dossierkern (fase 2 ✅ op 17 sep). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
+- **Fase:** 4 — Waardering (fase 2 en 3 ✅ op 17 sep). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
   Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
   v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
@@ -107,12 +107,11 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **3.4** dossierheader met fasestepper (3.1-3.3 klaar op
-  17 sep: dossier in 1,2 s aangemaakt, content op knopdruk of bij de overgang
-  naar In verkoop, woningtype als groep + subtype). ⚠️ Contentgeneratie NL+EN
-  duurde in de test **189 s** bij `maxDuration = 300` (Vercel-limiet): krap;
-  oppakken in fase 8 (NL en EN als aparte aanroepen of streamen). 1.11 (push +
-  merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn 17 sep).
+- **Volgende item:** **Fase 4** (waardering die taxateurs overtuigt): rekenkern
+  staat al (`lib/waardering.ts` v2); nu RPC's/actions/UI aansluiten volgens
+  het prototype `docs/ontwerp/waardebepaling.html`. Let op § 8 actie 6: de
+  tussencheck met de taxateur hoort vóór 4.3. ⚠️ NL+EN-contentgeneratie duurt
+  ~3 min (limiet 300 s) → fase 8. 1.11 (push + merge) bij "rond af".
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -611,41 +610,12 @@ op transactiedata (2.5). Details en besluiten: `docs/besluiten.md` 17 sep.
 **Open tussenfase:** verkenners krijgen nog alle rijen via
 `haalTransactiesVoorVerkenner`; fase 6 zet ze op de RPC's.
 
-### Fase 3 — Dossierkern: aanmaken zonder wachten (2 sessies)
+### Fase 3 — Dossierkern: aanmaken zonder wachten ✅ (17 sep 2026)
 
-- [x] **3.1 Dossier aanmaken zonder Claude** *(§ 3.2)*
-  *Raakt:* nieuw `app/api/object/route.ts` (POST), `app/api/generate/route.ts`
-  (wordt "genereer voor id", lock per dossier), `app/(app)/object/new/NewObjectForm.tsx`,
-  `components/ObjectWorkspace.tsx`, `components/ResultTabs.tsx`, migratie
-  `objecten.content_status` + `content_gegenereerd_op`, `lib/schemas.ts`.
-  *Spec:* NewObjectForm → `POST /api/object` → redirect `/object/[id]`;
-  in In verkoop toont de tab Teksten bij `content_status = 'geen'` een
-  `EmptyState` met knop "Genereer content" (ook NL+EN), bij `bezig` een timer
-  (mm:ss) + skeleton per tab (poll `/api/object/[id]/status` elke 3 s), bij
-  `fout` een foutstaat met "Opnieuw". Fase-overgang naar In verkoop start de
-  generatie automatisch. Rate-limit-map per gebruiker verdwijnt; de lock is
-  `content_status = 'bezig'` met een verlooptijd van 6 minuten.
-  *Tests:* route-test (`app/api/object/route.test.ts`): validatie, 401,
-  aanmaak zonder Claude-call (mock); generate: 409 bij `bezig`.
-  *Klaar als:* dossier aanmaken < 5 s op productie; content pas na de knop.
-- [x] **3.2 Intake voor de verkoopadviesfase** — `usps`/`doelgroep` optioneel in het
-  schema (generate eist ze); woningtype als **groep + subtype** (Select met
-  groepen, taxonomie `docs/ontwerp/README.md` § 5; de oude 6-waarden-enum
-  wordt gemapt in `transactieNormalisatie.ts` zodat bestaande dossiers geldig
-  blijven); stap 5 en 6 gemarkeerd "kan later" in de
-  wizard; concept-opslag blijft. *Raakt:* `components/PropertyForm.tsx`,
-  `lib/schemas.ts`, tests.
-- [x] **3.3 `object/new` uit het contentslot** — `CONTENT_VERGRENDELD` gate weg
-  uit `app/(app)/object/new/page.tsx`; volle breedte via `AppPagina` mag
-  wachten op 10.5.
-- [ ] **3.4 Dossierheader met fasestepper** — `components/DossierHeader.tsx`:
-  adres, plaats, typegroep · oppervlak · bouwjaar, fasestepper (Verkoopadvies →
-  In verkoop → Verkocht, klikbaar waar toegestaan), dagen in huidige fase
-  (geen pitch-uitslag: vervallen, 1.9c). Het `VerkoopadviesPaneel` (`InAanbouw`)
-  verdwijnt uit de verkoopadviesweergave tot fase 11 bestaat.
-  *Hergebruik:* `FaseToggle.tsx`, `PageHeader`, `StatusBadge`.
-- **Klaar als:** scène 4 tot en met "dossier staat er direct" loopt zonder
-  wachten; 390 px breekt niet; screenshots beoordeeld.
+Dossier aanmaken zonder Claude + `content_status`-lock (3.1), intake met
+woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
+`DossierHeader` met klikbare fasestepper en `fase_sinds` (3.4). Details:
+`docs/besluiten.md` 17 sep. ⚠️ NL+EN-generatie ~3 min tegen 300 s limiet → fase 8.
 
 ### Fase 4 — Waardering die taxateurs overtuigt (5 sessies)
 

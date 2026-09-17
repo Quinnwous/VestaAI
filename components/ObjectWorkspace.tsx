@@ -32,7 +32,7 @@ import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
  *   waardering. Gated op `CONTENT_VERGRENDELD` (lib/features.ts) als extra,
  *   losstaande noodschakelaar.
  * - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld (zie
- *   FaseToggle.tsx).
+ *   DossierHeader.tsx).
  */
 
 type SectionId = 'waardering' | 'content'
@@ -81,22 +81,6 @@ function WaarderingSectie({
       />
       <UspExtractorPaneel objectId={objectId} initieleUsps={uspsInitieel} />
     </div>
-  )
-}
-
-function VerkoopadviesPaneel({ address }: { address: string }) {
-  return (
-    <InAanbouw
-      eyebrow="Verkoopadvies — in aanbouw"
-      titel="Het document om de opdracht te winnen"
-      uitleg={`Waarde, referenties, buurtkaart, "over ons" en courtage voor ${address} — in één document, in kantoorhuisstijl. Wacht op een voorbeelddocument voordat de opmaak wordt vastgelegd; de onderliggende data (waardering, kaart, kantoorprofiel) is al beschikbaar zodra die fases klaar zijn.`}
-      punten={[
-        'Onderbouwde waarde met bandbreedte en referentietransacties',
-        'Buurtkaart met een straal rond dit adres',
-        '"Over ons" — kantoorprofiel en werkgebied, beheerd door VestaAI',
-        'Courtagevoorstel, met de kantoorstandaard voorgevuld',
-      ]}
-    />
   )
 }
 
@@ -175,7 +159,6 @@ export function ObjectWorkspace({
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         {waarderingSectie}
-        <VerkoopadviesPaneel address={address} />
         {straalKaart}
       </div>
     )
@@ -193,7 +176,6 @@ export function ObjectWorkspace({
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
         <div style={{ display: 'grid', gap: 16 }}>
           {waarderingSectie}
-          <VerkoopadviesPaneel address={address} />
           {straalKaart}
         </div>
       </div>

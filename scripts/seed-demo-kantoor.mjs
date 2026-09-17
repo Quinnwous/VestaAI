@@ -349,12 +349,15 @@ for (const d of DEMO_DOSSIERS) {
     .maybeSingle()
   if (bestaandDossier) { dossiersOvergeslagen++; continue }
 
+  const outputs = bouwDossierOutputs(d)
   const { error } = await supabase.from('objecten').insert({
     kantoor_id: kantoorId,
     makelaar_id: makelaarId,
     address: d.address,
     input_json: d.input,
-    outputs_json: bouwDossierOutputs(d),
+    outputs_json: outputs,
+    content_status: outputs.funda_tekst ? 'klaar' : 'geen',
+    content_gegenereerd_op: outputs.funda_tekst ? new Date().toISOString() : null,
     status: d.status,
     fase: d.fase,
     lat: d.lat,

@@ -62,7 +62,7 @@ export async function genereerContentVoorObject(objectId: string, kantoorId: str
   }
 
   // Meteen na het claimen revalideren — bij de fire-and-forget-trigger vanuit
-  // FaseToggle.tsx komt deze claim iets later dan de fase-overgang zelf
+  // DossierHeader.tsx komt deze claim iets later dan de fase-overgang zelf
   // binnen; een navigatie naar de Teksten-tab kort daarna moet al 'bezig'
   // zien in plaats van de vorige, inmiddels achterhaalde staat.
   revalidatePath(`/object/${objectId}`)

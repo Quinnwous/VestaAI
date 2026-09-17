@@ -29,8 +29,9 @@ comment on column objecten.content_bezig_sinds is
 -- Bestaande dossiers hebben hun content al (de oude synchrone pijplijn
 -- genereerde bij het aanmaken) — die tellen met terugwerkende kracht als
 -- 'klaar' zodat de Teksten-tab niet ineens een lege staat toont.
+-- Gecorrigeerd 17 sep: een leeg dossier heeft een structuur met lege strings,
+-- niet '{}'. Alleen een gevulde Funda-tekst telt als "content aanwezig".
 update objecten
-  set content_status = 'klaar'
-  where content_status = 'geen'
-    and outputs_json is not null
-    and outputs_json::text <> '{}';
+  set content_status = case when nullif(outputs_json->>'funda_tekst', '') is not null then 'klaar' else 'geen' end
+  where content_status in ('geen', 'klaar')
+    and content_gegenereerd_op is null;

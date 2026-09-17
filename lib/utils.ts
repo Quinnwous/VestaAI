@@ -28,6 +28,19 @@ export function formatDatum(iso: string): string {
   return new Date(iso).toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+/**
+ * "X dagen in <fase>" voor de fasestepper in DossierHeader.tsx (item 3.4,
+ * docs/roadmap.md § Fase 3). Telt kalenderdagen (middernacht-grenzen in de
+ * lokale tijdzone), niet afgeronde 24-uursblokken.
+ */
+export function dagenInFase(faseSinds: string, nu: Date = new Date()): string {
+  const middernacht = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const dagen = Math.round((middernacht(nu) - middernacht(new Date(faseSinds))) / 86400_000)
+  if (dagen <= 0) return 'vandaag'
+  if (dagen === 1) return '1 dag'
+  return `${dagen} dagen`
+}
+
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }

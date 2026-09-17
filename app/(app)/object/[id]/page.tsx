@@ -4,13 +4,11 @@ import { unstable_cache } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { haalEigenVerkopen, haalTransactiesVoorVerkenner, ALLE_TRANSACTIE_KOLOMMEN, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
+import { DossierHeader } from '@/components/DossierHeader'
 import { InvoerToggle } from './InvoerToggle'
-import { StatusToggle } from './StatusToggle'
-import { FaseToggle } from './FaseToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
-import { formatDatum } from '@/lib/utils'
-import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
+import { AppPagina } from '@/components/ui'
 import { woningtypeLabel, type ContentOutput, type ObjectContentStatus, type ObjectFase, type PropertyInput } from '@/lib/schemas'
 import type { Subject } from '@/lib/waardering'
 import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
@@ -20,7 +18,7 @@ const getCachedObject = unstable_cache(
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur, content_status, content_gegenereerd_op, content_bezig_sinds')
+      .select('id, kantoor_id, address, status, fase, fase_sinds, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur, content_status, content_gegenereerd_op, content_bezig_sinds')
       .eq('id', objectId)
       .single()
     return data
@@ -49,11 +47,6 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   ])
 
   if (!object || !makelaar || object.kantoor_id !== makelaar.kantoor_id) notFound()
-
-  // Adres splitsen op de laatste komma → stad cursief in de serif-titel.
-  const komma = object.address.lastIndexOf(',')
-  const straat = komma > -1 ? object.address.slice(0, komma) : object.address
-  const stad = komma > -1 ? object.address.slice(komma + 1).trim() : undefined
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
@@ -91,23 +84,21 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         ← Terug naar de portefeuille
       </Link>
 
-      <div style={{ marginBottom: 24 }}>
-        <Eyebrow>Woning</Eyebrow>
-        <SerifTitle size={32} accent={stad} style={{ marginBottom: 12 }}>{stad ? `${straat},` : straat}</SerifTitle>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <FaseToggle objectId={object.id} fase={fase} />
-            {fase !== 'verkoopadvies' && (
-              <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
-            )}
-            <span style={{ fontSize: 13, color: '#98A0A6' }}>{formatDatum(object.created_at)}</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+      <DossierHeader
+        objectId={object.id}
+        address={object.address}
+        fase={fase}
+        faseSinds={object.fase_sinds}
+        invoer={invoer}
+        status={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'}
+        aangemaaktOp={object.created_at}
+        acties={
+          <>
             <RegenereerButton invoer={object.input_json as PropertyInput} />
             <DeleteButton objectId={object.id} adres={object.address} />
-          </div>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <InvoerToggle invoer={object.input_json as PropertyInput} />
 

@@ -29,12 +29,23 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
   const GELDIGE_FASES: ObjectFase[] = ['verkoopadvies', 'in_verkoop', 'verkocht']
   if (!GELDIGE_FASES.includes(nieuweFase)) return { ok: false, error: 'Ongeldige fase' }
 
-  const update: { fase: ObjectFase; status?: ObjectStatus } = { fase: nieuweFase }
+  const { data: huidig } = await supabase
+    .from('objecten')
+    .select('fase')
+    .eq('id', objectId)
+    .eq('kantoor_id', makelaar.kantoor_id)
+    .single()
+  if (!huidig) return { ok: false, error: 'Woning niet gevonden' }
+
+  const update: { fase: ObjectFase; status?: ObjectStatus; fase_sinds?: string } = { fase: nieuweFase }
   if (nieuweFase === 'verkocht') update.status = 'verkocht'
+  // fase_sinds (item 3.4) alleen bijwerken bij een écht andere fase — anders
+  // zou het opnieuw "vandaag" tonen bij een no-op-aanroep.
+  if (nieuweFase !== huidig.fase) update.fase_sinds = new Date().toISOString()
 
   // content_status wordt hier niet gewijzigd — .select() erna geeft dus de
   // ongewijzigde huidige waarde terug (item 3.1, docs/roadmap.md § 3.2): de
-  // aanroeper (FaseToggle.tsx) gebruikt die om te bepalen of de fire-and-
+  // aanroeper (DossierHeader.tsx) gebruikt die om te bepalen of de fire-and-
   // forget-trigger naar /api/generate nodig is (alleen als er nog niets
   // staat, i.e. 'geen').
   const { data: updated, error } = await supabase
@@ -42,7 +53,7 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
     .update(update)
     .eq('id', objectId)
     .eq('kantoor_id', makelaar.kantoor_id)
-    .select('content_status')
+    .select('content_status, fase_sinds')
     .single()
 
   if (error) return { ok: false, error: error.message }
@@ -50,7 +61,12 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
   revalidatePath('/woningen')
-  return { ok: true, fase: nieuweFase, contentStatus: updated?.content_status as string | undefined }
+  return {
+    ok: true,
+    fase: nieuweFase,
+    contentStatus: updated?.content_status as string | undefined,
+    faseSinds: updated?.fase_sinds as string | undefined,
+  }
 }
 
 export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatus) {
