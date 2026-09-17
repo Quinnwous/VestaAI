@@ -107,9 +107,12 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **4.6** premium waarderingspaneel (port van
-  `docs/ontwerp/waardebepaling.html`, incl. de puntwaarde bóven de band — die
-  ontbreekt nu) → **4.4** handmatige referenties → **4.7** waardebepaling-pdf.
+- **Volgende item:** **4.7** waardebepaling-pdf (laatste item van fase 4).
+  4.6 en 4.4 klaar op 18 sep: paneel geport uit het prototype (hero met
+  puntwaarde + band + badges, referentiekaart met pins en straalcirkel,
+  correcties per referentie, drawer), referenties uitsluiten/toevoegen werkt
+  en blijft bewaard, en "meenemen als referentie" op /marktanalyse/transacties
+  doet eindelijk iets.
   4.1/4.2/4.3/4.5/4.8 klaar op 17-18 sep: paneel draait op echte data
   (proef Wassenaar-villa € 4,2 mln uit 22 referenties), backtest op de fixture
   **mediane fout 6,1 % · 76 % binnen de band** (demo-lat ≤ 7 % / ≥ 75 % gehaald,
@@ -649,7 +652,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   v1-json bij lezen. ≥ 15 tests (bestaande 11 aanpassen, niet weggooien).
   *Al klaar (17 sep):* `berekenWaarderingV2()`, schema's, `migreerWaarderingJson()`,
   22 tests + rekenvoorbeeld. *Open:* actions en paneel op v2, v1 verwijderen.
-- [ ] **4.4 Referenties handmatig** — uitsluiten (kruisje in de tabel) en
+- [x] **4.4 Referenties handmatig** — uitsluiten (kruisje in de tabel) en
   toevoegen (Drawer met `zoekTransacties`, primitive `Drawer` +
   `DataTable`-light), opgeslagen in `waardering_json.handmatig`; de knop
   "gebruik als referentie" in `components/TransactiesZoeken.tsx` gaat eindelijk
@@ -662,7 +665,7 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
   `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:*
   `haalRegionaleSet()` (2.2) als bron van `opties.regionaal`, schakelaars en
   correctiekolom in het paneel (4.6). Geen RPC `kenmerk_paren` meer nodig.
-- [ ] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie gedaan 17 sep →
+- [x] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
   uitgangspunt voor die sessie)*
   *Spec boven de vouw (1280 px):* links 5/12: waarde groot (`tabular-nums`),
@@ -1047,6 +1050,10 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
+
+**Twee kaarten in het dossier (18 sep):** de nieuwe referentiekaart (4.6) en
+het oudere `StraalKaartPaneel` ("In de buurt verkocht") staan nu allebei op de
+waarderingstab. Samenvoegen of één laten vervallen bij item 10.2.
 
 **Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
 `handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`

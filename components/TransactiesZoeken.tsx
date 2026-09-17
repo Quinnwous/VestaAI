@@ -1,7 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { TransactieRow } from '@/lib/supabase'
+import { Modal } from '@/components/ui'
+import { lijstEigenDossiers, type DossierOptie } from '@/app/(app)/marktanalyse/transacties/dossier-actions'
+import { voegReferentiesToe } from '@/app/(app)/object/[id]/waardering-actions'
 
 function formatEuro(bedrag: number | null): string {
   return bedrag !== null ? `€${bedrag.toLocaleString('nl-NL')}` : '—'
@@ -29,6 +32,43 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
   const [energielabel, setEnergielabel] = useState('')
   const [geselecteerd, setGeselecteerd] = useState<Set<string>>(new Set())
   const [pagina, setPagina] = useState(0)
+
+  // Item 4.4 (docs/roadmap.md § Fase 4): "meenemen als referentie" — kies een
+  // dossier van het eigen kantoor, voeg de selectie toe via `voegReferentiesToe()`.
+  const [dossierModalOpen, setDossierModalOpen] = useState(false)
+  const [dossierZoek, setDossierZoek] = useState('')
+  const [dossiers, setDossiers] = useState<DossierOptie[] | null>(null)
+  const [dossierFout, setDossierFout] = useState<string | null>(null)
+  const [toevoegenBezig, setToevoegenBezig] = useState<string | null>(null)
+  const [melding, setMelding] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!dossierModalOpen || dossiers !== null) return
+    lijstEigenDossiers().then(res => {
+      if ('error' in res) setDossierFout(res.error)
+      else setDossiers(res)
+    })
+  }, [dossierModalOpen, dossiers])
+
+  const gefilterdeDossiers = useMemo(() => {
+    if (!dossiers) return []
+    const q = dossierZoek.trim().toLowerCase()
+    return q ? dossiers.filter(d => d.adres.toLowerCase().includes(q)) : dossiers
+  }, [dossiers, dossierZoek])
+
+  async function meenemenAlsReferentie(dossier: DossierOptie) {
+    setToevoegenBezig(dossier.id)
+    const res = await voegReferentiesToe(dossier.id, Array.from(geselecteerd))
+    setToevoegenBezig(null)
+    if (res.ok) {
+      setMelding(`${geselecteerd.size} transactie${geselecteerd.size === 1 ? '' : 's'} toegevoegd aan de waardering van ${dossier.adres}.`)
+      setGeselecteerd(new Set())
+      setDossierModalOpen(false)
+      setDossierZoek('')
+    } else {
+      setDossierFout(res.error)
+    }
+  }
 
   const types = useMemo(() => Array.from(new Set(transacties.map(t => t.woningtype).filter((v): v is string => !!v))).sort(), [transacties])
   const labels = useMemo(() => Array.from(new Set(transacties.map(t => t.energielabel).filter((v): v is string => !!v))).sort(), [transacties])
@@ -146,11 +186,60 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
       )}
 
       {geselecteerd.size > 0 && (
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '10px 14px' }}>
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', borderRadius: 12, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '10px 14px' }}>
           <p style={{ fontSize: 12.5, color: '#2C3238', margin: 0 }}>
-            {geselecteerd.size} geselecteerd — meenemen als referentie in een waardebepaling komt beschikbaar zodra de waarderingsmodule er is.
+            {geselecteerd.size} geselecteerd
           </p>
+          <button
+            type="button"
+            onClick={() => setDossierModalOpen(true)}
+            style={{ marginLeft: 'auto', height: 32, padding: '0 14px', fontSize: 12.5, fontWeight: 700, color: '#fff', background: 'var(--merk)', border: 'none', borderRadius: 10, cursor: 'pointer' }}
+          >
+            Meenemen als referentie
+          </button>
         </div>
+      )}
+
+      {melding && (
+        <div style={{ marginTop: 10, borderRadius: 10, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '9px 14px' }}>
+          <p style={{ fontSize: 12.5, color: 'var(--merk-diep)', margin: 0 }}>{melding}</p>
+        </div>
+      )}
+
+      {dossierModalOpen && (
+        <Modal onClose={() => setDossierModalOpen(false)} title="Kies een dossier" maxWidth={480}>
+          <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 12px' }}>
+            {geselecteerd.size} transactie{geselecteerd.size === 1 ? '' : 's'} worden toegevoegd als handmatige referentie aan de waardering van het gekozen dossier.
+          </p>
+          <input
+            type="search"
+            value={dossierZoek}
+            onChange={e => setDossierZoek(e.target.value)}
+            placeholder="Zoek op adres…"
+            style={{ width: '100%', borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, marginBottom: 12 }}
+          />
+          {dossierFout && <p style={{ fontSize: 12.5, color: '#DC2626', margin: '0 0 10px' }}>{dossierFout}</p>}
+          {dossiers === null ? (
+            <p style={{ fontSize: 12.5, color: '#98A0A6' }}>Dossiers laden…</p>
+          ) : gefilterdeDossiers.length === 0 ? (
+            <p style={{ fontSize: 12.5, color: '#98A0A6' }}>Geen dossiers gevonden.</p>
+          ) : (
+            <div style={{ maxHeight: 360, overflowY: 'auto', display: 'grid', gap: 6 }}>
+              {gefilterdeDossiers.map(d => (
+                <button
+                  key={d.id}
+                  type="button"
+                  disabled={toevoegenBezig !== null}
+                  onClick={() => meenemenAlsReferentie(d)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: '1px solid #E6E9EC', borderRadius: 10, padding: '10px 12px', background: '#fff', cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: '#14181B', fontWeight: 600 }}
+                >
+                  <span>{d.adres}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </Modal>
       )}
     </div>
   )

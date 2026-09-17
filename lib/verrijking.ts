@@ -115,6 +115,23 @@ async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Pr
   }
 }
 
+/**
+ * Licht WOZ-ijkpunt voor de waarderingskern (item 4.6, docs/roadmap.md § 3.3):
+ * alleen de PDOK-opzoeking + WOZ Waardeloket, geen CBS/Overpass — die zijn
+ * hier niet nodig en zouden `berekenWaardering()` onnodig vertragen. Geeft de
+ * meest recente WOZ-waarde + peildatum terug, of `null` als het adres niet in
+ * BAG/WOZ te vinden is. **Nooit als invoer voor de berekening** — puur een
+ * ijkpunt náást de waarde (§ 3.3).
+ */
+export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; peildatum: string } | null> {
+  const pdok = await pdokLookup(adres)
+  const bagId = pdok?.adresseerbaarobject_id
+  if (!bagId) return null
+  const woz = await fetchWoz(bagId)
+  const meestRecent = woz?.waarden[0]
+  return meestRecent ? { waarde: meestRecent.waarde, peildatum: meestRecent.peildatum } : null
+}
+
 // ─── CBS Kerncijfers wijken en buurten (live OData) ───────────────────────────
 //
 // Dataset 85984NED = jaargang 2024: de meest recente jaargang die óók inkomen

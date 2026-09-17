@@ -59,9 +59,10 @@ const card: React.CSSProperties = {
 }
 
 function WaarderingSectie({
-  objectId, waarderingUitkomst, correctie, uspsInitieel,
+  objectId, address, waarderingUitkomst, correctie, uspsInitieel,
 }: {
   objectId: string
+  address: string
   waarderingUitkomst: WaarderingUitkomst | null
   correctie: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel: string[]
@@ -70,6 +71,7 @@ function WaarderingSectie({
     <div style={{ display: 'grid', gap: 16 }}>
       <WaardebepalingPaneel
         objectId={objectId}
+        address={address}
         opgeslagenUitkomst={waarderingUitkomst}
         opgeslagenCorrectie={correctie}
       />
@@ -133,6 +135,7 @@ export function ObjectWorkspace({
   const waarderingSectie = (
     <WaarderingSectie
       objectId={objectId}
+      address={address}
       waarderingUitkomst={waarderingUitkomst}
       correctie={waarderingCorrectie}
       uspsInitieel={uspsInitieel}

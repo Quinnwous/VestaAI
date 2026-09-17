@@ -174,6 +174,30 @@ export async function haalRegionaleSet(
   )
 }
 
+/**
+ * Referentiekandidaten op id (item 4.4, docs/roadmap.md § 3.3): lost de
+ * opgeslagen `waardering_json.handmatig.toegevoegd`/`uitgesloten`-ids op naar
+ * volledige `Kandidaat`-rijen — dezelfde kolommen als `haalRegionaleSet()`.
+ * Geen coördinaten (die kolommen staan alleen op de view
+ * `transacties_met_coordinaten`, niet op `transacties` zelf): een handmatig
+ * toegevoegde referentie toont dus geen afstand tot het subject.
+ */
+export async function haalTransactiesOpId(client: SessieClient, ids: string[]): Promise<Kandidaat[]> {
+  if (ids.length === 0) return []
+  const kolommen = [
+    'id', 'adres', 'plaats', 'woningtype_groep', 'woningtype_sub',
+    'verkoopprijs', 'woonoppervlak_m2', 'bouwjaar', 'verkoopdatum',
+    'garage', 'tuin', 'energielabel', 'verkopend_kantoor',
+  ] as const
+  const { data, error } = await client
+    .from('transacties')
+    .select(kolommen.join(','))
+    .in('id', ids)
+    .is('uitgesloten_reden', null)
+  if (error) throw new Error(`haalTransactiesOpId: ${error.message}`)
+  return (data ?? []) as unknown as Kandidaat[]
+}
+
 export type DataTotEnMet = {
   laatsteVerkoopdatum: string | null
   laatsteImportKlaarOp: string | null
