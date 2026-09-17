@@ -25,6 +25,7 @@ schreef alleen de statistisch lastige module zelf en deed de reviews.
 | README § 4 | Concurrentie filtert op plaats/wijk, type, periode en prijsklasse (5 klassen); "verkopend kantoor" is daar geen filter maar "verberg dit kantoor"; Segment B op Concurrentie naar backlog | Fable |
 | Kit-beperking | Topbar heeft geen mobiele stand; prototypes worden op 1280/1440 beoordeeld, de app heeft zijn eigen `AppTopbar`. Centraal oplossen in kit.css staat op de backlog | Fable |
 | Datums | Alles van de nacht 16→17 sep stond als 17-18/18 sep gelogd; git-log is leidend, overal gecorrigeerd | Fable |
+| Feedback Quinn op de prototypes | De drie nieuwste (`concurrentie`, `startpagina`, `waardebepaling`) zijn het referentiebeeld voor álle schermen; `transacties.html` wijkt af (kale tabelpagina) en `marktanalyse`/`verkoopkaart` gaan ook naar dat beeld; overal 2-3 kleine rode accentdetails terug (Quinn miste ze). Vastgelegd als README § 1 referentiebeeld + regel 2b; bijwerking = roadmap mini-item 0.1 (Sonnet, eerste sessie) | Quinn |
 
 Artifact-links (prototypes, gepubliceerd 17 sep):
 concurrentie https://claude.ai/artifact/3Q3toKB4sENg3yRKmvVXoU ·

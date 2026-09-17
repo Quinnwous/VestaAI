@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 1.9b · 1.10 · 1.11 open).
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 0.1 · 1.9b · 1.10 · 1.11 open).
   Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, proefrit-sessie):** item **1.9 Bugs +
   fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
@@ -48,7 +48,14 @@
   `waardebepaling.html` (4.6). Artifact-links in `docs/besluiten.md` 17 sep.
   Bij het bouwen van die items is het prototype de spec (§ 3.8): eerst
   `ontwerpreview` AKKOORD, dan pas afvinken.
-- **Volgende item:** **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
+- **Feedback Quinn op de prototypes (17 sep, na afloop):** de drie nieuwste
+  (`concurrentie.html`, `startpagina.html`, `waardebepaling.html`) zijn de
+  maatstaf; `transacties.html` wijkt stilistisch af en ook `marktanalyse.html`
+  en `verkoopkaart.html` moeten naar dat beeld; overal 2-3 kleine rode
+  accentdetails. Vastgelegd in `docs/ontwerp/README.md` § 1 (referentiebeeld,
+  regel 2b). **Mini-item 0.1 hieronder** doet de bijwerking; Sonnet kan dat
+  zelfstandig met een Sonnet-agent per bestand en `ontwerpreview` als check.
+- **Volgende item:** **0.1** (prototypes bijtrekken, 1 korte sessie) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
   **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
   bouwt nog tegen 0 rijen.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
@@ -449,6 +456,31 @@ Details: `docs/besluiten.md`.
   (afgeleid uit primaire/accentkleur; zie `docs/ontwerp/README.md` § 2).
   *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
   `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
+- [ ] **0.1 Prototypes bijtrekken naar het referentiebeeld** *(feedback
+  Quinn 17 sep; 1 korte sessie, Sonnet-agents per bestand, geen app-code)*
+  *Doel:* alle zes prototypes in `docs/ontwerp/` zien eruit als
+  `concurrentie.html` / `startpagina.html` / `waardebepaling.html`
+  (README § 1 referentiebeeld + regel 2b), zodat "prototype = spec" één stijl
+  betekent.
+  *Raakt:* `docs/ontwerp/transacties.html` (grootste afwijking), `marktanalyse.html`,
+  `verkoopkaart.html`; README-bestandstabel; artifacts opnieuw publiceren
+  (zelfde URL's via `url`, links in `docs/besluiten.md` 17 sep).
+  *Spec transacties:* boven de tabel een tegelrij zoals concurrentie: hero
+  "n transacties in selectie" (merkverloop, delta t.o.v. vorige periode,
+  sparkline) + tegels mediaan prijs, mediaan € per m², mediaan looptijd, %
+  boven vraagprijs (elk met n); tabel in een kaart met kaartkop (titel +
+  ondertitel "gesorteerd op …"); sortering als segmented in de kaartkop i.p.v.
+  losse dropdown; rode microdetails: live-stip, tel-badges, notificatie-stip
+  op "Exporteer CSV" als er een export klaarstaat. De dichte tabel, sheet en
+  filters blijven zoals ze zijn.
+  *Spec marktanalyse/verkoopkaart:* kaartkoppen en tegels op de norm brengen,
+  placeholders neutraal, 2-3 rode microdetails per scherm (databadge-stip,
+  tel-badges, pin-ring op de kaart, accentstreepje bij het kwartaalbericht),
+  overlays dimmen zonder blur.
+  *Klaar als:* per bestand een screenshot op 1280 px naast het referentiebeeld
+  beoordeeld (vision-subagent, checklist `ontwerpreview`) met AKKOORD in
+  `docs/besluiten.md`; geen console-fouten; kit.css/kit.js alleen aangepast
+  als een regel in álle prototypes terugkomt (dan centraal, met notitie).
 - [ ] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
   *Doel:* de Definition of Done moet zonder handwerk uitvoerbaar zijn, anders
   wordt hij overgeslagen — precies wat de proefrit liet zien.

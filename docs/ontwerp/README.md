@@ -33,6 +33,22 @@ app `lib/waardering.ts`).
 
 ## 1. Ontwerprichting "i4 · zacht" (Apple-achtig, besluit Quinn 17 sep 2026)
 
+> **Referentiebeeld (feedback Quinn, 17 sep 2026, na de vierde ontwerpsessie):**
+> `concurrentie.html`, `startpagina.html` en `waardebepaling.html` zijn hét
+> uitgangspunt voor de stijl van élk scherm — ook voor de eerder gemaakte
+> `marktanalyse.html` en `verkoopkaart.html`, en voor `transacties.html`, dat
+> stilistisch afwijkt (kale tabelpagina zonder hero/tegelrij). Bijwerken
+> daarvan is een kleine ontwerpsessie (zie roadmap § Stand van zaken); daarna
+> geldt: nieuw scherm = zelfde opbouw als die drie.
+>
+> Wat die drie gemeen hebben en wat dus de norm is: (a) kop met eyebrow, titel
+> en databadge; (b) één merkblauwe hero-tegel met verloop en daarnaast witte
+> tegels met n, delta en bijschrift; (c) inhoud in ronde witte kaarten met
+> kaartkop (titel + grijze ondertitel), nooit een kale tabel of grafiek op de
+> pagina; (d) rustige neutrale placeholders (foto's, kaarten) zodat blauw het
+> enige hoogtepunt blijft; (e) **kleine rode accentdetails**, 2-3 per scherm
+> (regel 2b hieronder).
+
 1. **Vorm "zacht"** voor i4 Housing (was "strak"): kaarten 16 px, controls 12 px,
    chips/segmented/pillen volledig rond, modal 20 px. Dit is de bestaande
    radius-schaal van `lib/branding.ts` (`vorm: 'zacht'`); zet die via `/admin`
@@ -43,6 +59,16 @@ app `lib/waardering.ts`).
    tel-badges op filters, segment B, de ring en het stokje van de pin, en de
    schakelaar-aan-staat. Nooit rood voor een semantische status (dat is amber
    `--let`); groen `--goed` alleen voor "gunstig".
+   **2b. Mini rode details (feedback Quinn 17 sep):** elk scherm heeft 2-3
+   kleine accentrode details, nooit grote vlakken en nooit als categorie- of
+   statuskleur. De toegestane set: de live-stip in de databadge, de tel-badge
+   op een filterpil, de ring en het stokje van de beeldmerk-pin (subject op de
+   kaart), de notificatie-stip (bv. "3 pitches deze week", "kwartaalbericht
+   klaar"), het "×" in de VestaAI × kantoor-lockup, een 3 px accentstreepje
+   links van een kaartkop die aandacht vraagt (waarschuwingen, makelaars-
+   correctie), en de aan-staat van een lósse schakelaar. Groepen schakelaars
+   zijn chips (blauw = aan en toegepast). Bij het porten (§ 8) horen deze
+   details bij de spec, niet bij de decoratie: laat er geen weg.
 3. **Ambient kleur op de achtergrond:** twee zachte radiale verlopen (blauw
    linksboven, rood rechtsboven) op `body`, zodat de pagina niet grijs oogt.
 4. **Frosted balken:** topbar en filterbalk zijn sticky met
