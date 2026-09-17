@@ -6,6 +6,25 @@
 
 ---
 
+### 17 sep 2026 (sessie Opus/Sonnet, deel 2) — items 1.9c, 1.9b, 1.10
+
+Twee Sonnet-agents parallel (1.9c app-code, 1.10 SEO — geen bestandsoverlap,
+alleen typecheck parallel, build daarna door de orchestrator); 1.9b schreef de
+orchestrator zelf.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Kerncijfertegels (1.9c) | Vijf tegels: Lopende verkoopadviezen · In verkoop · Verkocht dit jaar (kalenderjaar) · Gem. looptijd en Prijs t.o.v. vraagprijs over de **laatste 12 maanden** (was "dit jaar"; beide delen n en de weinig-data-grens). Geen dubbele tegel: de al bestaande vraagprijs-tegel is de vervanger van de winratio. `filterOpLaatsteMaanden` kreeg een datum-accessor zodat hij ook op `verkoopdatum` werkt | Sonnet |
+| Mobiele topbar (1.9c) | ≤ 900 px: pillen en avatar weg, hamburger met dezelfde zes items plat onder elkaar plus het profielblok | Sonnet |
+| Fasestap (1.9c) | In Verkoopadvies toont `FaseToggle` een badge + knop "Naar In verkoop" | Sonnet |
+| `dod:screens` (1.9b) | Eén commando dat een draaiende server gebruikt of zelf `next dev` start (en weer stopt). Faalt op VestaAI-groen, foutstaat, `pageerror`, niet-2xx en — toegevoegd na de eerste run — **horizontale overloop**, omdat de huisstijlcheck een 596 px brede startpagina op 390 px "schoon" noemde. Login gedeeld in `scripts/lib/dodSessie.mjs`; `controleer-huisstijl.mjs` faalt nu ook bij groen (gaf eerder alleen een melding). Aangetoond: opzettelijke `throw` in `/account` → exit 1 in alle vier stappen | Opus |
+| Beeldmerk (1.10) | Bestaande VestaAI-tegel (groen, witte V) uit `LandingPageClient`/`PublicNav`, geen nieuw ontwerp. `twitter-image` hergebruikt `opengraph-image` | Sonnet + Opus |
+| Positionering in metadata (1.10) | Titel "VestaAI — Platform voor makelaars"; omschrijving: waardering, marktinzicht en concurrentieanalyse op eigen transactiedata, contentsuite, in de huisstijl van het kantoor | Sonnet |
+| Bugs gevonden bij de controle | (1) `middleware.ts` stuurde `/opengraph-image` en `/twitter-image` naar `/login` → toegevoegd aan de publieke routes; (2) OG-beeld crashte in Satori (div met meerdere kinderen zonder flex); (3) `StartBanner` `aspect-ratio: 16/5` + `min-height: 180` dwong 576 px minimale breedte af → `height: clamp(180px, 30vw, 376px)` | Opus |
+| Productiedata | Gecontroleerd (alleen lezen): 0 objecten, 0 transacties, 1 kantoor. Migratie 2.1 raakt dus geen echte data | Opus |
+
+---
+
 ### 17 sep 2026 (sessie Opus/Sonnet) — item 0.1: prototypes bijgetrokken naar het referentiebeeld
 
 Orchestrator Fable → Opus (Fable-bestedingslimiet halverwege), bouwers vier

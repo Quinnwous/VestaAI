@@ -26,7 +26,7 @@ import type { TransactieRow } from './supabase'
  * - De bandbreedte verbreedt automatisch bij weinig referenties of veel
  *   spreiding — nooit een schijnzekere puntschatting (besluit 16 sep 2026).
  * - Dit is een onderbouwde indicatie voor het verkoopadvies, geen NWWI-
- *   taxatie (besluit 16 sep 2026 — "puur de verkooppitch").
+ *   taxatie (besluit 16 sep 2026 — "puur het verkoopadvies").
  */
 
 const MIN_GROEPSGROOTTE = 3

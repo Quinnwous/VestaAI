@@ -39,12 +39,13 @@ const card: React.CSSProperties = {
 }
 
 /**
- * Woning toevoegen — start altijd in de acquisitiefase (besluit 16 sep 2026,
- * zie CLAUDE.md § Hoofdstructuur). Content wordt in de achtergrond al
- * gegenereerd (dezelfde /api/generate-pijplijn als voorheen — dat blijft
- * waardevol: de tekst staat al klaar zodra de opdracht binnen is), maar wordt
- * pas zichtbaar zodra de fase naar "In verkoop" gaat. Na aanmaken gaat de
- * makelaar daarom direct naar het nieuwe dossier, niet naar een resultatenscherm.
+ * Woning toevoegen — start altijd in de Verkoopadvies-fase (interne waarde
+ * `acquisitie`; besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur). Content
+ * wordt in de achtergrond al gegenereerd (dezelfde /api/generate-pijplijn als
+ * voorheen — dat blijft waardevol: de tekst staat al klaar zodra de opdracht
+ * binnen is), maar wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.
+ * Na aanmaken gaat de makelaar daarom direct naar het nieuwe dossier, niet
+ * naar een resultatenscherm.
  */
 export function NewObjectForm() {
   const router = useRouter()
@@ -87,8 +88,9 @@ export function NewObjectForm() {
   const handleSubmit = async (invoer: PropertyInput) => {
     setState({ status: 'loading' })
     try {
-      // Acquisitiefase heeft nog geen vaste vraagprijs — de content-generatie
-      // vraagt wel om een prijs, dus die valt terug op de prijsverwachting.
+      // Verkoopadvies-fase heeft nog geen vaste vraagprijs — de
+      // content-generatie vraagt wel om een prijs, dus die valt terug op de
+      // prijsverwachting.
       const input: PropertyInput = { ...invoer, vraagprijs: invoer.vraagprijs ?? invoer.prijsverwachting_verkoper }
 
       const res = await fetch('/api/generate', {
@@ -149,7 +151,7 @@ export function NewObjectForm() {
           <Eyebrow>Nieuwe woning</Eyebrow>
           <SerifTitle accent="een dossier" size={34} style={{ marginBottom: 8 }}>Start</SerifTitle>
           <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55 }}>
-            Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in de acquisitiefase; content wordt zichtbaar zodra je de opdracht wint.
+            Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in Verkoopadvies; content wordt zichtbaar zodra je de fase naar In verkoop zet.
           </p>
 
           <div style={card}>

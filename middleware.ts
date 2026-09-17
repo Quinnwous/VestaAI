@@ -4,8 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Altijd publiek toegankelijk, geen auth-check nodig.
 // Marketing- en juridische pagina's, en API's die zelf hun toegang regelen
 // (/api/me voor PublicNav).
+// Metadata-routes zonder extensie (opengraph-image/twitter-image) moeten ook
+// publiek zijn, anders krijgen deelpreviews een redirect naar /login.
 const PUBLIC_EXACT = new Set([
   '/', '/over-ons', '/contact', '/vertrouwen', '/privacy', '/voorwaarden',
+  '/opengraph-image', '/twitter-image',
 ])
 const PUBLIC_PREFIX = [
   '/auth/reset-password', '/api/me',

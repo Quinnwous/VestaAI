@@ -5,6 +5,9 @@ import { PublicNav } from '@/components/PublicNav'
 export const metadata: Metadata = {
   title: 'Algemene voorwaarden — VestaAI',
   description: 'De algemene voorwaarden van VestaAI voor het gebruik van het platform.',
+  alternates: {
+    canonical: '/voorwaarden',
+  },
 }
 
 export default function VoorwaardenPage() {

@@ -71,9 +71,6 @@ export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>
 export const ObjectFaseSchema = z.enum(['acquisitie', 'in_verkoop', 'verkocht'])
 export type ObjectFase = z.infer<typeof ObjectFaseSchema>
 
-export const PitchUitslagSchema = z.enum(['open', 'gewonnen', 'verloren'])
-export type PitchUitslag = z.infer<typeof PitchUitslagSchema>
-
 // Staat & afwerking en Ligging & buitenruimte (besluit 16 sep 2026, F3 —
 // gedeelde intake): precies de knoppen waaraan de waardering straks in de
 // wat-als-scenario's laat draaien. Allemaal optioneel zodat bestaande dossiers
@@ -120,7 +117,7 @@ export const PropertyInputSchema = z.object({
   bouwjaar: z.number().int().min(1800).max(2035),
   energielabel: z.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']),
   // Optioneel sinds de gedeelde intake (F3, besluit 16 sep 2026): in de
-  // acquisitiefase is er nog geen vaste vraagprijs, alleen een
+  // Verkoopadvies-fase is er nog geen vaste vraagprijs, alleen een
   // prijsverwachting van de verkoper (zie prijsverwachting_verkoper
   // hieronder). Content-generatie valt terug op die prijsverwachting.
   vraagprijs: z.number().int().min(1).optional(),
@@ -141,9 +138,10 @@ export const PropertyInputSchema = z.object({
   energielabel_geldig_tot: z.string().max(20).optional(),
   staat_afwerking: StaatAfwerkingSchema.optional(),
   ligging_buitenruimte: LiggingBuitenruimteSchema.optional(),
-  // Acquisitiefase (besluit 16 sep 2026): prijsverwachting van de verkoper en
-  // het courtagevoorstel horen bij "opdracht winnen", niet bij "vraagprijs" —
-  // dat laatste komt pas vast te staan zodra de fase naar In verkoop gaat.
+  // Verkoopadvies-fase (besluit 16 sep 2026): prijsverwachting van de verkoper
+  // en het courtagevoorstel horen bij het verkoopadvies, niet bij
+  // "vraagprijs" — dat laatste komt pas vast te staan zodra de fase naar In
+  // verkoop gaat.
   prijsverwachting_verkoper: z.number().int().min(1).optional(),
   courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
   // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze

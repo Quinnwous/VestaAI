@@ -18,12 +18,15 @@ verwijst — vóór `/sessie-afronden`, en opnieuw na elke fix-ronde.
 ## Stappen
 
 1. **Maak de twee beelden.**
-   - Prototype: open `docs/ontwerp/<scherm>.html` met Playwright op 1440 px
-     breed (`fullPage`), bewaar als `screenshots/ontwerp-<scherm>.png`.
-   - App: dezelfde route op 1440 px, met de demo-fixture ingelogd, dezelfde
-     filterstand als het prototype (zet die via de URL). Tot item 1.9b klaar
-     is via `node --env-file=.env.local scripts/controleer-huisstijl.mjs [poort] --width=1440`
-     (screenshots in `/tmp/vesta-shots-1440/`), daarna `scripts/screenshots.mjs`.
+   - Prototype: open `docs/ontwerp/<scherm>.html` (via `file://`) met
+     Playwright op 1280 px breed (`fullPage`), bewaar als
+     `screenshots/ontwerp-<scherm>.png`.
+   - App: dezelfde route op 1280 px (`screenshots/<route>-laptop.png` uit
+     `npm run dod:screens`), met de demo-fixture ingelogd. Afwijkende
+     filterstand of breedte nodig? `node --env-file=.env.local
+     scripts/controleer-huisstijl.mjs [poort] --width=<px>` (screenshots in
+     `/tmp/vesta-shots-<px>/`), of een eigen Playwright-shot met de
+     sessiecookie uit `scripts/lib/dodSessie.mjs`.
 2. **Laat een subagent met vision beide beelden bekijken** (`Agent`,
    `model: sonnet` volstaat; `opus` bij twijfel), met deze opdracht:
    > Vergelijk beeld A (prototype) met beeld B (gebouwd). Lees eerst de

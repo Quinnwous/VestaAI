@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'VestaAI — De AI-toolkit voor makelaars'
+export const alt = 'VestaAI — platform voor makelaars'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -36,31 +36,56 @@ export default function OgImage() {
         {/* Brand */}
         <div
           style={{
-            fontSize: 28,
-            fontWeight: 700,
-            color: '#1A6B45',
-            letterSpacing: '-0.5px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
             marginBottom: 48,
           }}
         >
-          VestaAI
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 14,
+              background: '#1A6B45',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 26,
+              fontWeight: 800,
+              color: '#fff',
+            }}
+          >
+            V
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#1A6B45',
+              letterSpacing: '-0.5px',
+            }}
+          >
+            VestaAI
+          </div>
         </div>
 
         {/* Headline */}
         <div
           style={{
-            fontSize: 64,
+            display: 'flex',
+            flexDirection: 'column',
+            fontSize: 60,
             fontWeight: 800,
             color: '#111827',
             lineHeight: 1.1,
             letterSpacing: '-1.5px',
-            maxWidth: 800,
+            maxWidth: 900,
             marginBottom: 24,
           }}
         >
-          De AI-toolkit
-          {'\n'}
-          <span style={{ color: '#1A6B45' }}>voor makelaars</span>
+          <div>Het platform</div>
+          <div style={{ color: '#1A6B45' }}>voor makelaars</div>
         </div>
 
         {/* Sub */}
@@ -68,11 +93,11 @@ export default function OgImage() {
           style={{
             fontSize: 24,
             color: '#6b7280',
-            maxWidth: 700,
+            maxWidth: 760,
             lineHeight: 1.5,
           }}
         >
-          Van Funda-tekst tot koper-e-mail — razendsnel professionele content, afgestemd op uw huisstijl.
+          Woningwaardering, marktinzicht en een contentsuite — in de huisstijl van uw kantoor.
         </div>
 
         {/* Bottom badges */}
@@ -85,7 +110,7 @@ export default function OgImage() {
             gap: 16,
           }}
         >
-          {['10 teksten', 'Funda-klaar', '30 dagen gratis'].map(label => (
+          {['Waardering', 'Marktinzicht', 'Contentsuite'].map(label => (
             <div
               key={label}
               style={{

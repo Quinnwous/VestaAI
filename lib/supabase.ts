@@ -1,9 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createBaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag } from './schemas'
+import type { HuisstijlConfig, KantoorInstellingen, ObjectFase } from './schemas'
 
-export type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag }
+export type { HuisstijlConfig, KantoorInstellingen, ObjectFase }
 
 export type Kantoor = {
   id: string
@@ -73,7 +73,6 @@ export type ObjectRow = {
   created_at: string
   status: 'draft' | 'published' | 'onder_bod' | 'verkocht'
   fase: ObjectFase
-  pitch_uitslag: PitchUitslag | null
   lat: number | null
   lng: number | null
 }

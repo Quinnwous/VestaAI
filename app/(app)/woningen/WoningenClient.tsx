@@ -10,7 +10,7 @@ type FaseFilter = '' | ObjectFase
 
 const FASE_TABS: { value: FaseFilter; label: string }[] = [
   { value: '', label: 'Alles' },
-  { value: 'acquisitie', label: 'Acquisitie' },
+  { value: 'acquisitie', label: 'Verkoopadvies' },
   { value: 'in_verkoop', label: 'In verkoop' },
   { value: 'verkocht', label: 'Verkocht' },
 ]
@@ -22,19 +22,16 @@ const STATUS_LABELS: Record<string, { label: string; color: string; dot: string 
   verkocht:  { label: 'Verkocht',      color: '#5C6470', dot: '#5C6470' },
 }
 
+// Geen pitch-concept meer (item 1.9c, besluit Quinn 17 sep 2026): de badge
+// toont alleen de fase, geen "Gewonnen/Verloren"-uitslag meer.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
-  acquisitie: { label: 'Acquisitie', color: '#D97706' },
+  acquisitie: { label: 'Verkoopadvies', color: '#D97706' },
   in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
 
-const UITSLAG_BADGE: Record<string, { label: string; color: string }> = {
-  gewonnen: { label: 'Gewonnen', color: 'var(--merk)' },
-  verloren: { label: 'Verloren', color: '#DC2626' },
-}
-
 interface Props {
-  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase' | 'pitch_uitslag'>[]
+  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase'>[]
   totalPages: number
   currentPage: number
   search: string
@@ -53,10 +50,8 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function FaseBadge({ fase, pitchUitslag }: { fase: ObjectFase; pitchUitslag: string | null }) {
-  // In de acquisitiefase telt de pitch-uitslag zwaarder dan de fase zelf.
-  const uitslag = fase === 'acquisitie' && pitchUitslag ? UITSLAG_BADGE[pitchUitslag] : undefined
-  const cfg = uitslag ?? FASE_BADGE[fase]
+function FaseBadge({ fase }: { fase: ObjectFase }) {
+  const cfg = FASE_BADGE[fase]
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color }} />
@@ -198,7 +193,7 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#14181B' }}>{obj.address}</p>
-                  <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} pitchUitslag={obj.pitch_uitslag ?? null} />
+                  <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} />
                   {obj.fase !== 'acquisitie' && <StatusBadge status={obj.status ?? 'draft'} />}
                 </div>
                 <p style={{ fontSize: 13, color: '#98A0A6', marginTop: 3 }}>{formatDatum(obj.created_at)}</p>

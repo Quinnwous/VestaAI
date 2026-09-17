@@ -81,9 +81,8 @@ of een gebroken afbeelding. Een `<img>` met een kantoor-URL krijgt altijd een `o
 grep -rlE "(bg|text|border|ring)-blue-[0-9]" "app/(app)/" components/ | grep -v tokens.ts
 grep -rnE "#(1A6B45|2A8A5C|F1F7F3|E9EFEB)" "app/(app)/" components/ | grep -v "merk"
 
-# visueel: logt in als i4 Housing en meldt élke groene plek + screenshots in /tmp/vesta-shots
-npm run dev
-node --env-file=.env.local scripts/controleer-huisstijl.mjs 3000
+# visueel: logt in als i4 Housing, meldt élke groene plek en runtime-fout, screenshots op 3 breedtes
+npm run dod:screens
 ```
 
 Een PostToolUse-hook (`.claude/hooks/huisstijl-check.sh`) waarschuwt automatisch bij een

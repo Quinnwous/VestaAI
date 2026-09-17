@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Vertrouwen & beveiliging — VestaAI',
   description:
     'Jouw klant- en objectgegevens zijn veilig en blijven van jou: opslag in de EU, geen verkoop van data, en geen training van AI-modellen op jouw gegevens.',
+  alternates: {
+    canonical: '/vertrouwen',
+  },
 }
 
 const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [

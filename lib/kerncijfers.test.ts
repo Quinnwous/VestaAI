@@ -1,45 +1,31 @@
 import { describe, it, expect } from 'vitest'
 import {
-  berekenPitchCijfers,
   filterOpLaatsteMaanden,
   tellFases,
   filterOpJaar,
   berekenVerkoopstatistieken,
 } from './kerncijfers'
 
-describe('berekenPitchCijfers', () => {
-  it('telt open/gewonnen/verloren en berekent de winratio', () => {
-    const rows = [
-      { pitch_uitslag: 'gewonnen' },
-      { pitch_uitslag: 'gewonnen' },
-      { pitch_uitslag: 'verloren' },
-      { pitch_uitslag: null },
-      { pitch_uitslag: 'open' },
-    ]
-    expect(berekenPitchCijfers(rows)).toEqual({ open: 2, gewonnen: 2, verloren: 1, winratio: 67 })
-  })
-
-  it('geeft null als winratio zonder beslissingen', () => {
-    const rows = [{ pitch_uitslag: 'open' }, { pitch_uitslag: null }]
-    expect(berekenPitchCijfers(rows).winratio).toBeNull()
-  })
-
-  it('geeft nullen bij een lege lijst', () => {
-    expect(berekenPitchCijfers([])).toEqual({ open: 0, gewonnen: 0, verloren: 0, winratio: null })
-  })
-})
-
 describe('filterOpLaatsteMaanden', () => {
   const nu = new Date('2026-09-17T00:00:00Z')
 
-  it('houdt rijen binnen de periode', () => {
+  it('houdt rijen binnen de periode, op basis van de opgegeven datumVeld-accessor', () => {
     const rows = [{ created_at: '2026-08-01T00:00:00Z' }, { created_at: '2025-01-01T00:00:00Z' }]
-    expect(filterOpLaatsteMaanden(rows, 12, nu)).toEqual([{ created_at: '2026-08-01T00:00:00Z' }])
+    expect(filterOpLaatsteMaanden(rows, 12, r => r.created_at, nu)).toEqual([{ created_at: '2026-08-01T00:00:00Z' }])
   })
 
-  it('sluit rijen zonder created_at uit', () => {
+  it('sluit rijen zonder datum uit', () => {
     const rows = [{ created_at: null }, { created_at: undefined }]
-    expect(filterOpLaatsteMaanden(rows, 12, nu)).toEqual([])
+    expect(filterOpLaatsteMaanden(rows, 12, r => r.created_at, nu)).toEqual([])
+  })
+
+  it('werkt ook op verkoopdatum (kerncijfer-tegel "Prijs t.o.v. vraagprijs", 1.9c)', () => {
+    const rows = [
+      { verkoopdatum: '2026-06-01' },
+      { verkoopdatum: '2024-01-01' },
+      { verkoopdatum: null },
+    ]
+    expect(filterOpLaatsteMaanden(rows, 12, r => r.verkoopdatum, nu)).toEqual([{ verkoopdatum: '2026-06-01' }])
   })
 })
 

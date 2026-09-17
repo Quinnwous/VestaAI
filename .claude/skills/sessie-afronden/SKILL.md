@@ -17,11 +17,9 @@ chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
    - Huisstijl-hook schoon (geen waarschuwingen van
      `.claude/hooks/huisstijl-check.sh` op de gewijzigde bestanden; geen
      `var(--merk…, #hex)`-fallbacks).
-   - Screenshots op 390/1280/1920 px gedraaid en beoordeeld tegen
-     `docs/ontwerpprincipes.md` (tot item 1.9b klaar is:
-     `node --env-file=.env.local scripts/controleer-huisstijl.mjs [poort] --width=<px>`,
-     daarna `npm run dod:screens`). Elke geraakte route echt bekeken: geen
-     foutstaat, geen Next-error-overlay.
+   - `npm run dod:screens` groen en de screenshots in `screenshots/`
+     beoordeeld tegen `docs/ontwerpprincipes.md`. Elke geraakte route echt
+     bekeken (open de png's): geen foutstaat, geen Next-error-overlay.
    - Lege/laad/foutstaat aanwezig waar relevant; geen console-errors; elke
      statistiek toont n en "data t/m".
    - `transacties` uitsluitend via `lib/transactiesQuery.ts` (guard-test

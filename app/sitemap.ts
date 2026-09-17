@@ -1,40 +1,51 @@
 import type { MetadataRoute } from 'next'
-import { createServiceSupabaseClient } from '@/lib/supabase'
 import { APP_URL } from '@/lib/appUrl'
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const statisch: MetadataRoute.Sitemap = [
+// Alleen echt bestaande, publiek indexeerbare pagina's — geen query op `wijken` meer
+// (die tabel/pagina's staan op de opruimlijst, zie CLAUDE.md).
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
     {
       url: APP_URL,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 1,
     },
-    
+    {
+      url: `${APP_URL}/over-ons`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.6,
+    },
+    {
+      url: `${APP_URL}/vertrouwen`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.6,
+    },
+    {
+      url: `${APP_URL}/contact`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.6,
+    },
     {
       url: `${APP_URL}/login`,
       lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.5,
     },
+    {
+      url: `${APP_URL}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+    {
+      url: `${APP_URL}/voorwaarden`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
   ]
-
-  try {
-    const serviceClient = createServiceSupabaseClient()
-    const { data: wijken } = await serviceClient
-      .from('wijken')
-      .select('slug, bijgewerkt_op')
-      .eq('actief', true)
-
-    const wijkUrls: MetadataRoute.Sitemap = (wijken ?? []).map((w: { slug: string; bijgewerkt_op: string }) => ({
-      url: `${APP_URL}/wijken/${w.slug}`,
-      lastModified: new Date(w.bijgewerkt_op),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    }))
-
-    return [...statisch, ...wijkUrls]
-  } catch {
-    return statisch
-  }
 }

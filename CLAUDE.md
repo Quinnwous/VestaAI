@@ -10,7 +10,7 @@
 >
 > **Definition of Done** (elk item, zie `docs/roadmap.md` § 4 voor de volledige versie):
 > `npm run typecheck && npm run test && npm run build` groen · huisstijl-hook schoon ·
-> `scripts/screenshots.mjs` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
+> `npm run dod:screens` groen en `screenshots/` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
 > aanwezig · `transacties` uitsluitend via `lib/transactiesQuery.ts` (vanaf fase 2, guard-test) ·
 > elke nieuwe tabel met RLS per kantoor · docs bijgewerkt.
 >
@@ -46,8 +46,8 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten.md`:
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
-  - **Verkoopadvies** (voorheen "Acquisitie"; hernoemd op besluit Quinn 17 sep 2026 — label overal "Verkoopadvies", interne waarde `acquisitie` blijft tot schema v2 in 2.1 hem hernoemt naar `verkoopadvies` incl. bestaande rijen) — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). **Geen pitch-concept meer (besluit Quinn 17 sep 2026):** de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat; er bestaan geen "gewonnen/verloren pitches", geen winratio, geen scorebord. `pitch_uitslag`, `FaseToggle`'s uitslag-schakelaar, `PitchScorebord.tsx` en de winratio in `lib/kerncijfers.ts`/`Kerncijfers.tsx` verdwijnen in roadmap-item 1.9c; de kolom vervalt in schema v2 (2.1). De makelaar zet het dossier zelf door naar In verkoop.
-  - **In verkoop** — hetzelfde als Verkoopadvies, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. ⚠️ Content wordt **nu nog synchroon** gegenereerd bij het aanmaken van het dossier (`/api/generate` doet intake → Claude NL+EN → insert, dus aanmaken duurt 1-2 minuten en kost tokens voor elke pitch, ook een verloren pitch). Roadmap v2 fase 3 koppelt dit los: `POST /api/object` maakt direct aan, content komt op knopdruk of bij de overgang naar In verkoop (`objecten.content_status`).
+  - **Verkoopadvies** (voorheen "Acquisitie"; hernoemd op besluit Quinn 17 sep 2026 — label overal "Verkoopadvies", interne waarde `acquisitie` blijft tot schema v2 in 2.1 hem hernoemt naar `verkoopadvies` incl. bestaande rijen) — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). **Geen pitch-concept meer (besluit Quinn 17 sep 2026):** de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat; er bestaan geen "gewonnen/verloren pitches", geen winratio, geen scorebord. Sinds item 1.9c (17 sep 2026) is dat uit de code: geen uitslag-schakelaar, scorebord of winratio meer, en de code leest of schrijft `objecten.pitch_uitslag` niet; de kolom zelf vervalt in schema v2 (2.1). De makelaar zet het dossier zelf door naar In verkoop met de knop in `FaseToggle`.
+  - **In verkoop** — hetzelfde als Verkoopadvies, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. ⚠️ Content wordt **nu nog synchroon** gegenereerd bij het aanmaken van het dossier (`/api/generate` doet intake → Claude NL+EN → insert, dus aanmaken duurt 1-2 minuten en kost tokens voor elk dossier, ook een dossier dat nooit in verkoop gaat). Roadmap v2 fase 3 koppelt dit los: `POST /api/object` maakt direct aan, content komt op knopdruk of bij de overgang naar In verkoop (`objecten.content_status`).
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
   - **AI USP-extractor** — `lib/claude.ts` `extraheerUsps()` + `/api/object/[id]/usps`: vertaalt de vrije intaketekst naar gestructureerde USP's (`components/UspExtractorPaneel.tsx`, kolom `objecten.usps_structuur`).
@@ -134,14 +134,13 @@ VestaAI/
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
 │   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
-│   │   │                       #   StartBanner + Kerncijfers (+ recent bekeken; snelkoppelingen vervallen, 1.9c)
-│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, knop Woning toevoegen (1.9c; PitchScorebord vervalt
-│   │   │                       #   van /dashboard hierheen in fase 1.6)
+│   │   │                       #   StartBanner + Kerncijfers (geen snelkoppelingen sinds 1.9c)
+│   │   ├── woningen/            #   woningdossier-lijst, fase-filters, knop "Woning toevoegen" in de kop
 │   │   ├── object/new · [id]/  #   gedeelde intake (PropertyForm) · woningdossier (ObjectWorkspace,
 │   │   │                       #   fase-afhankelijk: waardering/verkoopadvies altijd, content pas
 │   │   │                       #   vanaf "In verkoop")
 │   │   ├── marktanalyse/        #   4 interactieve explorers: marktanalyse · transacties ·
-│   │   │                       #   concurrentie · kaart
+│   │   │                       #   concurrentie · kaart (elk een eigen pil in de topbar, geen subnav)
 │   │   ├── kantoor/             #   read-only: huisstijl-preview, team, statistieken
 │   │   └── account/             #   "Mijn account" (fase 1.7): naam wijzigen, wachtwoord wijzigen
 │   ├── admin/                  # platform-admin: kantoor/account-beheer, per-kantoor huisstijl +
@@ -219,3 +218,4 @@ VestaAI/
 - `npm run test` — unit tests (Vitest)
 - `npm run typecheck` — TypeScript check
 - `npm run build` — productie-build
+- `npm run dod:screens` — DoD-visueel: huisstijlcheck (VestaAI-groen, foutstaat, `pageerror`) op 390/1280/1920 px + screenshots van alle ingelogde routes naar `screenshots/`; exit 1 bij een fout. Gebruikt een draaiende server op `DOD_PORT` (standaard 3000) of start zelf `next dev`. Vereist in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (plus de gewone app-variabelen); optioneel `DOD_EMAIL` (standaard Quinns platform-admin-account). Logt in via een sessiecookie (`scripts/lib/dodSessie.mjs`), niet via de magic-link-redirect — die wijst naar productie. Alleen lezend, maar ⚠️ `.env.local` wijst naar de productiedatabase.

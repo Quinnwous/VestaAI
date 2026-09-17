@@ -4,6 +4,9 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Privacyverklaring — VestaAI',
   description: 'Hoe VestaAI omgaat met uw persoonsgegevens en objectdata.',
+  alternates: {
+    canonical: '/privacy',
+  },
 }
 
 export default function PrivacyPage() {

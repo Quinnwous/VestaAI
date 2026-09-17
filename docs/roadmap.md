@@ -17,9 +17,29 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 en 0.1 klaar; 1.9c · 1.9b · 1.10 · 1.11 open).
+- **Fase:** 1 — UI-fundament (alles klaar behalve **1.11** PR mergen).
   Plan v2 van kracht sinds 17 sep 2026.
-- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet):** item **0.1 Prototypes
+- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 2):**
+  **1.9c** — pitch-concept uit de code (scorebord, winratio, uitslag,
+  `setPitchUitslag`, `PitchUitslagSchema`), topbar plat met zes pillen en een
+  hamburgermenu ≤ 900 px, subnav marktinzichten weg, "Woning toevoegen" in de
+  kop van `/woningen`, labels "Verkoopadvies", kerncijfers: gem. looptijd en
+  prijs t.o.v. vraagprijs nu over de laatste 12 maanden. **1.9b** —
+  `npm run dod:screens` (huisstijl op 390/1280/1920 + screenshots van alle
+  ingelogde routes; start zelf een dev-server; faalt op groen, foutstaat,
+  `pageerror`, niet-2xx én horizontale overloop — aangetoond met een
+  opzettelijke crash op `/account`); gedeelde login-helper
+  `scripts/lib/dodSessie.mjs`. **1.10** — favicon.ico/icon.png/apple-icon
+  en manifest-iconen (VestaAI-beeldmerk), `app/robots.ts` met alle ingelogde
+  routes in disallow, sitemap zonder de opgeheven `wijken`, metadata en
+  OG-beeld op de nieuwe positionering, canonical per publieke pagina,
+  JSON-LD op de landingspagina; alle icoon-URL's 200 op de lokale
+  productiebuild. **Gevonden en gefixt bij de controle:** middleware stuurde
+  `/opengraph-image` naar `/login` (deelpreviews zonder beeld), OG-beeld
+  crashte in Satori, en de startbanner gaf 206 px horizontale scroll op
+  mobiel (aspect-ratio + min-height). DoD groen: typecheck, 153 tests, build,
+  `dod:screens` 27/27.
+- **Eerder op 17 sep (sessie Opus/Sonnet, deel 1):** item **0.1 Prototypes
   bijgetrokken** — `kit.js` `topbar({ actief })` plat (zes pillen, geen
   subnav), modal-sluier in `kit.css` zonder blur; `transacties.html` en
   `verkoopkaart.html` kregen de kit-tegelrij (hero + tegels met n, delta,
@@ -70,9 +90,11 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **1.9c** (geen pitch, platte navigatie — prototypes `kit.js` `topbar()` en `startpagina.html` zijn nu de spec) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
-  **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
-  bouwt nog tegen 0 rijen.
+- **Volgende item:** **1.11** (PR `feat/nieuwe-schil` → `main`; merge =
+  productiedeploy, dus op akkoord Quinn) en parallel **Fase 2**
+  (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog
+  tegen 0 rijen. Gecontroleerd 17 sep: productie heeft **0 objecten en 0
+  transacties** (1 kantoor), dus migratie 2.1 raakt geen echte data.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -399,17 +421,17 @@ hook en skills niet):**
 3. Bouwen: rekenlogica eerst als pure functie in `lib/` mét vitest-test, dan
    de UI. Grote, parallelle deelklussen zonder bestandsoverlap → subagent
    (`model: sonnet`, `isolation: worktree`), expliciet genoemd bij het item.
-4. Definition of Done (hieronder) + `scripts/screenshots.mjs`.
+4. Definition of Done (hieronder) + `npm run dod:screens`.
 5. `/sessie-afronden` — DoD, commit/PR, Stand van zaken, `docs/besluiten.md`.
 
 **Definition of Done (elk item):**
 - `npm run typecheck && npm run test && npm run build` groen.
 - Huisstijl-hook schoon: `var(--merk*)`, "je/jouw", geen "VestaAI" achter de
   login, geen groene grijzen, geen `var(--merk…, #hex)`-fallbacks.
-- Screenshots op 390/1280/1920 px, beoordeeld tegen `docs/ontwerpprincipes.md`;
-  op 390 px breekt niets. Tot item 1.9b klaar is: `node --env-file=.env.local
-  scripts/controleer-huisstijl.mjs [poort] --width=<px>` (logt in via
-  sessiecookie; faalt op groen én op runtime-fouten); daarna `npm run dod:screens`.
+- `npm run dod:screens` groen (huisstijlcheck + screenshots op 390/1280/1920 px;
+  start zelf een dev-server als er geen draait; faalt op VestaAI-groen, foutstaat,
+  `pageerror` en niet-2xx), en de screenshots in `screenshots/` beoordeeld tegen
+  `docs/ontwerpprincipes.md`; op 390 px breekt niets.
 - **Elke geraakte route is écht bekeken**: geen foutstaat, geen
   Next-error-overlay. Een check die "schoon" meldt op een gecrashte pagina
   telt niet (proefrit 17 sep: de startpagina crashte terwijl alles groen was).
@@ -504,7 +526,7 @@ Details: `docs/besluiten.md`.
   beoordeeld (vision-subagent, checklist `ontwerpreview`) met AKKOORD in
   `docs/besluiten.md`; geen console-fouten; kit.css/kit.js alleen aangepast
   als een regel in álle prototypes terugkomt (dan centraal, met notitie).
-- [ ] **1.9c Geen pitch-concept, platte navigatie, startpagina zonder snelkoppelingen** *(besluit Quinn 17 sep, avond)*
+- [x] **1.9c Geen pitch-concept, platte navigatie, startpagina zonder snelkoppelingen** *(besluit Quinn 17 sep, avond)*
   *Doel:* het product vertelt niet meer dat er een pitch gewonnen moet worden;
   de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat.
   Navigatie wordt plat en de startpagina rustiger.
@@ -534,7 +556,7 @@ Details: `docs/besluiten.md`.
   *Klaar als:* `grep -ri pitch app components lib` geeft 0 treffers buiten
   historische comments; typecheck/test groen; screenshots van dashboard,
   woningen en topbar op 1280 px; CLAUDE.md-boom klopt.
-- [ ] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
+- [x] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
   *Doel:* de Definition of Done moet zonder handwerk uitvoerbaar zijn, anders
   wordt hij overgeslagen — precies wat de proefrit liet zien.
   *Raakt:* `scripts/screenshots.mjs`, `scripts/controleer-huisstijl.mjs`,
@@ -553,7 +575,7 @@ Details: `docs/besluiten.md`.
   commando.
   *Klaar als:* `npm run dod:screens` slaagt op een schone checkout met
   `.env.local`, en faalt aantoonbaar als een pagina de foutstaat toont.
-- [ ] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
+- [x] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
   `apple-icon.png`; manifest repareren; canonical + JSON-LD; opengraph-image;
   robots/sitemap (met `/woningen`, `/account`, `/dashboard` in disallow).
   *Klaar als:* alle icoon-URL's geven 200 op productie.
