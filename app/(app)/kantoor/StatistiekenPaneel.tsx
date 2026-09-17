@@ -83,13 +83,13 @@ export function StatistiekenPaneel() {
       </div>
 
       {stats.totaalAltijd > 0 && (
-        <div className="rounded-xl border border-[var(--merk-rand,#C7E6D5)] bg-[var(--merk-zacht,#EAF5EE)] p-4 flex items-center gap-4">
+        <div className="rounded-xl border border-[var(--merk-rand)] bg-[var(--merk-zacht)] p-4 flex items-center gap-4">
           <div className="text-2xl">⏱</div>
           <div>
-            <p className="text-sm font-semibold text-green-900">
-              Geschatte tijdsbesparing: <span className="text-[var(--merk-hover,#114230)]">{tijdLabel}</span>
+            <p className="text-sm font-semibold text-[var(--merk-hover)]">
+              Geschatte tijdsbesparing: <span className="text-[var(--merk-hover)]">{tijdLabel}</span>
             </p>
-            <p className="text-xs text-[var(--merk-hover,#114230)] mt-0.5">
+            <p className="text-xs text-[var(--merk-hover)] mt-0.5">
               Op basis van {stats.totaalAltijd} objecten × 45 minuten handmatig schrijven
             </p>
           </div>
@@ -106,7 +106,7 @@ export function StatistiekenPaneel() {
               <div key={key} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs text-gray-500 tabular-nums">{aantal}</span>
                 <div
-                  className="w-full rounded-t bg-[var(--merk,#1A6B45)] transition-all"
+                  className="w-full rounded-t bg-[var(--merk)] transition-all"
                   style={{ height: `${Math.max(hoogte, 2)}%` }}
                 />
                 <span className="text-xs text-gray-400">{MAAND_LABELS[maand] ?? maand}</span>
@@ -150,7 +150,7 @@ export function StatistiekenPaneel() {
                       <p className="text-xs text-gray-400">{m.email}</p>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk,#1A6B45)]' : 'text-gray-400'}`}>
+                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk)]' : 'text-gray-400'}`}>
                         {m.objecten}
                       </span>
                     </td>

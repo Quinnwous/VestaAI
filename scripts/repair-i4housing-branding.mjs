@@ -21,7 +21,9 @@ const MERK = {
   primaire_kleur: '#0080C8',
   accent_kleur: '#C61E45',
   lettertype: 'nunito',
-  vorm: 'strak',
+  // Was 'strak'; besluit 18 sep 2026 (docs/besluiten.md) zet i4 Housing op
+  // 'zacht' (Apple-achtig, radius 10-20px) — roadmap item 1.9e.
+  vorm: 'zacht',
   telefoon: '070-5117571',
   email: 'info@i4housing.nl',
 }

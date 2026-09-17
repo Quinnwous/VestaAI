@@ -92,7 +92,10 @@ export type Branding = {
   primairZacht: string
   primairRand: string
   primairDiep: string
+  primairLicht: string
   accent: string
+  accentZacht: string
+  accentRand: string
   opPrimair: string
   lettertype: LettertypeKeuze
   vorm: VormKeuze
@@ -186,7 +189,12 @@ export function bouwBranding(kantoor: {
     primairZacht: lichter(primair, 0.92),
     primairRand: lichter(primair, 0.72),
     primairDiep: donkerder(primair, 0.55),
+    // Lichter dan primair maar duidelijk minder wit dan `primairZacht` (die is een
+    // achtergrondtint) — voor verlopen zoals de hero-tegel (roadmap 1.9e).
+    primairLicht: lichter(primair, 0.25),
     accent,
+    accentZacht: lichter(accent, 0.92),
+    accentRand: lichter(accent, 0.72),
     opPrimair: tekstOp(primair),
     lettertype,
     vorm,
@@ -216,17 +224,23 @@ export function brandingCssVars(b: Branding): React.CSSProperties {
   const [r, g, b_] = naarRgb(b.primair)
   const tint = (alpha: number) => `rgba(${r},${g},${b_},${alpha})`
   const schaduw = vorm.schaduw(tint)
+  const [ar, ag, ab] = naarRgb(b.accent)
 
   return {
     '--merk': b.primair,
     // Los kanalen-triplet voor plekken die nog `rgba(26,107,69,.2)`-literals gebruiken:
-    // `rgba(var(--merk-rgb, 26,107,69), .2)` blijft zo ook merk-bewust.
+    // `rgba(var(--merk-rgb), .2)` blijft zo ook merk-bewust (fallback staat centraal
+    // op :root in globals.css, niet meer per gebruiksplek — roadmap 1.9).
     '--merk-rgb': `${r},${g},${b_}`,
     '--merk-hover': b.primairHover,
     '--merk-zacht': b.primairZacht,
     '--merk-rand': b.primairRand,
     '--merk-diep': b.primairDiep,
+    '--merk-licht': b.primairLicht,
     '--merk-accent': b.accent,
+    '--merk-accent-zacht': b.accentZacht,
+    '--merk-accent-rand': b.accentRand,
+    '--merk-accent-rgb': `${ar},${ag},${ab}`,
     '--merk-op': b.opPrimair,
     '--merk-font-heading': font.css,
     '--merk-font-body': font.css,

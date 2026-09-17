@@ -153,15 +153,22 @@ export function NewObjectForm() {
           </p>
 
           <div style={card}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-              <button
-                type="button"
-                onClick={fillDemo}
-                style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
-              >
-                Vul een voorbeeld in
-              </button>
-            </div>
+            {/* Alleen buiten productie zichtbaar (roadmap 1.9): dit vult echte
+                Herengracht-demodata in, niets voor een live kantoor. Er is nog
+                geen `instellingen_json.demo`-vlag op kantoorniveau (komt in
+                fase 2 met de demo-fixture) — tot die tijd is NODE_ENV de enige
+                betrouwbare knop die geen wijziging in lib/schemas.ts vergt. */}
+            {process.env.NODE_ENV !== 'production' && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                <button
+                  type="button"
+                  onClick={fillDemo}
+                  style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                >
+                  Vul een voorbeeld in
+                </button>
+              </div>
+            )}
             <PropertyForm key={formKey} onSubmit={handleSubmit} disabled={isLoading} />
           </div>
         </div>
@@ -173,19 +180,19 @@ export function NewObjectForm() {
         <div style={{ ...card, textAlign: 'center' }}>
           {state.isRateLimit ? (
             <>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--merk-zacht,#EAF5EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--merk,#1A6B45)">
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--merk-zacht)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--merk)">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <p style={{ fontSize: 15, fontWeight: 700, color: '#14181B', marginBottom: 6 }}>Vorige generatie nog bezig</p>
               <p style={{ fontSize: 14, color: '#5C6470', marginBottom: 20 }}>
                 Automatisch opnieuw beschikbaar over{' '}
-                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--merk,#1A6B45)' }}>{countdown}s</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--merk)' }}>{countdown}s</span>
               </p>
-              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: 'var(--merk-zacht,#F1F7F3)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 6 }}>
+              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: 'var(--merk-zacht)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 6 }}>
                 <div
-                  style={{ background: 'var(--merk,#1A6B45)', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
+                  style={{ background: 'var(--merk)', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
                 />
               </div>
             </>
@@ -195,7 +202,7 @@ export function NewObjectForm() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={handleReset}
-                  style={{ borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk,#1A6B45)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(var(--merk-rgb,26,107,69),.22)' }}
+                  style={{ borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(var(--merk-rgb),.22)' }}
                 >
                   Probeer opnieuw
                 </button>

@@ -21,8 +21,16 @@ meld() { printf '%s\n' "$1" >> "$tmp"; }
 tmp=$(mktemp)
 
 blauw=$(grep -nE '(bg|text|border|ring|from|to|via|fill|stroke)-blue-[0-9]' "$bestand" | head -3)
-[ -n "$blauw" ] && meld "Tailwind-blue rendert GROEN (de blue-schaal is projectbreed geremapt). Gebruik var(--merk) / bg-[var(--merk,#1A6B45)]:
+[ -n "$blauw" ] && meld "Tailwind-blue rendert GROEN (de blue-schaal is projectbreed geremapt). Gebruik var(--merk) / bg-[var(--merk)]:
 $blauw"
+
+# Roadmap 1.9c: een hex- of rgb-fallback in var(--merk...) verstopt een kapotte
+# kantoor-lookup per component i.p.v. hem zichtbaar te laten (zie de centrale
+# fallback op :root in app/globals.css). components/ui/tokens.ts is al uitgesloten
+# hierboven (bewust VestaAI-groen, geen kantoorbinding).
+fallback=$(grep -nE 'var\(--merk[a-zA-Z-]*[[:space:]]*,[[:space:]]*(#|[0-9])' "$bestand" | head -3)
+[ -n "$fallback" ] && meld "var(--merk…)-fallback met een ingebakken kleur (hex of rgb-triplet) verstopt een kapotte kantoor-lookup. Laat de fallback weg — de default staat centraal op :root in app/globals.css:
+$fallback"
 
 groen=$(grep -nE '#(1A6B45|2A8A5C|114230|145536|0E3B27|C7E6D5|D5E8DD|EAF5EE|F1F7F3|E9EFEB|E4EAE6|F4F7F5|F8FAF8|EEF2F0|9AA6A0|5A6B61|0E1A13|2A362D|445249|3F4F46)' "$bestand" | grep -v 'var(--merk' | head -3)
 [ -n "$groen" ] && meld "Hardgecodeerde VestaAI-kleur of groen-getint grijs. Merkkleur -> var(--merk*), grijs -> neutraal grijs:

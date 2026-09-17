@@ -8,8 +8,8 @@ import {
 import { filterTransacties, naarKwartaalReeks, combineerReeksen, samenvatting, type MarktFilter } from '@/lib/marktanalyse'
 import type { TransactieRow } from '@/lib/supabase'
 
-const KLEUR_A = 'var(--merk, #1A6B45)'
-const KLEUR_B = 'var(--merk-accent, #D97706)'
+const KLEUR_A = 'var(--merk)'
+const KLEUR_B = 'var(--merk-accent)'
 
 function FilterPaneel({
   titel, kleur, filter, onChange, types, wijken,
@@ -94,7 +94,7 @@ export function MarktanalyseExplorer({ transacties }: { transacties: TransactieR
         {filterB ? (
           <FilterPaneel titel="Segment B" kleur={KLEUR_B} filter={filterB} onChange={setFilterB} types={types} wijken={wijken} />
         ) : (
-          <button type="button" onClick={() => setFilterB({})} style={{ alignSelf: 'flex-start', fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+          <button type="button" onClick={() => setFilterB({})} style={{ alignSelf: 'flex-start', fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
             + Vergelijk met een tweede segment
           </button>
         )}

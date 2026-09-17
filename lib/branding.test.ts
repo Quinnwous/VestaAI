@@ -100,3 +100,16 @@ describe('vormtaal in CSS-variabelen', () => {
     expect(vars['--merk-label-transform']).toBe('uppercase')
   })
 })
+
+describe('afgeleide tokens (roadmap 1.9e)', () => {
+  it('levert --merk-licht en de accent-varianten als geldige hexkleuren', () => {
+    const vars = brandingCssVars(bouwBranding({ name: 'i4 Housing', huisstijl_json: { primaire_kleur: '#0080C8', accent_kleur: '#C61E45' } })) as Record<string, string>
+    expect(vars['--merk-licht']).toMatch(/^#[0-9a-f]{6}$/i)
+    expect(vars['--merk-accent-zacht']).toMatch(/^#[0-9a-f]{6}$/i)
+    expect(vars['--merk-accent-rand']).toMatch(/^#[0-9a-f]{6}$/i)
+    expect(vars['--merk-accent-rgb']).toMatch(/^\d{1,3},\d{1,3},\d{1,3}$/)
+    // Licht moet tussen de merkkleur en --merk-zacht in zitten, niet erboven of eronder.
+    expect(vars['--merk-licht']).not.toBe(vars['--merk-zacht'])
+    expect(vars['--merk-accent-zacht']).not.toBe(vars['--merk-zacht'])
+  })
+})

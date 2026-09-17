@@ -146,7 +146,7 @@ export function DocumentenAssistent({ objectId }: Props) {
               onClick={() => { setGeselecteerd(doc); setChat([]) }}
               className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 geselecteerd?.id === doc.id
-                  ? 'bg-[var(--merk-zacht,#EAF5EE)] border-[var(--merk,#1A6B45)] text-[var(--merk-hover,#114230)]'
+                  ? 'bg-[var(--merk-zacht)] border-[var(--merk)] text-[var(--merk-hover)]'
                   : 'border-gray-200 text-gray-600 hover:border-gray-300'
               }`}
             >
@@ -171,7 +171,7 @@ export function DocumentenAssistent({ objectId }: Props) {
             onClick={verwerkDocumenten}
             disabled={verwerken}
             className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60 transition-opacity"
-            style={{ background: 'var(--merk,#1A6B45)' }}
+            style={{ background: 'var(--merk)' }}
           >
             {verwerken ? 'Bezig met verwerken…' : 'Verwerk in de teksten'}
           </button>
@@ -198,7 +198,7 @@ export function DocumentenAssistent({ objectId }: Props) {
                 <div key={i} className={`flex ${b.rol === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
                     b.rol === 'user'
-                      ? 'bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)]'
+                      ? 'bg-[var(--merk)] text-[var(--merk-op)]'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     <p className="whitespace-pre-wrap">{b.tekst}</p>
@@ -234,12 +234,12 @@ export function DocumentenAssistent({ objectId }: Props) {
               onChange={e => setVraag(e.target.value)}
               disabled={beantwoorden}
               placeholder="Stel een vraag over dit document..."
-              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] disabled:opacity-50"
+              className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk)] disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={beantwoorden || !vraag.trim()}
-              className="rounded-lg bg-[var(--merk,#1A6B45)] px-4 py-2 text-sm font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
+              className="rounded-lg bg-[var(--merk)] px-4 py-2 text-sm font-semibold text-[var(--merk-op)] hover:bg-[var(--merk-hover)] disabled:opacity-50 transition-colors"
             >
               Vraag
             </button>

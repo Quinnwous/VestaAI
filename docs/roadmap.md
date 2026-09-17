@@ -1,4 +1,4 @@
-# VestaAI — Roadmap v2 (masterplan "demo-klaar", herzien 17-18 sep 2026)
+# VestaAI — Roadmap v2 (masterplan "demo-klaar", herzien 16-17 sep 2026)
 
 > **Dit is het leidende plan.** Begin elke sessie bij § 📍 Stand van zaken.
 > Besluiten en opleveringen staan in `docs/besluiten.md` (logboek), strategie in
@@ -17,8 +17,8 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 1.10 · 1.11 open).
-  Plan v2 van kracht sinds 18 sep 2026.
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 1.9b · 1.10 · 1.11 open).
+  Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, proefrit-sessie):** item **1.9 Bugs +
   fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
   `var(--merk-rgb, r,g,b)`-fallbacks in `app/(app)/` en `components/`
@@ -35,10 +35,16 @@
   productie zichtbaar). DoD groen (typecheck/test/build,
   `controleer-huisstijl.mjs` schoon op 390/1280/1920 px, 9 pagina's).
   Volledig besluiten- en bevindingenlog: `docs/besluiten.md` (17 sep,
-  proefrit). **Nieuw gevonden, niet gefixt (buiten scope 1.9):** `/dashboard`
-  gooit op elke breedte een harde runtime-fout (server→client
-  functie-prop in `Kerncijfers.tsx:37,46,53`) — zie besluiten.md.
-- **Volgende item:** **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
+  proefrit). De proefrit vond ook dat `/dashboard` (de startpagina, scène 1)
+  hard crashte (server→client functie-prop in `Kerncijfers.tsx`) terwijl
+  `controleer-huisstijl.mjs` "schoon" meldde — dezelfde ochtend gefixt
+  (`'use client'`) en het script faalt nu op runtime-fouten; de rest van de
+  tooling-oogst staat in item **1.9b**.
+- **Ook op 17 sep (Fable):** de rekenkern van fase 4 staat er al
+  (`lib/waardering.ts` v2, `lib/prijsindex.ts`, backtest, `docs/waardering-methode.md`
+  — zie § 3.3); ontwerpsessies 6.2 en 6.3 gedaan (`docs/ontwerp/transacties.html`,
+  `concurrentie.html`).
+- **Volgende item:** **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
   **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
   bouwt nog tegen 0 rijen.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
@@ -269,7 +275,7 @@ schrapvolgorde.
 ### 3.5 Kaart
 
 - **MapLibre GL + PDOK BRT-Achtergrondkaart vectortiles** (stijl **pastel** —
-  besluit 18 sep: iets meer kleur; de beeldmerk-pins blijven leesbaar). Eén stack: `components/kaart/BasisKaart.tsx`
+  besluit 17 sep: iets meer kleur; de beeldmerk-pins blijven leesbaar). Eén stack: `components/kaart/BasisKaart.tsx`
   (dynamic import, geen SSR) + lagen als props. Gebruikt door verkoopkaart,
   straalpaneel én de referentiekaart in de waardering. Leaflet verdwijnt na de
   migratie.
@@ -308,7 +314,7 @@ library-defaults. Dat oogt amateuristisch, hoe goed de data ook is. Daarom:
   bestand, kantoorhuisstijl, synthetische data, álle staten via een
   prototype-strip). Sonnet port het 1-op-1: layout, spacing, staten,
   interacties, formattering — alleen de datalaag wordt
-  `lib/transactiesQuery.ts`. Klaar (v2, 18 sep): `marktanalyse.html`,
+  `lib/transactiesQuery.ts`. Klaar (v2, 17 sep): `marktanalyse.html`,
   `verkoopkaart.html`, plus de gedeelde kit `kit.css` + `kit.js` (tokens,
   primitives, opmaak, woningtype-taxonomie, echt logo). **Handleiding:
   `docs/ontwerp/README.md`** — ontwerprichting "i4 · zacht" (Apple-achtig,
@@ -322,7 +328,7 @@ library-defaults. Dat oogt amateuristisch, hoe goed de data ook is. Daarom:
   eigen bouw: `Slider`, `Popover`, `Select`/`Combobox`, `Sheet` (Drawer),
   `Tooltip`, `Tabs`, `Command`; tabellen via TanStack Table. Gethemed via
   `--merk*` (kleur, radius, font), zodat de vorm van het kantoor overal
-  doorwerkt (i4 Housing sinds 18 sep: "zacht", radius 10-20 px, Apple-achtig —
+  doorwerkt (i4 Housing sinds 17 sep: "zacht", radius 10-20 px, Apple-achtig —
   was "strak"). Zelf bouwen mag alleen wat Radix niet levert (`StatTile`,
   `ChartCard`, `FilterBar`, `FilterPills`, kaartlagen). Filters zijn
   dropdown-popovers met samenvatting en tel-badge; elk actief filter is een
@@ -374,8 +380,13 @@ hook en skills niet):**
 - `npm run typecheck && npm run test && npm run build` groen.
 - Huisstijl-hook schoon: `var(--merk*)`, "je/jouw", geen "VestaAI" achter de
   login, geen groene grijzen, geen `var(--merk…, #hex)`-fallbacks.
-- `scripts/screenshots.mjs` op 1280 en 1920 px, beoordeeld tegen
-  `docs/ontwerpprincipes.md`; op 390 px breekt niets.
+- Screenshots op 390/1280/1920 px, beoordeeld tegen `docs/ontwerpprincipes.md`;
+  op 390 px breekt niets. Tot item 1.9b klaar is: `node --env-file=.env.local
+  scripts/controleer-huisstijl.mjs [poort] --width=<px>` (logt in via
+  sessiecookie; faalt op groen én op runtime-fouten); daarna `npm run dod:screens`.
+- **Elke geraakte route is écht bekeken**: geen foutstaat, geen
+  Next-error-overlay. Een check die "schoon" meldt op een gecrashte pagina
+  telt niet (proefrit 17 sep: de startpagina crashte terwijl alles groen was).
 - Lege, laad- en foutstaat aanwezig; skeletons, geen spinners; geen
   console-errors; elke statistiek toont n en "data t/m".
 - `transacties` alleen via `lib/transactiesQuery.ts` (guard-test groen).
@@ -428,12 +439,31 @@ Details: `docs/besluiten.md`.
   `components/ui/StatTile.tsx:11` (`motion` fase 2.2 → geen library, zie
   ontwerpprincipes) en `app/globals.css:8` (`roadmap.md § Besluitenlogboek` →
   `docs/besluiten.md`). (e) **i4 Housing `huisstijl_json.vorm` van `strak`
-  naar `zacht`** (besluit 18 sep, Apple-achtig) via
+  naar `zacht`** (besluit 17 sep, Apple-achtig) via
   `scripts/repair-i4housing-branding.mjs --write`, en `lib/branding.ts`
   uitbreiden met `--merk-diep`, `--merk-licht`, `--merk-accent-zacht/-rand/-rgb`
   (afgeleid uit primaire/accentkleur; zie `docs/ontwerp/README.md` § 2).
   *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
   `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
+- [ ] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
+  *Doel:* de Definition of Done moet zonder handwerk uitvoerbaar zijn, anders
+  wordt hij overgeslagen — precies wat de proefrit liet zien.
+  *Raakt:* `scripts/screenshots.mjs`, `scripts/controleer-huisstijl.mjs`,
+  `CLAUDE.md` § Omgeving, `.claude/skills/sessie-afronden/SKILL.md`,
+  `.claude/skills/ontwerpreview/SKILL.md`.
+  *Spec:* (a) `screenshots.mjs` draait lokaal niet: `E2E_TEST_EMAIL` ontbreekt
+  in `.env.local` en de magic-link-redirect wijst naar productie i.p.v.
+  `localhost` — laat het script inloggen zoals `controleer-huisstijl.mjs`
+  (sessiecookie via `sessieCookie()`, deel die helper) en documenteer de
+  vereiste env-variabelen bovenin het script én in CLAUDE.md; (b) beide
+  scripts falen (exit 1) op een runtime-fout (foutstaat "Er is iets
+  misgegaan", `nextjs-portal`, `pageerror`) — in `controleer-huisstijl.mjs`
+  op 17 sep gedaan, `screenshots.mjs` volgt; (c) één npm-script
+  `npm run dod:screens` dat beide op 390/1280/1920 px draait; (d) de
+  DoD-regel in § 4 en de twee skills verwijzen daarna alleen nog naar dat
+  commando.
+  *Klaar als:* `npm run dod:screens` slaagt op een schone checkout met
+  `.env.local`, en faalt aantoonbaar als een pagina de foutstaat toont.
 - [ ] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
   `apple-icon.png`; manifest repareren; canonical + JSON-LD; opengraph-image;
   robots/sitemap (met `/woningen`, `/account`, `/dashboard` in disallow).
@@ -500,7 +530,14 @@ Details: `docs/besluiten.md`.
   *Doel:* een kantoor "Demo Makelaardij" met een geloofwaardige regio, zodat
   elke verkenner, waardering en kaart vanaf nu op data draait.
   *Raakt:* nieuw script, `scripts/seed-demo-kantoor.test.ts` (weigert een
-  kantoor zonder `instellingen_json.demo === true`), `.gitignore` ongewijzigd.
+  kantoor zonder `instellingen_json.demo === true`), `.gitignore` ongewijzigd,
+  `components/NewObjectForm.tsx` (de demo-knop "Vul een voorbeeld in" staat
+  sinds 1.9 alleen achter `NODE_ENV !== 'production'`; hier de tweede helft:
+  óók tonen als het kantoor `instellingen_json.demo === true` heeft).
+  *Hergebruik:* `lib/waardering.synthetisch.ts` (deterministische generator
+  met bekende grondwaarheid: plaatsen, typegroepen, tijdindex, kenmerken) als
+  rekenhart van de fixture — voeg straatnamen/wijken en `eigen_verkoop` toe,
+  schrijf geen tweede generator.
   *Spec:* deterministisch (vaste seed); `--reset` verwijdert alleen rijen van
   het demo-kantoor. Kantoor: neutrale huisstijl, `werkgebied.plaatsen =
   [Wassenaar, 's-Gravenhage, Voorschoten, Leidschendam, Rijswijk]`, account

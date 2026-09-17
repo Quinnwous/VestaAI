@@ -5,12 +5,36 @@
 @layer base {
   :root {
     /* Breedte van de content-kolom in de ingelogde omgeving. Fluïde tot 1680px
-       (besluit masterplan 16-17 sep 2026, docs/roadmap.md § Besluitenlogboek —
-       was 1240px, zonde van de ruimte op een normaal beeldscherm). Alleen op
+       (besluit masterplan 16-17 sep 2026, docs/besluiten.md — was 1240px,
+       zonde van de ruimte op een normaal beeldscherm). Alleen op
        ultrawide-schermen stopt hij, zodat tabellen niet absurd uitrekken.
        Gebruik components/ui/AppPagina.tsx i.p.v. deze variabele los te zetten. */
     --app-breedte: 1680px;
     --app-marge: clamp(20px, 3vw, 48px);
+
+    /* Eén centrale fallback voor alle --merk*-tokens (roadmap 1.9b). Wordt in
+       de ingelogde omgeving altijd overschreven door de inline stijl die
+       app/(app)/layout.tsx op zijn wrapper zet (brandingCssVars() in
+       lib/branding.ts) — dít blok is uitsluitend het vangnet voor de paar
+       plekken die buiten die wrapper renderen (bv. een error-boundary die
+       de layout zelf niet haalde). Bewust VestaAI-groen, exact de waarden
+       die brandingCssVars() teruggeeft voor VESTA_MERK, zodat een kapotte
+       kantoor-lookup wél zichtbaar groen wordt — maar nu op één plek, niet
+       meer als los geraden hexje per component (zie CLAUDE.md-waarschuwing
+       "kapotte kantoor-lookup onzichtbaar"). Nooit los overschrijven per
+       component — pas hier aan als VESTA_MERK in lib/branding.ts wijzigt. */
+    --merk: #1A6B45;
+    --merk-rgb: 26,107,69;
+    --merk-hover: #155839;
+    --merk-zacht: #EDF3F0;
+    --merk-rand: #BFD6CB;
+    --merk-diep: #0C301F;
+    --merk-licht: #539074;
+    --merk-accent: #2A8A5C;
+    --merk-accent-zacht: #EEF6F2;
+    --merk-accent-rand: #C3DED1;
+    --merk-accent-rgb: 42,138,92;
+    --merk-op: #FFFFFF;
   }
 
   html {
@@ -24,7 +48,7 @@
   }
 
   ::selection {
-    background: var(--merk-rand, #C7E6D5);
+    background: var(--merk-rand);
     color: #0E1A13;
   }
 
@@ -48,21 +72,21 @@
 /* Elke kleur hieronder loopt via --merk*: binnen de ingelogde omgeving zet
    (app)/layout.tsx die per kantoor, daarbuiten geldt de VestaAI-fallback. */
 .vui-btn { transition: background .15s, border-color .15s, transform .15s, box-shadow .15s; }
-.vui-btn-primary:hover:not(:disabled) { background: var(--merk-diep, #114230) !important; }
-.vui-btn-secondary:hover:not(:disabled) { border-color: var(--merk-rand, #C7E6D5) !important; background: var(--merk-zacht, #F8FAF8) !important; }
-.vui-btn-ghost:hover:not(:disabled) { color: var(--merk-diep, #114230) !important; }
+.vui-btn-primary:hover:not(:disabled) { background: var(--merk-diep) !important; }
+.vui-btn-secondary:hover:not(:disabled) { border-color: var(--merk-rand) !important; background: var(--merk-zacht) !important; }
+.vui-btn-ghost:hover:not(:disabled) { color: var(--merk-diep) !important; }
 .vui-btn:disabled { opacity: .6; cursor: not-allowed; }
 
 .vui-card-hover { transition: border-color .15s, box-shadow .15s, transform .15s; }
-.vui-card-hover:hover { border-color: var(--merk-rand, #C7E6D5) !important; box-shadow: 0 2px 12px rgba(var(--merk-rgb, 26,107,69),.08) !important; }
+.vui-card-hover:hover { border-color: var(--merk-rand) !important; box-shadow: 0 2px 12px rgba(var(--merk-rgb),.08) !important; }
 .vui-card-lift { transition: border-color .15s, box-shadow .15s, transform .15s; }
-.vui-card-lift:hover { border-color: var(--merk-rand, #C7E6D5) !important; transform: translateY(-2px); }
+.vui-card-lift:hover { border-color: var(--merk-rand) !important; transform: translateY(-2px); }
 
 .vui-input { transition: border-color .15s, background .15s; }
-.vui-input:focus { border-color: var(--merk, #1A6B45) !important; background: #fff !important; }
+.vui-input:focus { border-color: var(--merk) !important; background: #fff !important; }
 
 .vui-navitem { transition: background .15s, color .15s; }
-.vui-navitem:hover { background: var(--merk-zacht, #F1F7F3) !important; }
+.vui-navitem:hover { background: var(--merk-zacht) !important; }
 
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
    zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een

@@ -32,7 +32,7 @@ export function Verkoopkaart({
   center,
   straalM,
   hoogte = 480,
-  merkKleur = 'var(--merk, #1A6B45)',
+  merkKleur = 'var(--merk)',
 }: {
   transacties: TransactieMetCoordinaten[]
   /** [lat, lng] — middelpunt van een woningadres bij een straal-uitsnede. Zonder dit: gecentreerd op de eigen verkopen. */

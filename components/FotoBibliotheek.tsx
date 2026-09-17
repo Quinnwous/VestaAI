@@ -107,7 +107,7 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
             </span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 9px' }}>
-            <button onClick={() => download(foto)} style={{ background: 'none', border: 'none', color: 'var(--merk,#1A6B45)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
+            <button onClick={() => download(foto)} style={{ background: 'none', border: 'none', color: 'var(--merk)', fontSize: 12.5, fontWeight: 700, cursor: 'pointer' }}>
               Download ↓
             </button>
             <button onClick={() => verwijder(foto.id)} aria-label="Verwijderen" style={{ background: 'none', border: 'none', color: '#B91C1C', fontSize: 12.5, fontWeight: 600, cursor: 'pointer' }}>

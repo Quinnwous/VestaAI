@@ -31,7 +31,7 @@ export default function NewObjectLoading() {
           </div>
 
           {/* Submit button */}
-          <div className="h-11 bg-[var(--merk-zacht,#EAF5EE)] rounded-xl animate-pulse mt-8" />
+          <div className="h-11 bg-[var(--merk-zacht)] rounded-xl animate-pulse mt-8" />
         </div>
       </div>
     </main>

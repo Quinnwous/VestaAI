@@ -36,7 +36,7 @@ export default function AppError({
           <button
             onClick={reset}
             className="vui-btn vui-btn-primary"
-            style={{ borderRadius: 'var(--merk-radius-md, 10px)', background: 'var(--merk, #1A6B45)', color: 'var(--merk-op, #fff)', border: 'none', padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+            style={{ borderRadius: 'var(--merk-radius-md, 10px)', background: 'var(--merk)', color: 'var(--merk-op)', border: 'none', padding: '10px 20px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
           >
             Probeer opnieuw
           </button>

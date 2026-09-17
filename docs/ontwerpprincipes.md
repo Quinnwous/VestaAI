@@ -18,7 +18,7 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   springt.
 - **Claude-artifacts** — interactieve verkenners die direct reageren op een
   schuiver of knop, zonder laadscherm ertussen.
-- **Apple (iOS-/macOS-instellingen, Wallet)** — sinds 18 sep 2026 leidend
+- **Apple (iOS-/macOS-instellingen, Wallet)** — sinds 17 sep 2026 leidend
   voor het *gevoel* van de kantooromgeving van i4 Housing: afgeronde kaarten
   (vorm "zacht"), frosted sticky balken, segmented controls met schuivende
   thumb, dropdown-filters als pillen, zachte schaduw met een zweem merkkleur,
@@ -58,7 +58,7 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 ## Vorm
 
 - Radius uitsluitend via `var(--merk-radius-*)` (schaal per kantoor in
-  `lib/branding.ts`). i4 Housing staat sinds 18 sep 2026 op **zacht**
+  `lib/branding.ts`). i4 Housing staat sinds 17 sep 2026 op **zacht**
   (kaart 16 px, control 12 px, chips/pillen rond) — nooit een hardgecodeerde
   radius, zodat een "strak" kantoor met dezelfde componenten strak oogt.
 

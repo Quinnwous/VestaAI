@@ -10,16 +10,16 @@
 |---|---|---|
 | `kit.css` | Tokens + primitives (topbar, filterbar, dropdown/popover, segmented, chips, pills, range-slider, switch, StatTile, ChartCard, tooltip, modal, staten) | klaar |
 | `kit.js` | Dezelfde primitives als gedrag, opmaak (`euro`/`procent`/`dagen`/`datum`), URL-state, taxonomie woningtypes, team, synthetische datagenerator, het echte i4-logo | klaar |
-| `marktanalyse.html` | Item 6.1 (+ 6.4 kwartaalbericht) | klaar (v2, 18 sep) |
-| `verkoopkaart.html` | Items 7.1-7.3 | klaar (v2, 18 sep) |
+| `marktanalyse.html` | Item 6.1 (+ 6.4 kwartaalbericht) | klaar (v2, 17 sep) |
+| `verkoopkaart.html` | Items 7.1-7.3 | klaar (v2, 17 sep) |
 | `concurrentie.html` | Item 6.3 | ontwerpsessie, vlak vóór 6.3 |
 | `transacties.html` | Item 6.2 | ontwerpsessie, vlak vóór 6.2 |
 | `waardebepaling.html` | Item 4.6 | ontwerpsessie, vlak vóór 4.6 |
 | `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) | ontwerpsessie, vlak vóór 3.4 |
 
-Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 18 sep.
+Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
 
-## 1. Ontwerprichting "i4 · zacht" (Apple-achtig, besluit Quinn 18 sep 2026)
+## 1. Ontwerprichting "i4 · zacht" (Apple-achtig, besluit Quinn 17 sep 2026)
 
 1. **Vorm "zacht"** voor i4 Housing (was "strak"): kaarten 16 px, controls 12 px,
    chips/segmented/pillen volledig rond, modal 20 px. Dit is de bestaande
@@ -55,7 +55,7 @@ Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 18 sep.
 
 | kit.css | App | Opmerking |
 |---|---|---|
-| `--merk`, `--merk-hover`, `--merk-diep`, `--merk-zacht`, `--merk-rand`, `--merk-op`, `--merk-accent*`, `--merk-rgb` | `lib/branding.ts` → `--merk*` | `--merk-diep`, `--merk-licht`, `--merk-accent-zacht/-rand/-rgb` zijn nieuw: toevoegen aan `brandingCssVars()` (afgeleid van primaire/accentkleur) |
+| `--merk`, `--merk-hover`, `--merk-diep`, `--merk-zacht`, `--merk-rand`, `--merk-op`, `--merk-accent*`, `--merk-rgb` | `lib/branding.ts` → `--merk*` | Gebouwd in item 1.9 (17 sep): `--merk-licht` = `lichter(primair, .25)` (voor verlopen, hero-tegel; `--merk-zacht` blijft de bijna-witte achtergrondtint), `--merk-accent-zacht/-rand/-rgb` afgeleid van de accentkleur; `--merk-diep` bestond al |
 | `--r-sm … --r-pill` | `--merk-radius-sm … -pill` | bestaande schaal "zacht" |
 | `--bg … --grid`, `--control` | `components/ui/tokens.ts` | `--control` (#EEF1F5) en `--border` als rgba zijn nieuw |
 | `--goed`, `--let` (+ `-zacht`) | `tokens.ts` semantisch | vervangt losse groen/rood-hexes; rood nooit semantisch |

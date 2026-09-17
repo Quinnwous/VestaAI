@@ -50,12 +50,12 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h2 style={{ fontSize: 13.5, fontWeight: 700, color: '#14181B', margin: 0 }}>Interne notitie</h2>
-          {status === 'saved' && <span className="text-xs text-[var(--merk,#1A6B45)]">✓ Opgeslagen</span>}
+          {status === 'saved' && <span className="text-xs text-[var(--merk)]">✓ Opgeslagen</span>}
         </div>
         {!bewerkModus && (
           <button
             onClick={handleOpen}
-            style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             {notitie ? 'Bewerken' : 'Voeg toe'}
           </button>
@@ -72,7 +72,7 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
               maxLength={MAX}
               rows={4}
               placeholder="Bijv: klant wil formele toon, contact via email, bod verwacht volgende week..."
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] resize-none"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk)] resize-none"
             />
             <span className={`absolute bottom-2 right-2 text-xs ${
               bewerkTekst.length > MAX * 0.9 ? 'text-orange-500' : 'text-gray-300'
@@ -84,7 +84,7 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
             <button
               onClick={handleSave}
               disabled={status === 'saving'}
-              className="text-xs bg-[var(--merk,#1A6B45)] text-[var(--merk-op,#fff)] px-3 py-1.5 rounded-lg hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
+              className="text-xs bg-[var(--merk)] text-[var(--merk-op)] px-3 py-1.5 rounded-lg hover:bg-[var(--merk-hover)] disabled:opacity-50 transition-colors"
             >
               {status === 'saving' ? 'Opslaan...' : 'Opslaan'}
             </button>

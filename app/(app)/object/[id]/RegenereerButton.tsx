@@ -22,7 +22,7 @@ export function RegenereerButton({ invoer }: Props) {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-1.5 text-sm text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] transition-colors"
+      className="flex items-center gap-1.5 text-sm text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors"
     >
       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}

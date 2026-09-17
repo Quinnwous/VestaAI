@@ -3,7 +3,7 @@
 > ## 🚦 Begin hier bij elke sessie
 > **Lees eerst `docs/roadmap.md` § 📍 Stand van zaken** (fase, laatst opgeleverd, volgende
 > item, blokkades, open vragen) vóór je iets anders doet. Dat document is het masterplan
-> "demo-klaar" **v2** (herzien 17-18 sep 2026): het demoscript in zes scènes (§ 2), de
+> "demo-klaar" **v2** (herzien 16-17 sep 2026): het demoscript in zes scènes (§ 2), de
 > bindende architectuurbesluiten (§ 3), en per item een Sonnet-klare spec (*Doel · Raakt ·
 > Hergebruik · Spec · Tests · Klaar als*). Besluiten en opleveringen staan in
 > `docs/besluiten.md` (logboek, nieuwste bovenaan).
@@ -71,7 +71,7 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten
 
 **Stijl leren** (`stijl_bewerkingen`-tabel) — als een makelaar een gegenereerde tekst handmatig bijwerkt, kan het kantoor zelf de daaruit gedestilleerde schrijfregels goedkeuren via `components/StijlLerenPaneel.tsx`, gemount in het woningdossier zelf (niet in een instellingenscherm — dat is sinds 16 sep 2026 platform-admin-gebied).
 
-Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger). Vorm: sinds 18 sep 2026 **`zacht`** (afgeronde, Apple-achtige stijl — besluit Quinn, zie `docs/besluiten.md`; was `strak`, wordt omgezet in roadmap-item 1.9). Ontwerpkit en prototypes: `docs/ontwerp/` (README = spec voor tokens, primitives, filtermodel, pin). Quinn logt in als `quinn.berkouwer@icloud.com` (platform-admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
+Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen theme-CSS op i4housing.nl: blauw `#0080C8`, rood `#C61E45`, lettertype Proxima Nova (betaald → we voeren Nunito Sans als vrije tegenhanger). Vorm: sinds 17 sep 2026 **`zacht`** (afgeronde, Apple-achtige stijl — besluit Quinn, zie `docs/besluiten.md`; was `strak`, wordt omgezet in roadmap-item 1.9). Ontwerpkit en prototypes: `docs/ontwerp/` (README = spec voor tokens, primitives, filtermodel, pin). Quinn logt in als `quinn.berkouwer@icloud.com` (platform-admin). Logo/favicon/sfeerbeelden staan in Storage-bucket `kantoor-assets` onder de kantoor-id; `scripts/repair-i4housing-branding.mjs` zet het geheel opnieuw goed (standaard dry-run, `--write` om te schrijven) en `scripts/controleer-huisstijl.mjs` logt in met Playwright en meldt élke plek waar nog VestaAI-groen doorkomt.
 
 ⚠️ **Nooit een absoluut pad als `logo_url`** — dat was de oorzaak van het "?"-logo: `/kantoren/i4housing/logo.png` bestond alleen lokaal en niet in de deploy. Assets horen in Storage, met een volledige URL.
 

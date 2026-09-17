@@ -280,7 +280,7 @@ export function AppTopbar({
                   width: 34, height: 34, borderRadius: '50%', border: 'none', cursor: 'pointer',
                   background: 'var(--merk)', color: 'var(--merk-op)', fontWeight: 700, fontSize: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  outline: profielOpen ? '2px solid var(--merk-rand, #C7E6D5)' : 'none', outlineOffset: 2,
+                  outline: profielOpen ? '2px solid var(--merk-rand)' : 'none', outlineOffset: 2,
                 }}
               >
                 {initiaal(gebruiker.naam, gebruiker.email)}

@@ -12,7 +12,7 @@ const FASE_LABEL: Record<ObjectFase, string> = {
 
 const UITSLAG_CONFIG: Record<PitchUitslag, { label: string; kleur: string }> = {
   open: { label: 'Open', kleur: 'bg-amber-100 text-amber-700' },
-  gewonnen: { label: 'Gewonnen', kleur: 'bg-green-100 text-[var(--merk-hover,#114230)]' },
+  gewonnen: { label: 'Gewonnen', kleur: 'bg-[var(--merk-zacht)] text-[var(--merk-hover)]' },
   verloren: { label: 'Verloren', kleur: 'bg-red-100 text-red-700' },
 }
 
@@ -78,7 +78,7 @@ export function FaseToggle({
   if (fase === 'in_verkoop') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-[var(--merk-hover,#114230)]">
+        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-[var(--merk-zacht)] text-[var(--merk-hover)]">
           In verkoop
         </span>
         <button

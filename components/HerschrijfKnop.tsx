@@ -50,7 +50,7 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
     return (
       <button
         onClick={handleOpen}
-        className="flex items-center gap-1 text-xs text-gray-500 hover:text-[var(--merk,#1A6B45)] border border-gray-200 hover:border-[var(--merk-rand,#C7E6D5)] rounded-md px-2.5 py-1 transition-colors"
+        className="flex items-center gap-1 text-xs text-gray-500 hover:text-[var(--merk)] border border-gray-200 hover:border-[var(--merk-rand)] rounded-md px-2.5 py-1 transition-colors"
         title="Herschrijf dit onderdeel opnieuw met Claude"
       >
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,9 +62,9 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 bg-[var(--merk-zacht,#EAF5EE)] border border-[var(--merk-rand,#C7E6D5)] rounded-lg p-3 text-sm">
+    <div className="flex flex-col gap-2 bg-[var(--merk-zacht)] border border-[var(--merk-rand)] rounded-lg p-3 text-sm">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-[var(--merk-hover,#114230)]">Herschrijfinstructie (optioneel)</span>
+        <span className="text-xs font-medium text-[var(--merk-hover)]">Herschrijfinstructie (optioneel)</span>
         <button
           onClick={() => { setOpen(false); setFout('') }}
           className="text-gray-400 hover:text-gray-600"
@@ -78,13 +78,13 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
         onChange={e => setInstructie(e.target.value)}
         placeholder="Bijv: gebruik een andere openingszin — of laat leeg voor een volledig nieuwe versie"
         rows={2}
-        className="w-full rounded border border-[var(--merk-rand,#C7E6D5)] bg-white px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-[var(--merk,#1A6B45)] resize-none"
+        className="w-full rounded border border-[var(--merk-rand)] bg-white px-2.5 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-1 focus:ring-[var(--merk)] resize-none"
       />
       {fout && <p className="text-xs text-red-600">{fout}</p>}
       <button
         onClick={handleHerschrijf}
         disabled={bezig}
-        className="self-end rounded bg-[var(--merk,#1A6B45)] px-3 py-1.5 text-xs font-semibold text-[var(--merk-op,#fff)] hover:bg-[var(--merk-hover,#114230)] disabled:opacity-50 transition-colors"
+        className="self-end rounded bg-[var(--merk)] px-3 py-1.5 text-xs font-semibold text-[var(--merk-op)] hover:bg-[var(--merk-hover)] disabled:opacity-50 transition-colors"
       >
         {bezig ? 'Herschrijven...' : 'Herschrijf →'}
       </button>

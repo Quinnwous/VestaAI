@@ -90,14 +90,14 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
               <button
                 onClick={handleSave}
                 disabled={opslaan}
-                style={{ ...btnBase, background: 'var(--merk,#1A6B45)', color: '#fff', border: '1px solid var(--merk,#1A6B45)', opacity: opslaan ? .6 : 1 }}
+                style={{ ...btnBase, background: 'var(--merk)', color: '#fff', border: '1px solid var(--merk)', opacity: opslaan ? .6 : 1 }}
               >
                 {opslaan ? 'Opslaan...' : 'Opslaan'}
               </button>
             </>
           ) : (
             <>
-              <button onClick={handleCopy} style={{ ...btnBase, color: copied ? 'var(--merk,#1A6B45)' : '#5C6470' }}>
+              <button onClick={handleCopy} style={{ ...btnBase, color: copied ? 'var(--merk)' : '#5C6470' }}>
                 {copied ? '✓ Gekopieerd' : 'Kopieer'}
               </button>
               {onSave && (
@@ -122,7 +122,7 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
           ref={textareaRef}
           value={bewerkTekst}
           onChange={handleTextareaInput}
-          style={{ width: '100%', borderRadius: 'var(--merk-radius-card, 16px)', border: `1px solid ${overLimit ? '#FCA5A5' : 'var(--merk,#1A6B45)'}`, background: '#fff', padding: '22px 24px', fontSize: 14.5, color: '#14181B', lineHeight: 1.72, outline: 'none', resize: 'none', minHeight: 200, boxSizing: 'border-box' }}
+          style={{ width: '100%', borderRadius: 'var(--merk-radius-card, 16px)', border: `1px solid ${overLimit ? '#FCA5A5' : 'var(--merk)'}`, background: '#fff', padding: '22px 24px', fontSize: 14.5, color: '#14181B', lineHeight: 1.72, outline: 'none', resize: 'none', minHeight: 200, boxSizing: 'border-box' }}
         />
       ) : (
         <div style={{ borderRadius: 'var(--merk-radius-card, 16px)', border: `1px solid ${overLimit ? '#FCA5A5' : '#E6E9EC'}`, background: '#fff', padding: '22px 24px', fontSize: 14.5, color: '#2C3238', whiteSpace: 'pre-wrap', lineHeight: 1.72, boxShadow: '0 2px 12px rgba(20,24,27,.04)' }}>
