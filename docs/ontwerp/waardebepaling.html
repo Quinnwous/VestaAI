@@ -17,11 +17,10 @@
   - Het synthetische datasetje REFS_BASIS/KANDIDATEN — vervangen door
     referenties_in_straal (RPC, § 3.1) en de zoekactie in de Drawer.
   - De custom dossierheader-markup (adres/kenmerken/fasestappen/tabs) die
-    hier na K.topbar() wordt ingevoegd: kit.js' topbar() genereert altijd de
-    Marktinzichten-subnav (marktanalyse/transacties/concurrentie/kaart), die
-    hoort niet bij een woningdossier-pagina. Ontbrekende helper in kit.js →
-    hier lokaal opgelost door de subnav te vervangen; in de app wordt dit
-    ObjectWorkspace.tsx + FaseToggle.tsx + PageHeader.
+    hier na K.topbar() wordt ingevoegd: kit.js' topbar() is sinds item 0.1
+    plat (zes pillen, geen subnav meer) en heeft geen dossier-tabs; die
+    hergebruiken hier lokaal de .subnav/.subnav-in-stijl uit kit.css. In de
+    app wordt dit ObjectWorkspace.tsx + FaseToggle.tsx + PageHeader.
   - Het Drawer-paneel (rechts, frosted) en de Toast — geen primitive in
     kit.css/kit.js; lokaal gebouwd (§ ontwerp-kit heeft nog geen Drawer/Toast).
     In de app: components/ui/Drawer.tsx (roadmap 4.4) resp. een gedeelde Toast.
@@ -35,7 +34,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="kit.css">
 <style>
-  /* ── Dossierheader (lokaal — kit.js' topbar() kent alleen de Marktinzichten-subnav) ── */
+  /* ── Dossierheader (lokaal — kit.js' topbar() kent geen dossier-tabs) ── */
   .dossierhead { max-width: var(--app-breedte); margin: 0 auto; padding: 16px var(--app-marge) 0; }
   .dossierhead-in { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
   .dh-adres { font-size: 32px; font-weight: 800; letter-spacing: -.025em; margin: 2px 0 6px; line-height: 1.08; }
@@ -307,9 +306,8 @@
   'use strict';
   const K = window.Kit, { $, $$ } = K;
 
-  // ── Topbar + eigen dossierheader (kit.js' topbar() heeft alleen de Marktinzichten-subnav) ──
-  K.topbar({ hoofd: 'Woningdossier' });
-  $('.subnav')?.remove();
+  // ── Topbar + eigen dossierheader ──
+  K.topbar({ actief: 'Woningdossier' });
   document.querySelector('.topbar').insertAdjacentHTML('afterend', `
     <div class="dossierhead">
       <div class="dossierhead-in">
@@ -319,7 +317,7 @@
           <p class="dh-kenmerken">Rijwoning · 120 m² · Bouwjaar 1965 · Garage · Tuin · Label C</p>
         </div>
         <div class="fasestappen" aria-label="Fase van dit dossier">
-          <span class="fasestap actief">Acquisitie</span><span class="fasepijl">›</span>
+          <span class="fasestap actief">Verkoopadvies</span><span class="fasepijl">›</span>
           <span class="fasestap">In verkoop</span><span class="fasepijl">›</span>
           <span class="fasestap">Verkocht</span>
         </div>

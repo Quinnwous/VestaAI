@@ -13,10 +13,12 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap">
 <link rel="stylesheet" href="kit.css">
 <style>
-  .kerncijfers-kop { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 0 10px; }
-  .kerncijfers-kop h2 { font-size: 15px; font-weight: 800; margin: 0; }
-  .kerncijfers-kop span { font-size: 12px; color: var(--muted); }
-  .plot .vlak-b { opacity: .10; }
+  /* ── Lokale aanvullingen (pagina-specifiek, niet in kit.css) ───────── */
+  /* Kwartaalbericht: 3 px rood accentstreepje links van de modaltitel zodra het
+     bericht klaar is om te controleren en te versturen (README § 1, punt 2b:
+     accentstreepje bij een kop die aandacht vraagt). */
+  .modal.klaar h2 { position: relative; padding-left: 14px; }
+  .modal.klaar h2::before { content: ""; position: absolute; left: 0; top: 1px; bottom: 1px; width: 3px; border-radius: 2px; background: var(--merk-accent); }
 </style>
 
 <main class="pagina">
@@ -62,7 +64,7 @@
 (() => {
   'use strict';
   const K = window.Kit, { $, $$ } = K;
-  K.topbar({ hoofd: 'Marktinzichten', sub: 'Marktanalyse' });
+  K.topbar({ actief: 'Marktanalyse' });
   const DATA = K.genereerTransacties({ perKwartaal: [150, 40] });
   const KW = K.KWARTALEN, laatste = KW.length - 1;
   const KLASSEN = [{ key: 'k1', label: '< € 500 k', min: 0, max: 5e5 }, { key: 'k2', label: '€ 500–750 k', min: 5e5, max: 7.5e5 }, { key: 'k3', label: '€ 750 k – 1 mln', min: 7.5e5, max: 1e6 }, { key: 'k4', label: '€ 1 – 1,5 mln', min: 1e6, max: 1.5e6 }, { key: 'k5', label: '€ 1,5 – 2,5 mln', min: 1.5e6, max: 2.5e6 }, { key: 'k6', label: '> € 2,5 mln', min: 2.5e6, max: Infinity }];
@@ -223,7 +225,7 @@
   function kwartaalbericht() { const { nu, vorig, rowsWij, van, tot } = laatsteCijfers; const q = KW[tot]; const plaatsen = [...F.plaatsen].map(k => K.PLAATSEN.find(p => p.key === k).label).join(', '); const dPrijs = vorig.prijs ? (nu.prijs / vorig.prijs - 1) * 100 : null, dLoop = vorig.looptijd != null ? nu.looptijd - vorig.looptijd : null; const wij = cijfers(rowsWij);
     const f = { periode: `${KW[van].label} t/m ${q.label}`, plaatsen, n: K.nl.format(nu.n), prijs: K.euro(nu.prijs), dPrijs: dPrijs == null ? null : K.procent(dPrijs), m2: K.euro(nu.m2), looptijd: K.dagen(nu.looptijd), dLoop: dLoop == null ? null : (dLoop > 0 ? '+' : '') + Math.round(dLoop) + ' dagen', ratio: K.procent(nu.ratio), wijN: K.nl.format(wij.n), wijLoop: K.dagen(wij.looptijd), wijRatio: K.procent(wij.ratio) };
     return { f, tekst: `Woningmarkt ${plaatsen} — ${q.label}\n\nIn de periode ${f.periode} wisselden in ${plaatsen} <b>${f.n}</b> woningen van eigenaar. De mediane verkoopprijs kwam uit op <b>${f.prijs}</b>${f.dPrijs ? `, een verschil van <b>${f.dPrijs}</b> ten opzichte van de periode ervoor` : ''}. Per vierkante meter betaalden kopers gemiddeld <b>${f.m2}</b>.\n\nDe mediane looptijd bedroeg <b>${f.looptijd}</b>${f.dLoop ? ` (<b>${f.dLoop}</b> ten opzichte van de vorige periode)` : ''} en woningen werden gemiddeld <b>${f.ratio}</b> ten opzichte van de vraagprijs verkocht.\n\nVoor onze eigen verkopen (<b>${f.wijN}</b> woningen) lag de looptijd op <b>${f.wijLoop}</b> en het verschil met de vraagprijs op <b>${f.wijRatio}</b>.\n\nBenieuwd wat dit voor jouw woning betekent? Neem contact op met ons kantoor. Wij plannen graag een afspraak met je in.` }; }
-  $('#btnBericht').onclick = () => { const sl = $('#sluier'), inh = $('#modalInhoud'); sl.classList.add('open'); $('#btnKopieer').disabled = true; $('#modalMeta').textContent = 'Bezig met schrijven op basis van de huidige selectie…'; inh.innerHTML = [90, 100, 70, 0, 95, 60].map(w => w ? `<div class="skelet skelet-regel" style="width:${w}%"></div>` : '<div style="height:10px"></div>').join(''); setTimeout(() => { const b = kwartaalbericht(); $('#modalMeta').textContent = `Elk getal in de tekst komt uit het feitenblad van de huidige selectie · ${b.f.periode}`; inh.innerHTML = `<div class="bericht" id="berichtTekst">${b.tekst}</div>`; $('#btnKopieer').disabled = false; $('#btnSluit').focus(); }, K.reduceer ? 0 : 1400); };
+  $('#btnBericht').onclick = () => { const sl = $('#sluier'), inh = $('#modalInhoud'); sl.classList.add('open'); $('.modal', sl).classList.remove('klaar'); $('#btnKopieer').disabled = true; $('#modalMeta').textContent = 'Bezig met schrijven op basis van de huidige selectie…'; inh.innerHTML = [90, 100, 70, 0, 95, 60].map(w => w ? `<div class="skelet skelet-regel" style="width:${w}%"></div>` : '<div style="height:10px"></div>').join(''); setTimeout(() => { const b = kwartaalbericht(); $('#modalMeta').textContent = `Elk getal in de tekst komt uit het feitenblad van de huidige selectie · ${b.f.periode}`; inh.innerHTML = `<div class="bericht" id="berichtTekst">${b.tekst}</div>`; $('.modal', sl).classList.add('klaar'); $('#btnKopieer').disabled = false; $('#btnSluit').focus(); }, K.reduceer ? 0 : 1400); };
   $('#btnSluit').onclick = () => $('#sluier').classList.remove('open'); $('#sluier').addEventListener('click', e => { if (e.target === e.currentTarget) $('#sluier').classList.remove('open'); }); document.addEventListener('keydown', e => { if (e.key === 'Escape') $('#sluier').classList.remove('open'); });
   $('#btnKopieer').onclick = async () => { const t = $('#berichtTekst')?.innerText || ''; try { await navigator.clipboard.writeText(t); $('#btnKopieer').textContent = 'Gekopieerd'; setTimeout(() => $('#btnKopieer').textContent = 'Kopiëren', 1500); } catch { $('#btnKopieer').textContent = 'Selecteer en kopieer handmatig'; } };
 

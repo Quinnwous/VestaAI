@@ -10,15 +10,20 @@
   Item-nummers:
   - Deel A "Startpagina" (scène 1 van de demo, docs/roadmap.md § 2): items
     2.5 (kerncijfers op transactiedata) en 10.4 (Recent bekeken + tijdlijn
-    via een nieuwe tabel gebruik_events). Banner en snelkoppelingen bestaan
-    al (fase 1.6, app/(app)/dashboard/StartBanner.tsx en Snelkoppelingen.tsx)
-    — dit prototype is de v2-restyling ervan volgens README § 1, inclusief
-    lijn-iconen i.p.v. de huidige emoji's.
-  - Deel B "Dossierheader": items 3.4 (fasestepper + pitch-uitslag,
-    components/DossierHeader.tsx) en 10.2 (dossierheader v2: foto,
-    waarde/content-status, acties). De tabs eronder (Waardebepaling ·
-    Content · Documenten · Notities) horen bij het bestaande
-    ObjectWorkspace.tsx — hier alleen een lege "tab-inhoud"-placeholder.
+    via een nieuwe tabel gebruik_events). Banner bestaat al (fase 1.6,
+    app/(app)/dashboard/StartBanner.tsx) — dit prototype is de v2-restyling
+    ervan volgens README § 1, inclusief lijn-iconen i.p.v. de huidige
+    emoji's. Snelkoppelingen zijn per besluit 17 sep 2026 (item 1.9c) van
+    de startpagina verwijderd — de primaire actie "Woning toevoegen"
+    verhuist in de app naar de kop van /woningen, niet naar hier.
+  - Deel B "Dossierheader": items 3.4 (fasestepper, components/DossierHeader.tsx)
+    en 10.2 (dossierheader v2: foto, waarde/content-status, acties). De
+    win/verlies-uitslagschakelaar die hier eerder naast de fasestepper stond
+    is per besluit 17 sep 2026 (item 1.9c) verwijderd — er bestaat geen
+    scorebord meer, de opdracht is zo goed als binnen zodra het verkoopadvies
+    op papier staat. De tabs eronder (Waardebepaling · Content · Documenten ·
+    Notities) horen bij het bestaande ObjectWorkspace.tsx — hier alleen een
+    lege "tab-inhoud"-placeholder.
 
   NIET porten naar de app:
   - de proto-strip onderaan (scherm- én staatschakelaar, twee segmented
@@ -27,18 +32,13 @@
   - de synthetische kerncijfers/dossiers/tijdlijn hieronder (JS-arrays) —
     komen uit lib/kerncijfers.ts, lib/gebruik.ts (item 10.4) en
     objecten/transacties;
-  - snelkoppelingen zijn hier <button> zonder navigatie (single-file
-    prototype); in de app zijn het next/link Link's naar /object/new,
-    /marktanalyse, /marktanalyse/transacties, /marktanalyse/kaart;
   - de "voorbeeldfoto"-badge op de dossierfoto-placeholder (in de app: een
     echte foto uit FotoBibliotheek of het merkverloop-fallback, zie het
     bestaande KantoorBanner.tsx-patroon voor de onError-fallback);
   - fictieve adressen en relatieve tijdstippen ("2 uur geleden" e.d.) zijn
     hardcoded, niet echt berekend;
-  - kit.js' topbar() rendert altijd ook de Marktinzichten-subnav; die hoort
-    niet bij Overzicht/Woningdossier, dus verbergen we hem hier lokaal na
-    het aanroepen (geen wijziging aan kit.js — zie ook AppTopbar.tsx, dat nu
-    al dropdown-menu's gebruikt i.p.v. deze pil-subnav).
+  - kit.js' topbar() is sinds item 0.1 plat (zes pillen, geen subnav meer);
+    AppTopbar.tsx volgt hetzelfde patroon (item 1.9c).
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap">
@@ -68,20 +68,6 @@
     .nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
     .nav::-webkit-scrollbar { display: none; }
   }
-
-  /* Snelkoppelingen */
-  .snelkoppelingen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
-  @media (max-width: 900px) { .snelkoppelingen { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 480px) { .snelkoppelingen { grid-template-columns: 1fr; } }
-  .snelkop-kaart { display: flex; align-items: center; gap: 12px; padding: 16px 18px; border-radius: var(--r-card-lg); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--schaduw-card); transition: box-shadow var(--t) var(--ease), transform var(--t) var(--ease); text-align: left; width: 100%; }
-  .snelkop-kaart:hover { box-shadow: var(--schaduw-hover); transform: translateY(-1px); }
-  .snelkop-kaart .ic { width: 38px; height: 38px; border-radius: var(--r-md); display: grid; place-items: center; flex: none; background: var(--merk-zacht); color: var(--merk); }
-  .snelkop-kaart .ic svg { width: 19px; height: 19px; }
-  .snelkop-kaart .lbl { font-size: 14px; font-weight: 700; color: var(--body-strong); }
-  .snelkop-kaart.primair { background: linear-gradient(180deg, #0A8AD2, var(--merk-hover)); border-color: transparent; box-shadow: 0 1px 2px rgba(20,24,27,.08), 0 10px 24px -10px rgba(var(--merk-rgb),.55); }
-  .snelkop-kaart.primair:hover { filter: brightness(1.04); }
-  .snelkop-kaart.primair .ic { background: rgba(255,255,255,.18); color: #fff; }
-  .snelkop-kaart.primair .lbl { color: #fff; }
 
   /* Kerncijfers-kop + grid (6 tegels i.p.v. kit.css' standaard 5) */
   .kerncijfers-kop { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
@@ -146,8 +132,6 @@
   .kenmerken-rij { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
   .kenmerk-pil { display: inline-flex; align-items: center; height: 25px; padding: 0 11px; background: var(--control); border-radius: var(--r-pill); font-size: 12px; font-weight: 600; color: var(--body-strong); }
   .fase-stepper-rij { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
-  .seg-uitslag button[data-k="gewonnen"][aria-checked="true"] { color: var(--goed); }
-  .seg-uitslag button[data-k="verloren"][aria-checked="true"] { color: var(--let); }
   .dossier-hero-rechts { display: flex; flex-direction: column; align-items: flex-end; gap: 12px; flex: none; }
   @media (max-width: 600px) { .dossier-hero-rechts { align-items: flex-start; width: 100%; } }
   .waarde-blok { text-align: right; }
@@ -170,16 +154,9 @@
     <div class="kantoorbanner-tekst">
       <p class="kantoorbanner-eyebrow" id="bannerDatum">Donderdag 17 september</p>
       <h1 id="bannerGroet">Goedemorgen, Marc</h1>
-      <p class="kantoorbanner-context">3 pitches deze week · 2 dossiers wachten op content</p>
+      <p class="kantoorbanner-context">2 dossiers wachten op content</p>
     </div>
     <span class="kantoorbanner-label">teamfoto uit huisstijl</span>
-  </div>
-
-  <div class="snelkoppelingen">
-    <button type="button" class="snelkop-kaart primair"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 11 11 4.5l7.5 6.5"/><path d="M5.5 10v8.5a1 1 0 0 0 1 1H10v-4.5h2"/><circle cx="18" cy="17" r="4.4"/><path d="M18 15v4M16 17h4"/></svg></span><span class="lbl">Woning toevoegen</span></button>
-    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5 9.5 11l4 4L20 7"/><path d="M14.5 7h5.5v5.5"/></svg></span><span class="lbl">Marktanalyse</span></button>
-    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6"/><path d="m19 19-4.3-4.3"/></svg></span><span class="lbl">Transactie opzoeken</span></button>
-    <button type="button" class="snelkop-kaart"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.6 7-12.4A7 7 0 0 0 5 8.6C5 13.4 12 21 12 21Z"/><circle cx="12" cy="8.6" r="2.4"/></svg></span><span class="lbl">Verkoopkaart</span></button>
   </div>
 
   <div class="kerncijfers-kop">
@@ -189,7 +166,7 @@
   <section class="tegels tegels-start" id="tegelsStart" aria-label="Kerncijfers"></section>
   <div class="leeg" id="kerncijfersLeeg" hidden style="margin-bottom:24px">
     <h3>Nog geen kerncijfers</h3>
-    <p>Zodra de eerste woningen zijn verkocht en pitches zijn beslist, verschijnen hier je verkochte aantallen, gemiddelde looptijd, marktaandeel en winratio — automatisch berekend uit je eigen dossiers.</p>
+    <p>Zodra de eerste woningen zijn verkocht, verschijnen hier je verkochte aantallen, gemiddelde looptijd, marktaandeel en prijs t.o.v. vraagprijs — automatisch berekend uit je eigen dossiers.</p>
   </div>
 
   <div class="tweekolommen" id="tweekolommen">
@@ -232,7 +209,6 @@
         </div>
         <div class="fase-stepper-rij">
           <div id="segFase" aria-label="Fase"></div>
-          <div id="segUitslagWrap"><div id="segUitslag" aria-label="Pitch-uitslag"></div></div>
         </div>
       </div>
     </div>
@@ -288,9 +264,9 @@
     { key: 'verkocht', lbl: 'Verkocht laatste 12 maanden', val: 112, fmt: 'getal', hero: true, n: 112, deltaPct: 8.2, gunstig: 1, spark: [78, 82, 85, 90, 88, 94, 99, 101, 97, 104, 108, 112] },
     { key: 'looptijd', lbl: 'Gem. looptijd', val: 26, fmt: 'dagen', n: 41, vergelijk: { markt: 36, eenheid: 'dgn', gunstig: -1 } },
     { key: 'aandeel', lbl: 'Marktaandeel Wassenaar', val: 23.7, fmt: 'procent1', n: 473, periode: '24 mnd', weinigN: 5 },
-    { key: 'winratio', lbl: 'Winratio pitches', val: 68, fmt: 'procent0', n: 25, periode: 'laatste 12 mnd' },
+    { key: 'prijs_tov_vraagprijs', lbl: 'Prijs t.o.v. vraagprijs', val: 101, fmt: 'procent0', n: 112, periode: 'laatste 12 mnd' },
     { key: 'inverkoop', lbl: 'In verkoop', val: 14, fmt: 'getal', simple: true },
-    { key: 'acquisitie', lbl: 'Lopende acquisities', val: 6, fmt: 'getal', simple: true },
+    { key: 'acquisitie', lbl: 'Lopende verkoopadviezen', val: 6, fmt: 'getal', simple: true },
   ];
 
   // ── Synthetisch "Recent bekeken" (in de app: gebruik_events, item 10.4) ──
@@ -298,14 +274,14 @@
     { adres: 'Dorpsstraat 12', plaats: 'Wassenaar', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: '2 uur geleden', content: 'klaar' },
     { adres: 'Kerkstraat 12', plaats: 'Wassenaar', fase: 'verkocht', faseLabel: 'Verkocht', tijd: 'gisteren', content: 'klaar' },
     { adres: 'Molenweg 3', plaats: 'Voorschoten', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: 'gisteren', content: 'bezig' },
-    { adres: 'Deijlerweg 41', plaats: 'Wassenaar', fase: 'acquisitie', faseLabel: 'Acquisitie', tijd: '3 dagen geleden', content: null },
+    { adres: 'Deijlerweg 41', plaats: 'Wassenaar', fase: 'acquisitie', faseLabel: 'Verkoopadvies', tijd: '3 dagen geleden', content: null },
     { adres: 'Rijksstraatweg 88', plaats: 'Wassenaar', fase: 'in_verkoop', faseLabel: 'In verkoop', tijd: '4 dagen geleden', content: 'klaar' },
     { adres: 'Prinsenweg 5', plaats: 'Voorschoten', fase: 'verkocht', faseLabel: 'Verkocht', tijd: 'vorige week', content: 'klaar' },
   ];
 
   // ── Synthetische tijdlijn "Deze week" ──
   const DEZE_WEEK = [
-    { icon: 'check', goed: true, tekst: 'Pitch gewonnen — Kerkstraat 12', tijd: 'gisteren' },
+    { icon: 'check', goed: true, tekst: 'Verkoopadvies verstuurd — Kerkstraat 12', tijd: 'gisteren' },
     { icon: 'doc', tekst: 'Brochure klaar — Molenweg 3', tijd: '2 dagen geleden' },
     { icon: 'bars', tekst: '9 nieuwe transacties in Wassenaar', tijd: 'deze week' },
   ];
@@ -397,20 +373,14 @@
   }
 
   // ── Deel B: Dossierheader ──
-  const FASES = [{ key: 'acquisitie', label: 'Acquisitie' }, { key: 'in_verkoop', label: 'In verkoop' }, { key: 'verkocht', label: 'Verkocht' }];
-  let DOS_FASE = 'in_verkoop', DOS_UITSLAG = 'open', DOS_FOTO = true;
+  const FASES = [{ key: 'acquisitie', label: 'Verkoopadvies' }, { key: 'in_verkoop', label: 'In verkoop' }, { key: 'verkocht', label: 'Verkocht' }];
+  let DOS_FASE = 'in_verkoop', DOS_FOTO = true;
   let STAAT_DOSSIER = 'normaal'; // normaal | verkocht | zonderfoto
 
   function renderFaseSegmented() {
     const idx = FASES.findIndex(f => f.key === DOS_FASE);
     const opties = FASES.map((f, i) => ({ key: f.key, label: (i < idx || DOS_FASE === 'verkocht') ? `<span style="color:var(--goed);margin-right:4px">✓</span>${f.label}` : f.label }));
-    K.segmented($('#segFase'), opties, DOS_FASE, k => { DOS_FASE = k; renderFaseSegmented(); tekenUitslagRij(); tekenWaardeBlok(); });
-  }
-  function tekenUitslagRij() {
-    const wrap = $('#segUitslagWrap'); wrap.hidden = DOS_FASE !== 'acquisitie';
-    if (DOS_FASE === 'acquisitie') {
-      K.segmented($('#segUitslag'), [{ key: 'open', label: 'Open' }, { key: 'gewonnen', label: 'Gewonnen' }, { key: 'verloren', label: 'Verloren' }], DOS_UITSLAG, k => { DOS_UITSLAG = k; }, { klasse: 'klein seg-uitslag' });
-    }
+    K.segmented($('#segFase'), opties, DOS_FASE, k => { DOS_FASE = k; renderFaseSegmented(); tekenWaardeBlok(); });
   }
   function tekenFoto() {
     const el = $('#dossierFoto');
@@ -419,7 +389,7 @@
   }
   function tekenWaardeBlok() {
     const acquis = DOS_FASE === 'acquisitie';
-    $('#contentStatus').textContent = acquis ? 'Content volgt na gunning' : 'Content: 3 van 5 klaar';
+    $('#contentStatus').textContent = acquis ? 'Content volgt vanaf In verkoop' : 'Content: 3 van 5 klaar';
     const brochureBtn = $('#btnBrochure'); brochureBtn.toggleAttribute('disabled', acquis); brochureBtn.title = acquis ? 'Beschikbaar vanaf ‘In verkoop’' : '';
   }
   function renderDossier() {
@@ -427,8 +397,8 @@
     if (staat === 'inverkoop') { DOS_FASE = 'in_verkoop'; DOS_FOTO = true; }
     else if (staat === 'verkocht') { DOS_FASE = 'verkocht'; DOS_FOTO = true; }
     else if (staat === 'zonderfoto') { DOS_FASE = 'in_verkoop'; DOS_FOTO = false; }
-    else { DOS_FASE = 'acquisitie'; DOS_FOTO = true; DOS_UITSLAG = 'open'; } // 'normaal' = het demoscenario: scène 4 start in acquisitie
-    tekenFoto(); renderFaseSegmented(); tekenUitslagRij(); tekenWaardeBlok();
+    else { DOS_FASE = 'acquisitie'; DOS_FOTO = true; } // 'normaal' = het demoscenario: scène 4 start in acquisitie
+    tekenFoto(); renderFaseSegmented(); tekenWaardeBlok();
   }
   $$('.dossier-tabs button').forEach(b => b.onclick = () => {
     $$('.dossier-tabs button').forEach(x => x.removeAttribute('aria-current'));
@@ -439,9 +409,8 @@
   // ── Scène + topbar ──
   let SCENE = 'start'; // start | dossier
   function renderTopbar() {
-    $$('.topbar').forEach(el => el.remove()); $$('.subnav').forEach(el => el.remove());
-    K.topbar({ hoofd: SCENE === 'start' ? 'Overzicht' : 'Woningdossier' });
-    const subnav = $('.subnav'); if (subnav) subnav.remove(); // Overzicht/Woningdossier hebben geen Marktinzichten-subnav
+    $$('.topbar').forEach(el => el.remove());
+    K.topbar({ actief: SCENE === 'start' ? 'Overzicht' : 'Woningdossier' });
   }
   function toonScene(s) {
     SCENE = s;
@@ -466,7 +435,7 @@
       : [{ key: 'normaal', label: 'Normaal' }, { key: 'inverkoop', label: 'In verkoop' }, { key: 'verkocht', label: 'Verkocht' }, { key: 'zonderfoto', label: 'Zonder foto' }];
     const huidig = SCENE === 'start' ? STAAT_START : STAAT_DOSSIER;
     K.segmented(host, opties, huidig, k => { if (SCENE === 'start') { STAAT_START = k; renderStart(); } else { STAAT_DOSSIER = k; renderDossier(); } }, { klasse: 'klein' });
-    $('#protoUitleg').textContent = SCENE === 'start' ? 'Kerncijfers tweenen bij laden; "Weinig data" toont de waarschuwingsvariant per tegel.' : 'Fasestepper en pitch-uitslag blijven ook los bedienbaar; deze staten zetten alleen het startpunt.';
+    $('#protoUitleg').textContent = SCENE === 'start' ? 'Kerncijfers tweenen bij laden; "Weinig data" toont de waarschuwingsvariant per tegel.' : 'Fasestepper blijft ook los bedienbaar; deze staten zetten alleen het startpunt.';
   }
 
   // ── Init ──

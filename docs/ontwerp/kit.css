@@ -227,8 +227,8 @@ h1 { font-size: 34px; font-weight: 800; letter-spacing: -.025em; margin: 0; line
 .leeg h3 { margin: 0 0 6px; font-size: 16px; font-weight: 800; }
 .leeg p { margin: 0 auto 16px; color: var(--body); max-width: 46ch; }
 
-/* ── Modal ───────────────────────────────────────────────────────────── */
-.sluier { position: fixed; inset: 0; background: rgba(20,24,27,.38); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: none; z-index: 50; align-items: center; justify-content: center; padding: 20px; }
+/* ── Modal ── overlays dimmen zonder blur (norm 17 sep 2026, geldt voor elk prototype) ── */
+.sluier { position: fixed; inset: 0; background: rgba(20,24,27,.38); display: none; z-index: 50; align-items: center; justify-content: center; padding: 20px; }
 .sluier.open { display: flex; }
 .modal { background: var(--surface); width: min(680px, 100%); max-height: 90vh; overflow: auto; border-radius: var(--r-xl); box-shadow: var(--schaduw-pop); padding: 24px 26px; animation: popIn 200ms var(--ease); }
 .modal h2 { margin: 0 0 4px; font-size: 21px; font-weight: 800; letter-spacing: -.01em; }

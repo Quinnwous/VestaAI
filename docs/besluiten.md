@@ -6,6 +6,31 @@
 
 ---
 
+### 17 sep 2026 (sessie Opus/Sonnet) — item 0.1: prototypes bijgetrokken naar het referentiebeeld
+
+Orchestrator Fable → Opus (Fable-bestedingslimiet halverwege), bouwers vier
+Sonnet-agents (één per bestand). Tussen de bestanden gedeelde wijzigingen deed
+de orchestrator zelf, zodat de agents elkaar niet in de weg zaten.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Topbar kit | `K.topbar({ actief })` plat met zes pillen, geen subnav; alle zes call-sites mee aangepast. De dossier-tabs in `waardebepaling.html` gebruiken de `.subnav`-stijl nog, dus die CSS blijft staan | Opus |
+| Overlays | Blur weg uit de gedeelde `.sluier` in `kit.css` (gold voor alle prototypes, dus centraal i.p.v. een lokale override in marktanalyse) | Opus |
+| Transacties | Kit-tegelrij (hero "transacties in selectie" + vier tegels met n, delta t.o.v. vorige periode en 8-kwartalen-sparkline), tabel in `.kaart` met kaartkop en segmented sortering, notificatie-stip op "Exporteer CSV". De rode `tellerbadge`-pil is weg: rood vlak, niet toegestaan (README regel 2b); het aantal staat nu in de hero. Hero-delta neutraal (meer transacties is niet gunstig of ongunstig) | Sonnet, 1 correctieronde |
+| Verkoopkaart | Losse `.inbeeld`-strook → kit-tegelrij; kaart en lijst elk in een kaart met kaartkop; leeg-overlay zonder blur. Geen "vorige periode" (tijdlijn is een bereik), dus bijschrift "n = … · in de selectie" i.p.v. een delta | Sonnet, 1 correctieronde |
+| Marktanalyse | Stond al op de norm; alleen een 3 px accentstreepje op de titel van het kwartaalbericht zodra het klaar is | Sonnet |
+| Startpagina | Snelkoppelingen, winratio-tegel (→ "Prijs t.o.v. vraagprijs", n = 112) en pitch-uitslag weg; "Pitch gewonnen" → "Verkoopadvies verstuurd"; "Lopende acquisities" → "Lopende verkoopadviezen"; "Content volgt na gunning" → "Content volgt vanaf In verkoop" (gunning is ook pitch-taal). Interne sleutel `acquisitie` blijft, zoals in de app tot 2.1 | Sonnet + Opus |
+| Waardebepaling | Fasestap "Acquisitie" → "Verkoopadvies" | Opus |
+| Ontwerpreview | Screenshots op 1280 px (Playwright, `file://`), beoordeeld tegen concurrentie/startpagina/waardebepaling: **alle zes AKKOORD**, geen console-fouten | Opus |
+| Kit-leemtes | Naar roadmap § 9: gedeelde sparkline-helper, `.btn:disabled`, mobiele topbar | Opus |
+| Artifacts | Herpubliceren geblokkeerd door de auto-mode-classifier (upload naar claude.ai). Niet omzeild; staat als actie bij Quinn (roadmap § 8, punt 12). Links hieronder tonen dus nog de versie van vóór 0.1 | — |
+
+**Werkwijze-les:** een hervatte subagent (SendMessage) draait op het model van
+de orchestrator op dat moment, niet op Sonnet. Voor correctierondes daarom een
+nieuwe agent starten met `model: sonnet` en een zelfstandige opdracht.
+
+---
+
 ### 17 sep 2026 (laatste Fable-sessie) — rekenkern waardering, proefrit 1.9, vier ontwerpprototypes
 
 Laatste dag met Fable 5.1 als "brein" (daarna alleen Sonnet). Werkverdeling:

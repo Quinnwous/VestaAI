@@ -81,9 +81,9 @@ window.Kit = (() => {
   function tween(el, naar, fmt) { const van = tweens.get(el) ?? naar; tweens.set(el, naar); if (reduceer || van === naar || van == null || naar == null) { el.textContent = fmt(naar); return; } const t0 = performance.now(); const stap = t => { const p = Math.min(1, (t - t0) / 400), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(van + (naar - van) * e); if (p < 1) requestAnimationFrame(stap); }; requestAnimationFrame(stap); }
 
   // ── Topbar + subnav (AppTopbar.tsx + marktanalyse/layout) ──
-  function topbar({ hoofd = 'Marktinzichten', sub = 'Marktanalyse' } = {}) {
-    const hoofdItems = ['Overzicht', 'Woningdossier', 'Marktinzichten'], subItems = ['Marktanalyse', 'Transacties opzoeken', 'Concurrentie', 'Verkoopkaart'];
-    const html = `<header class="topbar"><div class="topbar-in"><div class="lockup"><span class="vesta">VestaAI</span><span class="x">×</span><img src="${LOGO}" alt="i4 Housing"></div><nav class="nav" aria-label="Hoofdmenu">${hoofdItems.map(i => `<a href="#" ${i === hoofd ? 'aria-current="page"' : ''}>${i}</a>`).join('')}</nav><div class="avatar" title="Marc van Dijk">M</div></div></header><div class="subnav"><div class="subnav-in">${subItems.map(i => `<a href="#" ${i === sub ? 'aria-current="page"' : ''}>${i}</a>`).join('')}</div></div>`;
+  function topbar({ actief = 'Overzicht' } = {}) {
+    const items = ['Overzicht', 'Woningdossier', 'Marktanalyse', 'Transacties', 'Concurrentie', 'Verkoopkaart'];
+    const html = `<header class="topbar"><div class="topbar-in"><div class="lockup"><span class="vesta">VestaAI</span><span class="x">×</span><img src="${LOGO}" alt="i4 Housing"></div><nav class="nav" aria-label="Hoofdmenu">${items.map(i => `<a href="#" ${i === actief ? 'aria-current="page"' : ''}>${i}</a>`).join('')}</nav><div class="avatar" title="Marc van Dijk">M</div></div></header>`;
     document.body.insertAdjacentHTML('afterbegin', html);
   }
 

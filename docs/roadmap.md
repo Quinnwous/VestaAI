@@ -17,9 +17,19 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 klaar; 0.1 · 1.9c · 1.9b · 1.10 · 1.11 open).
+- **Fase:** 1 — UI-fundament (1.1 t/m 1.9 en 0.1 klaar; 1.9c · 1.9b · 1.10 · 1.11 open).
   Plan v2 van kracht sinds 17 sep 2026.
-- **Laatst opgeleverd (17 sep, proefrit-sessie):** item **1.9 Bugs +
+- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet):** item **0.1 Prototypes
+  bijgetrokken** — `kit.js` `topbar({ actief })` plat (zes pillen, geen
+  subnav), modal-sluier in `kit.css` zonder blur; `transacties.html` en
+  `verkoopkaart.html` kregen de kit-tegelrij (hero + tegels met n, delta,
+  sparkline) en kaarten met kaartkop; `marktanalyse.html` accentstreepje op
+  het kwartaalbericht; `startpagina.html` zonder snelkoppelingen/winratio/
+  pitch-uitslag; fase "Acquisitie" → "Verkoopadvies" in alle prototypes.
+  Ontwerpreview op 1280 px: alle zes AKKOORD (transacties en verkoopkaart na
+  één correctieronde), geen console-fouten. ⚠️ Artifacts nog niet opnieuw
+  gepubliceerd (auto-mode blokkeerde de upload; Quinn beslist, § 8).
+- **Eerder op 17 sep (proefrit-sessie):** item **1.9 Bugs +
   fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
   `var(--merk-rgb, r,g,b)`-fallbacks in `app/(app)/` en `components/`
   opgeruimd (behalve `components/ui/tokens.ts`, bewuste uitzondering); één
@@ -60,7 +70,7 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **0.1** (prototypes bijtrekken, 1 korte sessie) → **1.9c** (geen pitch, platte navigatie) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
+- **Volgende item:** **1.9c** (geen pitch, platte navigatie — prototypes `kit.js` `topbar()` en `startpagina.html` zijn nu de spec) → **1.9b** (DoD-tooling) → **1.10** (favicon/SEO) → **1.11** (PR mergen) → daarna
   **Fase 2** (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand
   bouwt nog tegen 0 rijen.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
@@ -461,7 +471,7 @@ Details: `docs/besluiten.md`.
   (afgeleid uit primaire/accentkleur; zie `docs/ontwerp/README.md` § 2).
   *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
   `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
-- [ ] **0.1 Prototypes bijtrekken naar het referentiebeeld** *(feedback
+- [x] **0.1 Prototypes bijtrekken naar het referentiebeeld** *(feedback
   Quinn 17 sep; 1 korte sessie, Sonnet-agents per bestand, geen app-code)*
   *Doel:* alle zes prototypes in `docs/ontwerp/` zien eruit als
   `concurrentie.html` / `startpagina.html` / `waardebepaling.html`
@@ -1101,6 +1111,10 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 10. Akkoord op de opruimmigratie (na back-up).
 11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
     verwerkersovereenkomst, prijsafspraak.
+12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
+    bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
+    Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
+    doen in een sessie zonder auto-mode.
 
 ## 9. Backlog & geparkeerd
 
@@ -1117,6 +1131,12 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
+
+**Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
+(staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee
+prototypes definiëren het lokaal) · mobiele stand van de kit-topbar
+(`startpagina.html` heeft een lokale workaround). Alleen de prototypes; de app
+heeft eigen componenten.
 
 **Geparkeerd (16 sep):** waardecheck-widget op hun site · ROI-dashboard ·
 prijsadvies bij lange looptijd.
