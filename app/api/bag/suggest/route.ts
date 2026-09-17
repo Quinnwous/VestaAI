@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { meldFout } from '@/lib/fouten'
 
 const BAG_BASE = 'https://api.bag.kadaster.nl/lvbag/individuelebevragingen/v2'
 
@@ -28,7 +29,10 @@ export async function GET(req: NextRequest) {
   const res = await fetch(
     `${BAG_BASE}/adressen?zoekresultaat=${encodeURIComponent(q)}&page=1&pageSize=6`,
     { headers: { 'X-Api-Key': apiKey, Accept: 'application/hal+json' } },
-  ).catch(() => null)
+  ).catch(err => {
+    meldFout('bag/suggest', err, { q })
+    return null
+  })
 
   if (!res?.ok) return NextResponse.json([] as BagSuggestie[])
 

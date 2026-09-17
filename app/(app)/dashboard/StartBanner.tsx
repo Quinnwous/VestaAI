@@ -44,8 +44,9 @@ export function StartBanner({
         borderRadius: 'var(--merk-radius-card-lg, 18px)',
         overflow: 'hidden',
         marginBottom: 32,
-        aspectRatio: '16 / 5',
-        minHeight: 180,
+        // Geen aspect-ratio + min-height: die combinatie dwingt een minimale breedte af
+        // (180 × 16/5 = 576 px) en gaf horizontale scroll op mobiel.
+        height: 'clamp(180px, 30vw, 376px)',
         background: toonFoto
           ? undefined
           : 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',

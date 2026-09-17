@@ -30,7 +30,7 @@ export function UspExtractorPaneel({ objectId, initieleUsps }: { objectId: strin
     <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid #E6E9EC', background: '#fff', padding: 18 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: usps.length > 0 ? 10 : 0 }}>
         <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: 0 }}>USP&apos;s</p>
-        <button type="button" onClick={analyseer} disabled={bezig} style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+        <button type="button" onClick={analyseer} disabled={bezig} style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
           {bezig ? 'Analyseren…' : usps.length > 0 ? 'Opnieuw analyseren' : 'Analyseer bijzonderheden'}
         </button>
       </div>
@@ -38,7 +38,7 @@ export function UspExtractorPaneel({ objectId, initieleUsps }: { objectId: strin
       {usps.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {usps.map(u => (
-            <span key={u} style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'var(--merk-zacht,#F1F7F3)', borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 10px' }}>
+            <span key={u} style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'var(--merk-zacht)', borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 10px' }}>
               {u}
             </span>
           ))}

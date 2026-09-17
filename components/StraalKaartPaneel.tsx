@@ -44,7 +44,7 @@ export function StraalKaartPaneel({
               key={s}
               type="button"
               onClick={() => setStraal(s)}
-              style={{ padding: '6px 12px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: straal === s ? 'var(--merk,#1A6B45)' : '#fff', color: straal === s ? '#fff' : '#5C6470' }}
+              style={{ padding: '6px 12px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: straal === s ? 'var(--merk)' : '#fff', color: straal === s ? '#fff' : '#5C6470' }}
             >
               {s >= 1000 ? `${s / 1000} km` : `${s} m`}
             </button>

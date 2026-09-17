@@ -10,31 +10,28 @@ type FaseFilter = '' | ObjectFase
 
 const FASE_TABS: { value: FaseFilter; label: string }[] = [
   { value: '', label: 'Alles' },
-  { value: 'acquisitie', label: 'Acquisitie' },
+  { value: 'verkoopadvies', label: 'Verkoopadvies' },
   { value: 'in_verkoop', label: 'In verkoop' },
   { value: 'verkocht', label: 'Verkocht' },
 ]
 
 const STATUS_LABELS: Record<string, { label: string; color: string; dot: string }> = {
   draft:     { label: 'Concept',       color: '#98A0A6', dot: '#98A0A6' },
-  published: { label: 'Gepubliceerd',  color: 'var(--merk,#1A6B45)', dot: 'var(--merk,#1A6B45)' },
+  published: { label: 'Gepubliceerd',  color: 'var(--merk)', dot: 'var(--merk)' },
   onder_bod: { label: 'Onder bod',     color: '#D97706', dot: '#D97706' },
   verkocht:  { label: 'Verkocht',      color: '#5C6470', dot: '#5C6470' },
 }
 
+// Geen pitch-concept meer (item 1.9c, besluit Quinn 17 sep 2026): de badge
+// toont alleen de fase, geen "Gewonnen/Verloren"-uitslag meer.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
-  acquisitie: { label: 'Acquisitie', color: '#D97706' },
-  in_verkoop: { label: 'In verkoop', color: 'var(--merk,#1A6B45)' },
+  verkoopadvies: { label: 'Verkoopadvies', color: '#D97706' },
+  in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
 
-const UITSLAG_BADGE: Record<string, { label: string; color: string }> = {
-  gewonnen: { label: 'Gewonnen', color: 'var(--merk,#1A6B45)' },
-  verloren: { label: 'Verloren', color: '#DC2626' },
-}
-
 interface Props {
-  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase' | 'pitch_uitslag'>[]
+  objecten: Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase'>[]
   totalPages: number
   currentPage: number
   search: string
@@ -53,10 +50,8 @@ function StatusBadge({ status }: { status: string }) {
   )
 }
 
-function FaseBadge({ fase, pitchUitslag }: { fase: ObjectFase; pitchUitslag: string | null }) {
-  // In de acquisitiefase telt de pitch-uitslag zwaarder dan de fase zelf.
-  const uitslag = fase === 'acquisitie' && pitchUitslag ? UITSLAG_BADGE[pitchUitslag] : undefined
-  const cfg = uitslag ?? FASE_BADGE[fase]
+function FaseBadge({ fase }: { fase: ObjectFase }) {
+  const cfg = FASE_BADGE[fase]
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
       <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color }} />
@@ -115,9 +110,9 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
               border: '1px solid',
               cursor: 'pointer',
               transition: 'all .15s',
-              background: faseFilter === tab.value ? 'var(--merk,#1A6B45)' : '#fff',
-              color: faseFilter === tab.value ? 'var(--merk-op,#fff)' : '#5C6470',
-              borderColor: faseFilter === tab.value ? 'var(--merk,#1A6B45)' : '#E1E5E9',
+              background: faseFilter === tab.value ? 'var(--merk)' : '#fff',
+              color: faseFilter === tab.value ? 'var(--merk-op)' : '#5C6470',
+              borderColor: faseFilter === tab.value ? 'var(--merk)' : '#E1E5E9',
             }}
           >
             {tab.label}
@@ -165,7 +160,7 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
               <button
                 type="button"
                 onClick={() => { setZoekterm(''); updateUrl({ search: '', fase: '', page: '1' }) }}
-                style={{ marginTop: 12, fontSize: 13, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ marginTop: 12, fontSize: 13, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Wis filters
               </button>
@@ -176,7 +171,7 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
               <p style={{ fontSize: 14, color: '#98A0A6', marginTop: 6, marginBottom: 20 }}>Maak je eerste woning aan om te beginnen.</p>
               <Link
                 href="/object/new"
-                style={{ display: 'inline-block', borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk,#1A6B45)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(var(--merk-rgb,26,107,69),.22)' }}
+                style={{ display: 'inline-block', borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', textDecoration: 'none', boxShadow: '0 4px 12px rgba(var(--merk-rgb),.22)' }}
               >
                 Nieuwe woning →
               </Link>
@@ -198,12 +193,12 @@ export function WoningenClient({ objecten, totalPages, currentPage, search, fase
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                   <p style={{ fontSize: 15, fontWeight: 600, color: '#14181B' }}>{obj.address}</p>
-                  <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} pitchUitslag={obj.pitch_uitslag ?? null} />
-                  {obj.fase !== 'acquisitie' && <StatusBadge status={obj.status ?? 'draft'} />}
+                  <FaseBadge fase={(obj.fase ?? 'in_verkoop') as ObjectFase} />
+                  {obj.fase !== 'verkoopadvies' && <StatusBadge status={obj.status ?? 'draft'} />}
                 </div>
                 <p style={{ fontSize: 13, color: '#98A0A6', marginTop: 3 }}>{formatDatum(obj.created_at)}</p>
               </div>
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--merk-rand,#C7E6D5)">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--merk-rand)">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </Link>

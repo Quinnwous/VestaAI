@@ -17,7 +17,7 @@ const TIMEOUT_MS = 125000
 
 function CheckIcon() {
   return (
-    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--merk,#1A6B45)">
+    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="var(--merk)">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
     </svg>
   )
@@ -25,7 +25,7 @@ function CheckIcon() {
 
 function SpinnerIcon() {
   return (
-    <div style={{ width: 16, height: 16, border: '2px solid var(--merk,#1A6B45)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+    <div style={{ width: 16, height: 16, border: '2px solid var(--merk)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
   )
 }
 
@@ -57,7 +57,7 @@ export function LoadingProgress() {
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       <div style={{ marginBottom: 30, textAlign: 'center' }}>
-        <div style={{ width: 56, height: 56, margin: '0 auto 18px', border: '3px solid #E3F0E8', borderTopColor: 'var(--merk,#1A6B45)', borderRadius: '50%', animation: 'spin .8s linear infinite' }} />
+        <div style={{ width: 56, height: 56, margin: '0 auto 18px', border: '3px solid #E3F0E8', borderTopColor: 'var(--merk)', borderRadius: '50%', animation: 'spin .8s linear infinite' }} />
         <h1 style={{ fontFamily: 'var(--merk-font-heading, var(--font-newsreader)), Georgia, serif', fontWeight: 500, fontSize: 28, letterSpacing: '-.01em', color: '#14181B', margin: '0 0 6px' }}>
           Content wordt gegenereerd…
         </h1>
@@ -83,8 +83,8 @@ export function LoadingProgress() {
                 padding: '9px 14px',
                 fontSize: 14,
                 transition: 'all .3s',
-                background: done ? 'var(--merk-zacht,#EAF5EE)' : active ? '#F1F7F3' : 'transparent',
-                color: done ? 'var(--merk,#1A6B45)' : active ? 'var(--merk-diep,#0E3B27)' : '#98A0A6',
+                background: done ? 'var(--merk-zacht)' : active ? '#F1F7F3' : 'transparent',
+                color: done ? 'var(--merk)' : active ? 'var(--merk-diep)' : '#98A0A6',
               }}
             >
               {done ? <CheckIcon /> : active ? <SpinnerIcon /> : <WaitIcon />}

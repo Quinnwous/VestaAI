@@ -18,8 +18,14 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   springt.
 - **Claude-artifacts** — interactieve verkenners die direct reageren op een
   schuiver of knop, zonder laadscherm ertussen.
-- **Apple / Airbnb** — alléén voor beeldmomenten (de startbanner, een
-  dossierfoto). Niet voor datatabellen — daar wint Stripe.
+- **Apple (iOS-/macOS-instellingen, Wallet)** — sinds 17 sep 2026 leidend
+  voor het *gevoel* van de kantooromgeving van i4 Housing: afgeronde kaarten
+  (vorm "zacht"), frosted sticky balken, segmented controls met schuivende
+  thumb, dropdown-filters als pillen, zachte schaduw met een zweem merkkleur,
+  één hero-moment per pagina in merkblauw, rood alleen als accent. Uitgewerkt
+  in `docs/ontwerp/README.md` § 1 en `docs/ontwerp/kit.css`. Voor
+  datadichtheid blijft Stripe het kompas.
+- **Airbnb** — alléén voor beeldmomenten (de startbanner, een dossierfoto).
 
 ## Layout
 
@@ -46,12 +52,25 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   niet "danst" bij het herladen (`components/ui/StatTile.tsx` doet dit al).
 - Opmaak in `nl-NL`: `€ 1.250.000` (geen `$` of `1,250,000`), `4,2%` (komma,
   niet punt), `12 dgn` in plaats van `12 days`. Centraliseren in `lib/opmaak.ts`
-  (fase 2.2) i.p.v. los `.toLocaleString()` overal.
+  (gebouwd bij zijn eerste gebruiker, roadmap v2 item 6.1) i.p.v. los
+  `.toLocaleString()` overal.
+
+## Vorm
+
+- Radius uitsluitend via `var(--merk-radius-*)` (schaal per kantoor in
+  `lib/branding.ts`). i4 Housing staat sinds 17 sep 2026 op **zacht**
+  (kaart 16 px, control 12 px, chips/pillen rond) — nooit een hardgecodeerde
+  radius, zodat een "strak" kantoor met dezelfde componenten strak oogt.
 
 ## Kleur
 
 - Uitsluitend `var(--merk*)` + neutraal grijs (`colors` uit
   `components/ui/tokens.ts`) — zie de huisstijlskill voor de volledige regel.
+- Beide merkkleuren mogen zichtbaar zijn: primair voor knoppen, actieve
+  staten, "wij"-reeksen, pins en de hero-tegel; accent voor de live-stip,
+  tel-badges, segment B, de pin-omlijning en de schakelaar-aan-staat. Twee
+  zachte ambient-verlopen op `body` (primair linksboven, accent rechtsboven)
+  voorkomen een grijze pagina.
 - Semantische kleuren (succes/waarschuwing/fout) staan vast en los van
   `--merk-accent` — bij i4housing is de accentkleur rood, en een afgevinkte
   stap in rood leest als een foutmelding.
@@ -60,16 +79,17 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 
 ## Beweging
 
+- Eén curve: `cubic-bezier(.2,.8,.2,1)` (`--ease`), 220 ms (`--t`).
 - Hover/focus: 150ms.
-- Panelen open/dicht, tabwissel: 200-250ms, ease-out.
+- Panelen open/dicht, tabwissel, popover (scale .96 → 1 + fade): 180-250ms.
 - Getal-tweens (StatTile): ~400ms, ease-out cubic — niet lineair, dat oogt
   mechanisch.
 - Geen bounce/spring-effecten — die passen niet bij "zakelijk en rustig".
 - Alles respecteert `prefers-reduced-motion: reduce` (direct naar eindstaat,
   geen animatie).
-- Fase 1 bouwt dit met kleine, doelgerichte CSS-transities en een losse
-  `requestAnimationFrame`-tween waar nodig (zie `StatTile.tsx`); fase 2.2
-  voegt `motion` toe voor paginaovergangen en het in/uitklappen van panelen.
+- Kleine, doelgerichte CSS-transities en een losse `requestAnimationFrame`-tween
+  waar nodig (zie `StatTile.tsx`). Een animatielibrary komt er alleen als een
+  concreet item hem nodig heeft (roadmap v2: geen losse primitives-fase).
 
 ## Data-weergave
 
@@ -85,14 +105,15 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 - **Grafieken:** hooguit 5 reeksen tegelijk, directe labels waar het kan
   (i.p.v. alleen een legenda), een tooltip die alle onderliggende waarden
   toont. Zie de skill `dataviz` voor kleurformules en vormheuristiek; het
-  gedeelde thema komt in `lib/grafiekThema.ts` (fase 2.3).
+  gedeelde thema komt in `lib/grafiekThema.ts` (roadmap v2 item 6.1).
 - **Lege staten wijzen naar een volgende actie** — `components/ui/EmptyState.tsx`
   i.p.v. losse "geen resultaten"-teksten per explorer.
 
 ## Interactie
 
 - Elke filterstand hoort in de URL (querystring), zodat een view deelbaar is
-  en de terugknop werkt — hook `useFilterState` (fase 2.2).
+  en de terugknop werkt — hook `useFilterState` (roadmap v2 item 6.1, daarna
+  verplicht voor elke verkenner).
 - Toetsenbord: elk interactief element bereikbaar met Tab, focusring in de
   merkkleur (niet de browserstandaard-blauw, dat botst met een niet-blauw
   kantoor).

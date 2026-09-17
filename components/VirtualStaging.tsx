@@ -122,7 +122,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             value={ruimte}
             onChange={e => setRuimte(e.target.value as Ruimte)}
             disabled={verwerken}
-            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] disabled:opacity-50"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk)] disabled:opacity-50"
           >
             {RUIMTES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
@@ -133,7 +133,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             value={stijl}
             onChange={e => setStijl(e.target.value as Stijl)}
             disabled={verwerken}
-            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk,#1A6B45)] disabled:opacity-50"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[var(--merk)] disabled:opacity-50"
           >
             {STIJLEN.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
@@ -153,11 +153,11 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
         />
         <label
           htmlFor="staging-upload"
-          className={`inline-flex items-center gap-2 text-sm font-medium rounded-xl border border-gray-200 bg-white px-4 py-2.5 cursor-pointer hover:border-[var(--merk,#1A6B45)] hover:text-[var(--merk,#1A6B45)] transition-colors shadow-sm ${verwerken ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+          className={`inline-flex items-center gap-2 text-sm font-medium rounded-xl border border-gray-200 bg-white px-4 py-2.5 cursor-pointer hover:border-[var(--merk)] hover:text-[var(--merk)] transition-colors shadow-sm ${verwerken ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
         >
           {verwerken ? (
             <>
-              <span className="w-4 h-4 border-2 border-gray-200 border-t-[var(--merk,#1A6B45)] rounded-full animate-spin" />
+              <span className="w-4 h-4 border-2 border-gray-200 border-t-[var(--merk)] rounded-full animate-spin" />
               Gemini AI richt de ruimte in…
             </>
           ) : (
@@ -178,11 +178,11 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
       )}
 
       {verwerken && (
-        <div className="rounded-xl bg-[var(--merk-zacht,#F1F7F3)] border border-[var(--merk-rand,#C7E6D5)] p-4">
+        <div className="rounded-xl bg-[var(--merk-zacht)] border border-[var(--merk-rand)] p-4">
           <div className="flex items-center gap-3">
-            <span className="w-5 h-5 border-2 border-[var(--merk-rand,#C7E6D5)] border-t-[var(--merk,#1A6B45)] rounded-full animate-spin flex-shrink-0" />
+            <span className="w-5 h-5 border-2 border-[var(--merk-rand)] border-t-[var(--merk)] rounded-full animate-spin flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-[var(--merk,#1A6B45)]">Gemini AI is aan het werk…</p>
+              <p className="text-sm font-semibold text-[var(--merk)]">Gemini AI is aan het werk…</p>
               <p className="text-xs text-[#4A9970] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
             </div>
           </div>
@@ -196,11 +196,11 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             <button
               key={i}
               onClick={() => { setActief(i); setToonOrigineel(false) }}
-              className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === actief ? 'border-[var(--merk,#1A6B45)] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-90'}`}
+              className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === actief ? 'border-[var(--merk)] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-90'}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={r.gestaged} alt="" className="w-full h-full object-cover" />
-              <span className="absolute bottom-0.5 left-0.5 right-0.5 text-center" style={{ fontSize: 8, fontWeight: 700, color: 'var(--merk,#1A6B45)', background: 'rgba(255,255,255,.85)', borderRadius: 3, padding: '1px 2px' }}>{r.stijl}</span>
+              <span className="absolute bottom-0.5 left-0.5 right-0.5 text-center" style={{ fontSize: 8, fontWeight: 700, color: 'var(--merk)', background: 'rgba(255,255,255,.85)', borderRadius: 3, padding: '1px 2px' }}>{r.stijl}</span>
             </button>
           ))}
         </div>
@@ -221,14 +221,14 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
                 </button>
                 <button
                   onClick={() => setToonOrigineel(false)}
-                  className={`px-3 py-1.5 transition-colors ${!toonOrigineel ? 'bg-[var(--merk,#1A6B45)] text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-3 py-1.5 transition-colors ${!toonOrigineel ? 'bg-[var(--merk)] text-white' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                   Gestaged
                 </button>
               </div>
               <button
                 onClick={() => downloadGestaged(huidig)}
-                className="text-xs font-semibold text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] transition-colors px-2 py-1.5"
+                className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5"
               >
                 Download ↓
               </button>
@@ -236,7 +236,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
                 <button
                   onClick={() => bewaarInBibliotheek(huidig, actief)}
                   disabled={!!bewaardStatus[actief]}
-                  className="text-xs font-semibold text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] transition-colors px-2 py-1.5 disabled:opacity-60"
+                  className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5 disabled:opacity-60"
                 >
                   {bewaardStatus[actief] === 'klaar' ? 'Bewaard ✓' : bewaardStatus[actief] === 'bezig' ? 'Bewaren…' : 'Bewaar in bibliotheek'}
                 </button>

@@ -190,7 +190,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                   key={t}
                   type="button"
                   onClick={() => setWeergaveTaal(t)}
-                  style={{ padding: '5px 10px', fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', background: weergaveTaal === t ? 'var(--merk,#1A6B45)' : '#fff', color: weergaveTaal === t ? '#fff' : '#5C6470' }}
+                  style={{ padding: '5px 10px', fontSize: 12, fontWeight: 700, border: 'none', cursor: 'pointer', background: weergaveTaal === t ? 'var(--merk)' : '#fff', color: weergaveTaal === t ? '#fff' : '#5C6470' }}
                 >
                   {t === 'nl' ? '🇳🇱 NL' : '🇬🇧 EN'}
                 </button>
@@ -263,7 +263,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
-            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk,#1A6B45)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk,#1A6B45)' : '#98A0A6', transition: 'all .15s', marginBottom: -1 }}
+            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk)' : '#98A0A6', transition: 'all .15s', marginBottom: -1 }}
           >
             {tab.label}
           </button>
@@ -286,7 +286,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
               <button
                 key={v}
                 onClick={() => setBrochureVariant(v)}
-                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: brochureVariant === v ? 'var(--merk,#1A6B45)' : '#fff', color: brochureVariant === v ? 'var(--merk-op,#fff)' : '#5C6470', borderColor: brochureVariant === v ? 'var(--merk,#1A6B45)' : '#E1E5E9' }}
+                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: brochureVariant === v ? 'var(--merk)' : '#fff', color: brochureVariant === v ? 'var(--merk-op)' : '#5C6470', borderColor: brochureVariant === v ? 'var(--merk)' : '#E1E5E9' }}
               >
                 {v === 'lang'
                   ? (isEn ? 'Long (500+ words)' : 'Lang (500+ woorden)')
@@ -362,7 +362,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
               <button
                 key={v}
                 onClick={() => setFollowupVariant(v)}
-                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: followupVariant === v ? 'var(--merk,#1A6B45)' : '#fff', color: followupVariant === v ? 'var(--merk-op,#fff)' : '#5C6470', borderColor: followupVariant === v ? 'var(--merk,#1A6B45)' : '#E1E5E9' }}
+                style={{ padding: '5px 12px', fontSize: 13, borderRadius: 'var(--merk-radius-card-xl, 20px)', border: '1px solid', cursor: 'pointer', background: followupVariant === v ? 'var(--merk)' : '#fff', color: followupVariant === v ? 'var(--merk-op)' : '#5C6470', borderColor: followupVariant === v ? 'var(--merk)' : '#E1E5E9' }}
               >
                 {v === 'positief'
                   ? (isEn ? 'Interested buyer' : 'Geïnteresseerde koper')

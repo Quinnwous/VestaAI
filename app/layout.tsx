@@ -43,36 +43,30 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
   title: {
-    default: 'VestaAI — De AI-toolkit voor makelaars',
+    default: 'VestaAI — Platform voor makelaars',
     template: '%s — VestaAI',
   },
   description:
-    'VestaAI is de complete AI-toolkit voor makelaars: professionele Funda-teksten, brochures, social media, koper-e-mails, documentanalyse en meer. Afgestemd op de Nederlandse vastgoedmarkt.',
-  keywords: ['makelaars', 'AI-toolkit', 'AI-assistent', 'Funda-tekst', 'AI', 'NVM', 'VBO', 'brochure', 'vastgoed'],
+    'VestaAI is het platform voor Nederlandse makelaars, in de huisstijl van uw kantoor: woningwaardering, marktinzicht en concurrentieanalyse op uw eigen transactiedata, en een contentsuite voor Funda-teksten, brochures en social media.',
+  keywords: ['makelaars', 'woningwaardering', 'marktinzicht', 'concurrentieanalyse', 'Funda-tekst', 'NVM', 'vastgoed', 'white-label'],
   authors: [{ name: 'VestaAI' }],
   creator: 'VestaAI',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
     type: 'website',
     locale: 'nl_NL',
     url: APP_URL,
     siteName: 'VestaAI',
-    title: 'VestaAI — De AI-toolkit voor makelaars',
+    title: 'VestaAI — Platform voor makelaars',
     description:
-      'Van Funda-tekst tot koper-e-mail — VestaAI genereert razendsnel professionele content die voldoet aan alle richtlijnen. Afgestemd op uw huisstijl.',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'VestaAI — de AI-toolkit voor makelaars',
-      },
-    ],
+      'Woningwaardering, marktinzicht en een contentsuite in de huisstijl van uw kantoor — op uw eigen transactiedata.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'VestaAI — De AI-toolkit voor makelaars',
-    description: 'De complete AI-toolkit voor makelaars. Van Funda-tekst tot documentanalyse — alles in één platform.',
-    images: ['/og-image.png'],
+    title: 'VestaAI — Platform voor makelaars',
+    description: 'Woningwaardering, marktinzicht en een contentsuite in de huisstijl van uw kantoor.',
   },
   robots: {
     index: true,

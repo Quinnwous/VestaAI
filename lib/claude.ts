@@ -234,7 +234,7 @@ ${blok}`,
 
 function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): string {
   const isEn = input.taal === 'en'
-  // Acquisitiefase heeft nog geen vaste vraagprijs — val terug op de
+  // Verkoopadvies-fase heeft nog geen vaste vraagprijs — val terug op de
   // prijsverwachting van de verkoper (zie lib/schemas.ts, F3).
   const prijs = input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0
   const prijsFormatted = `€${prijs.toLocaleString('nl-NL')}`

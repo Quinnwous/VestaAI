@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { meldFout } from '@/lib/fouten'
 
 // BAG Kadaster API (vereist KADASTER_API_KEY in .env.local)
 // Registreer gratis op: https://www.kadaster.nl/zakelijk/producten/adressen-en-gebouwen/bag-api-individuele-bevragingen
@@ -93,8 +94,9 @@ export async function GET(req: NextRequest) {
         const epData = await epRes.json()
         energielabel = epData?.labelLetter ?? epData?.[0]?.labelLetter ?? null
       }
-    } catch {
+    } catch (error) {
       // EP-Online is optioneel — stille fallback naar null
+      meldFout('bag:ep-online', error, { adres })
     }
   }
 

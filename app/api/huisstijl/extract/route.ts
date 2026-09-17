@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase'
+import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 60
 
@@ -48,7 +49,8 @@ export async function POST(req: NextRequest) {
     const tekst = raw.content?.[0]?.type === 'text' ? raw.content[0].text.trim() : ''
     if (!tekst) return NextResponse.json({ error: 'Geen tekst gevonden in de PDF' }, { status: 422 })
     return NextResponse.json({ tekst })
-  } catch {
-    return NextResponse.json({ error: 'Kon de tekst niet uit de PDF halen — plak de tekst desnoods handmatig.' }, { status: 500 })
+  } catch (error) {
+    const ref = meldFout('huisstijl/extract', error, { bestandsnaam: bestand.name })
+    return NextResponse.json({ error: 'Kon de tekst niet uit de PDF halen — plak de tekst desnoods handmatig.', ref }, { status: 500 })
   }
 }

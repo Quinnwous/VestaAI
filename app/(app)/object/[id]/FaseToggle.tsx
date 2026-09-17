@@ -1,49 +1,37 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import type { ObjectFase, PitchUitslag } from '@/lib/schemas'
-import { setObjectFase, setPitchUitslag } from './actions'
+import type { ObjectFase } from '@/lib/schemas'
+import { colors } from '@/components/ui'
+import { setObjectFase } from './actions'
 
 const FASE_LABEL: Record<ObjectFase, string> = {
-  acquisitie: 'Acquisitie',
+  verkoopadvies: 'Verkoopadvies',
   in_verkoop: 'In verkoop',
   verkocht: 'Verkocht',
 }
 
-const UITSLAG_CONFIG: Record<PitchUitslag, { label: string; kleur: string }> = {
-  open: { label: 'Open', kleur: 'bg-amber-100 text-amber-700' },
-  gewonnen: { label: 'Gewonnen', kleur: 'bg-green-100 text-[var(--merk-hover,#114230)]' },
-  verloren: { label: 'Verloren', kleur: 'bg-red-100 text-red-700' },
-}
-
 /**
  * Fasebediening bovenaan het woningdossier (besluit 16 sep 2026, zie
- * CLAUDE.md § Hoofdstructuur). In de acquisitiefase kies je de pitch-uitslag
- * — "Gewonnen" schuift het dossier automatisch door naar In verkoop. Vanaf
- * In verkoop kun je de woning als verkocht markeren; alles blijft daarna
- * gewoon bereikbaar, alleen archief-gelabeld.
+ * CLAUDE.md § Hoofdstructuur). Geen pitch-concept meer (item 1.9c, besluit
+ * Quinn 17 sep 2026): er bestaat geen "gewonnen/verloren" meer — de opdracht
+ * is zo goed als binnen zodra het verkoopadvies op papier staat. De makelaar
+ * zet de fase handmatig door: Verkoopadvies → In verkoop → Verkocht.
  */
 export function FaseToggle({
   objectId,
   fase: initieleFase,
-  pitchUitslag: initieleUitslag,
 }: {
   objectId: string
   fase: ObjectFase
-  pitchUitslag: PitchUitslag | null
 }) {
   const [fase, setFase] = useState(initieleFase)
-  const [uitslag, setUitslag] = useState<PitchUitslag>(initieleUitslag ?? 'open')
   const [isPending, startTransition] = useTransition()
 
-  const kiesUitslag = (nieuw: PitchUitslag) => {
-    if (nieuw === uitslag) return
+  const naarInVerkoop = () => {
     startTransition(async () => {
-      const result = await setPitchUitslag(objectId, nieuw)
-      if (result.ok) {
-        setUitslag(nieuw)
-        if (result.fase) setFase(result.fase)
-      }
+      const result = await setObjectFase(objectId, 'in_verkoop')
+      if (result.ok) setFase('in_verkoop')
     })
   }
 
@@ -54,23 +42,20 @@ export function FaseToggle({
     })
   }
 
-  if (fase === 'acquisitie') {
+  if (fase === 'verkoopadvies') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ fontSize: 12.5, color: '#98A0A6', fontWeight: 600 }}>Acquisitie —</span>
-        <div style={{ display: 'inline-flex', borderRadius: 10, overflow: 'hidden', border: '1px solid #E1E5E9' }}>
-          {(Object.keys(UITSLAG_CONFIG) as PitchUitslag[]).map(key => (
-            <button
-              key={key}
-              type="button"
-              disabled={isPending}
-              onClick={() => kiesUitslag(key)}
-              className={`text-xs font-semibold px-3 py-1.5 transition-colors disabled:opacity-60 ${uitslag === key ? UITSLAG_CONFIG[key].kleur : 'bg-white text-gray-400 hover:bg-gray-50'}`}
-            >
-              {UITSLAG_CONFIG[key].label}
-            </button>
-          ))}
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 12px', fontSize: 12.5, fontWeight: 600, background: 'var(--merk-zacht)', color: 'var(--merk-hover)' }}>
+          {FASE_LABEL.verkoopadvies}
+        </span>
+        <button
+          type="button"
+          onClick={naarInVerkoop}
+          disabled={isPending}
+          style={{ fontSize: 12.5, fontWeight: 600, color: colors.body, background: 'none', border: 'none', cursor: 'pointer', opacity: isPending ? .6 : 1 }}
+        >
+          Naar In verkoop
+        </button>
       </div>
     )
   }
@@ -78,14 +63,14 @@ export function FaseToggle({
   if (fase === 'in_verkoop') {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-green-100 text-[var(--merk-hover,#114230)]">
-          In verkoop
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 12px', fontSize: 12.5, fontWeight: 600, background: 'var(--merk-zacht)', color: 'var(--merk-hover)' }}>
+          {FASE_LABEL.in_verkoop}
         </span>
         <button
           type="button"
           onClick={markeerVerkocht}
           disabled={isPending}
-          className="text-xs font-semibold text-gray-500 hover:text-gray-700 disabled:opacity-60"
+          style={{ fontSize: 12.5, fontWeight: 600, color: colors.body, background: 'none', border: 'none', cursor: 'pointer', opacity: isPending ? .6 : 1 }}
         >
           Markeer als verkocht
         </button>
@@ -94,7 +79,7 @@ export function FaseToggle({
   }
 
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium bg-slate-100 text-slate-600">
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 12px', fontSize: 12.5, fontWeight: 600, background: '#F5F6F8', color: colors.body }}>
       {FASE_LABEL.verkocht}
     </span>
   )

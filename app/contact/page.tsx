@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Contact — VestaAI',
   description:
     'Neem contact op met VestaAI voor een demo of een offerte. Al klant? Log in via de knop hierboven.',
+  alternates: {
+    canonical: '/contact',
+  },
 }
 
 const NR = { fontFamily: 'var(--font-newsreader), Georgia, serif' }

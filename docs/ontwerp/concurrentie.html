@@ -1,0 +1,481 @@
+<title>Concurrentie i4 Housing</title>
+<!--
+  ONTWERP-PROTOTYPE v2 · Concurrentieanalyse (roadmap v2, item 6.3)
+  ─────────────────────────────────────────────────────────────────
+  Dit bestand + kit.css + kit.js zijn de spec. Sonnet port ze 1-op-1 naar
+  Next.js: layout, staten, interacties, dropdown-filters, formattering.
+  Alleen de datalaag wordt lib/concurrentie.ts + RPC's op transacties met
+  verkopend_kantoor_norm. Data hieronder is synthetisch (seeded), op de HELE
+  markt (niet alleen eigen verkopen). Huisstijl: i4 Housing, vorm "zacht".
+  Zie docs/ontwerp/README.md voor tokens, filtermodel en port-instructies.
+
+  NIET porten naar de app:
+  - de prototype-strip onderaan (staat-schakelaar);
+  - KANTOREN/kantoorVan()/hashStr(): fictieve concurrenten + een deterministische
+    toewijzing, omdat kit.js' genereerTransacties() geen verkopend kantoor
+    kent voor niet-eigen rijen. In de app komt dit 1-op-1 uit
+    transacties.verkopend_kantoor_norm.
+  - de hash-state (#...): wordt useFilterState met useSearchParams.
+  - Drawer/dumbbell zijn hier losse CSS/JS; in de app worden dit
+    components/ui/Drawer.tsx en een klein DumbbellStat-component.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700;800&display=swap">
+<link rel="stylesheet" href="kit.css">
+<style>
+  /* ── Lokale aanvullingen (niet in kit.css — pagina-specifieke componenten) ── */
+  .wijmarkt { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+  @media (max-width: 900px) { .wijmarkt { grid-template-columns: 1fr; } }
+  .dumbbell-kaart { background: var(--surface-alt); border-radius: var(--r-md); padding: 12px 14px; }
+  .dumbbell-kaart .lbl { font-size: 12.5px; font-weight: 700; color: var(--body); margin-bottom: 14px; }
+  .dumbbell { position: relative; height: 42px; margin: 10px 8px 0; }
+  .dumbbell .lijn { position: absolute; top: 33px; height: 2px; background: var(--border-strong); }
+  .dumbbell .stip { position: absolute; top: 25px; width: 16px; height: 16px; border-radius: 50%; transform: translateX(-50%); }
+  .dumbbell .stip.markt { background: var(--surface); border: 2px solid var(--body); box-sizing: border-box; }
+  .dumbbell .stip.wij { background: var(--merk); box-shadow: 0 0 0 3px var(--merk-zacht); }
+  .dumbbell .waarde { position: absolute; top: 9px; transform: translateX(-50%); font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .dumbbell .waarde.wij { color: var(--merk-diep); }
+  .dumbbell .waarde.markt { color: var(--body); }
+  .dumbbell .waarde.hoog { top: -9px; }
+  .dumbbell-delta { margin-top: 12px; font-size: 12.5px; font-weight: 700; }
+  #ranglijst .fill { display: block; background: var(--body); }
+  #ranglijst .fill.wij { background: var(--merk); }
+  #ranglijst .hl b { color: var(--merk-diep); }
+  .delta { white-space: nowrap; }
+  .matrix-ranglijst { display: grid; grid-template-columns: 3fr 2fr; gap: 12px; min-width: 0; }
+  @media (max-width: 1150px) { .matrix-ranglijst { grid-template-columns: 1fr; } }
+  .matrix-ranglijst > .kaart { min-width: 0; }
+  .matrix-scroll { overflow-x: auto; min-width: 0; }
+  .matrix { display: grid; gap: 7px; margin-top: 4px; min-width: 520px; }
+  .matrix .kop { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .02em; padding: 0 2px 4px; align-self: end; overflow-wrap: anywhere; line-height: 1.2; }
+  .matrix .rijlbl { font-size: 13px; font-weight: 700; color: var(--body-strong); display: flex; align-items: center; padding-right: 6px; }
+  .mcel { display: block; width: 100%; text-align: left; border-radius: var(--r-sm); padding: 9px 11px; background: var(--surface-alt); border: 1px solid var(--border); transition: all var(--t-hover); min-height: 52px; }
+  .mcel:hover { border-color: var(--merk); box-shadow: var(--schaduw-card); }
+  .mcel.wij { background: var(--merk-zacht); border-color: var(--merk-rand); }
+  .mcel .naam { font-size: 12px; font-weight: 700; color: var(--body-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mcel.wij .naam { color: var(--merk-diep); }
+  .mcel .aandeel { font-size: 15px; font-weight: 800; margin-top: 2px; }
+  .mcel.wij .aandeel { color: var(--merk-diep); }
+  .mcel .aandeel small { font-weight: 600; font-size: 11px; color: var(--muted); }
+  .mcel.leeg { color: var(--muted); font-size: 12px; background: transparent; border-style: dashed; cursor: default; display: flex; align-items: center; justify-content: center; }
+  #matrixTip { position: absolute; }
+  .tegel.hero .waarschuwing { color: rgba(255,255,255,.85); }
+  .drawer-sluier { position: fixed; inset: 0; background: rgba(20,30,40,.35); display: none; z-index: 55; }
+  .drawer-sluier.open { display: block; }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(420px, 92vw); background: rgba(255,255,255,.94); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); box-shadow: var(--schaduw-pop); z-index: 56; transform: translateX(100%); transition: transform 260ms var(--ease); overflow-y: auto; padding: 22px 24px 32px; }
+  .drawer-sluier.open .drawer { transform: none; }
+  .drawer-kop { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .drawer-kop h2 { margin: 2px 0 4px; font-size: 20px; font-weight: 800; letter-spacing: -.01em; }
+  .drawer-kop .sluit { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: var(--body); transition: all var(--t-hover); flex: none; }
+  .drawer-kop .sluit:hover { background: var(--control); color: var(--text); }
+  .drawer-kop .sluit svg { width: 14px; height: 14px; }
+  .drawer-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0 4px; }
+  .d-stat { background: var(--surface-alt); border-radius: var(--r-md); padding: 10px 12px; }
+  .d-stat .lbl { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; margin-bottom: 2px; }
+  .d-stat .val { font-size: 17px; font-weight: 800; }
+  .drawer-sectie { margin-top: 18px; }
+  .drawer-sectie .flabel { display: block; margin-bottom: 8px; }
+  .mini-balk { display: grid; grid-template-columns: 112px 1fr 38px; align-items: center; gap: 8px; margin: 6px 0; font-size: 12px; color: var(--body-strong); }
+  .mini-balk .track { height: 8px; background: var(--control); border-radius: var(--r-pill); overflow: hidden; }
+  .mini-balk .fill { display: block; height: 100%; background: var(--merk); border-radius: var(--r-pill); }
+  .mini-balk .num { text-align: right; font-weight: 700; }
+</style>
+
+<main class="pagina">
+  <div class="kop">
+    <div><p class="eyebrow">Marktinzichten</p><h1>Concurrentie</h1></div>
+    <div class="kop-rechts">
+      <span class="databadge"><span class="dot"></span>Data t/m <b>12 sep 2026</b> · <b id="dataN" class="num">—</b> transacties in de regio</span>
+    </div>
+  </div>
+
+  <section class="filterbar" aria-label="Filters">
+    <div class="filterrij">
+      <div id="dPlaats"></div><div id="dType"></div>
+      <div id="segPeriode" aria-label="Periode"></div>
+      <div id="dKlasse"></div>
+      <span class="fspacer"></span>
+      <button class="link" id="btnReset" type="button">Herstel</button>
+    </div>
+    <div class="filterrij" id="rijPills" hidden><div id="pills"></div></div>
+  </section>
+
+  <div class="leeg" id="leegState" hidden style="margin-bottom:14px">
+    <h3>Verkopend kantoor onbekend in deze export</h3>
+    <p>Deze concurrentieanalyse werkt op het veld <b>verkopend kantoor</b> in de transactie-export. Voor de huidige dataset is dat veld niet gevuld, dus kunnen we geen marktaandeel, ranglijst of matrix tonen. Vraag de platform-admin om een nieuwe export met dit veld ingevuld, of neem contact op met Brainbay/Realworks voor de aanvulling.</p>
+  </div>
+
+  <div id="inhoud">
+    <section class="tegels" id="tegels" aria-label="Kerncijfers">
+      <div class="tegel hero" id="tegelHero">
+        <div class="lbl">Marktaandeel i4 Housing</div>
+        <div class="val num"><span id="heroAandeel">—</span></div>
+        <div class="voet"><span class="delta num" id="heroDelta"></span><span class="n num" id="heroN"></span></div>
+      </div>
+      <div class="tegel" id="tegelPositie">
+        <div class="lbl">Positie in de ranglijst</div>
+        <div class="val num" id="positieVal">—</div>
+        <div class="voet"><span class="n num" id="positieSub"></span></div>
+      </div>
+      <div class="tegel" id="tegelLooptijd">
+        <div class="lbl">Gem. looptijd (wij)</div>
+        <div class="val num"><span id="looptijdVal">—</span></div>
+        <div class="voet"><span class="delta num" id="looptijdDelta"></span><span class="n num" id="looptijdN"></span></div>
+      </div>
+      <div class="tegel" id="tegelRatio">
+        <div class="lbl">T.o.v. vraagprijs (wij)</div>
+        <div class="val num"><span id="ratioVal">—</span></div>
+        <div class="voet"><span class="delta num" id="ratioDelta"></span><span class="n num" id="ratioN"></span></div>
+      </div>
+      <div class="tegel" id="tegelM2">
+        <div class="lbl">€ per m² (wij)</div>
+        <div class="val num"><span id="m2Val">—</span></div>
+        <div class="voet"><span class="delta num" id="m2Delta"></span><span class="n num" id="m2N"></span></div>
+      </div>
+    </section>
+
+    <section class="kaart wijmarkt-sectie" aria-label="Wij vs. markt" style="margin-bottom:12px">
+      <div class="kaart-kop"><div><h2>Wij vs. markt</h2><div class="sub">medianen/gemiddelden binnen de huidige selectie</div></div></div>
+      <div class="wijmarkt">
+        <div class="dumbbell-kaart"><div class="lbl">Looptijd</div><div id="dbLooptijd"></div></div>
+        <div class="dumbbell-kaart"><div class="lbl">T.o.v. vraagprijs</div><div id="dbRatio"></div></div>
+        <div class="dumbbell-kaart"><div class="lbl">€ per m²</div><div id="dbM2"></div></div>
+      </div>
+    </section>
+
+    <section class="grafieken" id="grafieken">
+      <div class="kaart" data-chart="aandeel" style="grid-column:1/-1">
+        <div class="kaart-kop"><div><h2>Marktaandeel per jaar</h2><div class="sub"><span class="sub-n"></span></div></div></div>
+        <svg class="plot" role="img" aria-label="Marktaandeel per jaar, per kantoor"></svg>
+        <div class="tooltip"></div>
+      </div>
+      <div class="matrix-ranglijst" style="grid-column:1/-1">
+        <div class="kaart" aria-label="Wie wint waar">
+          <div class="kaart-kop"><div><h2>Wie wint waar</h2><div class="sub" id="matrixSub">top-kantoor per plaats × woningtype</div></div></div>
+          <div class="matrix-scroll"><div class="matrix" id="matrix"></div></div>
+          <div class="tooltip" id="matrixTip"></div>
+          <div class="hint">Hover voor de top 3, klik op een cel voor het concurrentprofiel.</div>
+        </div>
+        <div class="kaart" aria-label="Kantoren in dit segment">
+          <div class="kaart-kop"><div><h2>Kantoren in dit segment</h2><div class="sub">top 8 · klik voor het concurrentprofiel</div></div><div id="segSort"></div></div>
+          <div class="hbars" id="ranglijst"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<div class="drawer-sluier" id="drawerSluier">
+  <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerNaam">
+    <div class="drawer-kop">
+      <div><p class="eyebrow" style="margin-bottom:2px">Concurrentprofiel</p><h2 id="drawerNaam">—</h2><div class="meta" id="drawerMeta"></div></div>
+      <button class="sluit" id="drawerSluit" aria-label="Sluiten"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4l8 8m0-8-8 8"/></svg></button>
+    </div>
+    <div class="drawer-stats">
+      <div class="d-stat"><span class="lbl">Verkopen</span><span class="val num" id="drawerN">—</span></div>
+      <div class="d-stat"><span class="lbl">Aandeel</span><span class="val num" id="drawerAandeel">—</span></div>
+      <div class="d-stat"><span class="lbl">Gem. looptijd</span><span class="val num" id="drawerLooptijd">—</span></div>
+      <div class="d-stat"><span class="lbl">T.o.v. vraagprijs</span><span class="val num" id="drawerRatio">—</span></div>
+    </div>
+    <div class="drawer-sectie"><span class="flabel">Verdeling per woningtype</span><div id="drawerVerdeling"></div></div>
+    <div class="drawer-sectie"><span class="flabel">Sterkste plaats</span><p id="drawerSterkste" style="margin:2px 0 0;font-weight:700;font-size:13.5px"></p></div>
+    <div class="drawer-sectie"><span class="flabel">Trend per jaar</span><div id="drawerSpark" style="position:relative;height:40px"></div></div>
+    <button class="btn btn-stil btn-klein" id="btnSchrap" style="margin-top:18px;color:var(--merk-accent);border-color:var(--merk-accent-rand)">Verberg dit kantoor</button>
+  </aside>
+</div>
+
+<script src="kit.js"></script>
+<script>
+(() => {
+  'use strict';
+  const K = window.Kit, { $, $$ } = K;
+  K.topbar({ actief: 'Concurrentie' });
+
+  // ── Fictieve concurrenten + deterministische toewijzing (zie NIET-porten-notitie bovenaan) ──
+  const ONS = 'i4 Housing';
+  const KANTOREN = ['Van der Wal Makelaars', 'Wassenaar Makelaardij', 'Boogaerdt Makelaars', 'Molenaar Makelaars', 'De Haas Makelaardij', 'Duinzicht Makelaardij', 'Vermeulen Wonen', 'Kleijn Makelaars', 'Van Leeuwen Makelaardij', 'Stadshart Makelaardij', 'Beukers Makelaardij', 'Vlietzicht Makelaars', 'Overige kantoren'];
+  function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+  function kantoorVan(r) {
+    if (r.eigen) return ONS;
+    const gew = KANTOREN.map(k => 0.35 + (hashStr(k + '|' + r.plaats) % 1000) / 1000 * 1.3);
+    const tot = gew.reduce((a, b) => a + b, 0); let acc = 0, t = r.rnd * tot;
+    for (let i = 0; i < KANTOREN.length; i++) { acc += gew[i]; if (t <= acc) return KANTOREN[i]; }
+    return KANTOREN[KANTOREN.length - 1];
+  }
+
+  const DATA = K.genereerTransacties({ seedWaarde: 20260917, perKwartaal: [150, 40] }); // hele markt, niet alleenEigen
+  DATA.forEach(r => { r.kantoor = kantoorVan(r); });
+  const KW = K.KWARTALEN, laatste = KW.length - 1;
+  const KLASSEN = [
+    { key: 'k1', label: '< € 500 k', min: 0, max: 5e5 },
+    { key: 'k2', label: '€ 500 k – 750 k', min: 5e5, max: 7.5e5 },
+    { key: 'k3', label: '€ 750 k – 1 mln', min: 7.5e5, max: 1e6 },
+    { key: 'k4', label: '€ 1 – 1,5 mln', min: 1e6, max: 1.5e6 },
+    { key: 'k5', label: '> € 1,5 mln', min: 1.5e6, max: Infinity },
+  ];
+
+  // ── Filterstate (useFilterState) ──
+  const std = () => ({ plaatsen: new Set(['wassenaar']), wijken: new Set(), typen: new Set(), periode: 24, klassen: new Set(), verborgen: new Set(), sort: 'aandeel' });
+  const set = v => new Set(v.split(',').filter(Boolean));
+  const PARSERS = { plaatsen: set, wijken: set, typen: set, periode: Number, klassen: set, verborgen: set, sort: String };
+  let F = K.leesHash(std, PARSERS);
+  const schrijf = () => K.schrijfHash({ plaatsen: F.plaatsen, wijken: F.wijken, typen: F.typen, periode: F.periode, klassen: F.klassen, verborgen: F.verborgen, sort: F.sort === 'aandeel' ? null : F.sort });
+  let STAAT = 'normaal', laatsteRowsMarkt = [];
+
+  // ── Selectie ──
+  const bereik = () => { const aantal = F.periode === 0 ? KW.length : F.periode / 3; return { van: Math.max(0, laatste - aantal + 1), tot: laatste, aantal }; };
+  const inKlasse = r => !F.klassen.size || [...F.klassen].some(k => { const kl = KLASSEN.find(x => x.key === k); return r.prijs >= kl.min && r.prijs < kl.max; });
+  const basis = (r, van, tot) => r.q >= van && r.q <= tot;
+  const inSelectie = r => F.plaatsen.has(r.plaats) && (![...F.wijken].some(w => w.startsWith(r.plaats + '|')) || F.wijken.has(r.plaats + '|' + r.wijk)) && (!F.typen.size || F.typen.has(r.sub)) && inKlasse(r);
+  const MARKT = rows => rows.filter(r => !F.verborgen.has(r.kantoor));
+
+  // ── Filterbalk ──
+  const drops = {};
+  drops.plaats = K.dropdown($('#dPlaats'), { label: 'Plaats', samenvat: () => { const p = [...F.plaatsen].map(k => K.PLAATSEN.find(x => x.key === k)?.label).filter(Boolean); const w = F.wijken.size; return p.length ? (p.length <= 2 ? p.join(', ') : `${p[0]} +${p.length - 1}`) + (w ? ` · ${w} wijk${w > 1 ? 'en' : ''}` : '') : 'Kies…'; }, onWis: () => { F.plaatsen = new Set(['wassenaar']); F.wijken = new Set(); update(); },
+    render: body => { const zoek = document.createElement('input'); zoek.className = 'zoekveld'; zoek.placeholder = 'Zoek plaats of wijk…'; zoek.setAttribute('aria-label', 'Zoek plaats of wijk'); body.appendChild(zoek); const lijst = document.createElement('div'); body.appendChild(lijst);
+      const teken = () => { const t = zoek.value.trim().toLowerCase(); lijst.innerHTML = ''; K.PLAATSEN.forEach(p => { const wijken = p.wijken.filter(w => !t || w.toLowerCase().includes(t) || p.label.toLowerCase().includes(t)); if (t && !wijken.length && !p.label.toLowerCase().includes(t)) return; lijst.appendChild(K.vinkje(p.label, F.plaatsen.has(p.key), aan => { aan ? F.plaatsen.add(p.key) : F.plaatsen.delete(p.key); if (!aan) [...F.wijken].forEach(w => w.startsWith(p.key + '|') && F.wijken.delete(w)); if (!F.plaatsen.size) F.plaatsen.add(p.key); update(); drops.plaats.render(); }, { klasse: 'groep', n: DATA.filter(r => r.plaats === p.key).length })); wijken.forEach(w => lijst.appendChild(K.vinkje(w, F.wijken.has(p.key + '|' + w), aan => { const k = p.key + '|' + w; aan ? F.wijken.add(k) : F.wijken.delete(k); if (aan) F.plaatsen.add(p.key); update(); drops.plaats.render(); }, { klasse: 'sub' }))); }); };
+      zoek.oninput = teken; teken(); } });
+  drops.type = K.dropdown($('#dType'), { label: 'Woningtype', samenvat: () => { if (!F.typen.size) return ''; const volledig = K.TAXONOMIE.filter(t => t.subs.every(s => F.typen.has(s))); const rest = [...F.typen].filter(s => !volledig.some(t => t.subs.includes(s))); const delen = [...volledig.map(t => t.label), ...rest]; return delen.length <= 2 ? delen.join(', ') : `${delen[0]} +${delen.length - 1}`; }, teller: () => F.typen.size ? 1 : 0, onWis: () => { F.typen = new Set(); update(); },
+    render: body => { K.TAXONOMIE.forEach(t => { const alle = t.subs.every(s => F.typen.has(s)); const g = K.vinkje(t.label, alle, aan => { t.subs.forEach(s => aan ? F.typen.add(s) : F.typen.delete(s)); update(); drops.type.render(); }, { klasse: 'groep', n: DATA.filter(r => r.groep === t.groep).length }); if (!alle && t.subs.some(s => F.typen.has(s))) $('input', g).indeterminate = true; body.appendChild(g); t.subs.forEach(s => body.appendChild(K.vinkje(s, F.typen.has(s), aan => { aan ? F.typen.add(s) : F.typen.delete(s); update(); drops.type.render(); }, { klasse: 'sub' }))); }); } });
+  const segPeriode = K.segmented($('#segPeriode'), [{ key: 12, label: '12 mnd' }, { key: 24, label: '24 mnd' }, { key: 36, label: '36 mnd' }, { key: 0, label: 'Alles' }], F.periode, k => { F.periode = k; update(); });
+  drops.klasse = K.dropdown($('#dKlasse'), { label: 'Prijsklasse', samenvat: () => { if (!F.klassen.size) return ''; const labels = KLASSEN.filter(k => F.klassen.has(k.key)).map(k => k.label); return labels.length === 1 ? labels[0] : `${labels.length} klassen`; }, teller: () => F.klassen.size, onWis: () => { F.klassen = new Set(); update(); },
+    render: body => { KLASSEN.forEach(k => body.appendChild(K.vinkje(k.label, F.klassen.has(k.key), aan => { aan ? F.klassen.add(k.key) : F.klassen.delete(k.key); update(); }, { n: DATA.filter(r => r.prijs >= k.min && r.prijs < k.max).length }))); } });
+  $('#btnReset').onclick = () => { F = std(); segPeriode.zet(F.periode); Object.values(drops).forEach(d => d.render()); update(); };
+
+  function renderPills() {
+    const pills = [];
+    if (!(F.plaatsen.size === 1 && F.plaatsen.has('wassenaar'))) { const labels = [...F.plaatsen].map(k => K.PLAATSEN.find(p => p.key === k)?.label).filter(Boolean); pills.push({ label: 'Plaats', waarde: labels.join(', ') || '—', onRemove: () => { F.plaatsen = new Set(['wassenaar']); F.wijken = new Set(); drops.plaats.render(); update(); } }); }
+    if (F.wijken.size) pills.push({ label: 'Wijken', waarde: [...F.wijken].map(w => w.split('|')[1]).join(', '), onRemove: () => { F.wijken = new Set(); drops.plaats.render(); update(); } });
+    if (F.typen.size) pills.push({ label: 'Woningtype', waarde: $('.waarde', drops.type.trigger).textContent.trim(), onRemove: () => { F.typen = new Set(); drops.type.render(); update(); } });
+    if (F.klassen.size) pills.push({ label: 'Prijsklasse', waarde: KLASSEN.filter(k => F.klassen.has(k.key)).map(k => k.label).join(', '), onRemove: () => { F.klassen = new Set(); drops.klasse.render(); update(); } });
+    if (F.verborgen.size) pills.push({ label: 'Verborgen', waarde: `${F.verborgen.size} kantoor${F.verborgen.size > 1 ? 'en' : ''}`, onRemove: () => { F.verborgen = new Set(); update(); } });
+    K.filterPills($('#pills'), pills, () => $('#btnReset').click()); $('#rijPills').hidden = !pills.length;
+  }
+
+  // ── Sparkline (zoals marktanalyse) ──
+  function sparkline(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = glad(pts); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
+  function glad(pts) { return gladSegmenten(pts).map(s => s.d).join(''); }
+  function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d, eerste: seg[0], laatste: seg[seg.length - 1] }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
+
+  // ── Korte naam voor eindlabels/matrixcellen (volledige naam blijft in tooltip/drawer) ──
+  const NAAM_SUFFIXEN = ['makelaardij', 'makelaars', 'wonen'];
+  function kortNaam(naam) {
+    const woorden = naam.split(' ');
+    let kort = woorden.length > 1 && NAAM_SUFFIXEN.includes(woorden[1].toLowerCase()) ? woorden[0] : woorden.slice(0, 2).join(' ');
+    return kort.length > 18 ? kort.slice(0, 17) + '…' : kort;
+  }
+
+  // ── Grafiek: marktaandeel per jaar (lijn per kantoor, wij + top-3 concurrenten) — ONAFHANKELIJK van het periode-filter ──
+  function jaren(van, tot) { return [...new Set(KW.slice(van, tot + 1).map(q => q.j))]; }
+  function top3Concurrenten(rowsMarkt) { const m = new Map(); rowsMarkt.forEach(r => { if (r.kantoor === ONS) return; m.set(r.kantoor, (m.get(r.kantoor) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3).map(x => x[0]); }
+  function bouwSeries(rowsMarkt, van, tot) {
+    const js = jaren(van, tot);
+    const perJaar = js.map(j => { const rows = rowsMarkt.filter(r => KW[r.q].j === j); const m = new Map(); rows.forEach(r => m.set(r.kantoor, (m.get(r.kantoor) || 0) + 1)); return { j, totaal: rows.length, m }; });
+    const namen = [ONS, ...top3Concurrenten(rowsMarkt)];
+    const kleuren = ['var(--merk)', 'var(--body-strong)', 'var(--body)', 'var(--muted)'];
+    return namen.map((naam, i) => ({ key: 'k' + i, naam, label: kortNaam(naam), kleur: kleuren[i], vlak: i === 0, dun: i !== 0, values: perJaar.map(pj => { const n = pj.m.get(naam) || 0; return { j: pj.j, y: pj.totaal >= 3 ? n / pj.totaal * 100 : null, n }; }) }));
+  }
+  function lijnGrafiekJaar(card, series) {
+    const svg = $('svg', card), tt = $('.tooltip', card); const W = svg.clientWidth || 900, H = 236, m = { t: 14, r: 158, b: 26, l: 40 };
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = '';
+    const jsArr = series[0].values.map(v => v.j); if (!jsArr.length) return;
+    const alle = series.flatMap(s => s.values.map(v => v.y)).filter(v => v != null); if (!alle.length) { svg.innerHTML = '<text class="as" x="50%" y="50%" text-anchor="middle">Onvoldoende data</text>'; return; }
+    let mn = 0, mx = Math.max(...alle, 5); const stap = K.mooieStap((mx - mn) / 4); mx = Math.ceil(mx / stap) * stap;
+    const x = i => m.l + i / Math.max(1, jsArr.length - 1) * (W - m.l - m.r), y = v => m.t + (1 - (v - mn) / (mx - mn)) * (H - m.t - m.b);
+    let g = `<defs>${series.map(s => `<linearGradient id="g-aandeel-${s.key}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.kleur}" stop-opacity=".26"/><stop offset="1" stop-color="${s.kleur}" stop-opacity="0"/></linearGradient>`).join('')}</defs>`;
+    for (let v = mn; v <= mx + 1e-9; v += stap) g += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text class="as" x="${m.l - 10}" y="${y(v) + 4}" text-anchor="end">${Math.round(v)}%</text>`;
+    jsArr.forEach((j, i) => g += `<text class="as" x="${x(i)}" y="${H - 8}" text-anchor="middle">${j}</text>`);
+    const eind = [];
+    series.forEach(s => { const pts = s.values.map((v, i) => v.y == null ? null : [x(i), y(v.y)]); const segs = gladSegmenten(pts); if (s.vlak) segs.forEach(sg => { g += `<path d="${sg.d} L${sg.laatste[0].toFixed(1)} ${y(mn)} L${sg.eerste[0].toFixed(1)} ${y(mn)} Z" fill="url(#g-aandeel-${s.key})"/>`; }); g += `<path class="lijn ${s.dun ? 'dun' : ''}" d="${segs.map(sg => sg.d).join('')}" stroke="${s.kleur}"/>`; const l = segs[segs.length - 1]?.laatste; if (l) eind.push({ x: l[0] + 9, y: l[1] + 4, s }); });
+    eind.sort((a, b) => a.y - b.y); for (let i = 1; i < eind.length; i++) if (eind[i].y - eind[i - 1].y < 13) eind[i].y = eind[i - 1].y + 13;
+    eind.forEach(l => g += `<text class="eindlabel" x="${l.x}" y="${l.y}" fill="${l.s.kleur}">${l.s.label}</text>`);
+    g += `<g class="hover" hidden><line class="cross" y1="${m.t}" y2="${H - m.b}"/>${series.map(s => `<circle r="5" class="stip" fill="${s.kleur}"/>`).join('')}</g><rect class="hit" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+    svg.innerHTML = g; const hover = $('.hover', svg), hit = $('.hit', svg), stippen = $$('circle', hover), cross = $('.cross', svg);
+    hit.addEventListener('mousemove', e => { const r = svg.getBoundingClientRect(); const px = (e.clientX - r.left) * (W / r.width); const i = Math.max(0, Math.min(jsArr.length - 1, Math.round((px - m.l) / (W - m.l - m.r) * (jsArr.length - 1)))); hover.removeAttribute('hidden'); cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); series.forEach((s, si) => { const v = s.values[i].y, c = stippen[si]; if (v == null) c.setAttribute('hidden', ''); else { c.removeAttribute('hidden'); c.setAttribute('cx', x(i)); c.setAttribute('cy', y(v)); } });
+      tt.innerHTML = `<div class="tt-kop">${jsArr[i]}</div>` + series.map(s => `<div class="tt-rij"><span><i style="background:${s.kleur}"></i>${s.naam}</span><b class="num">${s.values[i].y == null ? '—' : s.values[i].y.toFixed(1) + '%'}</b></div>`).join('') + `<div class="tt-n num">n: ${series.map(s => `${s.label} ${s.values[i].n}`).join(' · ')}</div>`; tt.classList.add('zichtbaar'); const rechts = x(i) > W * .6; tt.style.left = rechts ? 'auto' : (x(i) + 14) + 'px'; tt.style.right = rechts ? (W - x(i) + 14) + 'px' : 'auto'; tt.style.top = (m.t + 30) + 'px'; });
+    hit.addEventListener('mouseleave', () => { hover.setAttribute('hidden', ''); tt.classList.remove('zichtbaar'); });
+  }
+
+  // ── Matrix "Wie wint waar" ──
+  function bouwMatrix(van, tot) {
+    const single = F.plaatsen.size === 1;
+    let rijen;
+    if (single) { const p = K.PLAATSEN.find(x => x.key === [...F.plaatsen][0]); $('#matrixSub').textContent = `top-kantoor per wijk van ${p.label} × woningtype`; rijen = p.wijken.map(w => ({ label: w, filter: r => r.plaats === p.key && r.wijk === w })); }
+    else { $('#matrixSub').textContent = 'top-kantoor per plaats × woningtype'; rijen = [...F.plaatsen].map(k => { const p = K.PLAATSEN.find(x => x.key === k); return { label: p.label, filter: r => r.plaats === k }; }); }
+    const kolommen = K.TAXONOMIE.map(t => ({ key: t.groep, label: t.label }));
+    const host = $('#matrix'); host.style.gridTemplateColumns = `128px repeat(${kolommen.length}, minmax(0,1fr))`;
+    let html = `<div></div>` + kolommen.map(c => `<div class="kop">${c.label}</div>`).join('');
+    rijen.forEach(rij => {
+      html += `<div class="rijlbl">${rij.label}</div>`;
+      kolommen.forEach(kol => {
+        const rows = MARKT(DATA.filter(r => basis(r, van, tot) && rij.filter(r) && r.groep === kol.key && (!F.typen.size || F.typen.has(r.sub)) && inKlasse(r)));
+        if (!rows.length) { html += `<div class="mcel leeg">geen data</div>`; return; }
+        const m = new Map(); rows.forEach(r => m.set(r.kantoor, (m.get(r.kantoor) || 0) + 1));
+        const top = [...m.entries()].sort((a, b) => b[1] - a[1]);
+        const [naam, n] = top[0]; const aandeel = n / rows.length * 100;
+        const tip = top.slice(0, 3).map(([nm, c]) => `${nm}: ${(c / rows.length * 100).toFixed(0)}% (n=${c})`).join('&#10;');
+        html += `<button type="button" class="mcel ${naam === ONS ? 'wij' : ''}" data-naam="${naam.replace(/"/g, '&quot;')}" data-tip="${tip.replace(/"/g, '&quot;')}" title="${naam.replace(/"/g, '&quot;')}"><div class="naam">${kortNaam(naam)}</div><div class="aandeel num">${aandeel.toFixed(0)}% <small>n=${rows.length}</small></div></button>`;
+      });
+    });
+    host.innerHTML = html;
+    $$('.mcel:not(.leeg)', host).forEach(cel => { cel.addEventListener('click', () => openDrawer(cel.dataset.naam)); cel.addEventListener('mouseenter', () => toonMatrixTip(cel)); cel.addEventListener('mouseleave', verbergMatrixTip); });
+  }
+  function toonMatrixTip(cel) { const tip = $('#matrixTip'); const host = cel.closest('.kaart'); const r = cel.getBoundingClientRect(), hr = host.getBoundingClientRect(); tip.innerHTML = `<div class="tt-kop">${cel.dataset.naam}</div>` + cel.dataset.tip.split('&#10;').map(r2 => `<div class="tt-rij" style="justify-content:flex-start;gap:6px">${r2}</div>`).join(''); tip.style.left = Math.min(r.left - hr.left, host.clientWidth - 220) + 'px'; tip.style.top = (r.bottom - hr.top + 6) + 'px'; tip.classList.add('zichtbaar'); }
+  function verbergMatrixTip() { $('#matrixTip').classList.remove('zichtbaar'); }
+
+  // ── Ranglijst "Kantoren in dit segment" ──
+  function bouwRanglijst(rowsMarkt) {
+    const m = new Map(); rowsMarkt.forEach(r => { if (!m.has(r.kantoor)) m.set(r.kantoor, []); m.get(r.kantoor).push(r); });
+    let lijst = [...m.entries()].map(([naam, rows]) => ({ naam, n: rows.length, aandeel: rows.length / rowsMarkt.length * 100, looptijd: K.mediaan(rows.map(r => r.looptijd)) }));
+    const sorters = { aandeel: (a, b) => b.aandeel - a.aandeel, aantal: (a, b) => b.n - a.n, looptijd: (a, b) => (a.looptijd ?? 1e9) - (b.looptijd ?? 1e9) };
+    lijst.sort(sorters[F.sort] || sorters.aandeel); lijst = lijst.slice(0, 8);
+    const host = $('#ranglijst');
+    if (!lijst.length) { host.innerHTML = '<p class="hint" style="margin:8px 0">Geen kantoren in deze selectie.</p>'; return; }
+    const maxAandeel = Math.max(...lijst.map(x => x.aandeel), 1);
+    host.innerHTML = lijst.map(k => `<div class="hrij" role="button" tabindex="0" data-naam="${k.naam.replace(/"/g, '&quot;')}"><span class="hl">${k.naam === ONS ? `<b>${k.naam}</b>` : k.naam}</span><span class="track"><span class="fill ${k.naam === ONS ? 'wij' : ''}" style="width:${(k.aandeel / maxAandeel * 100).toFixed(1)}%"></span></span><span class="hv num">${k.aandeel.toFixed(1)}% <small>· n=${k.n} · ${K.dagen(k.looptijd)}</small></span></div>`).join('');
+    $$('.hrij', host).forEach(el => { const open = () => openDrawer(el.dataset.naam); el.onclick = open; el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } }; });
+  }
+  const segSort = K.segmented($('#segSort'), [{ key: 'aandeel', label: 'Aandeel' }, { key: 'aantal', label: 'Aantal' }, { key: 'looptijd', label: 'Looptijd' }], F.sort, k => { F.sort = k; bouwRanglijst(laatsteRowsMarkt); schrijf(); }, { klasse: 'klein' });
+
+  // ── Dumbbell (wij vs. markt) ──
+  function bouwDumbbell(host, { wij, markt, fmt, deltaFmt, gunstig }) {
+    if (wij == null || markt == null) { host.innerHTML = '<p class="hint" style="margin:6px 0 0">Onvoldoende data.</p>'; return; }
+    const lo = Math.min(wij, markt), hi = Math.max(wij, markt); const pad = Math.max((hi - lo) * .45, Math.abs(hi) * .08, 1);
+    let dmin = lo - pad, dmax = hi + pad; if (fmt !== K.euro && dmin < 0 && lo >= 0) dmin = 0;
+    const pct = v => ((v - dmin) / (dmax - dmin || 1)) * 100;
+    const pW = pct(wij), pM = pct(markt); const dl = wij - markt, r = dl > 0 ? 1 : dl < 0 ? -1 : 0;
+    const kleur = gunstig === 0 ? 'var(--body-strong)' : r === 0 ? 'var(--body-strong)' : (r === gunstig ? 'var(--goed)' : 'var(--let)');
+    const botsing = Math.abs(pW - pM) < 16; // labels zouden elkaar overlappen: markt-label hoger plaatsen
+    host.innerHTML = `<div class="dumbbell"><div class="lijn" style="left:${Math.min(pW, pM)}%;width:${Math.abs(pW - pM)}%"></div><div class="stip markt" style="left:${pM}%" title="Markt"></div><div class="stip wij" style="left:${pW}%" title="Wij"></div><div class="waarde markt${botsing ? ' hoog' : ''}" style="left:${pM}%">${fmt(markt)}</div><div class="waarde wij" style="left:${pW}%">${fmt(wij)}</div></div><div class="dumbbell-delta num" style="color:${kleur}">${r > 0 ? '▲' : r < 0 ? '▼' : '•'} ${deltaFmt(dl)}</div>`;
+  }
+
+  // ── Drawer (concurrentprofiel) ──
+  function openDrawer(naam) {
+    const { van, tot } = bereik();
+    const rowsSel = DATA.filter(r => basis(r, van, tot) && inSelectie(r)); const rowsMarkt = MARKT(rowsSel);
+    const rows = rowsMarkt.filter(r => r.kantoor === naam);
+    const n = rows.length, aandeel = rowsMarkt.length ? n / rowsMarkt.length * 100 : null;
+    const looptijd = K.mediaan(rows.map(r => r.looptijd)), ratio = K.gem(rows.map(r => r.ratio));
+    const inPlaatsWijk = r => F.plaatsen.has(r.plaats) && (![...F.wijken].some(w => w.startsWith(r.plaats + '|')) || F.wijken.has(r.plaats + '|' + r.wijk));
+    const rowsBreed = MARKT(DATA.filter(r => basis(r, van, tot) && inPlaatsWijk(r) && inKlasse(r) && r.kantoor === naam));
+    const totBreed = rowsBreed.length || 1;
+    const groepVerdeling = K.TAXONOMIE.map(t => ({ label: t.label, n: rowsBreed.filter(r => r.groep === t.groep).length }));
+    const sterkste = K.PLAATSEN.map(p => { const inP = MARKT(DATA.filter(r => basis(r, van, tot) && r.plaats === p.key && inKlasse(r))); const eigenN = inP.filter(r => r.kantoor === naam).length; return { label: p.label, aandeel: inP.length ? eigenN / inP.length * 100 : 0 }; }).sort((a, b) => b.aandeel - a.aandeel)[0];
+    const jsAll = [...new Set(KW.map(q => q.j))];
+    const trend = jsAll.map(j => DATA.filter(r => KW[r.q].j === j && r.kantoor === naam).length);
+
+    $('#drawerNaam').textContent = naam; $('#drawerMeta').textContent = `binnen de huidige plaats-/type-/prijsselectie`;
+    K.tween($('#drawerN'), n, v => K.nl.format(Math.round(v)));
+    K.tween($('#drawerAandeel'), aandeel, v => v == null ? '—' : K.procent(v, false));
+    K.tween($('#drawerLooptijd'), looptijd, v => K.dagen(v));
+    K.tween($('#drawerRatio'), ratio, v => K.procent(v));
+    $('#drawerVerdeling').innerHTML = groepVerdeling.map(g => `<div class="mini-balk"><span>${g.label}</span><span class="track"><span class="fill" style="width:${(g.n / totBreed * 100).toFixed(0)}%"></span></span><span class="num">${(g.n / totBreed * 100).toFixed(0)}%</span></div>`).join('');
+    $('#drawerSterkste').textContent = sterkste && sterkste.aandeel > 0 ? `${sterkste.label} (${sterkste.aandeel.toFixed(0)}% aandeel)` : '—';
+    $('#drawerSpark').innerHTML = sparkline(trend) || '<p class="hint" style="margin:0">Onvoldoende data.</p>';
+    const btnSchrap = $('#btnSchrap'); btnSchrap.hidden = naam === ONS; btnSchrap.onclick = () => { F.verborgen.add(naam); sluitDrawer(); update(); };
+    $('#drawerSluier').classList.add('open');
+  }
+  function sluitDrawer() { $('#drawerSluier').classList.remove('open'); }
+  $('#drawerSluier').addEventListener('click', e => { if (e.target === e.currentTarget) sluitDrawer(); });
+  $('#drawerSluit').onclick = sluitDrawer;
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') sluitDrawer(); });
+
+  // ── Delta-helpers voor tegels ──
+  function zetDelta(el, dl, eenheid, gunstig) {
+    if (dl == null) { el.textContent = 'geen vergelijking'; el.className = 'delta num'; return; }
+    const r = dl > 0 ? 1 : dl < 0 ? -1 : 0;
+    el.className = 'delta num' + (gunstig && r ? (r === gunstig ? ' op' : ' neer') : '');
+    const getal = eenheid === 'pt' ? (dl > 0 ? '+' : '') + dl.toFixed(1) + ' pt' : (dl > 0 ? '+' : '') + Math.round(dl) + ' ' + eenheid;
+    el.innerHTML = `${r > 0 ? '▲' : r < 0 ? '▼' : '•'} ${getal}`;
+  }
+  function zetDeltaNeutraal(el, dlPct) { if (dlPct == null) { el.textContent = 'geen vergelijking'; el.className = 'delta num'; return; } el.className = 'delta num'; el.innerHTML = `${dlPct > 0 ? '▲' : dlPct < 0 ? '▼' : '•'} ${K.procent(dlPct)}`; }
+  function toonWeinigWaarschuwing(el, weinig, n) { const isHero = el.classList.contains('hero'); el.classList.toggle('warn', weinig && !isHero); let wa = $('.waarschuwing', el); if (weinig) { if (!wa) { wa = document.createElement('div'); wa.className = 'waarschuwing'; el.appendChild(wa); } wa.innerHTML = `<span>⚠︎</span><span>Te weinig verkopen (${n}) voor een betrouwbaar cijfer.</span>`; } else if (wa) wa.remove(); }
+
+  // ── Staten: skeletons ──
+  const TEGELS_HTML = $('#tegels').innerHTML;
+  function toonSkeletons() {
+    $('#tegels').innerHTML = Array.from({ length: 5 }).map(() => `<div class="tegel"><div class="skelet" style="height:12px;width:55%"></div><div class="skelet" style="height:30px;width:70%;margin-top:8px"></div><div class="skelet" style="height:14px;width:40%;margin-top:auto"></div></div>`).join('');
+    ['#dbLooptijd', '#dbRatio', '#dbM2'].forEach(s => $(s).innerHTML = '<div class="skelet" style="height:30px"></div>');
+    $('[data-chart="aandeel"] svg').innerHTML = '<rect x="0" y="0" width="100%" height="100%" rx="10" fill="var(--control)"/>';
+    $('#matrix').innerHTML = '<div class="skelet" style="height:160px;grid-column:1/-1"></div>';
+    $('#ranglijst').innerHTML = Array.from({ length: 5 }).map(() => `<div class="hrij"><span class="skelet" style="height:12px"></span><span class="track skelet"></span><span class="skelet" style="height:12px"></span></div>`).join('');
+  }
+  function herstelTegels() { $('#tegels').innerHTML = TEGELS_HTML; }
+  function toonLeegState(aan) { $('#leegState').hidden = !aan; $('#inhoud').hidden = aan; }
+
+  // ── Update ──
+  function update() {
+    schrijf(); Object.values(drops).forEach(d => d.ververs()); renderPills();
+    $('#dataN').textContent = K.nl.format(DATA.length);
+    const { van, tot, aantal } = bereik();
+
+    if (STAAT === 'leeg') { toonLeegState(true); return; }
+    toonLeegState(false);
+    if (STAAT === 'laden') { herstelTegels(); toonSkeletons(); return; }
+    herstelTegels();
+
+    const rowsSel = DATA.filter(r => basis(r, van, tot) && inSelectie(r));
+    const rowsMarkt = MARKT(rowsSel); laatsteRowsMarkt = rowsMarkt;
+    const vorigVan = Math.max(0, van - aantal);
+    const rowsVorigMarkt = van === 0 ? [] : MARKT(DATA.filter(r => basis(r, vorigVan, van - 1) && inSelectie(r)));
+
+    const nTotaal = rowsMarkt.length; const weinig = STAAT === 'weinig' || nTotaal < 6;
+    const nOns = rowsMarkt.filter(r => r.kantoor === ONS).length;
+    const aandeel = nTotaal ? nOns / nTotaal * 100 : null;
+    const nTotaalVorig = rowsVorigMarkt.length, nOnsVorig = rowsVorigMarkt.filter(r => r.kantoor === ONS).length;
+    const aandeelVorig = nTotaalVorig ? nOnsVorig / nTotaalVorig * 100 : null;
+
+    K.tween($('#heroAandeel'), aandeel, v => v == null ? '—' : v.toFixed(1) + '%');
+    zetDelta($('#heroDelta'), (aandeel != null && aandeelVorig != null) ? aandeel - aandeelVorig : null, 'pt', 1);
+    $('#heroN').textContent = `n = ${K.nl.format(nTotaal)} · data t/m 12 sep 2026`;
+    toonWeinigWaarschuwing($('#tegelHero'), weinig, nTotaal);
+
+    const perKantoor = new Map(); rowsMarkt.forEach(r => perKantoor.set(r.kantoor, (perKantoor.get(r.kantoor) || 0) + 1));
+    const gerangschikt = [...perKantoor.entries()].sort((a, b) => b[1] - a[1]);
+    const totKantoren = gerangschikt.length; const positie = gerangschikt.findIndex(([naam]) => naam === ONS) + 1;
+    $('#positieVal').textContent = positie ? '#' + positie : '—';
+    $('#positieSub').textContent = totKantoren ? `van ${totKantoren} kantoren · n = ${K.nl.format(nTotaal)}` : 'geen data';
+    toonWeinigWaarschuwing($('#tegelPositie'), weinig, nTotaal);
+
+    const rowsWij = rowsMarkt.filter(r => r.kantoor === ONS), rowsCon = rowsMarkt.filter(r => r.kantoor !== ONS);
+    const looptijdWij = K.mediaan(rowsWij.map(r => r.looptijd)), looptijdMarkt = K.mediaan(rowsCon.map(r => r.looptijd));
+    const ratioWij = K.gem(rowsWij.map(r => r.ratio)), ratioMarkt = K.gem(rowsCon.map(r => r.ratio));
+    const m2Wij = K.mediaan(rowsWij.map(r => r.m2)), m2Markt = K.mediaan(rowsCon.map(r => r.m2));
+
+    K.tween($('#looptijdVal'), looptijdWij, v => K.dagen(v));
+    zetDelta($('#looptijdDelta'), (looptijdWij != null && looptijdMarkt != null) ? looptijdWij - looptijdMarkt : null, 'dgn', -1);
+    $('#looptijdN').textContent = `n = ${K.nl.format(rowsWij.length)} · markt ${K.dagen(looptijdMarkt)}`;
+    toonWeinigWaarschuwing($('#tegelLooptijd'), weinig, nTotaal);
+
+    K.tween($('#ratioVal'), ratioWij, v => K.procent(v));
+    zetDelta($('#ratioDelta'), (ratioWij != null && ratioMarkt != null) ? ratioWij - ratioMarkt : null, 'pt', 1);
+    $('#ratioN').textContent = `n = ${K.nl.format(rowsWij.length)} · markt ${K.procent(ratioMarkt)}`;
+    toonWeinigWaarschuwing($('#tegelRatio'), weinig, nTotaal);
+
+    K.tween($('#m2Val'), m2Wij, v => K.euro(v));
+    const deltaM2Pct = (m2Wij != null && m2Markt) ? (m2Wij / m2Markt - 1) * 100 : null;
+    zetDeltaNeutraal($('#m2Delta'), deltaM2Pct);
+    $('#m2N').textContent = `n = ${K.nl.format(rowsWij.length)} · markt ${K.euro(m2Markt)}`;
+    toonWeinigWaarschuwing($('#tegelM2'), weinig, nTotaal);
+
+    bouwDumbbell($('#dbLooptijd'), { wij: looptijdWij, markt: looptijdMarkt, fmt: K.dagen, gunstig: -1, deltaFmt: dl => `${dl > 0 ? '+' : ''}${Math.round(dl)} dgn t.o.v. de markt` });
+    bouwDumbbell($('#dbRatio'), { wij: ratioWij, markt: ratioMarkt, fmt: K.procent, gunstig: 1, deltaFmt: dl => `${dl > 0 ? '+' : ''}${dl.toFixed(1)} pt t.o.v. de markt` });
+    bouwDumbbell($('#dbM2'), { wij: m2Wij, markt: m2Markt, fmt: K.euro, gunstig: 0, deltaFmt: dl => `${dl >= 0 ? '+' : '−'}${K.euro(Math.abs(dl))} t.o.v. de markt/m²` });
+
+    // Trendgrafiek is bewust ONAFHANKELIJK van het periode-filter: plaats/type/prijsklasse gelden wel, periode niet.
+    const rowsVoorGrafiek = MARKT(DATA.filter(r => inSelectie(r)));
+    const series = bouwSeries(rowsVoorGrafiek, 0, laatste);
+    lijnGrafiekJaar($('[data-chart="aandeel"]'), series);
+    $('[data-chart="aandeel"] .sub-n').textContent = `alle jaren · plaats/type/prijsklasse-filters gelden wel, periode niet · n = ${K.nl.format(rowsVoorGrafiek.length)}`;
+
+    bouwMatrix(van, tot);
+    bouwRanglijst(rowsMarkt);
+  }
+
+  const zetStaat = s => { STAAT = s; update(); };
+  K.protoStrip({ staten: [{ key: 'normaal', label: 'Normaal' }, { key: 'laden', label: 'Laden' }, { key: 'weinig', label: 'Weinig data' }, { key: 'leeg', label: 'Kantoor onbekend' }], huidig: 'normaal', onChange: zetStaat, tekst: 'Filterstand staat in de URL (#…). "Kantoor onbekend" simuleert een export zonder verkopend_kantoor. Concurrenten zijn fictief (zie notitie bovenaan).' });
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(update, 120); });
+  addEventListener('hashchange', () => { F = K.leesHash(std, PARSERS); segPeriode.zet(F.periode); Object.values(drops).forEach(d => d.render()); update(); });
+  update();
+})();
+</script>

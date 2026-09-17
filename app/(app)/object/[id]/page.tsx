@@ -10,7 +10,7 @@ import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { formatDatum } from '@/lib/utils'
 import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
-import type { ContentOutput, ObjectFase, PitchUitslag, PropertyInput } from '@/lib/schemas'
+import type { ContentOutput, ObjectFase, PropertyInput } from '@/lib/schemas'
 import type { Subject } from '@/lib/waardering'
 import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
 
@@ -19,7 +19,7 @@ const getCachedObject = unstable_cache(
     const serviceClient = createServiceSupabaseClient()
     const { data } = await serviceClient
       .from('objecten')
-      .select('id, kantoor_id, address, status, fase, pitch_uitslag, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur')
+      .select('id, kantoor_id, address, status, fase, input_json, outputs_json, outputs_json_en, created_at, notitie, lat, lng, waardering_json, usps_structuur')
       .eq('id', objectId)
       .single()
     return data
@@ -55,7 +55,6 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const stad = komma > -1 ? object.address.slice(komma + 1).trim() : undefined
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
-  const pitchUitslag = (object.pitch_uitslag ?? null) as PitchUitslag | null
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
 
   const service = createServiceSupabaseClient()
@@ -94,8 +93,8 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         <SerifTitle size={32} accent={stad} style={{ marginBottom: 12 }}>{stad ? `${straat},` : straat}</SerifTitle>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <FaseToggle objectId={object.id} fase={fase} pitchUitslag={pitchUitslag} />
-            {fase !== 'acquisitie' && (
+            <FaseToggle objectId={object.id} fase={fase} />
+            {fase !== 'verkoopadvies' && (
               <StatusToggle objectId={object.id} initialStatus={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'} />
             )}
             <span style={{ fontSize: 13, color: '#98A0A6' }}>{formatDatum(object.created_at)}</span>

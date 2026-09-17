@@ -9,7 +9,7 @@ interface Props {
 }
 
 const PROFIEL_KLEUR: Record<string, string> = {
-  Premium: 'var(--merk,#1A6B45)',
+  Premium: 'var(--merk)',
   Bovengemiddeld: '#2E7D5E',
   Gemiddeld: '#5C6470',
   Ondergemiddeld: '#98A0A6',
@@ -24,7 +24,7 @@ function Chip({ label, kleur }: { label: string; kleur?: string }) {
       fontSize: 11,
       fontWeight: 700,
       background: kleur ? `${kleur}18` : '#F0F6F2',
-      color: kleur ?? 'var(--merk,#1A6B45)',
+      color: kleur ?? 'var(--merk)',
       letterSpacing: 0.2,
     }}>
       {label}
@@ -44,7 +44,7 @@ function Rij({ label, waarde }: { label: string; waarde: React.ReactNode }) {
 function Sectie({ titel, children }: { titel: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk,#1A6B45)', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk)', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
       {children}
     </div>
   )
@@ -106,7 +106,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--merk,#1A6B45)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--merk)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
@@ -189,7 +189,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           {/* Markt */}
           {data.markt && (
             <Sectie titel="Marktdynamiek">
-              <Chip label={data.markt.label} kleur="var(--merk,#1A6B45)" />
+              <Chip label={data.markt.label} kleur="var(--merk)" />
               <Rij label="Verkooptijd" waarde={data.markt.verkooptijd_weken} />
               <Rij label="Overbiedingskans" waarde={data.markt.overbiedingskans_pct} />
               <Rij label="Gem. overbod" waarde={data.markt.overbod_pct} />
@@ -200,7 +200,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           {/* Voorzieningen */}
           {data.voorzieningen && (
             <Sectie titel="Nabijheid">
-              <Chip label={`Bereikbaarheid: ${data.voorzieningen.nabijheid_beoordeling}`} kleur="var(--merk,#1A6B45)" />
+              <Chip label={`Bereikbaarheid: ${data.voorzieningen.nabijheid_beoordeling}`} kleur="var(--merk)" />
               {data.voorzieningen.supermarkt[0] && (
                 <Rij
                   label={data.voorzieningen.supermarkt[0].naam}

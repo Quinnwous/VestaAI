@@ -1,12 +1,15 @@
 /**
  * Pure functies voor de kerncijfers op de startpagina (masterplan fase 1.6,
- * zie docs/roadmap.md) en het pitch-scorebord op /woningen. Los van React en
- * Supabase, zodat ze zonder een testdatabase te testen zijn — zie
- * docs/ontwerpprincipes.md § Data: elke statistiek toont zijn n en geeft bij
- * te weinig data een waarschuwing i.p.v. een schijnzeker getal.
+ * zie docs/roadmap.md). Los van React en Supabase, zodat ze zonder een
+ * testdatabase te testen zijn — zie docs/ontwerpprincipes.md § Data: elke
+ * statistiek toont zijn n en geeft bij te weinig data een waarschuwing i.p.v.
+ * een schijnzeker getal.
+ *
+ * Geen pitch-concept meer (besluit Quinn 17 sep 2026, item 1.9c): er bestaan
+ * geen "gewonnen/verloren pitches" en geen winratio meer — `berekenPitchCijfers`
+ * en `PitchRow`/`PitchCijfers` zijn vervallen.
  */
 
-export type PitchRow = { pitch_uitslag: string | null; created_at?: string | null }
 export type ObjectFaseRow = { fase: string }
 export type EigenVerkoopRow = {
   verkoopprijs: number | null
@@ -15,46 +18,31 @@ export type EigenVerkoopRow = {
   verkoopdatum: string | null
 }
 
-export type PitchCijfers = {
-  open: number
-  gewonnen: number
-  verloren: number
-  /** Percentage (0-100), of null als er nog geen enkele pitch beslist is. */
-  winratio: number | null
-}
-
-/** Telt open/gewonnen/verloren en de winratio over een set acquisitie-pitches. */
-export function berekenPitchCijfers(rows: PitchRow[]): PitchCijfers {
-  const open = rows.filter(r => (r.pitch_uitslag ?? 'open') === 'open').length
-  const gewonnen = rows.filter(r => r.pitch_uitslag === 'gewonnen').length
-  const verloren = rows.filter(r => r.pitch_uitslag === 'verloren').length
-  const beslist = gewonnen + verloren
-  const winratio = beslist > 0 ? Math.round((gewonnen / beslist) * 100) : null
-  return { open, gewonnen, verloren, winratio }
-}
-
 /**
- * Filtert rijen met een `created_at` op de laatste `maanden` maanden, t.o.v.
- * `nu` (standaard: vandaag — als parameter voor deterministisch testen).
- * Rijen zonder `created_at` vallen buiten de selectie.
+ * Filtert rijen op de laatste `maanden` maanden, t.o.v. `nu` (standaard:
+ * vandaag — als parameter voor deterministisch testen). `datumVeld` haalt de
+ * relevante datum uit elke rij (bv. `created_at` of `verkoopdatum`); rijen
+ * zonder datum vallen buiten de selectie.
  */
-export function filterOpLaatsteMaanden<T extends { created_at?: string | null }>(
+export function filterOpLaatsteMaanden<T>(
   rows: T[],
   maanden: number,
+  datumVeld: (row: T) => string | null | undefined,
   nu: Date = new Date(),
 ): T[] {
   const grens = new Date(nu)
   grens.setMonth(grens.getMonth() - maanden)
   return rows.filter(r => {
-    if (!r.created_at) return false
-    return new Date(r.created_at) >= grens
+    const datum = datumVeld(r)
+    if (!datum) return false
+    return new Date(datum) >= grens
   })
 }
 
 /** Telt woningdossiers per fase. */
-export function tellFases(rows: ObjectFaseRow[]): { acquisitie: number; inVerkoop: number; verkocht: number } {
+export function tellFases(rows: ObjectFaseRow[]): { verkoopadvies: number; inVerkoop: number; verkocht: number } {
   return {
-    acquisitie: rows.filter(r => r.fase === 'acquisitie').length,
+    verkoopadvies: rows.filter(r => r.fase === 'verkoopadvies').length,
     inVerkoop: rows.filter(r => r.fase === 'in_verkoop').length,
     verkocht: rows.filter(r => r.fase === 'verkocht').length,
   }

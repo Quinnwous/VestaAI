@@ -7,7 +7,7 @@ type ObjectStatus = 'draft' | 'published' | 'onder_bod' | 'verkocht'
 
 const STATUS_CONFIG: Record<ObjectStatus, { label: string; kleur: string; punt: string }> = {
   draft: { label: 'Concept', kleur: 'bg-gray-100 text-gray-600 hover:bg-gray-200', punt: 'bg-gray-400' },
-  published: { label: 'Gepubliceerd', kleur: 'bg-green-100 text-[var(--merk-hover,#114230)] hover:bg-green-200', punt: 'bg-[var(--merk-zacht,#EAF5EE)]0' },
+  published: { label: 'Gepubliceerd', kleur: 'bg-[var(--merk-zacht)] text-[var(--merk-hover)] hover:bg-[var(--merk-rand)]', punt: 'bg-[var(--merk)]' },
   onder_bod: { label: 'Onder bod', kleur: 'bg-amber-100 text-amber-700 hover:bg-amber-200', punt: 'bg-amber-500' },
   verkocht: { label: 'Verkocht', kleur: 'bg-slate-100 text-slate-600 hover:bg-slate-200', punt: 'bg-slate-500' },
 }
@@ -65,7 +65,7 @@ export function StatusToggle({ objectId, initialStatus }: Props) {
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_CONFIG[s].punt}`} />
                 {STATUS_CONFIG[s].label}
                 {s === status && (
-                  <svg className="w-3 h-3 ml-auto text-[var(--merk,#1A6B45)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3 h-3 ml-auto text-[var(--merk)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 )}

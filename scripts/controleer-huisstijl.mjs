@@ -3,16 +3,22 @@
  * loopt alle schermen langs, maakt screenshots en meldt élke plek waar nog een
  * VestaAI-groen (#1A6B45 / #2A8A5C en varianten) in een berekende stijl zit.
  *
- *   node --env-file=.env.local scripts/controleer-huisstijl.mjs [poort]
+ *   node --env-file=.env.local scripts/controleer-huisstijl.mjs [poort] [--width=1728]
+ *
+ * Voor de Definition of Done niet los draaien maar via `npm run dod:screens`
+ * (scripts/dod-screens.mjs), dat dit script op 390/1280/1920 px aanroept.
+ * Inloggen via sessiecookie en foutstaat-detectie: scripts/lib/dodSessie.mjs.
+ * Exit 1 bij een runtime-fout of een pagina met VestaAI-groen.
  */
-import { createClient } from '@supabase/supabase-js'
 import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
+import { serviceClient, sessieCookie, toontFoutstaat, poortUitArgs } from './lib/dodSessie.mjs'
 
-const POORT = process.argv[2] ?? '3001'
+const POORT = poortUitArgs('3001')
+const breedteArg = process.argv.find(a => a.startsWith('--width='))
+const BREEDTE = breedteArg ? Number(breedteArg.split('=')[1]) : 1728
 const BASIS = `http://localhost:${POORT}`
-const EMAIL = 'quinn.berkouwer@icloud.com'
-const UIT = '/tmp/vesta-shots'
+const UIT = `/tmp/vesta-shots-${BREEDTE}`
 
 const GROENEN = ['26, 107, 69', '42, 138, 92', '17, 66, 48', '199, 230, 213', '241, 247, 243']
 
@@ -30,32 +36,20 @@ const PAGINAS = [
   ['marktanalyse-kaart', '/marktanalyse/kaart'],
 ]
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-const projectRef = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0]
-
-async function sessieCookie() {
-  const { data, error } = await supabase.auth.admin.generateLink({ type: 'magiclink', email: EMAIL })
-  if (error) throw new Error(`magic link mislukt: ${error.message}`)
-  // Bewust een aparte client: verifyOtp zet de sessie óp de client, en daarna zouden
-  // alle vervolgqueries als die gebruiker draaien (met RLS) in plaats van als service.
-  const inlogClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY)
-  const { data: sessie, error: vFout } = await inlogClient.auth.verifyOtp({
-    token_hash: data.properties.hashed_token,
-    type: 'email',
-  })
-  if (vFout) throw new Error(`verifyOtp mislukt: ${vFout.message}`)
-  const waarde = 'base64-' + Buffer.from(JSON.stringify(sessie.session)).toString('base64')
-  return { name: `sb-${projectRef}-auth-token`, value: waarde, domain: 'localhost', path: '/' }
-}
+const supabase = serviceClient()
 
 async function main() {
   await mkdir(UIT, { recursive: true })
   const cookie = await sessieCookie()
 
   const browser = await chromium.launch()
-  const context = await browser.newContext({ viewport: { width: 1728, height: 1080 } })
+  const context = await browser.newContext({ viewport: { width: BREEDTE, height: BREEDTE <= 480 ? 844 : 1080 } })
   await context.addCookies([cookie])
   const page = await context.newPage()
+  const paginaFouten = []
+  page.on('pageerror', (e) => paginaFouten.push(e.message))
+  const gecrasht = []
+  const metGroen = []
 
   // Eerst een echt dossier zoeken zodat we ook het werkblad kunnen zien.
   const { data: object } = await supabase.from('objecten').select('id, address').limit(1).maybeSingle()
@@ -66,9 +60,23 @@ async function main() {
     await page.waitForTimeout(600)
     await page.screenshot({ path: `${UIT}/${naam}.png`, fullPage: false })
 
+    // Runtime-fout? De foutstaat (app/(app)/error.tsx) of de Next-overlay
+    // maakt de huisstijlcheck zinloos: een gecrashte pagina is nooit "schoon"
+    // (proefrit 17 sep 2026: /dashboard crashte terwijl dit script groen gaf).
+    const crash = await toontFoutstaat(page)
+    if (crash || paginaFouten.length) {
+      gecrasht.push(`${naam} (${pad})${paginaFouten.length ? ': ' + paginaFouten.join(' | ').slice(0, 300) : ''}`)
+      paginaFouten.length = 0
+    }
+
     const bevindingen = await page.evaluate((groenen) => {
       const raak = []
       for (const el of document.querySelectorAll('*')) {
+        // De "VestaAI × [kantoorlogo]"-lockup in de topbar is met opzet vast
+        // VestaAI-groen (CLAUDE.md § Conventies, besluit 16 sep 2026) — geen
+        // bug, dus hier uitgesloten net als de bestandsuitzonderingen in de
+        // huisstijl-check-hook (roadmap 1.9).
+        if (el.closest('[title="VestaAI"]')) continue
         const s = getComputedStyle(el)
         for (const eigenschap of ['color', 'backgroundColor', 'borderTopColor', 'borderBottomColor', 'borderLeftColor', 'borderRightColor', 'outlineColor']) {
           const waarde = s[eigenschap]
@@ -97,6 +105,7 @@ async function main() {
     console.log('   theme-color:', bevindingen.themeColor)
     console.log('   font       :', bevindingen.font.slice(0, 70))
     if (bevindingen.groen.length) {
+      metGroen.push(`${naam} (${pad})`)
       console.log('   ⚠️ GROEN GEVONDEN:')
       bevindingen.groen.forEach((r) => console.log('     -', r))
     } else {
@@ -115,6 +124,10 @@ async function main() {
 
   await browser.close()
   console.log(`\nScreenshots: ${UIT}`)
+  if (gecrasht.length) console.error('\n❌ RUNTIME-FOUT op:', gecrasht.join('\n   '))
+  if (metGroen.length) console.error('\n❌ VESTAAI-GROEN op:', metGroen.join('\n   '))
+  if (gecrasht.length || metGroen.length) process.exit(1)
+  console.log(`\n✅ Huisstijl schoon op ${BREEDTE} px`)
 }
 
 main().catch((e) => {

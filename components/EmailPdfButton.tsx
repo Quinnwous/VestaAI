@@ -54,7 +54,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       <button
         type="button"
         onClick={() => { setOpen(v => !v); setStatus('idle') }}
-        style={{ ...btnBase, background: open ? '#F1F7F3' : '#fff', borderColor: open ? 'var(--merk,#1A6B45)' : '#E1E5E9', color: '#14181B' }}
+        style={{ ...btnBase, background: open ? '#F1F7F3' : '#fff', borderColor: open ? 'var(--merk)' : '#E1E5E9', color: '#14181B' }}
         title="PDF per e-mail versturen"
       >
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -67,7 +67,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       {open && (
         <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 30, background: '#fff', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-lg, 14px)', boxShadow: '0 12px 32px rgba(20,24,27,.12)', padding: 16, minWidth: 280 }}>
           {status === 'done' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--merk,#1A6B45)', fontSize: 13, fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--merk)', fontSize: 13, fontWeight: 600 }}>
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 13l4 4L19 7" />
               </svg>
@@ -91,7 +91,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
                 type="button"
                 onClick={handleSend}
                 disabled={!email || status === 'sending'}
-                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', background: 'var(--merk,#1A6B45)', color: '#fff', border: 'none', padding: '9px', fontSize: 13, fontWeight: 700, cursor: status === 'sending' ? 'wait' : 'pointer', opacity: (!email || status === 'sending') ? .6 : 1 }}
+                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', background: 'var(--merk)', color: '#fff', border: 'none', padding: '9px', fontSize: 13, fontWeight: 700, cursor: status === 'sending' ? 'wait' : 'pointer', opacity: (!email || status === 'sending') ? .6 : 1 }}
               >
                 {status === 'sending' ? 'Verzenden…' : 'Verstuur PDF →'}
               </button>

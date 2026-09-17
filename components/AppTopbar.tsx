@@ -9,10 +9,17 @@ import type { Branding } from '@/lib/branding'
  * Topbar van de ingelogde omgeving.
  *
  * Fasemodel (vastgelegd 16 sep 2026, zie CLAUDE.md): Woningdossier is de kern
- * — één dossier per adres doorloopt de fases Acquisitie → In verkoop →
+ * — één dossier per adres doorloopt de fases Verkoopadvies → In verkoop →
  * Verkocht (zie ObjectWorkspace). Content is geen los hoofdmenu meer: het is
  * een fase van een woning, geen bestemming. Marktinzichten staat ernaast
  * omdat het regionaal is, los van één woning.
+ *
+ * Platte pil-navigatie (item 1.9c, besluit Quinn 17 sep 2026, avond): geen
+ * dropdowns meer — de prototypes (`docs/ontwerp/kit.js` `topbar()`) zijn de
+ * spec. Zes pillen zonder submenu: Overzicht · Woningdossier · Marktanalyse ·
+ * Transacties · Concurrentie · Verkoopkaart. De sub-navigatie binnen
+ * Marktinzichten (was `MarktinzichtenNav.tsx`) is vervallen — die vier
+ * schermen hebben nu elk hun eigen pil.
  *
  * Herbouwd fase 1.3 (masterplan 16-17 sep 2026, zie docs/roadmap.md):
  * Verhuur is volledig uit de app gehaald (was "Binnenkort" — bewust nog niet
@@ -26,35 +33,18 @@ import type { Branding } from '@/lib/branding'
  * zodat elk kantoor zijn eigen omgeving ziet.
  */
 
-type Item = { href: string; label: string; hint?: string }
-type Menu = { id: string; label: string; items: Item[] }
+type NavItem = { id: string; href: string; label: string; actief: (pathname: string) => boolean }
 
-const MENUS: Menu[] = [
-  {
-    id: 'woningdossier',
-    label: 'Woningdossier',
-    items: [
-      { href: '/woningen', label: 'Alle woningen', hint: 'Het volledige woningdossier van je kantoor' },
-      { href: '/object/new', label: 'Woning toevoegen', hint: 'Start een nieuw dossier — begint in de acquisitiefase' },
-    ],
-  },
-  {
-    id: 'marktinzichten',
-    label: 'Marktinzichten',
-    items: [
-      { href: '/marktanalyse', label: 'Marktanalyse', hint: 'Interactief: prijsontwikkeling, m²-prijs en doorlooptijd per type, wijk en periode' },
-      { href: '/marktanalyse/transacties', label: 'Transacties opzoeken', hint: 'Zoek en filter individuele verkopen — bruikbaar als referentie in een waardebepaling' },
-      { href: '/marktanalyse/concurrentie', label: 'Concurrentieanalyse', hint: 'Marktaandeel en prestaties vs. concurrenten in de regio' },
-      { href: '/marktanalyse/kaart', label: 'Verkoopkaart', hint: 'Eigen verkopen op de kaart, met live filters' },
-    ],
-  },
+const NAV_ITEMS: NavItem[] = [
+  { id: 'overzicht', href: '/dashboard', label: 'Overzicht', actief: p => p === '/dashboard' },
+  { id: 'woningdossier', href: '/woningen', label: 'Woningdossier', actief: p => p.startsWith('/woningen') || p.startsWith('/object') },
+  // Exacte match: /marktanalyse mag niet actief zijn op zijn eigen subroutes
+  // (die hebben elk hun eigen pil hierna).
+  { id: 'marktanalyse', href: '/marktanalyse', label: 'Marktanalyse', actief: p => p === '/marktanalyse' },
+  { id: 'transacties', href: '/marktanalyse/transacties', label: 'Transacties', actief: p => p.startsWith('/marktanalyse/transacties') },
+  { id: 'concurrentie', href: '/marktanalyse/concurrentie', label: 'Concurrentie', actief: p => p.startsWith('/marktanalyse/concurrentie') },
+  { id: 'kaart', href: '/marktanalyse/kaart', label: 'Verkoopkaart', actief: p => p.startsWith('/marktanalyse/kaart') },
 ]
-
-function menuIsActief(pathname: string, menu: Menu): boolean {
-  if (menu.id === 'woningdossier') return pathname.startsWith('/woningen') || pathname.startsWith('/object')
-  if (menu.id === 'marktinzichten') return pathname.startsWith('/marktanalyse')
-  return false
-}
 
 /** Initiaal voor de avatarknop: eerste letter van de naam, anders van het e-mailadres. */
 function initiaal(naam: string | null, email: string | null): string {
@@ -71,28 +61,22 @@ export function AppTopbar({
   branding: Branding
   gebruiker: { naam: string | null; email: string | null }
 }) {
-  const menus = MENUS
   const pathname = usePathname()
-  const [open, setOpen] = useState<string | null>(null)
   const [profielOpen, setProfielOpen] = useState(false)
   const [mobiel, setMobiel] = useState(false)
   const [logoKapot, setLogoKapot] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
 
-  // Buiten de balk klikken of Escape sluit elk geopend menu.
+  // Buiten de balk klikken of Escape sluit het profielmenu.
   useEffect(() => {
-    if (!open && !profielOpen) return
+    if (!profielOpen) return
     const klik = (e: MouseEvent) => {
       if (balkRef.current && !balkRef.current.contains(e.target as Node)) {
-        setOpen(null)
         setProfielOpen(false)
       }
     }
     const toets = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(null)
-        setProfielOpen(false)
-      }
+      if (e.key === 'Escape') setProfielOpen(false)
     }
     document.addEventListener('mousedown', klik)
     document.addEventListener('keydown', toets)
@@ -100,10 +84,10 @@ export function AppTopbar({
       document.removeEventListener('mousedown', klik)
       document.removeEventListener('keydown', toets)
     }
-  }, [open, profielOpen])
+  }, [profielOpen])
 
   // Navigeren sluit alles.
-  useEffect(() => { setOpen(null); setProfielOpen(false); setMobiel(false) }, [pathname])
+  useEffect(() => { setProfielOpen(false); setMobiel(false) }, [pathname])
 
   // Laadt het logo niet (verlopen URL, bucket weg), dan valt hij terug op de merkletter —
   // nooit het gebroken-afbeelding-icoon van de browser.
@@ -124,34 +108,6 @@ export function AppTopbar({
       </span>
       <span style={{ fontWeight: 750, fontSize: 16, letterSpacing: '-.02em', color: '#14181B' }}>{branding.naam}</span>
     </span>
-  )
-
-  const menuItems = (menu: Menu) => (
-    <div
-      role="menu"
-      style={{
-        position: 'absolute', top: '100%', left: 0, marginTop: 6, minWidth: 268,
-        background: '#fff', border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-lg, 14px)',
-        boxShadow: '0 18px 44px -12px rgba(20,24,27,.22)', padding: 6, zIndex: 60,
-      }}
-    >
-      {menu.items.map((item, i) => (
-        <Link
-          key={`${item.href}-${i}`}
-          href={item.href}
-          role="menuitem"
-          className="vui-menuitem"
-          style={{
-            display: 'block', padding: '9px 11px', borderRadius: 'var(--merk-radius-md, 10px)',
-            textDecoration: 'none', textAlign: 'left', width: '100%',
-            background: 'none', border: 'none',
-          }}
-        >
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#14181B' }}>{item.label}</span>
-          {item.hint && <span style={{ display: 'block', fontSize: 12, color: '#98A0A6', marginTop: 2 }}>{item.hint}</span>}
-        </Link>
-      ))}
-    </div>
   )
 
   const profielMenu = (
@@ -203,8 +159,8 @@ export function AppTopbar({
     <div>
       <style>{`
         .vui-menuitem:hover { background: var(--merk-zacht); }
-        .topbar-menus { display: flex; align-items: center; gap: 2px; }
-        .topbar-rechts { display: flex; align-items: center; gap: 14px; }
+        .vui-navpil:hover { color: var(--merk); }
+        .topbar-menus, .topbar-rechts { display: flex; align-items: center; }
         .topbar-mobiel-knop { display: none; }
         @media (max-width: 900px) {
           .topbar-menus, .topbar-rechts { display: none; }
@@ -219,7 +175,7 @@ export function AppTopbar({
           backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
       >
-        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 26 }}>
+        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 22, overflow: 'hidden' }}>
           <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Co-branding-lockup (besluit 16 sep 2026, vergroot fase 1.3): Quinn wil
                 zichtbaar houden dat het platform van VestaAI is, ook al draagt de rest
@@ -238,38 +194,32 @@ export function AppTopbar({
             {logo}
           </Link>
 
-          <div className="topbar-menus">
-            {menus.map(menu => {
-              const actief = menuIsActief(pathname, menu)
-              const uit = open === menu.id
+          <nav className="topbar-menus" aria-label="Hoofdmenu" style={{ gap: 2, background: '#F5F6F8', padding: 3, borderRadius: 'var(--merk-radius-pill, 9999px)', flexShrink: 1, minWidth: 0, overflowX: 'auto' }}>
+            {NAV_ITEMS.map(item => {
+              const actief = item.actief(pathname)
               return (
-                <div key={menu.id} style={{ position: 'relative' }}>
-                  <button
-                    onClick={() => setOpen(uit ? null : menu.id)}
-                    aria-expanded={uit}
-                    aria-haspopup="menu"
-                    className="vui-menuknop"
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 6,
-                      padding: '8px 12px', borderRadius: 'var(--merk-radius-sm, 9px)', border: 'none', cursor: 'pointer',
-                      fontSize: 14.5, fontWeight: actief ? 700 : 550,
-                      color: actief ? 'var(--merk)' : '#41494F',
-                      background: actief ? 'var(--merk-zacht)' : uit ? '#F5F6F8' : 'transparent',
-                      transition: 'background .15s, color .15s',
-                    }}
-                  >
-                    {menu.label}
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} style={{ opacity: .5, transform: uit ? 'rotate(180deg)' : 'none', transition: 'transform .15s' }} aria-hidden>
-                      <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  {uit && menuItems(menu)}
-                </div>
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className="vui-navpil"
+                  aria-current={actief ? 'page' : undefined}
+                  style={{
+                    display: 'inline-block', whiteSpace: 'nowrap',
+                    padding: '8px 14px', borderRadius: 'var(--merk-radius-pill, 9999px)',
+                    fontSize: 13.5, fontWeight: 600, textDecoration: 'none',
+                    color: actief ? 'var(--merk)' : '#41494F',
+                    background: actief ? '#fff' : 'transparent',
+                    boxShadow: actief ? '0 1px 3px rgba(20,24,27,.12)' : 'none',
+                    transition: 'background .15s, color .15s',
+                  }}
+                >
+                  {item.label}
+                </Link>
               )
             })}
-          </div>
+          </nav>
 
-          <div className="topbar-rechts" style={{ marginLeft: 'auto' }}>
+          <div className="topbar-rechts" style={{ marginLeft: 'auto', flexShrink: 0 }}>
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setProfielOpen(v => !v)}
@@ -280,7 +230,7 @@ export function AppTopbar({
                   width: 34, height: 34, borderRadius: '50%', border: 'none', cursor: 'pointer',
                   background: 'var(--merk)', color: 'var(--merk-op)', fontWeight: 700, fontSize: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  outline: profielOpen ? '2px solid var(--merk-rand, #C7E6D5)' : 'none', outlineOffset: 2,
+                  outline: profielOpen ? '2px solid var(--merk-rand)' : 'none', outlineOffset: 2,
                 }}
               >
                 {initiaal(gebruiker.naam, gebruiker.email)}
@@ -303,18 +253,21 @@ export function AppTopbar({
 
         {mobiel && (
           <div style={{ borderTop: '1px solid #EBEEF1', padding: '10px var(--app-marge) 16px', background: '#fff' }}>
-            {menus.map(menu => (
-              <div key={menu.id} style={{ marginBottom: 12 }}>
-                <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#98A0A6', margin: '0 0 4px' }}>
-                  {menu.label}
-                </p>
-                {menu.items.map((item, i) => (
-                  <Link key={i} href={item.href} style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
+            <div style={{ marginBottom: 12 }}>
+              {NAV_ITEMS.map(item => {
+                const actief = item.actief(pathname)
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    aria-current={actief ? 'page' : undefined}
+                    style={{ display: 'block', fontSize: 14, fontWeight: actief ? 700 : 600, color: actief ? 'var(--merk)' : '#14181B', padding: '7px 0', textDecoration: 'none' }}
+                  >
                     {item.label}
                   </Link>
-                ))}
-              </div>
-            ))}
+                )
+              })}
+            </div>
             <div style={{ borderTop: '1px solid #EBEEF1', marginTop: 8, paddingTop: 8 }}>
               {gebruiker.naam && <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 2px' }}>{gebruiker.naam}</p>}
               {gebruiker.email && <p style={{ fontSize: 12, color: '#98A0A6', margin: '0 0 8px' }}>{gebruiker.email}</p>}

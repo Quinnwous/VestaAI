@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { meldFout } from '@/lib/fouten'
 
 async function kantoorVanUser(supabase: ReturnType<typeof createServerSupabaseClient>): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,7 +27,9 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
 
   // Storage best-effort — het record verwijderen is leidend.
   if (foto.storage_pad) {
-    await serviceClient.storage.from('kantoor-assets').remove([foto.storage_pad]).catch(() => {})
+    await serviceClient.storage.from('kantoor-assets').remove([foto.storage_pad]).catch(err => {
+      meldFout('object/[id]/fotos/[fotoId]:storage-remove', err, { objectId: params.id, fotoId: params.fotoId })
+    })
   }
 
   const { error } = await serviceClient.from('object_fotos').delete().eq('id', params.fotoId).eq('kantoor_id', kantoorId)

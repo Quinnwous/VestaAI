@@ -39,14 +39,22 @@ const card: React.CSSProperties = {
 }
 
 /**
- * Woning toevoegen — start altijd in de acquisitiefase (besluit 16 sep 2026,
- * zie CLAUDE.md § Hoofdstructuur). Content wordt in de achtergrond al
- * gegenereerd (dezelfde /api/generate-pijplijn als voorheen — dat blijft
- * waardevol: de tekst staat al klaar zodra de opdracht binnen is), maar wordt
- * pas zichtbaar zodra de fase naar "In verkoop" gaat. Na aanmaken gaat de
- * makelaar daarom direct naar het nieuwe dossier, niet naar een resultatenscherm.
+ * Woning toevoegen — start altijd in de Verkoopadvies-fase (interne waarde
+ * `verkoopadvies`, hernoemd van `acquisitie` in item 2.1; besluit 16 sep 2026,
+ * zie CLAUDE.md § Hoofdstructuur). Content
+ * wordt in de achtergrond al gegenereerd (dezelfde /api/generate-pijplijn als
+ * voorheen — dat blijft waardevol: de tekst staat al klaar zodra de opdracht
+ * binnen is), maar wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.
+ * Na aanmaken gaat de makelaar daarom direct naar het nieuwe dossier, niet
+ * naar een resultatenscherm.
  */
-export function NewObjectForm() {
+type Props = {
+  /** true buiten productie, of als het kantoor van de ingelogde makelaar
+   * instellingen_json.demo === true heeft (item 2.3, zie app/(app)/object/new/page.tsx). */
+  toonDemoKnop: boolean
+}
+
+export function NewObjectForm({ toonDemoKnop }: Props) {
   const router = useRouter()
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [countdown, setCountdown] = useState(0)
@@ -87,8 +95,9 @@ export function NewObjectForm() {
   const handleSubmit = async (invoer: PropertyInput) => {
     setState({ status: 'loading' })
     try {
-      // Acquisitiefase heeft nog geen vaste vraagprijs — de content-generatie
-      // vraagt wel om een prijs, dus die valt terug op de prijsverwachting.
+      // Verkoopadvies-fase heeft nog geen vaste vraagprijs — de
+      // content-generatie vraagt wel om een prijs, dus die valt terug op de
+      // prijsverwachting.
       const input: PropertyInput = { ...invoer, vraagprijs: invoer.vraagprijs ?? invoer.prijsverwachting_verkoper }
 
       const res = await fetch('/api/generate', {
@@ -149,19 +158,25 @@ export function NewObjectForm() {
           <Eyebrow>Nieuwe woning</Eyebrow>
           <SerifTitle accent="een dossier" size={34} style={{ marginBottom: 8 }}>Start</SerifTitle>
           <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55 }}>
-            Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in de acquisitiefase; content wordt zichtbaar zodra je de opdracht wint.
+            Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in Verkoopadvies; content wordt zichtbaar zodra je de fase naar In verkoop zet.
           </p>
 
           <div style={card}>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
-              <button
-                type="button"
-                onClick={fillDemo}
-                style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
-              >
-                Vul een voorbeeld in
-              </button>
-            </div>
+            {/* Zichtbaar buiten productie, of als het kantoor van de ingelogde
+                makelaar instellingen_json.demo === true heeft (item 2.3 —
+                `toonDemoKnop` wordt server-side bepaald in page.tsx). Vult
+                echte Herengracht-demodata in, niets voor een live kantoor. */}
+            {toonDemoKnop && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+                <button
+                  type="button"
+                  onClick={fillDemo}
+                  style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                >
+                  Vul een voorbeeld in
+                </button>
+              </div>
+            )}
             <PropertyForm key={formKey} onSubmit={handleSubmit} disabled={isLoading} />
           </div>
         </div>
@@ -173,19 +188,19 @@ export function NewObjectForm() {
         <div style={{ ...card, textAlign: 'center' }}>
           {state.isRateLimit ? (
             <>
-              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--merk-zacht,#EAF5EE)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--merk,#1A6B45)">
+              <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--merk-zacht)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="var(--merk)">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <p style={{ fontSize: 15, fontWeight: 700, color: '#14181B', marginBottom: 6 }}>Vorige generatie nog bezig</p>
               <p style={{ fontSize: 14, color: '#5C6470', marginBottom: 20 }}>
                 Automatisch opnieuw beschikbaar over{' '}
-                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--merk,#1A6B45)' }}>{countdown}s</span>
+                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--merk)' }}>{countdown}s</span>
               </p>
-              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: 'var(--merk-zacht,#F1F7F3)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 6 }}>
+              <div style={{ width: '100%', maxWidth: 280, margin: '0 auto', background: 'var(--merk-zacht)', borderRadius: 'var(--merk-radius-pill, 9999px)', height: 6 }}>
                 <div
-                  style={{ background: 'var(--merk,#1A6B45)', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
+                  style={{ background: 'var(--merk)', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', transition: 'width 1s', width: `${((RATE_LIMIT_SECONDS - countdown) / RATE_LIMIT_SECONDS) * 100}%` }}
                 />
               </div>
             </>
@@ -195,7 +210,7 @@ export function NewObjectForm() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <button
                   onClick={handleReset}
-                  style={{ borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk,#1A6B45)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(var(--merk-rgb,26,107,69),.22)' }}
+                  style={{ borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(var(--merk-rgb),.22)' }}
                 >
                   Probeer opnieuw
                 </button>

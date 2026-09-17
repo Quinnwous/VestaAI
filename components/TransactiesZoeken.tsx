@@ -116,7 +116,7 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
       </div>
 
       {geselecteerd.size > 0 && (
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, background: 'var(--merk-zacht, #F1F7F3)', border: '1px solid var(--merk-rand, #C7E6D5)', padding: '10px 14px' }}>
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '10px 14px' }}>
           <p style={{ fontSize: 12.5, color: '#2C3238', margin: 0 }}>
             {geselecteerd.size} geselecteerd — meenemen als referentie in een waardebepaling komt beschikbaar zodra de waarderingsmodule er is.
           </p>

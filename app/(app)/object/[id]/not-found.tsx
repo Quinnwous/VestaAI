@@ -9,7 +9,7 @@ export default function ObjectNotFound() {
         <p className="text-sm text-gray-500 mb-6">Deze woning bestaat niet of je hebt geen toegang.</p>
         <Link
           href="/woningen"
-          className="text-sm text-[var(--merk,#1A6B45)] hover:text-[var(--merk-hover,#114230)] font-medium underline"
+          className="text-sm text-[var(--merk)] hover:text-[var(--merk-hover)] font-medium underline"
         >
           ← Terug naar de portefeuille
         </Link>

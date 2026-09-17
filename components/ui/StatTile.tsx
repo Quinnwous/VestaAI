@@ -8,7 +8,9 @@ import { colors, radius, shadow } from './tokens'
  * Telt op van 0 naar `waarde` in ~400ms (ease-out), zie docs/ontwerpprincipes.md
  * § Beweging. Respecteert `prefers-reduced-motion` — toont dan meteen de
  * eindwaarde zonder te animeren. Geen aparte animatiebibliotheek nodig voor
- * één getal-tween; `motion` (fase 2.2) is voor paginaovergangen en panelen.
+ * één getal-tween; die komt er pas als een concreet item hem nodig heeft
+ * (zie docs/ontwerpprincipes.md § Beweging — roadmap v2 kent geen losse
+ * primitives-fase meer).
  */
 function useGetalTween(waarde: number, duurMs = 400) {
   const [weergegeven, setWeergegeven] = useState(0)

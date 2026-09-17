@@ -60,7 +60,7 @@ hoe goed de techniek (RLS, encryptie, back-ups) is ingericht.
 5. **Beveiligingsmaatregelen** (concreet te noemen, niet alleen "passende
    maatregelen")
    - Row Level Security per kantoor op alle transactie- en dossiertabellen
-     (zie `docs/roadmap.md` § Besluitenlogboek, fase 0.3 — data van i4housing
+     (zie `docs/besluiten.md`, sectie 17 sep 2026 / fase 0.3 — data van i4housing
      is niet zichtbaar voor andere kantoren in het systeem, ook niet voor het
      interne testkantoor).
    - Toegang tot de productiedatabase beperkt tot de platform-admin

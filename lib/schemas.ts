@@ -61,18 +61,24 @@ export const KantoorInstellingenSchema = z.object({
   werkgebied: z.object({
     plaatsen: z.array(z.string().max(80)).max(30).default([]),
   }).optional(),
+  // Demo-kantoor-vlag (item 2.3, docs/roadmap.md § Fase 2): seed-/opruimscripts
+  // op de productiedatabase mogen uitsluitend een kantoor raken waarvan dit
+  // `true` is — de enige vangrail die voorkomt dat een fixture-script ooit
+  // i4housing of een ander echt kantoor treft. Zie scripts/seed-demo-kantoor.mjs
+  // en lib/demoFixtureGuard.ts.
+  demo: z.boolean().optional(),
 })
 
 export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>
 
 // Fases van een woningdossier (besluit 16 sep 2026, zie CLAUDE.md § Hoofdstructuur):
 // één dossier per adres, drie fases. Welke modules zichtbaar zijn hangt af van
-// de fase — zie components/ObjectWorkspace.tsx.
-export const ObjectFaseSchema = z.enum(['acquisitie', 'in_verkoop', 'verkocht'])
+// de fase — zie components/ObjectWorkspace.tsx. Waarde 'acquisitie' hernoemd
+// naar 'verkoopadvies' in item 2.1 (besluit Quinn 17 sep 2026; het label was
+// al eerder "Verkoopadvies", zie 1.9c) — migratie 20260917_transacties_pijplijn.sql
+// werkt bestaande rijen bij.
+export const ObjectFaseSchema = z.enum(['verkoopadvies', 'in_verkoop', 'verkocht'])
 export type ObjectFase = z.infer<typeof ObjectFaseSchema>
-
-export const PitchUitslagSchema = z.enum(['open', 'gewonnen', 'verloren'])
-export type PitchUitslag = z.infer<typeof PitchUitslagSchema>
 
 // Staat & afwerking en Ligging & buitenruimte (besluit 16 sep 2026, F3 —
 // gedeelde intake): precies de knoppen waaraan de waardering straks in de
@@ -120,7 +126,7 @@ export const PropertyInputSchema = z.object({
   bouwjaar: z.number().int().min(1800).max(2035),
   energielabel: z.enum(['A++++', 'A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']),
   // Optioneel sinds de gedeelde intake (F3, besluit 16 sep 2026): in de
-  // acquisitiefase is er nog geen vaste vraagprijs, alleen een
+  // Verkoopadvies-fase is er nog geen vaste vraagprijs, alleen een
   // prijsverwachting van de verkoper (zie prijsverwachting_verkoper
   // hieronder). Content-generatie valt terug op die prijsverwachting.
   vraagprijs: z.number().int().min(1).optional(),
@@ -141,9 +147,10 @@ export const PropertyInputSchema = z.object({
   energielabel_geldig_tot: z.string().max(20).optional(),
   staat_afwerking: StaatAfwerkingSchema.optional(),
   ligging_buitenruimte: LiggingBuitenruimteSchema.optional(),
-  // Acquisitiefase (besluit 16 sep 2026): prijsverwachting van de verkoper en
-  // het courtagevoorstel horen bij "opdracht winnen", niet bij "vraagprijs" —
-  // dat laatste komt pas vast te staan zodra de fase naar In verkoop gaat.
+  // Verkoopadvies-fase (besluit 16 sep 2026): prijsverwachting van de verkoper
+  // en het courtagevoorstel horen bij het verkoopadvies, niet bij
+  // "vraagprijs" — dat laatste komt pas vast te staan zodra de fase naar In
+  // verkoop gaat.
   prijsverwachting_verkoper: z.number().int().min(1).optional(),
   courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
   // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze
@@ -194,3 +201,109 @@ export const WachtwoordWijzigenSchema = z.object({
 })
 
 export type WachtwoordWijzigen = z.infer<typeof WachtwoordWijzigenSchema>
+
+// ---------------------------------------------------------------------------
+// Waardering v2 — datacontract uit docs/roadmap.md § 3.3 (rekenkern gebouwd
+// 17 sep 2026 door Fable in lib/waardering.ts; Sonnet sluit in fase 4 de
+// RPC's, actions en het paneel aan). `waardering_json` op `objecten` bevat
+// een WaarderingOpslag; v1-json ({ correctie }) wordt bij lezen gemigreerd
+// via migreerWaarderingJson().
+// ---------------------------------------------------------------------------
+
+export const TypegroepSchema = z.enum(['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand'])
+export type Typegroep = z.infer<typeof TypegroepSchema>
+
+export const KwartaalSchema = z.string().regex(/^\d{4}-Q[1-4]$/)
+
+export const CorrectieNaamSchema = z.enum(['garage', 'tuin', 'energielabel', 'bouwperiode', 'grootte'])
+export type CorrectieNaam = z.infer<typeof CorrectieNaamSchema>
+export const KenmerkNaamSchema = z.enum(['garage', 'tuin', 'energielabel', 'bouwperiode'])
+export type KenmerkNaam = z.infer<typeof KenmerkNaamSchema>
+
+export const WaarderingReferentieSchema = z.object({
+  id: z.string(),
+  adres: z.string(),
+  afstand_m: z.number().nullable(),
+  verkoopdatum: z.string(),
+  prijs: z.number(),
+  m2: z.number(),
+  prijs_m2: z.number(),
+  index_factor: z.number(),
+  index_basis: z.enum(['eigen', 'cbs', 'geen']),
+  /** per kenmerk de toegepaste correctiefactor (alleen ≠ 1) */
+  correcties: z.partialRecord(CorrectieNaamSchema, z.number()),
+  /** product van alle correcties */
+  correctie_factor: z.number(),
+  gewicht: z.number(),
+  gelijkenis: z.number(),
+  maanden: z.number(),
+  waarde_geimpliceerd: z.number(),
+  handmatig: z.boolean(),
+})
+export type WaarderingReferentie = z.infer<typeof WaarderingReferentieSchema>
+
+/** Prijsniveau (mediaan € per m²) per klasse van een kenmerk op de regionale set. */
+export const KenmerkEffectV2Schema = z.object({
+  subjectKlasse: z.string().nullable(),
+  niveaus: z.record(z.string(), z.object({ mediaanM2: z.number(), n: z.number() })),
+  /** verschil in % van de klasse van het subject t.o.v. de referentieklasse ('zonder' resp. de middenklasse); null als niet bepaalbaar */
+  verschilPct: z.number().nullable(),
+  /** elke gebruikte klasse heeft n ≥ MIN_GROEP_CORRECTIE → automatisch toepasbaar */
+  betrouwbaar: z.boolean(),
+})
+export type KenmerkEffectV2 = z.infer<typeof KenmerkEffectV2Schema>
+
+export const GrootteEffectSchema = z.object({
+  /** verandering van de € per m² per extra m² woonoppervlak, in % (meestal negatief) */
+  perM2Pct: z.number(),
+  n: z.number(),
+  betrouwbaar: z.boolean(),
+})
+export type GrootteEffect = z.infer<typeof GrootteEffectSchema>
+
+export const CorrectieStatusSchema = z.object({
+  /** schakelaar (makelaar kan hem uitzetten) */
+  aan: z.boolean(),
+  /** op ten minste één referentie toegepast */
+  toegepast: z.boolean(),
+  toelichting: z.string(),
+})
+
+export const WaarderingUitkomstSchema = z.object({
+  versie: z.literal(2),
+  peildatum: z.string(),
+  waarde: z.number().nullable(),
+  laag: z.number().nullable(),
+  hoog: z.number().nullable(),
+  n: z.number(),
+  weinigData: z.boolean(),
+  straal_m: z.number().nullable(),
+  maanden: z.number(),
+  methode: z.enum(['straal', 'plaats']),
+  index_basis: z.enum(['eigen', 'cbs', 'geen']),
+  index_tm: KwartaalSchema.nullable(),
+  referenties: z.array(WaarderingReferentieSchema),
+  effecten: z.record(KenmerkNaamSchema, KenmerkEffectV2Schema.nullable()),
+  grootte: GrootteEffectSchema.nullable(),
+  correcties: z.record(CorrectieNaamSchema, CorrectieStatusSchema),
+  woz: z.object({ waarde: z.number(), peildatum: z.string() }).nullable(),
+  waarschuwingen: z.array(z.string()),
+})
+export type WaarderingUitkomst = z.infer<typeof WaarderingUitkomstSchema>
+
+export const WaarderingCorrectieSchema = z.object({
+  waarde: z.number(),
+  motivatie: z.string(),
+  datum: z.string(),
+})
+
+export const WaarderingOpslagSchema = z.object({
+  versie: z.literal(2),
+  uitkomst: WaarderingUitkomstSchema.nullable(),
+  correctie: WaarderingCorrectieSchema.nullable(),
+  handmatig: z.object({
+    uitgesloten: z.array(z.string()),
+    toegevoegd: z.array(z.string()),
+  }),
+})
+export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>

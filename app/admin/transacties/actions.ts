@@ -42,9 +42,12 @@ export async function previewTransactieImport(csvTekst: string): Promise<ImportP
 
 /**
  * Voegt de rijen uit een CSV-bestand toe aan de transactiedataset van één
- * kantoor. Upsert op (kantoor_id, adres, verkoopdatum) — zie de migratie —
- * zodat een periodieke herimport (F4, "Admin-databeheer & maatwerk") records
- * bijwerkt in plaats van te verdubbelen.
+ * kantoor. Upsert op (kantoor_id, adres_sleutel, verkoopdatum) — de
+ * genormaliseerde sleutel uit lib/transactieNormalisatie.ts (item 2.1, zie
+ * de migratie 20260917_transacties_pijplijn.sql, die de oude adres-gebaseerde
+ * unieke index vervangt) — zodat een periodieke herimport (F4,
+ * "Admin-databeheer & maatwerk") records bijwerkt in plaats van te
+ * verdubbelen, ook als het adres net iets anders geschreven is.
  */
 export async function bevestigTransactieImport(kantoorId: string, csvTekst: string): Promise<
   { ok: true; aantal: number } | { ok: false; error: string }
@@ -65,7 +68,7 @@ export async function bevestigTransactieImport(kantoorId: string, csvTekst: stri
 
     const { error, count } = await service
       .from('transacties')
-      .upsert(batch, { onConflict: 'kantoor_id,adres,verkoopdatum', count: 'exact' })
+      .upsert(batch, { onConflict: 'kantoor_id,adres_sleutel,verkoopdatum', count: 'exact' })
 
     if (error) return { ok: false, error: `Fout bij batch ${i / BATCH + 1}: ${error.message}` }
     ingevoegd += count ?? batch.length

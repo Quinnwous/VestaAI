@@ -4,7 +4,17 @@
  * herkend via een aliaslijst per veld (zie ALIASSEN), zodat een gewone
  * Realworks/Excel-export met redelijk voorspelbare kopnamen meteen werkt.
  * Rommelige rijen worden overgeslagen, niet de hele import laten falen.
+ *
+ * Sinds item 2.1 (schema v2, docs/roadmap.md § Fase 2) krijgt elke rij ook een
+ * genormaliseerde `adres_sleutel` (lib/transactieNormalisatie.ts) — de nieuwe
+ * upsert-sleutel op `transacties` (kantoor_id, adres_sleutel, verkoopdatum).
+ * Een rij waarvoor geen betrouwbare sleutel te maken is (geen postcode+huisnummer
+ * én geen straat+huisnummer+plaats) wordt niet geïmporteerd, net als een rij
+ * zonder adres — zelfde `overgeslagen`-mechanisme. Dit is een importscherm van
+ * de platform-admin (concierge-model, geen echte bron-integratie), dus
+ * `bron` is hier altijd `'handmatig'`.
  */
+import { adresSleutel, parseAdresVrijeTekst, woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
 
 export type TransactieVeld =
   | 'adres' | 'postcode' | 'plaats' | 'wijk' | 'buurt'
@@ -63,6 +73,13 @@ export type TransactieInsert = {
   buitenruimte: string | null
   eigen_verkoop: boolean
   verkopend_kantoor: string | null
+  // ── item 2.1 (schema v2) ──
+  bron: 'handmatig'
+  adres_sleutel: string
+  huisnummer: number | null
+  toevoeging: string | null
+  woningtype_groep: string | null
+  woningtype_sub: string | null
 }
 
 /** Simpele, robuuste CSV-parser: komma- of puntkomma-gescheiden, ondersteunt "quoted,velden". */
@@ -182,14 +199,39 @@ export function parseTransactieCsv(tekst: string): ImportResultaat {
       continue
     }
 
+    const postcode = get('postcode')?.trim() || null
+    const plaats = get('plaats')?.trim() || null
+
+    // De CSV-aliassen kennen geen aparte huisnummer/toevoeging-kolom (§ ALIASSEN
+    // hierboven) — die komen uit een parse van de vrije `adres`-tekst, dezelfde
+    // die ook de sleutel-terugval voedt (lib/transactieNormalisatie.ts). Zo
+    // gebruiken de opgeslagen huisnummer/toevoeging-kolommen en de sleutel
+    // altijd exact dezelfde interpretatie van het adres.
+    const onderdelen = parseAdresVrijeTekst(adres)
+    const sleutel = adresSleutel({
+      postcode,
+      huisnummer: onderdelen.huisnummer,
+      toevoeging: onderdelen.toevoeging,
+      straat: onderdelen.straat,
+      plaats,
+    })
+    if (!sleutel) {
+      overgeslagen.push({
+        regel: i + 1,
+        reden: 'Geen betrouwbare adres-sleutel te maken (postcode+huisnummer of straat+huisnummer+plaats ontbreekt)',
+      })
+      continue
+    }
+
     const lat = naarCoordinaat(get('lat'))
     const lng = naarCoordinaat(get('lng'))
     const geo = lat !== null && lng !== null ? `POINT(${lng} ${lat})` : null
+    const woningtypeRuw = get('woningtype')?.trim() || null
 
     rijen.push({
       adres,
-      postcode: get('postcode')?.trim() || null,
-      plaats: get('plaats')?.trim() || null,
+      postcode,
+      plaats,
       wijk: get('wijk')?.trim() || null,
       buurt: get('buurt')?.trim() || null,
       geo,
@@ -197,7 +239,7 @@ export function parseTransactieCsv(tekst: string): ImportResultaat {
       vraagprijs: naarGetal(get('vraagprijs')),
       verkoopdatum: naarDatum(get('verkoopdatum')),
       looptijd_dagen: naarGetal(get('looptijd_dagen')),
-      woningtype: get('woningtype')?.trim() || null,
+      woningtype: woningtypeRuw,
       woonoppervlak_m2: naarGetal(get('woonoppervlak_m2')),
       perceel_m2: naarGetal(get('perceel_m2')),
       inhoud_m3: naarGetal(get('inhoud_m3')),
@@ -209,6 +251,12 @@ export function parseTransactieCsv(tekst: string): ImportResultaat {
       buitenruimte: get('buitenruimte')?.trim() || null,
       eigen_verkoop: naarBoolean(get('eigen_verkoop'), true),
       verkopend_kantoor: get('verkopend_kantoor')?.trim() || null,
+      bron: 'handmatig',
+      adres_sleutel: sleutel,
+      huisnummer: onderdelen.huisnummer,
+      toevoeging: onderdelen.toevoeging,
+      woningtype_groep: woningtypeGroep(woningtypeRuw),
+      woningtype_sub: woningtypeSub(woningtypeRuw),
     })
   }
 

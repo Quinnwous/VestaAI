@@ -8,7 +8,7 @@ import {
 } from '@/lib/concurrentie'
 import type { TransactieRow } from '@/lib/supabase'
 
-const KLEUREN = ['var(--merk, #1A6B45)', '#D97706', '#5C6470', '#8B5CF6', '#DC2626', '#0EA5E9', '#84CC16']
+const KLEUREN = ['var(--merk)', '#D97706', '#5C6470', '#8B5CF6', '#DC2626', '#0EA5E9', '#84CC16']
 
 function StatKaart({ label, waarde, sub }: { label: string; waarde: string; sub?: string }) {
   return (
@@ -62,10 +62,10 @@ export function ConcurrentieExplorer({ transacties }: { transacties: TransactieR
   const profielen = concurrentProfielen(gefilterd)
 
   return (
-    <div style={{ display: 'grid', gap: 28 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: 28 }}>
       <div style={{ display: 'inline-flex', borderRadius: 10, overflow: 'hidden', border: '1px solid #E1E5E9', alignSelf: 'flex-start' }}>
         {[{ l: 'Alles', m: 0 }, { l: '12 mnd', m: 12 }, { l: '24 mnd', m: 24 }].map(p => (
-          <button key={p.l} type="button" onClick={() => setPeriodeMaanden(p.m)} style={{ padding: '7px 13px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: periodeMaanden === p.m ? 'var(--merk,#1A6B45)' : '#fff', color: periodeMaanden === p.m ? '#fff' : '#5C6470' }}>
+          <button key={p.l} type="button" onClick={() => setPeriodeMaanden(p.m)} style={{ padding: '7px 13px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: periodeMaanden === p.m ? 'var(--merk)' : '#fff', color: periodeMaanden === p.m ? '#fff' : '#5C6470' }}>
             {p.l}
           </button>
         ))}
@@ -86,7 +86,7 @@ export function ConcurrentieExplorer({ transacties }: { transacties: TransactieR
             {aandeel.map((a, i) => (
               <div key={a.kantoor} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
                 <span style={{ width: 10, height: 10, borderRadius: '50%', background: KLEUREN[i % KLEUREN.length], flexShrink: 0 }} />
-                <span style={{ color: a.kantoor === 'Eigen kantoor' ? 'var(--merk,#1A6B45)' : '#14181B', fontWeight: a.kantoor === 'Eigen kantoor' ? 700 : 500 }}>{a.kantoor}</span>
+                <span style={{ color: a.kantoor === 'Eigen kantoor' ? 'var(--merk)' : '#14181B', fontWeight: a.kantoor === 'Eigen kantoor' ? 700 : 500 }}>{a.kantoor}</span>
                 <span style={{ color: '#98A0A6' }}>{a.aandeelPct}% ({a.aantal})</span>
               </div>
             ))}
@@ -119,7 +119,7 @@ export function ConcurrentieExplorer({ transacties }: { transacties: TransactieR
               {segmenten.map(s => (
                 <tr key={s.segment} style={{ borderBottom: '1px solid #F1F3F5' }}>
                   <td style={{ padding: '9px 12px', color: '#14181B', fontWeight: 600 }}>{s.segment}</td>
-                  <td style={{ padding: '9px 12px', color: s.winnaar === 'Eigen kantoor' ? 'var(--merk,#1A6B45)' : '#5C6470', fontWeight: s.winnaar === 'Eigen kantoor' ? 700 : 500 }}>{s.winnaar}</td>
+                  <td style={{ padding: '9px 12px', color: s.winnaar === 'Eigen kantoor' ? 'var(--merk)' : '#5C6470', fontWeight: s.winnaar === 'Eigen kantoor' ? 700 : 500 }}>{s.winnaar}</td>
                   <td style={{ padding: '9px 12px', color: '#5C6470', textAlign: 'right' }}>{s.aantal}</td>
                 </tr>
               ))}
@@ -143,7 +143,7 @@ export function ConcurrentieExplorer({ transacties }: { transacties: TransactieR
             <tbody>
               {profielen.map(p => (
                 <tr key={p.kantoor} style={{ borderBottom: '1px solid #F1F3F5' }}>
-                  <td style={{ padding: '9px 12px', color: p.kantoor === 'Eigen kantoor' ? 'var(--merk,#1A6B45)' : '#14181B', fontWeight: 700 }}>{p.kantoor}</td>
+                  <td style={{ padding: '9px 12px', color: p.kantoor === 'Eigen kantoor' ? 'var(--merk)' : '#14181B', fontWeight: 700 }}>{p.kantoor}</td>
                   <td style={{ padding: '9px 12px', color: '#5C6470', textAlign: 'right' }}>{p.aantal}</td>
                   <td style={{ padding: '9px 12px', color: '#5C6470', textAlign: 'right' }}>{p.gemiddeldePrijs ? `€${Math.round(p.gemiddeldePrijs).toLocaleString('nl-NL')}` : '—'}</td>
                   <td style={{ padding: '9px 12px', color: '#5C6470' }}>{p.topSegment ?? '—'}</td>

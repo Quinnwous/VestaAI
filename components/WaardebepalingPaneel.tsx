@@ -106,12 +106,12 @@ export function WaardebepalingPaneel({
         )}
 
         {!correctieModus && !correctie && (
-          <button type="button" onClick={() => { setCorrectieModus(true); setCorrectieWaarde(String(midden)) }} style={{ marginTop: 12, fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+          <button type="button" onClick={() => { setCorrectieModus(true); setCorrectieWaarde(String(midden)) }} style={{ marginTop: 12, fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
             Zelf bijstellen
           </button>
         )}
         {!correctieModus && correctie && (
-          <button type="button" onClick={() => { setCorrectieModus(true); setCorrectieWaarde(String(correctie.waarde)); setMotivatie(correctie.motivatie) }} style={{ marginTop: 4, fontSize: 12.5, fontWeight: 600, color: 'var(--merk,#1A6B45)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+          <button type="button" onClick={() => { setCorrectieModus(true); setCorrectieWaarde(String(correctie.waarde)); setMotivatie(correctie.motivatie) }} style={{ marginTop: 4, fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
             Correctie aanpassen
           </button>
         )}
@@ -124,7 +124,7 @@ export function WaardebepalingPaneel({
             <textarea value={motivatie} onChange={e => setMotivatie(e.target.value)} rows={2} placeholder="Bijv: hoekligging met dieper perceel dan de referenties" style={{ borderRadius: 8, border: '1px solid #E1E5E9', padding: '8px 10px', fontSize: 13.5, resize: 'none' }} />
             {status === 'error' && <p style={{ fontSize: 12, color: '#DC2626' }}>{fout}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" onClick={opslaan} disabled={status === 'saving'} style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: 'var(--merk,#1A6B45)', border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
+              <button type="button" onClick={opslaan} disabled={status === 'saving'} style={{ fontSize: 13, fontWeight: 700, color: '#fff', background: 'var(--merk)', border: 'none', borderRadius: 8, padding: '8px 14px', cursor: 'pointer' }}>
                 {status === 'saving' ? 'Opslaan…' : 'Opslaan'}
               </button>
               <button type="button" onClick={() => setCorrectieModus(false)} style={{ fontSize: 13, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer' }}>Annuleer</button>

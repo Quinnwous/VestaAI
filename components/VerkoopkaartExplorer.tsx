@@ -52,7 +52,7 @@ export function VerkoopkaartExplorer({ transacties }: { transacties: TransactieM
                 key={p.label}
                 type="button"
                 onClick={() => setPeriode(p.maanden)}
-                style={{ padding: '7px 13px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: periode === p.maanden ? 'var(--merk,#1A6B45)' : '#fff', color: periode === p.maanden ? '#fff' : '#5C6470' }}
+                style={{ padding: '7px 13px', fontSize: 12.5, fontWeight: 600, border: 'none', cursor: 'pointer', background: periode === p.maanden ? 'var(--merk)' : '#fff', color: periode === p.maanden ? '#fff' : '#5C6470' }}
               >
                 {p.label}
               </button>

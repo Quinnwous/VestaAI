@@ -2,20 +2,43 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 import { isPlatformAdmin } from '@/lib/admin'
 import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
+import { APP_URL } from '@/lib/appUrl'
 import { LandingPageClient } from '@/components/LandingPageClient'
 
 export const metadata: Metadata = {
-  title: 'VestaAI — Dé AI-toolkit voor makelaars',
+  title: 'VestaAI — Platform voor makelaars',
   description:
-    'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform. Aangedreven door Anthropic, gekoppeld aan Kadaster en BAG.',
+    'Het platform voor Nederlandse makelaars, in de huisstijl van uw kantoor: woningwaardering, marktinzicht en concurrentieanalyse op uw eigen transactiedata, en een contentsuite voor Funda-teksten, brochures en social media.',
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: 'VestaAI — Dé AI-toolkit voor makelaars',
-    description: 'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform.',
+    title: 'VestaAI — Platform voor makelaars',
+    description: 'Woningwaardering, marktinzicht en een contentsuite — in de huisstijl van uw kantoor.',
   },
   twitter: {
-    title: 'VestaAI — Dé AI-toolkit voor makelaars',
-    description: 'Woningteksten, virtual staging, woningwaardering en marktinzichten in één Nederlands platform.',
+    title: 'VestaAI — Platform voor makelaars',
+    description: 'Woningwaardering, marktinzicht en een contentsuite — in de huisstijl van uw kantoor.',
   },
+}
+
+// Organization + WebSite structured data — alleen velden die echt in de codebase staan
+// (geen verzonnen adres, telefoonnummer of reviews).
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      name: 'VestaAI',
+      url: APP_URL,
+      logo: `${APP_URL}/icon.png`,
+    },
+    {
+      '@type': 'WebSite',
+      name: 'VestaAI',
+      url: APP_URL,
+    },
+  ],
 }
 
 export default async function LandingPage() {
@@ -25,5 +48,13 @@ export default async function LandingPage() {
     if (user) redirect(isPlatformAdmin(user.email) ? '/admin' : '/dashboard')
   }
 
-  return <LandingPageClient />
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
+      <LandingPageClient />
+    </>
+  )
 }

@@ -1,9 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient as createBaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
-import type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag } from './schemas'
+import type { HuisstijlConfig, KantoorInstellingen, ObjectFase } from './schemas'
 
-export type { HuisstijlConfig, KantoorInstellingen, ObjectFase, PitchUitslag }
+export type { HuisstijlConfig, KantoorInstellingen, ObjectFase }
 
 export type Kantoor = {
   id: string
@@ -55,6 +55,19 @@ export type TransactieRow = {
   eigen_verkoop: boolean
   verkopend_kantoor: string | null
   created_at: string
+  // ── item 2.1 (schema v2, migratie 20260917_transacties_pijplijn.sql) ──
+  bron: string | null
+  import_id: string | null
+  adres_sleutel: string
+  huisnummer: number | null
+  toevoeging: string | null
+  woningtype_groep: string | null
+  woningtype_sub: string | null
+  geocode_status: string | null
+  uitgesloten_reden: string | null
+  aankopend_kantoor: string | null
+  verkopend_kantoor_norm: string | null
+  prijs_m2: number | null
 }
 
 /** Zie SQL-view `transacties_met_coordinaten` — lat/lng als floats i.p.v. EWKB-hex. */
@@ -73,7 +86,6 @@ export type ObjectRow = {
   created_at: string
   status: 'draft' | 'published' | 'onder_bod' | 'verkocht'
   fase: ObjectFase
-  pitch_uitslag: PitchUitslag | null
   lat: number | null
   lng: number | null
 }

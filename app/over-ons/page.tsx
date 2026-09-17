@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: 'Over ons — VestaAI',
   description:
     'Vesta AI is gebouwd door en voor makelaars. Ons doel: de complete online woningpresentatie in één Nederlands platform.',
+  alternates: {
+    canonical: '/over-ons',
+  },
 }
 
 const NR = { fontFamily: 'var(--font-newsreader), Georgia, serif' }

@@ -47,7 +47,10 @@ contractvorm (zie `docs/roadmap.md` § Blokkades & acties Quinn). De kern van de
 een prachtig, interactief systeem bovenop i4housing's éígen Brainbay- en Realworks-data
 (waardering, marktinzicht, concurrentieanalyse), plus content die uren scheelt — niet een
 generiek contentplatform. Prioritering blijft gericht op één demo bij i4housing, niet op
-meerdere kantoren tegelijk.
+meerdere kantoren tegelijk. **De demo draait op i4housing's eigen data in hun eigen
+omgeving** (besluit 17 sep 2026); vóór de demo is er één gerichte tussencheck (een
+waardebepaling-pdf naar hun taxateur, mijlpaal M1 in `docs/roadmap.md`). Het demoscript
+in zes scènes staat in `docs/roadmap.md` § 2.
 
 Dat betekent niet dat de deur voorgoed dicht is: het datamodel is al multi-tenant
 (`kantoren`/`makelaars` in Supabase) en het white-label-systeem (`lib/branding.ts`) werkt
@@ -98,7 +101,7 @@ als zodanig worden aangenomen bij latere beslissingen.
 | Waarderingsclaim (aansprakelijkheid) | Medium | De uitkomst is een onderbouwde indicatie, geen taxatie in de zin van het NRVT. Rapport en UI moeten dat expliciet benoemen. |
 | Claude API afhankelijkheid | Medium | Model-agnostische architectuur; kan switchen. |
 | AI-transparantieverplichting (EU AI Act) | Laag–Medium | AI-content-labeling zit al in virtual staging; uitbreiden naar het waarderingsrapport zodra dat live gaat. |
-| Draagvlak bij i4housing | Medium | Eén klant betekent geen buffer als het product niet aanslaat. Kort-cyclisch testen en feedback ophalen in plaats van in één keer breed op te leveren. |
+| Draagvlak bij i4housing | Medium | Eén klant betekent geen buffer als het product niet aanslaat. Vóór de demo: één gerichte tussencheck op het grootste vertrouwensrisico (de waardering, mijlpaal M1), scherpe klaar-als-criteria per scène en een generale repetitie. Ná de demo: kort-cyclisch feedback ophalen via de feedbackknop en het gebruik in de app. |
 | Tech risico | Laag | Bewezen API-architectuur, geen custom ML. |
 
 ---
