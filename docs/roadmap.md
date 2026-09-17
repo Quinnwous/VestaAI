@@ -17,9 +17,19 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 1 — UI-fundament (alles klaar behalve **1.11** PR mergen).
+- **Fase:** 2 — Datafundament (2.1, 2.3, 2.4 klaar; **2.2** in aanbouw; 2.5
+  open). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
   Plan v2 van kracht sinds 17 sep 2026.
-- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 2):**
+- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
+  v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
+  `verkoopadvies`, `pitch_uitslag` weg, `controleer-schema.mjs`); **2.3**
+  demo-fixture live (kantoor "Demo Makelaardij", ~8.000 transacties, 15
+  dossiers, account `demo@vestaai.nl`, wachtwoord in `.env.local`); **2.4**
+  `meldFout` in alle API-routes + `global-error.tsx`. `dod:screens` draait nu
+  standaard met het demo-account. ⚠️ **Bekende bug tot 2.2 af is:** de
+  verkenners halen max. 1.000 rijen (PostgREST-plafond) → cijfers in
+  marktanalyse/concurrentie/transacties/kaart zijn een deelverzameling.
+- **Eerder op 17 sep (sessie Opus/Sonnet, deel 2):**
   **1.9c** — pitch-concept uit de code (scorebord, winratio, uitslag,
   `setPitchUitslag`, `PitchUitslagSchema`), topbar plat met zes pillen en een
   hamburgermenu ≤ 900 px, subnav marktinzichten weg, "Woning toevoegen" in de
@@ -90,11 +100,11 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **1.11** (PR `feat/nieuwe-schil` → `main`; merge =
-  productiedeploy, dus op akkoord Quinn) en parallel **Fase 2**
-  (datafundament + demo-fixture). Fase 2 gaat vóór álles: niemand bouwt nog
-  tegen 0 rijen. Gecontroleerd 17 sep: productie heeft **0 objecten en 0
-  transacties** (1 kantoor), dus migratie 2.1 raakt geen echte data.
+- **Volgende item:** **2.2** afronden (query-laag, RPC's, guard; lost het
+  1.000-rijen-plafond op) → **2.5** (kerncijfers op transactiedata) → fase 2
+  inklappen → **Fase 3** (dossierkern: aanmaken zonder wachten). 1.11
+  (push + merge) gebeurt bij "rond af", zonder vooraf akkoord (besluit Quinn
+  17 sep).
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
