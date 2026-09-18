@@ -110,6 +110,13 @@
 - **Fase 4 afgerond op 18 sep** (alle 8 items, zie het ingeklapte fase-blok).
   Laatste item 4.7: waardebepaling-pdf van één pagina, gemeten 1,0 s, met
   kantoorlogo en -kleur. Scène 4 van het demoscript loopt nu van adres tot pdf.
+- **Live gezet op 18 sep:** PR #20 gemerged (25 commits, fases 2.2 t/m 4),
+  deploy READY, geen runtime-fouten. Rooktest op productie met het demo-account:
+  alle ingelogde routes 200, pdf-route 2,7 s. **Gemeten laadtijden productie:**
+  `/marktanalyse` 6,2 s · `/marktanalyse/transacties` 5,4 s ·
+  `/marktanalyse/concurrentie` 5,1 s — dat is de tussenfase die nog de hele
+  dataset ophaalt; fase 6 moet dit onder ~1,5 s brengen. Dossier 2,0 s,
+  dashboard 2,9 s (koude start).
 - **Volgende item:** **fase 6** (marktinzichten v2) — fase 5 (echte data-import)
   blijft geblokkeerd tot de Brainbay-/Realworks-exports er zijn. Fase 6 haalt
   de explorers óók van de tussenfase-volledige-dataset-fetch af.
@@ -598,8 +605,12 @@ Details: `docs/besluiten.md`.
   `apple-icon.png`; manifest repareren; canonical + JSON-LD; opengraph-image;
   robots/sitemap (met `/woningen`, `/account`, `/dashboard` in disallow).
   *Klaar als:* alle icoon-URL's geven 200 op productie.
-- [ ] **1.11 PR `feat/nieuwe-schil` → `main`**; deploy READY; screenshots van
+- [x] **1.11 PR `feat/nieuwe-schil` → `main`**; deploy READY; screenshots van
   dashboard, woningen, dossier, marktanalyse bewaard als referentie.
+  *Gedaan 18 sep:* PR #20 gemerged (25 commits, fases 2.2 t/m 4), productie-
+  deploy READY op vestaai.nl, rooktest op alle ingelogde routes + de pdf-route
+  groen, geen runtime-fouten. Hiermee draait `main` weer op hetzelfde schema
+  als de database.
 - **Klaar als:** 1.9-1.11 gedaan en de "klaar als"-lijst van v1 (geen blauwe
   balk/Verhuur, avatarmenu, startpagina, `/woningen`, account, kantoorpagina)
   blijft groen.
