@@ -27,7 +27,16 @@
 > sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
 > te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
 > opnieuw toestemming te vragen. Reden: er is nog geen productiedata die verloren kan gaan.
-> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven). Productkeuzes zelf maken en in
+> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven).
+>
+> ⚠️ **Eén database, twee codeversies (les 17 sep 2026):** productie draait altijd de code
+> van `main`, en er is maar één (productie)database. Een migratie die iets **weghaalt of
+> hernoemt** (kolom droppen, enum-waarde wijzigen) breekt de live site zodra hij is toegepast
+> en `main` nog oude code heeft — zo crashte `/dashboard` op `pitch_uitslag` na migratie 2.1.
+> Regel: brekende migraties pas toepassen **samen met** push + merge van de code die erbij
+> hoort (in dezelfde ronde, direct achter elkaar), of eerst een additieve variant (kolom
+> toevoegen, code overzetten, later pas droppen). Additieve migraties (nieuwe tabel/kolom/
+> functie) mogen wel tussendoor. Productkeuzes zelf maken en in
 > `docs/besluiten.md` noteren; alleen blokkeren bij iets onomkeerbaars.
 
 Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor i4housing. De woning is de kern: één woningdossier per adres doorloopt drie fases (Verkoopadvies → In verkoop → Verkocht) — van waardebepaling en verkoopadvies tot de volledige contentsuite eenmaal de opdracht binnen is. Los daarvan: Marktinzichten, een interactieve verkenner van de eigen transactiedataset (marktanalyse, transacties opzoeken, concurrentieanalyse, verkoopkaart). Na inloggen draagt de hele omgeving het logo en de kleuren van het kantoor. Toegang is puur admin-beheerd (geen abonnementen), en er is één rol per kantoor. Strategie & doelen: `docs/goals.md` (leidend document — bij twijfel over product of prioriteiten: dit raadplegen).
@@ -53,9 +62,10 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten
 
 - **Woningdossier** (`app/(app)/object/[id]/` + `components/ObjectWorkspace.tsx`) — één dossier per adres, met **één gedeelde intake** (`components/PropertyForm.tsx`, een zesstappen-wizard: adres, woning, staat & afwerking, ligging & buitenruimte, verhaal, commercieel). Elk nieuw dossier start in fase **Acquisitie**, en doorloopt:
   - **Verkoopadvies** (voorheen "Acquisitie"; hernoemd op besluit Quinn 17 sep 2026 — label overal "Verkoopadvies", interne waarde `acquisitie` blijft tot schema v2 in 2.1 hem hernoemt naar `verkoopadvies` incl. bestaande rijen) — alleen waardebepaling en verkoopadvies zichtbaar (er zijn nog geen foto's of een vaste vraagprijs). **Geen pitch-concept meer (besluit Quinn 17 sep 2026):** de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat; er bestaan geen "gewonnen/verloren pitches", geen winratio, geen scorebord. Sinds item 1.9c (17 sep 2026) is dat uit de code: geen uitslag-schakelaar, scorebord of winratio meer, en de code leest of schrijft `objecten.pitch_uitslag` niet; de kolom zelf vervalt in schema v2 (2.1). De makelaar zet het dossier zelf door naar In verkoop met de knop in `FaseToggle`.
-  - **In verkoop** — hetzelfde als Verkoopadvies, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. ⚠️ Content wordt **nu nog synchroon** gegenereerd bij het aanmaken van het dossier (`/api/generate` doet intake → Claude NL+EN → insert, dus aanmaken duurt 1-2 minuten en kost tokens voor elk dossier, ook een dossier dat nooit in verkoop gaat). Roadmap v2 fase 3 koppelt dit los: `POST /api/object` maakt direct aan, content komt op knopdruk of bij de overgang naar In verkoop (`objecten.content_status`).
+  - **In verkoop** — hetzelfde als Verkoopadvies, plus de volledige contentsuite (Funda/brochure/social/e-mail/buurt, virtual staging, documentenassistent, export) — zie `components/ObjectWorkspace.tsx`. Dossier en content zijn los (fase 3, 17 sep 2026): `POST /api/object` maakt een dossier aan zonder Claude (~1 s, `content_status = 'geen'`, `outputs_json` = `LEEG_CONTENT_OUTPUT`); content komt via `POST /api/generate { objectId }` op knopdruk ("Genereer content") of automatisch bij de overgang naar In verkoop. Kernlogica in `lib/contentGeneratie.ts`: lock per dossier via `content_status = 'bezig'` + `content_bezig_sinds` (verloopt na 6 min, 409 bij dubbele start), eindigt in `klaar` of `fout`. `components/ContentTekstenTab.tsx` toont de staten en pollt `/api/object/[id]/status` elke 3 s. ⚠️ NL+EN duurt ~3 min tegen een Vercel-limiet van 300 s.
+  - **Woningtype** in de intake is `woningtype_groep` (appartement/rijwoning/halfvrijstaand/vrijstaand) + optioneel `woningtype_sub`, dezelfde taxonomie als `transacties`. Oude dossiers met het vroegere platte `woningtype` worden bij elke `PropertyInputSchema.parse()` gemapt (`migreerOudWoningtype`); lees het type altijd via `woningtypeLabel()`, nooit zelf.
   - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld.
-  - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie.
+  - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie. **Pdf van één pagina** (item 4.7): `GET /api/pdf/waardebepaling?object_id=…` + `components/WaardebepalingPdfTemplate.tsx`, knop in het paneel. De route **rekent niets opnieuw uit** — hij leest de opgeslagen `waardering_json`, zodat de pdf nooit een ander bedrag toont dan het scherm. ~1 s.
   - **AI USP-extractor** — `lib/claude.ts` `extraheerUsps()` + `/api/object/[id]/usps`: vertaalt de vrije intaketekst naar gestructureerde USP's (`components/UspExtractorPaneel.tsx`, kolom `objecten.usps_structuur`).
   - **Verkoopadvies** — nog te bouwen (`docs/roadmap.md` fase 11, bewust geblokkeerd tot Quinns voorbeelddocument er is; het datacontract staat daar al). Alle onderliggende data (waardering, buurtkaart, kantoorprofiel, courtage) is al beschikbaar.
   - **Verkoopkaart, straal-uitsnede** (`components/StraalKaartPaneel.tsx`) — 250/500/1000 m rond het adres, alleen eigen verkopen.
@@ -100,7 +110,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 | Transactiedataset (waardering, marktinzichten, kaart) | i4housing's eigen Realworks-verkoopdata + overige verkopen, CSV-import via `/admin/transacties` |
 | Kaart | `leaflet` + `react-leaflet`, tiles van de gratis PDOK BRT-Achtergrondkaart |
 | Grafieken | `recharts` |
-| PDF export | react-pdf |
+| PDF export | react-pdf — ⚠️ de ingebouwde Helvetica is **WinAnsi**: `·` `•` `×` `²` `—` `€` renderen, maar `⚠` (U+26A0) en de meeste emoji niet. Styles worden pas tijdens het renderen gevalideerd, dus typecheck én build zien een kapotte style-prop níet — dek een nieuw pdf-document af met een test die hem écht rendert (`components/WaardebepalingPdfTemplate.test.ts`). Een logo-URL altijd eerst door `bruikbaarLogo()`: `<Image>` kent geen `onError` en een dode URL laat de hele generatie klappen |
 | Transactionele e-mail | Resend |
 | Styling | Tailwind CSS |
 | Validatie | Zod |
@@ -221,7 +231,7 @@ VestaAI/
 ## Commands
 
 - `npm run dev` — start lokale server
-- `npm run test` — unit tests (Vitest)
+- `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild en tsconfig's `jsx: preserve`.
 - `npm run typecheck` — TypeScript check
 - `npm run build` — productie-build
 - `npm run dod:screens` — DoD-visueel: huisstijlcheck (VestaAI-groen, foutstaat, `pageerror`) op 390/1280/1920 px + screenshots van alle ingelogde routes naar `screenshots/`; exit 1 bij een fout. Gebruikt een draaiende server op `DOD_PORT` (standaard 3000) of start zelf `next dev`. Vereist in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (plus de gewone app-variabelen); optioneel `DOD_EMAIL` (standaard `demo@vestaai.nl`, het demo-kantoor met data; i4 Housing via `DOD_EMAIL=quinn.berkouwer@icloud.com`). Logt in via een sessiecookie (`scripts/lib/dodSessie.mjs`), niet via de magic-link-redirect — die wijst naar productie. Alleen lezend, maar ⚠️ `.env.local` wijst naar de productiedatabase.

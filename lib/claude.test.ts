@@ -4,7 +4,7 @@ import type Anthropic from '@anthropic-ai/sdk'
 
 const validInput = {
   adres: 'Herengracht 1, Amsterdam',
-  woningtype: 'Appartement' as const,
+  woningtype_groep: 'appartement' as const,
   kamers: 3,
   oppervlak_m2: 85,
   bouwjaar: 1920,
@@ -19,10 +19,25 @@ describe('PropertyInputSchema', () => {
     expect(() => PropertyInputSchema.parse(validInput)).not.toThrow()
   })
 
-  it('rejects invalid woningtype', () => {
+  it('rejects invalid woningtype_groep', () => {
     expect(() =>
-      PropertyInputSchema.parse({ ...validInput, woningtype: 'Iglo' })
+      PropertyInputSchema.parse({ ...validInput, woningtype_groep: 'Iglo' })
     ).toThrow()
+  })
+
+  it('migreert de oude woningtype-enum naar woningtype_groep/woningtype_sub', () => {
+    const oud: Record<string, unknown> = { ...validInput, woningtype: 'Villa' }
+    delete oud.woningtype_groep
+    const geparsed = PropertyInputSchema.parse(oud)
+    expect(geparsed.woningtype_groep).toBe('vrijstaand')
+    expect(geparsed.woningtype_sub).toBe('Villa')
+  })
+
+  it('accepteert usps en doelgroep ontbrekend (verkoopadviesfase, item 3.2)', () => {
+    const zonderVerhaal: Record<string, unknown> = { ...validInput }
+    delete zonderVerhaal.usps
+    delete zonderVerhaal.doelgroep
+    expect(() => PropertyInputSchema.parse(zonderVerhaal)).not.toThrow()
   })
 
   it('rejects bouwjaar < 1800', () => {
@@ -105,7 +120,7 @@ describe('generateContent', () => {
     const { generateContent } = await import('./claude')
     const result = await generateContent(
       {
-        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
         oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
         vraagprijs: 450000, usps: 'Prachtig uitzicht', doelgroep: 'Jonge gezinnen',
       },
@@ -122,7 +137,7 @@ describe('generateContent', () => {
     const { generateContent } = await import('./claude')
     const result = await generateContent(
       {
-        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
         oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
         vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
       },
@@ -140,7 +155,7 @@ describe('generateContent', () => {
     const { generateContent } = await import('./claude')
     const result = await generateContent(
       {
-        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
         oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
         vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
       },
@@ -158,7 +173,7 @@ describe('generateContent', () => {
     await expect(
       generateContent(
         {
-          adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+          adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
           oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
           vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
         },
@@ -185,7 +200,7 @@ describe('generateContent — content_keuzes (F8)', () => {
     const { generateContent } = await import('./claude')
     const result = await generateContent(
       {
-        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
         oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
         vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
         content_keuzes: ['video'],
@@ -210,7 +225,7 @@ describe('generateContent — content_keuzes (F8)', () => {
     const { generateContent } = await import('./claude')
     const result = await generateContent(
       {
-        adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement', kamers: 3,
+        adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3,
         oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C',
         vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
       },
@@ -222,7 +237,7 @@ describe('generateContent — content_keuzes (F8)', () => {
 
 describe('generateContentBeideTalen', () => {
   const inputBasis = {
-    adres: 'Herengracht 1, Amsterdam', woningtype: 'Appartement' as const, kamers: 3,
+    adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement' as const, kamers: 3,
     oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' as const,
     vraagprijs: 450000, usps: 'Prachtig uitzicht', doelgroep: 'Jonge gezinnen',
   }

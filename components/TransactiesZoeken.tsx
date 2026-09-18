@@ -1,7 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { TransactieRow } from '@/lib/supabase'
+import { Modal } from '@/components/ui'
+import { lijstEigenDossiers, type DossierOptie } from '@/app/(app)/marktanalyse/transacties/dossier-actions'
+import { voegReferentiesToe } from '@/app/(app)/object/[id]/waardering-actions'
 
 function formatEuro(bedrag: number | null): string {
   return bedrag !== null ? `€${bedrag.toLocaleString('nl-NL')}` : '—'
@@ -19,6 +22,8 @@ function formatDatum(iso: string | null): string {
  * (de waarderingsmodule, F7) — de selectie hieronder is alvast klaar, de
  * knop wordt actief zodra die module bestaat.
  */
+const PER_PAGINA = 50
+
 export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[] }) {
   const [zoek, setZoek] = useState('')
   const [type, setType] = useState('')
@@ -26,6 +31,44 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
   const [maxM2, setMaxM2] = useState('')
   const [energielabel, setEnergielabel] = useState('')
   const [geselecteerd, setGeselecteerd] = useState<Set<string>>(new Set())
+  const [pagina, setPagina] = useState(0)
+
+  // Item 4.4 (docs/roadmap.md § Fase 4): "meenemen als referentie" — kies een
+  // dossier van het eigen kantoor, voeg de selectie toe via `voegReferentiesToe()`.
+  const [dossierModalOpen, setDossierModalOpen] = useState(false)
+  const [dossierZoek, setDossierZoek] = useState('')
+  const [dossiers, setDossiers] = useState<DossierOptie[] | null>(null)
+  const [dossierFout, setDossierFout] = useState<string | null>(null)
+  const [toevoegenBezig, setToevoegenBezig] = useState<string | null>(null)
+  const [melding, setMelding] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!dossierModalOpen || dossiers !== null) return
+    lijstEigenDossiers().then(res => {
+      if ('error' in res) setDossierFout(res.error)
+      else setDossiers(res)
+    })
+  }, [dossierModalOpen, dossiers])
+
+  const gefilterdeDossiers = useMemo(() => {
+    if (!dossiers) return []
+    const q = dossierZoek.trim().toLowerCase()
+    return q ? dossiers.filter(d => d.adres.toLowerCase().includes(q)) : dossiers
+  }, [dossiers, dossierZoek])
+
+  async function meenemenAlsReferentie(dossier: DossierOptie) {
+    setToevoegenBezig(dossier.id)
+    const res = await voegReferentiesToe(dossier.id, Array.from(geselecteerd))
+    setToevoegenBezig(null)
+    if (res.ok) {
+      setMelding(`${geselecteerd.size} transactie${geselecteerd.size === 1 ? '' : 's'} toegevoegd aan de waardering van ${dossier.adres}.`)
+      setGeselecteerd(new Set())
+      setDossierModalOpen(false)
+      setDossierZoek('')
+    } else {
+      setDossierFout(res.error)
+    }
+  }
 
   const types = useMemo(() => Array.from(new Set(transacties.map(t => t.woningtype).filter((v): v is string => !!v))).sort(), [transacties])
   const labels = useMemo(() => Array.from(new Set(transacties.map(t => t.energielabel).filter((v): v is string => !!v))).sort(), [transacties])
@@ -37,7 +80,13 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
     if (maxM2 && (t.woonoppervlak_m2 ?? Infinity) > Number(maxM2)) return false
     if (energielabel && t.energielabel !== energielabel) return false
     return true
-  }), [transacties, zoek, type, minM2, maxM2, energielabel])
+  }).sort((a, b) => (b.verkoopdatum ?? '').localeCompare(a.verkoopdatum ?? '')), [transacties, zoek, type, minM2, maxM2, energielabel])
+
+  // Duizenden rijen tegelijk renderen maakt de pagina traag; 50 per pagina zoals het prototype.
+  const aantalPaginas = Math.max(1, Math.ceil(resultaten.length / PER_PAGINA))
+  const huidigePagina = Math.min(pagina, aantalPaginas - 1)
+  const zichtbaar = resultaten.slice(huidigePagina * PER_PAGINA, (huidigePagina + 1) * PER_PAGINA)
+  const metReset = <T,>(zet: (v: T) => void) => (v: T) => { zet(v); setPagina(0) }
 
   const toggleSelectie = (id: string) => {
     setGeselecteerd(prev => {
@@ -61,18 +110,18 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
     <div>
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         <input
-          type="search" value={zoek} onChange={e => setZoek(e.target.value)}
+          type="search" value={zoek} onChange={e => metReset(setZoek)(e.target.value)}
           placeholder="Zoek op adres, postcode, wijk of buurt…"
           style={{ flex: '1 1 260px', borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5 }}
         />
-        <select value={type} onChange={e => setType(e.target.value)} style={{ borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, background: '#fff' }}>
+        <select value={type} onChange={e => metReset(setType)(e.target.value)} style={{ borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, background: '#fff' }}>
           <option value="">Alle types</option>
           {types.map(t => <option key={t} value={t}>{t}</option>)}
         </select>
-        <input type="number" value={minM2} onChange={e => setMinM2(e.target.value)} placeholder="Min. m²" style={{ width: 100, borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5 }} />
-        <input type="number" value={maxM2} onChange={e => setMaxM2(e.target.value)} placeholder="Max. m²" style={{ width: 100, borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5 }} />
+        <input type="number" value={minM2} onChange={e => metReset(setMinM2)(e.target.value)} placeholder="Min. m²" style={{ width: 100, borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5 }} />
+        <input type="number" value={maxM2} onChange={e => metReset(setMaxM2)(e.target.value)} placeholder="Max. m²" style={{ width: 100, borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5 }} />
         {labels.length > 0 && (
-          <select value={energielabel} onChange={e => setEnergielabel(e.target.value)} style={{ borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, background: '#fff' }}>
+          <select value={energielabel} onChange={e => metReset(setEnergielabel)(e.target.value)} style={{ borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, background: '#fff' }}>
             <option value="">Alle labels</option>
             {labels.map(l => <option key={l} value={l}>{l}</option>)}
           </select>
@@ -95,7 +144,7 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
             </tr>
           </thead>
           <tbody>
-            {resultaten.map(t => (
+            {zichtbaar.map(t => (
               <tr key={t.id} style={{ borderBottom: '1px solid #F1F3F5' }}>
                 <td style={{ padding: '9px 12px' }}>
                   <input type="checkbox" checked={geselecteerd.has(t.id)} onChange={() => toggleSelectie(t.id)} />
@@ -115,12 +164,82 @@ export function TransactiesZoeken({ transacties }: { transacties: TransactieRow[
         </table>
       </div>
 
-      {geselecteerd.size > 0 && (
-        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, borderRadius: 12, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '10px 14px' }}>
-          <p style={{ fontSize: 12.5, color: '#2C3238', margin: 0 }}>
-            {geselecteerd.size} geselecteerd — meenemen als referentie in een waardebepaling komt beschikbaar zodra de waarderingsmodule er is.
+      {aantalPaginas > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 12 }}>
+          <p style={{ fontSize: 12.5, color: '#98A0A6', margin: 0 }}>
+            {huidigePagina * PER_PAGINA + 1}–{Math.min((huidigePagina + 1) * PER_PAGINA, resultaten.length)} van {resultaten.length}
           </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {[
+              { label: 'Vorige', naar: huidigePagina - 1, uit: huidigePagina === 0 },
+              { label: 'Volgende', naar: huidigePagina + 1, uit: huidigePagina >= aantalPaginas - 1 },
+            ].map(k => (
+              <button
+                key={k.label} type="button" disabled={k.uit} onClick={() => setPagina(k.naar)}
+                style={{ borderRadius: 10, border: '1px solid #E1E5E9', background: '#fff', padding: '7px 14px', fontSize: 13, fontWeight: 600, color: k.uit ? '#98A0A6' : 'var(--merk)', cursor: k.uit ? 'default' : 'pointer' }}
+              >
+                {k.label}
+              </button>
+            ))}
+          </div>
         </div>
+      )}
+
+      {geselecteerd.size > 0 && (
+        <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', borderRadius: 12, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '10px 14px' }}>
+          <p style={{ fontSize: 12.5, color: '#2C3238', margin: 0 }}>
+            {geselecteerd.size} geselecteerd
+          </p>
+          <button
+            type="button"
+            onClick={() => setDossierModalOpen(true)}
+            style={{ marginLeft: 'auto', height: 32, padding: '0 14px', fontSize: 12.5, fontWeight: 700, color: '#fff', background: 'var(--merk)', border: 'none', borderRadius: 10, cursor: 'pointer' }}
+          >
+            Meenemen als referentie
+          </button>
+        </div>
+      )}
+
+      {melding && (
+        <div style={{ marginTop: 10, borderRadius: 10, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '9px 14px' }}>
+          <p style={{ fontSize: 12.5, color: 'var(--merk-diep)', margin: 0 }}>{melding}</p>
+        </div>
+      )}
+
+      {dossierModalOpen && (
+        <Modal onClose={() => setDossierModalOpen(false)} title="Kies een dossier" maxWidth={480}>
+          <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 12px' }}>
+            {geselecteerd.size} transactie{geselecteerd.size === 1 ? '' : 's'} worden toegevoegd als handmatige referentie aan de waardering van het gekozen dossier.
+          </p>
+          <input
+            type="search"
+            value={dossierZoek}
+            onChange={e => setDossierZoek(e.target.value)}
+            placeholder="Zoek op adres…"
+            style={{ width: '100%', borderRadius: 10, border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13.5, marginBottom: 12 }}
+          />
+          {dossierFout && <p style={{ fontSize: 12.5, color: '#DC2626', margin: '0 0 10px' }}>{dossierFout}</p>}
+          {dossiers === null ? (
+            <p style={{ fontSize: 12.5, color: '#98A0A6' }}>Dossiers laden…</p>
+          ) : gefilterdeDossiers.length === 0 ? (
+            <p style={{ fontSize: 12.5, color: '#98A0A6' }}>Geen dossiers gevonden.</p>
+          ) : (
+            <div style={{ maxHeight: 360, overflowY: 'auto', display: 'grid', gap: 6 }}>
+              {gefilterdeDossiers.map(d => (
+                <button
+                  key={d.id}
+                  type="button"
+                  disabled={toevoegenBezig !== null}
+                  onClick={() => meenemenAlsReferentie(d)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: '1px solid #E6E9EC', borderRadius: 10, padding: '10px 12px', background: '#fff', cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: '#14181B', fontWeight: 600 }}
+                >
+                  <span>{d.adres}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </Modal>
       )}
     </div>
   )

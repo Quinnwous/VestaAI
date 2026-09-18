@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
-import type { PropertyInput, ContentOutput } from '@/lib/schemas'
+import { woningtypeLabel, type PropertyInput, type ContentOutput } from '@/lib/schemas'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 
 export const maxDuration = 10
@@ -92,7 +92,7 @@ function esc(text: string): string {
 
 function buildRealworksXml(objectId: string, input: PropertyInput, output: ContentOutput): string {
   const adres = parseAdres(input.adres)
-  const { soortObject, soortWoonhuis } = mapWoningtype(input.woningtype)
+  const { soortObject, soortWoonhuis } = mapWoningtype(woningtypeLabel(input))
   const exportdatum = new Date().toISOString().slice(0, 10)
 
   const woonhuisRegel = soortWoonhuis

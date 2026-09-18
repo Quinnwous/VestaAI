@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { formatEuro, formatM2, relatieveDatum, formatDatum, clamp, truncate } from './utils'
+import { formatEuro, formatM2, relatieveDatum, formatDatum, dagenInFase, clamp, truncate } from './utils'
 
 describe('formatEuro', () => {
   it('formatteert geheel getal als euro', () => {
@@ -74,6 +74,30 @@ describe('formatDatum', () => {
     const result = formatDatum('2025-01-15T00:00:00Z')
     expect(result).toMatch(/januari|jan/i)
     expect(result).toMatch(/2025/)
+  })
+})
+
+describe('dagenInFase', () => {
+  const nu = new Date('2026-09-17T15:00:00Z')
+
+  it('geeft "vandaag" bij een overgang vandaag', () => {
+    expect(dagenInFase('2026-09-17T08:00:00Z', nu)).toBe('vandaag')
+  })
+
+  it('geeft "vandaag" bij een overgang later vandaag (nooit negatief)', () => {
+    expect(dagenInFase('2026-09-17T23:00:00Z', nu)).toBe('vandaag')
+  })
+
+  it('geeft "1 dag" (enkelvoud) bij gisteren', () => {
+    expect(dagenInFase('2026-09-16T08:00:00Z', nu)).toBe('1 dag')
+  })
+
+  it('geeft "n dagen" (meervoud) bij meerdere dagen geleden', () => {
+    expect(dagenInFase('2026-09-10T08:00:00Z', nu)).toBe('7 dagen')
+  })
+
+  it('rondt nooit negatief af (toekomstige of net verstreken overgang telt als "vandaag")', () => {
+    expect(dagenInFase(nu.toISOString(), nu)).toBe('vandaag')
   })
 })
 

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Voorstel i4 Housing</title>
+<meta name="description" content="Voorstel van VestaAI aan i4 Housing: wat er gekoppeld is en wat het kost.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;1,6..12,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blauw: #0080C8;
+    --blauw-donker: #005F95;
+    --rood: #C61E45;
+    --inkt: #14202B;
+    --tekst: #2A3640;
+    --grijs: #6B7680;
+    --lijn: #D6DDE3;
+    --zacht: #EAF4FA;
+    --zacht-rood: #FBEDF0;
+    --papier: #FFFFFF;
+    --achter: #E9ECEF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--achter);
+    color: var(--tekst);
+    font-family: "Nunito Sans", "Proxima Nova", "Helvetica Neue", Arial, sans-serif;
+    font-size: 11.8px;
+    line-height: 1.42;
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .pagina {
+    width: 210mm; height: 297mm; margin: 10mm auto; padding: 12mm 14mm 10mm;
+    background: var(--papier); box-shadow: 0 2px 18px rgba(20,32,43,.14);
+    position: relative; display: flex; flex-direction: column; overflow: hidden;
+    page-break-after: always; break-after: page;
+  }
+  .pagina:last-child { page-break-after: auto; break-after: auto; }
+
+  .kop { display: flex; align-items: center; justify-content: space-between; padding-bottom: 3.5mm; border-bottom: 2px solid var(--blauw); margin-bottom: 5mm; }
+  .kop img { height: 10mm; width: auto; display: block; }
+  .kop .meta { text-align: right; font-size: 9.6px; color: var(--grijs); line-height: 1.5; }
+  .kop .meta strong { color: var(--inkt); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .kop .meta .x { color: var(--rood); font-weight: 800; }
+  .voet { margin-top: auto; padding-top: 2.5mm; border-top: 1px solid var(--lijn); display: flex; justify-content: space-between; font-size: 9.2px; color: var(--grijs); }
+  .voet b { color: var(--blauw); font-weight: 700; }
+
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 9.2px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--blauw); margin: 0 0 1.5mm; }
+  .eyebrow::before { content: ""; width: 14px; height: 3px; background: var(--rood); }
+  h1 { font-size: 22px; line-height: 1.15; font-weight: 800; color: var(--inkt); margin: 0 0 2.5mm; letter-spacing: -.01em; }
+  h1 em { font-style: normal; color: var(--blauw); }
+  .lead { font-size: 12.2px; margin: 0 0 4.5mm; max-width: 172mm; }
+  h2 { font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--blauw); margin: 0 0 2.2mm; padding-left: 10px; position: relative; }
+  h2::before { content: ""; position: absolute; left: 0; top: 3px; width: 6px; height: 6px; background: var(--rood); transform: rotate(45deg); }
+  h2 .n { color: var(--grijs); font-weight: 600; letter-spacing: 0; text-transform: none; margin-left: 6px; }
+  .sectie { margin-bottom: 4.5mm; }
+  p { margin: 0 0 1.8mm; }
+  .klein { font-size: 10px; color: var(--grijs); }
+  .sterk { font-weight: 700; color: var(--inkt); }
+
+  /* Datastroom */
+  .stroom { display: grid; grid-template-columns: 40mm 8mm 42mm 8mm 1fr; gap: 0; align-items: stretch; }
+  .bron { display: flex; flex-direction: column; justify-content: space-between; gap: 2mm; }
+  .bron .blok, .kern, .uit .blok { border: 1px solid var(--lijn); background: #fff; padding: 2mm 2.8mm; }
+  .blok b { display: block; font-size: 11px; color: var(--inkt); font-weight: 800; }
+  .blok span { display: block; font-size: 10.2px; color: var(--tekst); line-height: 1.35; }
+  .kern { background: var(--blauw); border-color: var(--blauw); color: #fff; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 3.5mm 3mm; }
+  .kern b { display: block; font-size: 12.5px; font-weight: 800; margin-bottom: 1.5mm; }
+  .kern span { font-size: 10.2px; line-height: 1.4; opacity: .95; }
+  .kern .slot { margin-top: 2.5mm; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; background: var(--rood); display: inline-block; padding: 1mm 2mm; }
+  .pijl { display: flex; align-items: center; justify-content: center; }
+  .pijl svg { width: 100%; height: 12px; }
+  .uit { display: flex; flex-direction: column; justify-content: space-between; gap: 2mm; }
+  .uit .blok { border-left: 3px solid var(--blauw); }
+
+  /* Verkoopadvies-blokken */
+  .vier { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; counter-reset: stap; }
+  .vak { position: relative; padding: 2.2mm 2.8mm; background: var(--zacht); font-size: 10.6px; }
+  .vak::before { counter-increment: stap; content: "0" counter(stap); display: block; font-size: 9px; font-weight: 800; letter-spacing: .14em; color: var(--rood); margin-bottom: .8mm; }
+  .vak b { display: block; color: var(--inkt); font-size: 11px; margin-bottom: .6mm; }
+  .uitkomst { margin-top: 2.5mm; padding: 2mm 3mm; border-left: 3px solid var(--rood); background: var(--zacht-rood); font-size: 11px; }
+
+  /* Beter-lijst */
+  .beter { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 6mm; }
+  .beter div { position: relative; padding-left: 12px; font-size: 10.8px; }
+  .beter div::before { content: ""; position: absolute; left: 0; top: 5px; width: 5px; height: 5px; background: var(--rood); transform: rotate(45deg); }
+  .beter b { color: var(--inkt); }
+
+  /* Tabel */
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th, td { text-align: left; vertical-align: top; padding: 1.8mm 2.2mm; border-bottom: 1px solid var(--lijn); }
+  th { font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--blauw); border-bottom: 2px solid var(--blauw); }
+  td.bedrag, th.bedrag { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  td.post { font-weight: 700; color: var(--inkt); white-space: nowrap; }
+  tr.sub td { background: var(--zacht); font-weight: 700; color: var(--inkt); }
+  tr.sub td small { display: block; font-weight: 600; color: var(--grijs); font-size: 9.8px; }
+  tr.totaal td { border-bottom: none; border-top: 2px solid var(--inkt); font-weight: 800; color: var(--inkt); font-size: 12px; }
+
+  /* Prijsblok */
+  .prijs { border: 2px solid var(--blauw); margin-top: 4mm; }
+  .prijs .rij { display: grid; grid-template-columns: 1fr auto; gap: 4mm; align-items: center; padding: 2.4mm 4mm; border-bottom: 1px solid var(--lijn); }
+  .prijs .rij:last-child { border-bottom: none; }
+  .prijs .rij.top { background: var(--blauw); color: #fff; }
+  .prijs .rij.top .l small, .prijs .rij.top .r small { color: rgba(255,255,255,.88); }
+  .prijs .l b { display: block; font-size: 13px; font-weight: 800; }
+  .prijs .l small { display: block; font-size: 10.4px; color: var(--grijs); }
+  .prijs .r { text-align: right; font-size: 22px; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .prijs .r small { display: block; font-size: 9.8px; font-weight: 600; color: var(--grijs); }
+  .prijs .rij.nul .r { color: var(--rood); }
+
+  @page { size: A4; margin: 0; }
+  @media print { body { background: #fff; } .pagina { margin: 0; box-shadow: none; height: 297mm; } }
+  @media screen and (max-width: 220mm) {
+    .pagina { width: 100%; height: auto; min-height: 0; margin: 0; padding: 16px; }
+    .vier, .beter { grid-template-columns: 1fr; }
+    .stroom { grid-template-columns: 1fr; }
+    .pijl { display: none; }
+    .kern { margin: 2mm 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== PAGINA 1 ===================== -->
+<section class="pagina">
+  <header class="kop">
+    <img src="data:image/png;base64,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" alt="i4 Housing">
+    <div class="meta">
+      <strong>Voorstel</strong> · september 2026<br>
+      VestaAI <span class="x">×</span> i4 Housing
+    </div>
+  </header>
+
+  <div class="eyebrow">Wat ik voor jullie bouw</div>
+  <h1>Al jullie data <em>gekoppeld</em>, en elke maand een beetje <em>slimmer</em>.</h1>
+  <p class="lead">Eén omgeving in jullie huisstijl waar jullie eigen verkopen, de NVM-data en de openbare bronnen samenkomen. Alles wat je erin doet, van waardering tot Funda-tekst, is daarop gebaseerd. En omdat VestaAI leert van jullie data en jullie aanpassingen, wordt het steeds beter.</p>
+
+  <div class="sectie">
+    <h2>Wat er gekoppeld is</h2>
+    <div class="stroom">
+      <div class="bron">
+        <div class="blok"><b>Realworks</b><span>Al jullie eigen verkopen, alle jaren, met prijs, looptijd en kenmerken.</span></div>
+        <div class="blok"><b>NVM / Brainbay</b><span>Alle verkopen in de regio, inclusief welk kantoor ze deed.</span></div>
+        <div class="blok"><b>Open data</b><span>BAG, WOZ, CBS-buurtcijfers en de kaart. Gratis en altijd actueel.</span></div>
+      </div>
+      <div class="pijl"><svg viewBox="0 0 34 12" fill="none"><path d="M0 6h28" stroke="#0080C8" stroke-width="2"/><path d="M26 1l7 5-7 5" stroke="#0080C8" stroke-width="2" fill="none"/></svg></div>
+      <div class="kern">
+        <b>Jullie dataset</b>
+        <span>Alleen van jullie, voor niemand anders zichtbaar. Ik lees de exports in, ontdubbel ze, zet ze op de kaart en ververs ze elke maand.</span>
+        <div class="slot">Alleen i4 Housing</div>
+      </div>
+      <div class="pijl"><svg viewBox="0 0 34 12" fill="none"><path d="M0 6h28" stroke="#0080C8" stroke-width="2"/><path d="M26 1l7 5-7 5" stroke="#0080C8" stroke-width="2" fill="none"/></svg></div>
+      <div class="uit">
+        <div class="blok"><b>Waardering</b><span>Op echte NVM-verkopen rond het adres, met correcties voor tijd, m² en afstand, en een eerlijke bandbreedte.</span></div>
+        <div class="blok"><b>Marktanalyse</b><span>Prijs, € per m², looptijd en trend per segment en per kwartaal. Jullie versus de markt.</span></div>
+        <div class="blok"><b>Concurrentieanalyse</b><span>Marktaandeel in Wassenaar, wie wint welk segment, hoe jullie het doen tegenover de rest.</span></div>
+        <div class="blok"><b>i4housing-kaart</b><span>Al jullie verkopen op de kaart, en in elk dossier de uitsnede rond het adres.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sectie">
+    <h2>Het verkoopadvies, voortaan onderbouwd</h2>
+    <p>Waar een verkoopadvies vroeger vooral ervaring en gevoel was, pakt het platform er nu alles bij wat jullie weten:</p>
+    <div class="vier">
+      <div class="vak"><b>Waardering op NVM-verkopen</b>Vergelijkbare verkopen uit de buurt, WOZ als check, jullie eigen correctie met motivatie.</div>
+      <div class="vak"><b>Marktanalyse</b>Hoe het segment beweegt: prijzen, looptijd en trend van de laatste kwartalen.</div>
+      <div class="vak"><b>Concurrentieanalyse</b>Wie er verkoopt in die buurt en dat segment, en waarom i4 Housing de betere keuze is.</div>
+      <div class="vak"><b>i4housing-kaart</b>Jullie eigen verkopen rond de woning, als bewijs op tafel bij de verkoper.</div>
+    </div>
+    <div class="uitkomst"><span class="sterk">Alles samen als pdf in jullie huisstijl, binnen tien seconden.</span> En daarna, met één klik, alle teksten in NL én EN: Funda-tekst in jullie 4SALE!-format, brochure, Instagram, LinkedIn, sneak-preview voor WhatsApp, koper-e-mail.</div>
+  </div>
+
+  <div class="sectie">
+    <h2>Het wordt steeds beter</h2>
+    <div class="beter">
+      <div><b>Elke verkoop erbij</b> is een betere referentie voor de volgende waardering.</div>
+      <div><b>Elke tekst die je aanpast</b> leert het platform jullie toon; de volgende keer schrijft het het zo.</div>
+      <div><b>Elke nieuwe databron</b> kan erbij; komt er iets bij, dan koppel ik het.</div>
+      <div><b>Elke maand</b> verse NVM-data, en nieuwe AI-modellen eerst getoetst op jullie toon.</div>
+      <div><b>Elk kwartaal</b> schrijft het platform jullie marktbericht op basis van de echte cijfers.</div>
+      <div><b>Elk idee van jullie</b> kan erin: het is jullie platform, ik bouw het verder uit.</div>
+    </div>
+  </div>
+
+  <footer class="voet">
+    <span><b>VestaAI</b> · voorstel voor i4 Housing · september 2026</span>
+    <span>1 / 2</span>
+  </footer>
+</section>
+
+<!-- ===================== PAGINA 2 ===================== -->
+<section class="pagina">
+  <header class="kop">
+    <img src="data:image/png;base64,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" alt="i4 Housing">
+    <div class="meta">
+      <strong>Voorstel</strong> · september 2026<br>
+      VestaAI <span class="x">×</span> i4 Housing
+    </div>
+  </header>
+
+  <div class="eyebrow">Kosten</div>
+  <h1>Wat het <em>kost</em>.</h1>
+  <p class="lead">De bouw tot en met de demo is mijn investering, daar betalen jullie niets voor. Wat jullie betalen zijn de vaste kosten om het platform te laten draaien, plus vijf uur per maand voor het verversen van de data en kleine verbeteringen. Maandelijks, geen looptijd, en je kunt elke maand stoppen.</p>
+
+  <div class="sectie">
+    <h2>Eén lijst <span class="n">per maand, excl. btw</span></h2>
+    <table>
+      <thead><tr><th>Post</th><th>Waarvoor</th><th class="bedrag">Per maand</th></tr></thead>
+      <tbody>
+        <tr><td class="post">Vercel Pro</td><td>Hosting. Het gratis plan mag niet commercieel gebruikt worden en kapt lange AI-taken af.</td><td class="bedrag">€ 19</td></tr>
+        <tr><td class="post">Supabase Pro</td><td>Database, inloggen en bestanden. Dagelijkse back-ups, geen pauzestand, opslag in de EU.</td><td class="bedrag">€ 24</td></tr>
+        <tr><td class="post">Claude API</td><td>De AI zelf: teksten, USP's, kwartaalbericht. Betaald per tekst, ongeveer € 1 per woning.</td><td class="bedrag">€ 15 – 30</td></tr>
+        <tr><td class="post">Claude Pro</td><td>De tooling waarmee ik bouw, test en onderhoud.</td><td class="bedrag">€ 20</td></tr>
+        <tr><td class="post">Domein, e-mail, monitoring</td><td>Wachtwoord-mails en een seintje bij een storing, voordat jullie het merken.</td><td class="bedrag">€ 5</td></tr>
+        <tr><td class="post">Beheer &amp; doorontwikkeling</td><td>5 uur per maand à € 20: Realworks- en NVM-data verversen, back-ups checken, bugs oplossen, kleine wensen bouwen.</td><td class="bedrag">€ 100</td></tr>
+        <tr class="totaal"><td colspan="2">Bij elkaar, per maand</td><td class="bedrag">± € 200</td></tr>
+      </tbody>
+    </table>
+    <p class="klein" style="margin-top:1.5mm">Schommelt iets met het AI-gebruik. Gaat dat structureel omhoog, dan hoor je dat van mij vóór het op de factuur staat.</p>
+  </div>
+
+  <div class="prijs">
+    <div class="rij nul">
+      <div class="l"><b>Bouw tot en met de demo</b><small>September t/m december 2026: waardering, marktinzichten, concurrentie, kaart, content, alles in jullie huisstijl.</small></div>
+      <div class="r">€ 0<small>mijn investering</small></div>
+    </div>
+    <div class="rij top">
+      <div class="l"><b>Voorstel vanaf livegang</b><small>Maandelijks achteraf, geen looptijd, geen vooruitbetaling. Dit tarief houd ik twaalf maanden vast.</small></div>
+      <div class="r">€ 250<small>per maand, excl. btw</small></div>
+    </div>
+  </div>
+  <p style="margin-top:3.5mm"><span class="sterk">Ter vergelijking:</span> één extra gewonnen opdracht per jaar en het is er dik uit.</p>
+
+  <footer class="voet">
+    <span><b>VestaAI</b> · voorstel voor i4 Housing · september 2026</span>
+    <span>2 / 2</span>
+  </footer>
+</section>
+
+</body>
+</html>

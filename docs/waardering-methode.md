@@ -153,5 +153,12 @@ niet, dan verbreden we hem — nooit de lat verlagen.
   `regionaal` = werkgebied + typegroep (RPC `kenmerk_paren`, item 4.5).
 - `migreerWaarderingJson(raw)` leest oude `waardering_json` ({ correctie })
   als `WaarderingOpslag` v2.
-- De v1-functies blijven bestaan tot item 4.3 het paneel omzet; daarna
-  verwijderen.
+- Server action `berekenWaardering(objectId)` in `waardering-actions.ts`
+  (item 4.1/4.2/4.3, 18 sep 2026) bouwt het `SubjectV2` uit het dossier, haalt
+  kandidaten (`referentiesInStraal` met lat/lng, anders `haalRegionaleSet` op
+  plaats + typegroep) en de regionale set op, rekent en slaat op. De v1-
+  functies (selecteerReferenties/berekenWaardebepaling/kenmerkEffect/
+  berekenWaardering) zijn in item 4.3 verwijderd — `components/WaardebepalingPaneel.tsx`
+  draait sindsdien volledig op v2, met `opties.correcties` als client-side
+  wat-als-schakelaars (item 4.5) die zonder nieuwe serveraanroep herrekenen
+  via `berekenWaarderingV2()`.

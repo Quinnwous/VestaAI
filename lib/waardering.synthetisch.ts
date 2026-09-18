@@ -292,8 +292,10 @@ export type DemoTransactie = {
  * De demo-fixture-dataset (item 2.3): ~8.000 transacties 2019-Q1 t/m
  * `opties.totKwartaal` (standaard 2026-Q3 = "nu"). Deterministisch via seed.
  */
-export function genereerDemoTransacties(opties: { seed?: number; totaal?: number; totKwartaal?: string } = {}): DemoTransactie[] {
+export function genereerDemoTransacties(opties: { seed?: number; totaal?: number; totKwartaal?: string; totDatum?: string } = {}): DemoTransactie[] {
   const rnd = mulberry32(opties.seed ?? 20260917)
+  // Vaste peildatum (niet "vandaag") houdt de fixture deterministisch; nooit verkopen in de toekomst.
+  const totDatum = opties.totDatum ?? '2026-09-17'
   const eindKwartaal = kwartaalNummer(opties.totKwartaal ?? '2026-Q3')
   const aantalKwartalen = eindKwartaal - DEMO_START + 1
   const totaal = opties.totaal ?? 8000
@@ -336,7 +338,11 @@ export function genereerDemoTransacties(opties: { seed?: number; totaal?: number
 
       const dag = 1 + Math.floor(rnd() * 28)
       const maand = maand0 + Math.floor(rnd() * 3)
-      const verkoopdatum = `${jaar}-${String(maand + 1).padStart(2, '0')}-${String(dag).padStart(2, '0')}`
+      let verkoopdatum = `${jaar}-${String(maand + 1).padStart(2, '0')}-${String(dag).padStart(2, '0')}`
+      if (verkoopdatum > totDatum) {
+        // Geen extra rnd()-aanroep: de rest van de reeks blijft identiek.
+        verkoopdatum = `${totDatum.slice(0, 8)}${String(1 + ((dag - 1) % Number(totDatum.slice(8)))).padStart(2, '0')}`
+      }
       const looptijd_dagen = 20 + Math.floor(rnd() * 71)
 
       const straat = buurt.straten[Math.floor(rnd() * buurt.straten.length)]

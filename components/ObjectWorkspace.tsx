@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
-import { ResultTabs } from '@/components/ResultTabs'
+import { ContentTekstenTab } from '@/components/ContentTekstenTab'
 import { NotitieVeld } from '@/components/NotitieVeld'
 import { StijlLerenPaneel } from '@/components/StijlLerenPaneel'
 import { VirtualStaging } from '@/components/VirtualStaging'
@@ -16,9 +16,9 @@ import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
-import type { ContentOutput, ObjectFase } from '@/lib/schemas'
-import type { Subject } from '@/lib/waardering'
-import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
+import type { ContentOutput, ObjectContentStatus, ObjectFase } from '@/lib/schemas'
+import type { WaarderingUitkomst } from '@/lib/waardering'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
@@ -32,7 +32,7 @@ import type { TransactieMetCoordinaten, TransactieRow } from '@/lib/supabase'
  *   waardering. Gated op `CONTENT_VERGRENDELD` (lib/features.ts) als extra,
  *   losstaande noodschakelaar.
  * - **Verkocht** — alles blijft bereikbaar, puur archief-gelabeld (zie
- *   FaseToggle.tsx).
+ *   DossierHeader.tsx).
  */
 
 type SectionId = 'waardering' | 'content'
@@ -59,13 +59,11 @@ const card: React.CSSProperties = {
 }
 
 function WaarderingSectie({
-  objectId, subject, heeftGarage, heeftTuin, dataset, correctie, uspsInitieel,
+  objectId, address, waarderingUitkomst, correctie, uspsInitieel,
 }: {
   objectId: string
-  subject: Subject
-  heeftGarage: boolean
-  heeftTuin: boolean
-  dataset: TransactieRow[]
+  address: string
+  waarderingUitkomst: WaarderingUitkomst | null
   correctie: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel: string[]
 }) {
@@ -73,30 +71,12 @@ function WaarderingSectie({
     <div style={{ display: 'grid', gap: 16 }}>
       <WaardebepalingPaneel
         objectId={objectId}
-        subject={subject}
-        heeftGarage={heeftGarage}
-        heeftTuin={heeftTuin}
-        dataset={dataset}
+        address={address}
+        opgeslagenUitkomst={waarderingUitkomst}
         opgeslagenCorrectie={correctie}
       />
       <UspExtractorPaneel objectId={objectId} initieleUsps={uspsInitieel} />
     </div>
-  )
-}
-
-function VerkoopadviesPaneel({ address }: { address: string }) {
-  return (
-    <InAanbouw
-      eyebrow="Verkoopadvies — in aanbouw"
-      titel="Het document om de opdracht te winnen"
-      uitleg={`Waarde, referenties, buurtkaart, "over ons" en courtage voor ${address} — in één document, in kantoorhuisstijl. Wacht op een voorbeelddocument voordat de opmaak wordt vastgelegd; de onderliggende data (waardering, kaart, kantoorprofiel) is al beschikbaar zodra die fases klaar zijn.`}
-      punten={[
-        'Onderbouwde waarde met bandbreedte en referentietransacties',
-        'Buurtkaart met een straal rond dit adres',
-        '"Over ons" — kantoorprofiel en werkgebied, beheerd door VestaAI',
-        'Courtagevoorstel, met de kantoorstandaard voorgevuld',
-      ]}
-    />
   )
 }
 
@@ -111,12 +91,11 @@ export function ObjectWorkspace({
   userEmail,
   geo,
   eigenVerkopen = [],
-  subject,
-  heeftGarage,
-  heeftTuin,
-  transactieDataset = [],
+  waarderingUitkomst = null,
   waarderingCorrectie = null,
   uspsInitieel = [],
+  contentStatus = 'klaar',
+  contentBezigSinds = null,
 }: {
   objectId: string
   address: string
@@ -130,13 +109,17 @@ export function ObjectWorkspace({
   /** Coördinaat van dit adres (uit lib/verrijking.ts) — voedt de straal-uitsnede hieronder. */
   geo?: { lat: number; lng: number } | null
   eigenVerkopen?: TransactieMetCoordinaten[]
-  /** Kenmerken uit de intake die de referentieselectie en wat-als-blokken voeden (F7). */
-  subject: Subject
-  heeftGarage: boolean
-  heeftTuin: boolean
-  transactieDataset?: TransactieRow[]
+  /** Laatst opgeslagen waarderingsuitkomst v2 (item 4.3) — het paneel haalt bij mount zelf een
+   * verse uitkomst op via de server action `berekenWaardering()`; dit is alleen de eerste render. */
+  waarderingUitkomst?: WaarderingUitkomst | null
   waarderingCorrectie?: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel?: string[]
+  /** Item 3.1 (docs/roadmap.md § 3.2): status van de contentgeneratie, stuurt
+   * de EmptyState/skeleton/foutstaat in de Teksten-tab. Default 'klaar' voor
+   * bestaande call-sites/tests die deze prop nog niet meegeven. */
+  contentStatus?: ObjectContentStatus
+  /** Tijdstip waarop de huidige 'bezig'-lock is geclaimd — voedt de mm:ss-timer. */
+  contentBezigSinds?: string | null
 }) {
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
@@ -152,10 +135,8 @@ export function ObjectWorkspace({
   const waarderingSectie = (
     <WaarderingSectie
       objectId={objectId}
-      subject={subject}
-      heeftGarage={heeftGarage}
-      heeftTuin={heeftTuin}
-      dataset={transactieDataset}
+      address={address}
+      waarderingUitkomst={waarderingUitkomst}
       correctie={waarderingCorrectie}
       uspsInitieel={uspsInitieel}
     />
@@ -167,7 +148,6 @@ export function ObjectWorkspace({
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         {waarderingSectie}
-        <VerkoopadviesPaneel address={address} />
         {straalKaart}
       </div>
     )
@@ -185,7 +165,6 @@ export function ObjectWorkspace({
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
         <div style={{ display: 'grid', gap: 16 }}>
           {waarderingSectie}
-          <VerkoopadviesPaneel address={address} />
           {straalKaart}
         </div>
       </div>
@@ -215,7 +194,13 @@ export function ObjectWorkspace({
 
             {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
             <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
-              <ResultTabs data={outputs} dataEn={outputsEn} objectId={objectId} onResetHref="/woningen" />
+              <ContentTekstenTab
+                objectId={objectId}
+                outputs={outputs}
+                outputsEn={outputsEn}
+                contentStatus={contentStatus}
+                contentBezigSinds={contentBezigSinds}
+              />
               <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
                 <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
               </div>

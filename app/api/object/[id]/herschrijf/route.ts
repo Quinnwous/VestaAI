@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
-import type { PropertyInput } from '@/lib/schemas'
+import { woningtypeLabel, type PropertyInput } from '@/lib/schemas'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 import { meldFout } from '@/lib/fouten'
 
@@ -43,7 +43,7 @@ function buildHerschrijfPrompt(
 
 Property details:
 - Address: ${input.adres}
-- Type: ${input.woningtype}, ${input.kamers} rooms, ${input.oppervlak_m2} m²
+- Type: ${woningtypeLabel(input)}, ${input.kamers} rooms, ${input.oppervlak_m2} m²
 - Year built: ${input.bouwjaar} | Energy label: ${input.energielabel}
 - Asking price: €${(input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0).toLocaleString('nl-NL')}
 - USPs: ${input.usps}
@@ -61,7 +61,7 @@ Return ONLY the new text, nothing else. No explanation, no labels, no quotes.`
 
 Objectgegevens:
 - Adres: ${input.adres}
-- Type: ${input.woningtype}, ${input.kamers} kamers, ${input.oppervlak_m2} m²
+- Type: ${woningtypeLabel(input)}, ${input.kamers} kamers, ${input.oppervlak_m2} m²
 - Bouwjaar: ${input.bouwjaar} | Energielabel: ${input.energielabel}
 - Vraagprijs: €${(input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0).toLocaleString('nl-NL')}
 - USP's: ${input.usps}

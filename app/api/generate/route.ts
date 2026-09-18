@@ -1,190 +1,55 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ZodError } from 'zod'
-import { generateContent, generateContentBeideTalen } from '@/lib/claude'
-import { PropertyInputSchema } from '@/lib/schemas'
-import { createServerSupabaseClient, createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
-import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
-import type { HuisstijlConfig } from '@/lib/schemas'
+import { createServerSupabaseClient } from '@/lib/supabase'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
+import { genereerContentVoorObject } from '@/lib/contentGeneratie'
 import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 300
 
-// In-memory "in-flight"-lock per user: voorkomt dat een tweede generatie start terwijl
-// de eerste nog loopt (een suite duurt minuten → dubbele generatie = dubbele kosten).
-// De lock wordt in `finally` vrijgegeven; het venster moet daarom minstens de max
-// generatieduur (maxDuration) dekken zodat een gelijktijdig verzoek geblokkeerd blijft.
-const rateLimitMap = new Map<string, number>()
-const RATE_LIMIT_MS = 300_000
-
-// Periodiek stale entries verwijderen (ouder dan 2× RATE_LIMIT_MS)
-setInterval(() => {
-  const cutoff = Date.now() - RATE_LIMIT_MS * 2
-  rateLimitMap.forEach((ts, userId) => {
-    if (ts < cutoff) rateLimitMap.delete(userId)
-  })
-}, 60_000)
-
-function checkRateLimit(userId: string): boolean {
-  const last = rateLimitMap.get(userId) ?? 0
-  const now = Date.now()
-  if (now - last < RATE_LIMIT_MS) return false
-  rateLimitMap.set(userId, now)
-  return true
-}
-
-function releaseRateLimit(userId: string) {
-  rateLimitMap.delete(userId)
-}
-
+/**
+ * "Genereer content voor dossier-id" (item 3.1, docs/roadmap.md § 3.2) — niet
+ * meer de aanmaakroute (dat is `POST /api/object` sinds hetzelfde item). Body
+ * is nu `{ objectId }` i.p.v. de volledige intake; de kernlogica (lock,
+ * Claude-call, opslaan) zit in lib/contentGeneratie.ts zodat ook de
+ * fire-and-forget-trigger bij de fase-overgang naar In verkoop
+ * (components/DossierHeader.tsx) 'm via deze route kan aanroepen.
+ */
 export async function POST(req: NextRequest) {
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
   if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
 
-  let rateLimitedUserId: string | null = null
+  let body: { objectId?: unknown } = {}
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Ongeldige invoer' }, { status: 400 })
+  }
+
+  const objectId = body.objectId
+  if (typeof objectId !== 'string' || !objectId) {
+    return NextResponse.json({ error: 'objectId is verplicht' }, { status: 400 })
+  }
 
   try {
-    const body = await req.json()
-    const input = PropertyInputSchema.parse(body)
+    const supabase = createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
-    let huisstijl: HuisstijlConfig | undefined
-    let objectId: string | null = null
+    const { data: makelaar } = await supabase
+      .from('makelaars')
+      .select('kantoor_id')
+      .eq('id', user.id)
+      .single()
+    if (!makelaar) return NextResponse.json({ error: 'Geen rechten' }, { status: 403 })
 
-    if (isSupabaseConfigured()) {
-      const supabase = createServerSupabaseClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
-      }
-
-      if (!checkRateLimit(user.id)) {
-        return NextResponse.json(
-          { error: 'Nog bezig met vorige generatie. Wacht even en probeer opnieuw.' },
-          { status: 429 },
-        )
-      }
-      rateLimitedUserId = user.id
-
-      const { data: makelaar } = await supabase
-        .from('makelaars')
-        .select('id, kantoor_id, kantoren(huisstijl_json)')
-        .eq('id', user.id)
-        .single()
-
-      if (makelaar) {
-        const kantoorData = makelaar.kantoren as unknown as {
-          huisstijl_json: HuisstijlConfig | null
-        } | null
-
-        if (kantoorData?.huisstijl_json) {
-          huisstijl = kantoorData.huisstijl_json
-        }
-
-        // Cache-check: zelfde invoer recent gegenereerd voor dit kantoor?
-        const zeveDagenGeleden = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        const inputVergelijk = JSON.stringify(input)
-        const { data: recenteObjecten } = await supabase
-          .from('objecten')
-          .select('id, outputs_json, outputs_json_en, input_json')
-          .eq('kantoor_id', makelaar.kantoor_id)
-          .gte('created_at', zeveDagenGeleden)
-          .order('created_at', { ascending: false })
-          .limit(50)
-        const cachedTreffer = recenteObjecten?.find(r => JSON.stringify(r.input_json) === inputVergelijk)
-        if (cachedTreffer?.outputs_json) {
-          releaseRateLimit(user.id)
-          return NextResponse.json({
-            output: cachedTreffer.outputs_json,
-            output_en: cachedTreffer.outputs_json_en ?? null,
-            object_id: cachedTreffer.id,
-            cached: true,
-          })
-        }
-
-        // Toegang is puur admin-beheerd (geen plan-/proeflimiet meer, zie CLAUDE.md):
-        // wie een makelaar-record heeft, mag genereren.
-
-        const tVerrijkStart = Date.now()
-        const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
-          meldFout('generate:verrijking', err, { adres: input.adres })
-          return null
-        })
-        const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
-        const verrijkMs = Date.now() - tVerrijkStart
-
-        // NL + EN parallel (besluit 16 sep 2026, F8) — de wandkloktijd blijft
-        // ~gelijk aan één generatie, begrensd door de traagste van de twee.
-        const tGenStart = Date.now()
-        const { nl: output, en: outputEn } = await generateContentBeideTalen(input, huisstijl, verrijkingTekst)
-        console.log(`[generate] verrijking ${verrijkMs}ms · generatie ${Date.now() - tGenStart}ms · kantoor ${makelaar.kantoor_id}`)
-
-        const serviceClient = createServiceSupabaseClient()
-        const { data: savedObject } = await serviceClient
-          .from('objecten')
-          .insert({
-            kantoor_id: makelaar.kantoor_id,
-            makelaar_id: makelaar.id,
-            address: input.adres,
-            input_json: input,
-            outputs_json: output,
-            outputs_json_en: outputEn,
-            // Elk nieuw dossier start in de Verkoopadvies-fase, interne
-            // waarde 'verkoopadvies' sinds item 2.1 (besluit 16 sep 2026, zie
-            // CLAUDE.md § Hoofdstructuur) — content staat al klaar, maar
-            // wordt pas zichtbaar zodra de fase naar "In verkoop" gaat.
-            fase: 'verkoopadvies',
-            // Voedt de straal-uitsnede van de verkoopkaart (F5) — was al
-            // opgehaald voor de prompt, nu ook bewaard bij het object zelf.
-            lat: verrijking?.coord?.lat ?? null,
-            lng: verrijking?.coord?.lon ?? null,
-          })
-          .select('id')
-          .single()
-
-        objectId = savedObject?.id ?? null
-
-        // Onboarding-meting: sla eerste generatie-tijdstip op (niet-blokkerend)
-        const { data: makelaarDetails } = await supabase
-          .from('makelaars')
-          .select('first_generated_at')
-          .eq('id', makelaar.id)
-          .single()
-        if (!makelaarDetails?.first_generated_at) {
-          void serviceClient
-            .from('makelaars')
-            .update({ first_generated_at: new Date().toISOString() })
-            .eq('id', makelaar.id)
-        }
-
-        return NextResponse.json({ output, output_en: outputEn, object_id: objectId })
-      }
+    const resultaat = await genereerContentVoorObject(objectId, makelaar.kantoor_id)
+    if (!resultaat.ok) {
+      return NextResponse.json({ error: resultaat.error }, { status: resultaat.status })
     }
-
-    // Fallback: geen Supabase of geen makelaar-record — geen object om op te
-    // slaan, dus hier volstaat de enkeltalige generatie (geen dubbele kosten
-    // voor een resultaat dat toch nergens bewaard wordt).
-    const verrijkingFallback = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
-      meldFout('generate:verrijking-fallback', err, { adres: input.adres })
-      return null
-    })
-    const verrijkingTekstFallback = verrijkingFallback ? verrijkingNaarPrompt(verrijkingFallback) : undefined
-    const output = await generateContent(input, huisstijl, undefined, verrijkingTekstFallback)
-    return NextResponse.json({ output, object_id: null })
-
+    return NextResponse.json({ ok: true })
   } catch (error) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        { error: 'Ongeldige invoer', details: error.issues },
-        { status: 400 },
-      )
-    }
-    const ref = meldFout('generate', error)
+    const ref = meldFout('generate:route', error, { objectId })
     const message = error instanceof Error ? error.message : 'Onbekende fout'
     return NextResponse.json({ error: message, ref }, { status: 500 })
-  } finally {
-    // In-flight-lock altijd vrijgeven (succes én fout). De inline-releases hierboven
-    // (cache-hit, geen toegang, limiet) zijn nu overbodig maar onschadelijk.
-    if (rateLimitedUserId) releaseRateLimit(rateLimitedUserId)
   }
 }

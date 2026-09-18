@@ -3,6 +3,7 @@ import {
   PropertyInputSchema,
   ContentOutputSchema,
   PrijswijzigingOutputSchema,
+  woningtypeLabel,
   type PropertyInput,
   type ContentOutput,
   type HuisstijlConfig,
@@ -249,7 +250,7 @@ function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): strin
 
   if (isEn) {
     return `Property: ${input.adres}
-Type: ${input.woningtype}, ${input.kamers} rooms
+Type: ${woningtypeLabel(input)}, ${input.kamers} rooms
 Floor area: ${input.oppervlak_m2} m²
 Year built: ${input.bouwjaar}
 Energy label: ${input.energielabel}
@@ -261,7 +262,7 @@ Generate all content in English as JSON.`
   }
 
   return `Woning: ${input.adres}
-Type: ${input.woningtype}, ${input.kamers} kamers
+Type: ${woningtypeLabel(input)}, ${input.kamers} kamers
 Oppervlak: ${input.oppervlak_m2} m²
 Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}

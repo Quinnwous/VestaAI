@@ -81,6 +81,25 @@ export function parseAdresVrijeTekst(adres: string): AdresOnderdelen {
 }
 
 /**
+ * Plaatsnaam uit een vrije adrestekst zoals de BAG-suggestie hem aanlevert
+ * (`app/api/bag/suggest/route.ts`: `"Straat 12, 2243 AB, Wassenaar"` — straat,
+ * postcode, woonplaats, met komma's gescheiden) of een handmatig getypt
+ * `"Straat 12, Wassenaar"` (twee delen). Gebruikt door de waarderingskern
+ * (item 4.1, `waardering-actions.ts`) als terugval-plaats wanneer een dossier
+ * geen lat/lng heeft. Geeft `null` als het laatste deel zelf een postcode is
+ * (adres zonder woonplaats) of de tekst leeg is — nooit gokken.
+ */
+export function plaatsUitAdres(adres: string | null | undefined): string | null {
+  if (!adres) return null
+  const delen = adres.split(',').map(d => d.trim()).filter(Boolean)
+  // Zonder komma is er alleen een straat/huisnummer bekend, geen plaats.
+  if (delen.length < 2) return null
+  const laatste = delen[delen.length - 1]
+  if (/^\d{4}\s?[A-Za-z]{2}$/.test(laatste)) return null
+  return laatste
+}
+
+/**
  * Genormaliseerde natuurlijke sleutel voor een transactierij, gebruikt in de
  * unieke index `(kantoor_id, adres_sleutel, verkoopdatum)` zodat een
  * herhaalde import dezelfde woning herkent ongeacht kleine verschillen in
@@ -188,4 +207,22 @@ export function woningtypeGroep(ruweWaarde: string | null | undefined): Typegroe
 /** Subtype uit de taxonomie (docs/ontwerp/README.md § 5), of `null` als onbekend of niet specifiek genoeg. */
 export function woningtypeSub(ruweWaarde: string | null | undefined): string | null {
   return zoekMapping(ruweWaarde)?.sub ?? null
+}
+
+export type WoningtypeGroepOpties = { groep: Typegroep; subs: string[] }
+
+const GROEP_VOLGORDE: Typegroep[] = ['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand']
+
+/**
+ * Groep → subtypes uit de taxonomie (docs/ontwerp/README.md § 5), afgeleid
+ * van dezelfde MAPPING die de transactie-import gebruikt om te normaliseren —
+ * één bron voor de taxonomie, zodat de woningtype-Select in de intake (item
+ * 3.2, componenten/PropertyForm.tsx via lib/woningtypeOpties.ts) nooit uit de
+ * pas kan lopen met de import-normalisatie hierboven.
+ */
+export function woningtypeTaxonomie(): WoningtypeGroepOpties[] {
+  return GROEP_VOLGORDE.map(groep => ({
+    groep,
+    subs: MAPPING.filter((entry): entry is TaxonomieEntry & { sub: string } => entry.groep === groep && entry.sub !== null).map(entry => entry.sub),
+  }))
 }

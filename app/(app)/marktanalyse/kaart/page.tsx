@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { VerkoopkaartExplorer } from '@/components/VerkoopkaartExplorer'
+import { haalEigenVerkopen, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 export const metadata = { title: 'Verkoopkaart' }
@@ -20,19 +21,14 @@ export default async function VerkoopkaartPage() {
   const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
   if (!makelaar) redirect('/login')
 
-  const { data: transacties } = await supabase
-    .from('transacties_met_coordinaten')
-    .select('*')
-    .eq('kantoor_id', makelaar.kantoor_id)
-    .eq('eigen_verkoop', true)
-    .order('verkoopdatum', { ascending: false })
+  const transacties = await haalEigenVerkopen<TransactieMetCoordinaten>(supabase, MET_COORDINATEN_KOLOMMEN, { metCoordinaten: true })
 
   return (
     <div>
       <p style={{ fontSize: 14, color: '#5C6470', margin: '0 0 20px', maxWidth: 620 }}>
         Eigen verkopen van je kantoor, met live filters op periode, type en prijs.
       </p>
-      <VerkoopkaartExplorer transacties={(transacties ?? []) as TransactieMetCoordinaten[]} />
+      <VerkoopkaartExplorer transacties={transacties} />
     </div>
   )
 }

@@ -46,6 +46,19 @@ function parsePdokCoord(centroide: string): { lat: number; lon: number } | null 
   return { lon: parseFloat(m[1]), lat: parseFloat(m[2]) }
 }
 
+/**
+ * Enkele, snelle coördinaatopzoeking (item 3.1, docs/roadmap.md § 3.2) — alleen
+ * de PDOK Locatieserver-call, geen WOZ/CBS/Overpass. Gebruikt door
+ * `POST /api/object` als de intake nog geen lat/lng meestuurde, zodat het
+ * dossier binnen de 5s-belofte blijft (de volle `fetchVerrijking` hieronder
+ * is te traag voor een aanmaakroute zonder Claude).
+ */
+export async function lookupCoordinaten(adres: string): Promise<{ lat: number; lng: number } | null> {
+  const pdok = await pdokLookup(adres)
+  const coord = pdok?.centroide_ll ? parsePdokCoord(pdok.centroide_ll) : null
+  return coord ? { lat: coord.lat, lng: coord.lon } : null
+}
+
 // ─── WOZ Waardeloket ─────────────────────────────────────────────────────────
 
 interface WozWaarde {
@@ -100,6 +113,23 @@ async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Pr
     stijging_pct,
     per_m2: oppervlakM2 ? Math.round(nieuwste / oppervlakM2) : null,
   }
+}
+
+/**
+ * Licht WOZ-ijkpunt voor de waarderingskern (item 4.6, docs/roadmap.md § 3.3):
+ * alleen de PDOK-opzoeking + WOZ Waardeloket, geen CBS/Overpass — die zijn
+ * hier niet nodig en zouden `berekenWaardering()` onnodig vertragen. Geeft de
+ * meest recente WOZ-waarde + peildatum terug, of `null` als het adres niet in
+ * BAG/WOZ te vinden is. **Nooit als invoer voor de berekening** — puur een
+ * ijkpunt náást de waarde (§ 3.3).
+ */
+export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; peildatum: string } | null> {
+  const pdok = await pdokLookup(adres)
+  const bagId = pdok?.adresseerbaarobject_id
+  if (!bagId) return null
+  const woz = await fetchWoz(bagId)
+  const meestRecent = woz?.waarden[0]
+  return meestRecent ? { waarde: meestRecent.waarde, peildatum: meestRecent.peildatum } : null
 }
 
 // ─── CBS Kerncijfers wijken en buurten (live OData) ───────────────────────────
