@@ -26,6 +26,7 @@ import type { DataTotEnMet } from '@/lib/transactiesQuery'
 import { Badge, EmptyState, Skeleton } from '@/components/ui'
 import { colors, radius, shadow } from '@/components/ui/tokens'
 import { WaarderingKaartClient } from '@/components/WaarderingKaartClient'
+import { WaardebepalingPdfButton } from '@/components/WaardebepalingPdfButton'
 
 function formatEuro(n: number | null): string {
   return n !== null ? `€ ${Math.round(n).toLocaleString('nl-NL')}` : '—'
@@ -360,12 +361,15 @@ export function WaardebepalingPaneel({
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em', margin: 0, color: colors.text }}>Waardebepaling</h2>
-        <button
-          type="button" onClick={herbereken} disabled={herberekenBezig}
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: herberekenBezig ? 'default' : 'pointer', opacity: herberekenBezig ? 0.6 : 1 }}
-        >
-          {herberekenBezig ? 'Herberekenen…' : 'Herbereken'}
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            type="button" onClick={herbereken} disabled={herberekenBezig}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: herberekenBezig ? 'default' : 'pointer', opacity: herberekenBezig ? 0.6 : 1 }}
+          >
+            {herberekenBezig ? 'Herberekenen…' : 'Herbereken'}
+          </button>
+          {!leegStaat && <WaardebepalingPdfButton objectId={objectId} />}
+        </div>
       </div>
 
       {leegStaat ? (

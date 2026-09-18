@@ -17,8 +17,8 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 4 — Waardering (fase 2 en 3 ✅ op 17 sep). Fase 1 klaar op 1.11 na (merge gebeurt bij "rond af").
-  Plan v2 van kracht sinds 17 sep 2026.
+- **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅ (fase 4 afgerond 18 sep),
+  fase 5 geblokkeerd op de exports. Plan v2 van kracht sinds 17 sep 2026.
 - **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
   v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
   `verkoopadvies`, `pitch_uitslag` weg, `controleer-schema.mjs`); **2.3**
@@ -107,17 +107,13 @@
   (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
   Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
   snelkoppelingen op de startpagina.
-- **Volgende item:** **4.7** waardebepaling-pdf (laatste item van fase 4).
-  4.6 en 4.4 klaar op 18 sep: paneel geport uit het prototype (hero met
-  puntwaarde + band + badges, referentiekaart met pins en straalcirkel,
-  correcties per referentie, drawer), referenties uitsluiten/toevoegen werkt
-  en blijft bewaard, en "meenemen als referentie" op /marktanalyse/transacties
-  doet eindelijk iets.
-  4.1/4.2/4.3/4.5/4.8 klaar op 17-18 sep: paneel draait op echte data
-  (proef Wassenaar-villa € 4,2 mln uit 22 referenties), backtest op de fixture
-  **mediane fout 6,1 % · 76 % binnen de band** (demo-lat ≤ 7 % / ≥ 75 % gehaald,
-  `docs/waardering-backtest.md`). ⚠️ NL+EN-contentgeneratie ~3 min (limiet
-  300 s) → fase 8. 1.11 (push + merge) bij "rond af".
+- **Fase 4 afgerond op 18 sep** (alle 8 items, zie het ingeklapte fase-blok).
+  Laatste item 4.7: waardebepaling-pdf van één pagina, gemeten 1,0 s, met
+  kantoorlogo en -kleur. Scène 4 van het demoscript loopt nu van adres tot pdf.
+- **Volgende item:** **fase 6** (marktinzichten v2) — fase 5 (echte data-import)
+  blijft geblokkeerd tot de Brainbay-/Realworks-exports er zijn. Fase 6 haalt
+  de explorers óók van de tussenfase-volledige-dataset-fetch af.
+  ⚠️ NL+EN-contentgeneratie ~3 min (limiet 300 s) → fase 8.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -623,78 +619,16 @@ woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
 `DossierHeader` met klikbare fasestepper en `fase_sinds` (3.4). Details:
 `docs/besluiten.md` 17 sep. ⚠️ NL+EN-generatie ~3 min tegen 300 s limiet → fase 8.
 
-### Fase 4 — Waardering die taxateurs overtuigt (5 sessies)
+### Fase 4 — Waardering die taxateurs overtuigt ✅ (18 sep 2026)
 
-- [x] **4.1 Referentieselectie op locatie** *(§ 3.3)*
-  *Raakt:* RPC `referenties_in_straal` (migratie), `lib/transactiesQuery.ts`,
-  `lib/waardering.ts` (`kiesReferenties` met auto-verbreding), tests.
-  *Spec:* input subject `{ lat, lng, woningtype_groep, oppervlak_m2, bouwjaar }`;
-  output kandidaten met `afstand_m`; verbredingsladder uit § 3.3; uitkomst
-  bevat `straal_m`. Zonder `lat/lng` (verrijking mislukt): terugval op
-  plaats + typegroep met waarschuwing "zonder locatie".
-  *Al klaar (17 sep):* `kiesReferenties()` incl. ladder, peildatum, terugval,
-  `metAfstand()`. *Open:* RPC + aansluiting (kandidaten als `Kandidaat[]`).
-- [x] **4.2 Prijsindex** — RPC `prijsindex_kwartaal` + `lib/prijsindex.ts`
-  (`glad()`, `factor(vanKwartaal, naarKwartaal)`), CBS-terugval als losse
-  functie `lib/cbsPrijsindex.ts` (zoek de actuele tabel "Prijsindex bestaande
-  koopwoningen; regio" op via de CBS-OData-catalogus in deze sessie — niet uit
-  het hoofd; sla de tabel-id in een constante op met bronvermelding). Tests op
-  gladstrijken en factor, incl. randen (ontbrekend kwartaal).
-  *Al klaar (17 sep):* `lib/prijsindex.ts` + 13 tests; CBS-tabel opgezocht:
-  **85792NED** (prijsindex 2020=100, regio; provincie Zuid-Holland), vastgelegd
-  in `lib/cbsPrijsindex.ts` met OData-aanwijzingen. *Open:* RPC in de vorm van
-  `bouwIndex()`, ophaalscript `scripts/haal-cbs-prijsindex.mjs` (regiocode uit
-  de metadata halen, niet raden).
-- [x] **4.3 Rekenkern v2** — `lib/waardering.ts` volgens § 3.3: gewichten,
-  gewogen mediaan/P25/P75, band-regels, `WaarderingUitkomst` v2 met `versie`,
-  `peildatum`-parameter (referenties alleen vóór die datum — nodig voor de
-  backtest), waarschuwingen. `waardering-actions.ts` schrijft v2 en migreert
-  v1-json bij lezen. ≥ 15 tests (bestaande 11 aanpassen, niet weggooien).
-  *Al klaar (17 sep):* `berekenWaarderingV2()`, schema's, `migreerWaarderingJson()`,
-  22 tests + rekenvoorbeeld. *Open:* actions en paneel op v2, v1 verwijderen.
-- [x] **4.4 Referenties handmatig** — uitsluiten (kruisje in de tabel) en
-  toevoegen (Drawer met `zoekTransacties`, primitive `Drawer` +
-  `DataTable`-light), opgeslagen in `waardering_json.handmatig`; de knop
-  "gebruik als referentie" in `components/TransactiesZoeken.tsx` gaat eindelijk
-  werken (kies dossier → voegt toe) en de verouderde melding verdwijnt.
-- [x] **4.5 Kenmerk-effecten v2** — garage, tuin, energielabelklasse,
-  bouwperiode via vergelijkbare paren op regionale set (RPC
-  `kenmerk_paren(werkgebied, typegroep)` levert de groepen); wat-als-schakelaars
-  in het paneel; `null` + uitleg bij n < 3.
-  *Al klaar (17 sep):* `kenmerkEffectenV2()`, `grootteEffect()`,
-  `correctiesVoorReferentie()`, schakelaars via `opties.correcties`. *Open:*
-  `haalRegionaleSet()` (2.2) als bron van `opties.regionaal`, schakelaars en
-  correctiekolom in het paneel (4.6). Geen RPC `kenmerk_paren` meer nodig.
-- [x] **4.6 `WaardebepalingPaneel` premium** *(ontwerpsessie gedaan 17 sep →
-  `docs/ontwerp/waardebepaling.html`, § 3.8; onderstaande spec is het
-  uitgangspunt voor die sessie)*
-  *Spec boven de vouw (1280 px):* links 5/12: waarde groot (`tabular-nums`),
-  bandbreedte als balk, badges `n`, `straal`, `index t/m kwartaal`,
-  `data t/m`; WOZ-ijkpunt eronder met peildatum; rechts 7/12: referentiekaart
-  (bestaande Leaflet tot fase 7, dan `BasisKaart`) met subject-marker en
-  referenties in merkkleur, straalcirkel. Onder de vouw: referentietabel
-  (adres · afstand · datum · prijs · m² · € per m² · index · gewicht →
-  geïmpliceerde waarde; uitsluiten-kruisje; handmatig-badge), wat-als-rij,
-  makelaarscorrectie (bestaand), waarschuwingen als `EmptyState`-variant.
-  Lege staat: "Nog geen referenties binnen 5 km" met knop "Referentie
-  toevoegen". Alles reageert < 100 ms client-side na de eerste RPC.
-- [ ] **4.7 Waardebepaling-pdf (één pagina)** — `app/api/pdf/waardebepaling/route.ts`
-  met `@react-pdf/renderer` in kantoorstijl (logo, `--merk`-kleuren, lettertype
-  met pdf-veilige terugval): kop met adres + kenmerken, waarde + band,
-  referentietabel (top 6), kenmerk-effecten, makelaarscorrectie + motivatie,
-  disclaimer § 3.3, "opgesteld door [makelaar] op [datum]". Zonder kaart in v1
-  (statische kaart → backlog). Knop in het paneel; < 10 s.
-  *Hergebruik:* de bestaande pdf-route en `EmailPdfButton`-patroon.
-- [x] **4.8 Backtest** — `scripts/backtest-waardering.mjs` + `docs/waardering-backtest.md`
-  (eerst op de fixture, opnieuw in 5.5 op echte data). Rapporteert per
-  typegroep; faalt de demo-lat, dan staan de band-regels in de uitkomst ter
-  discussie — noteer het besluit.
-  *Al klaar (17 sep):* synthetische backtest als vitest-vangrail
-  (`lib/waardering.backtest.test.ts`). *Open:* script op fixture/echte data,
-  `docs/waardering-backtest.md`; hergebruik de meetlogica uit de test.
-- **Klaar als:** backtest gedocumenteerd; elke waarde toont n/straal/index/
-  correcties; handmatige referentie verandert de uitkomst direct; pdf < 10 s;
-  scène 4 loopt van adres tot pdf zonder hapering.
+Referentieselectie op straal met verbredingsladder (4.1), prijsindex uit eigen
+data met CBS-terugval (4.2), rekenkern v2 met gewogen band (4.3), referenties
+handmatig uitsluiten/toevoegen (4.4), kenmerk-effecten via vergelijkbare paren
+(4.5), paneel geport uit het prototype incl. referentiekaart (4.6),
+waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
+**Backtest: mediane fout 6,1 % · 76 % binnen de band** — demo-lat (≤ 7 % /
+≥ 75 %) gehaald, `docs/waardering-backtest.md`. Details: `docs/besluiten.md`
+17-18 sep.
 
 ### Fase 5 — Echte data: import i4housing (4 sessies; start zodra de exports er zijn, parallel aan fase 4 vanaf 4.3)
 

@@ -6,6 +6,20 @@
 
 ---
 
+### 18 sep 2026 (sessie Opus) — fase 4 afgerond met item 4.7 (waardebepaling-pdf)
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 4.7 opbouw | `app/api/pdf/waardebepaling/route.ts` (GET, `object_id`) + `components/WaardebepalingPdfTemplate.tsx` + `WaardebepalingPdfButton.tsx`. De route **rekent niets opnieuw uit**: hij leest de opgeslagen `objecten.waardering_json` (v1 wordt gemigreerd via `migreerWaarderingJson`). Zo kan de pdf nooit een ander bedrag tonen dan het scherm waar de makelaar hem opent | Sonnet + Opus |
+| Toegang | Sessie-client voor auth, daarna service-client mét expliciete `.eq('kantoor_id', …)` — zelfde patroon als `waardering-actions.ts`. Geverifieerd: 400 zonder waardering, 400 zonder `object_id`, **404 op een dossier van een ander kantoor**, redirect naar `/login` zonder sessie | Opus |
+| Kenmerk-effecten in de pdf | Niet de vier losse kolommen (klasse/pct/n) maar de kant-en-klare `toelichting` uit `lib/waardering.ts`, die de referentieklasse noemt ("A-B +7 % t.o.v. C-D"). Kenmerken waarvan de woning ín de referentieklasse valt ("zonder +0 % t.o.v. zonder") worden **weggelaten**: op het scherm zijn ze nuttig naast een aan/uit-chip, in een document voor de verkoper zijn ze ruis. `grootte` hoort er wél bij (stond er eerst niet in) | Opus |
+| Waarschuwingen | De volledige `uitkomst.waarschuwingen` komt mee in een eigen blok, niet alleen de weinig-data-melding — § 3.3 verbiedt een schijnzeker getal zonder caveats. Geen ⚠-glyph: react-pdf's ingebouwde Helvetica is WinAnsi en kent U+26A0 niet (`•` wel) | Opus |
+| Logo-vangrail | `bruikbaarLogo()` (HEAD-check vooraf) blijft verplicht: react-pdf's `<Image>` kent geen `onError`, dus een verlopen logo-URL laat de hele generatie klappen. Demo Makelaardij heeft geen logo → terugval op de kantoornaam; met i4 Housing's echte logo geverifieerd | Opus |
+| Nieuwe test + vitest-config | `components/WaardebepalingPdfTemplate.test.ts` rendert het document écht en telt de pagina's (ook mét lange correctiemotivatie — het langste variabele blok). Reden: react-pdf valideert zijn styles pas tijdens het renderen, dus typecheck en build zien een kapotte style-prop niet; de makelaar wel. Hiervoor moest `vitest.config.ts` JSX aanzetten: Vite 8 gebruikt oxc, dus `oxc: { jsx: { runtime: 'automatic' } }` — niet de oude `esbuild`-optie, die doet niets meer | Opus |
+| Meting | 1,0 s per pdf (lat: < 10 s), één pagina in alle geteste varianten | Opus |
+
+---
+
 ### 18 sep 2026 (sessie Opus/Sonnet) — fase 4 deel 1: waardering op echte data
 
 | Onderwerp | Besluit | Door |
