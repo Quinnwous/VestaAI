@@ -110,6 +110,55 @@
   100% { transform: translateX(100%); }
 }
 
+/* Radix-primitives (components/ui/Sheet|Popover|SelectMenu|Tooltip.tsx, item 6.0).
+   Radix zet `data-state="open|closed"` op zijn onderdelen; een inline style kan
+   die selector niet aanspreken, dus de in-/uitloop staat hier. De vorm en kleur
+   komen wél uit de tokens (var(--merk-radius-*), var(--merk*)) — hier staat
+   alleen beweging. Overlays dimmen zonder blur (norm 17 sep 2026, kit.css). */
+.vui-sluier[data-state='open'] { animation: vui-fade-in 200ms cubic-bezier(.2,.8,.2,1); }
+.vui-sluier[data-state='closed'] { animation: vui-fade-out 160ms cubic-bezier(.2,.8,.2,1); }
+
+.vui-sheet[data-state='open'] { animation: vui-schuif-in 260ms cubic-bezier(.2,.8,.2,1); }
+.vui-sheet[data-state='closed'] { animation: vui-schuif-uit 200ms cubic-bezier(.2,.8,.2,1); }
+
+/* Popover/Select/Tooltip groeien uit de kant waar ze aan hangen. */
+.vui-pop[data-state='open'] { animation: vui-pop-in 180ms cubic-bezier(.2,.8,.2,1); }
+.vui-pop[data-state='closed'] { animation: vui-fade-out 120ms cubic-bezier(.2,.8,.2,1); }
+.vui-pop[data-side='top'] { transform-origin: bottom center; }
+.vui-pop[data-side='bottom'] { transform-origin: top center; }
+.vui-pop[data-side='left'] { transform-origin: right center; }
+.vui-pop[data-side='right'] { transform-origin: left center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vui-sluier[data-state], .vui-sheet[data-state], .vui-pop[data-state] { animation: none; }
+}
+
+@keyframes vui-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes vui-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes vui-schuif-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes vui-schuif-uit { from { transform: translateX(0); } to { transform: translateX(100%); } }
+@keyframes vui-pop-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+/* Staten die inline styles niet kunnen uitdrukken (:hover, :focus-visible,
+   [data-highlighted], [data-state=active]) — merkkleurige focusring overal. */
+.vui-sliderknop:focus-visible { box-shadow: 0 0 0 3px var(--merk-zacht), 0 1px 4px rgba(20,24,27,.18); }
+.vui-sliderknop:active { cursor: grabbing; }
+
+.vui-menu-item[data-highlighted] { background: var(--merk-zacht); color: var(--merk-diep); }
+.vui-menu-item[data-state='checked'] { font-weight: 700; }
+
+.vui-tab[data-state='active'] { color: var(--merk-diep); }
+.vui-tab[data-state='active']::after {
+  content: '';
+  position: absolute;
+  left: 10px; right: 10px; bottom: -1px;
+  height: 2px;
+  background: var(--merk);
+  border-radius: 2px;
+}
+.vui-tab:hover { color: var(--merk); }
+.vui-tab:focus-visible { outline: 2px solid var(--merk); outline-offset: -3px; border-radius: var(--merk-radius-sm, 10px); }
+
 /* Formulier: 2-koloms grid collaps op mobile */
 .form-grid-2 {
   display: grid;

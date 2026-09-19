@@ -4,6 +4,7 @@ import type { Metadata, Viewport } from 'next'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { AppTopbar } from '@/components/AppTopbar'
+import { TooltipProvider } from '@/components/ui'
 import { bouwBranding, brandingCssVars, VESTA_MERK } from '@/lib/branding'
 
 type KantoorRij = {
@@ -78,6 +79,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           zie docs/roadmap.md. branding.telefoon/branding.email blijven bestaan voor
           gebruik in pdf's en e-mails. */}
       <div style={{ position: 'relative', zIndex: 1 }}>
+      {/* Eén TooltipProvider voor de hele ingelogde omgeving (item 6.0): Radix
+          deelt hierin de open/dicht-vertraging, zodat je bij het langsgaan van
+          een rij knoppen niet elke tooltip opnieuw moet "verdienen". */}
+      <TooltipProvider>
       <AppTopbar branding={branding} gebruiker={{ naam, email: user.email ?? null }}>
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
           <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px var(--app-marge)', textAlign: 'center' }}>
@@ -88,6 +93,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         )}
         {children}
       </AppTopbar>
+      </TooltipProvider>
       </div>
     </div>
   )

@@ -16,3 +16,15 @@ export { AppPagina } from './AppPagina'
 export { StatTile } from './StatTile'
 export { EmptyState } from './EmptyState'
 export { Skeleton, SkeletonRij } from './Skeleton'
+
+// Radix-gebaseerde interactieprimitives (item 6.0, roadmap § 3.8). Zelf bouwen
+// mag alleen wat Radix niet levert — deze zes geven focus-trap, Escape,
+// scroll-lock, botsingscorrectie en toetsenbordnavigatie die handwerk mist.
+export { Sheet } from './Sheet'
+export { Popover } from './Popover'
+export { Slider } from './Slider'
+export { Tooltip, TooltipProvider } from './Tooltip'
+export { SelectMenu } from './SelectMenu'
+export type { SelectOptie } from './SelectMenu'
+export { Tabs } from './Tabs'
+export type { TabDef } from './Tabs'
