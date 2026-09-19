@@ -176,7 +176,7 @@ export function AppTopbar({
           backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
       >
-        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 22, overflow: 'hidden' }}>
+        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 22 }}>
           <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Co-branding-lockup (besluit 16 sep 2026, vergroot fase 1.3): Quinn wil
                 zichtbaar houden dat het platform van VestaAI is, ook al draagt de rest
