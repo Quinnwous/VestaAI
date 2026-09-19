@@ -146,6 +146,7 @@ export function AppTopbar({
       <form action="/api/auth/logout" method="POST">
         <button
           type="submit"
+          role="menuitem"
           className="vui-menuitem"
           style={{ display: 'block', width: '100%', textAlign: 'left', padding: '9px 11px', borderRadius: 'var(--merk-radius-md, 10px)', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 600, color: '#5C6470' }}
         >

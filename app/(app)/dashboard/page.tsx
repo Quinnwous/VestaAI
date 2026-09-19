@@ -14,6 +14,7 @@ import {
 } from '@/lib/kerncijfers'
 import { haalEigenVerkopen, marktanalyseSamenvatting, dataTotEnMet } from '@/lib/transactiesQuery'
 import { KantoorInstellingenSchema } from '@/lib/schemas'
+import { begroetingVoor, datumVoor, contextregel } from '@/lib/begroeting'
 import { StartBanner } from './StartBanner'
 import { Kerncijfers } from './Kerncijfers'
 import { AppPagina } from '@/components/ui'
@@ -55,13 +56,22 @@ export default async function DashboardPage() {
   const nu = new Date()
 
   const [{ data: objectenFase }, { data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
-    service.from('objecten').select('fase').eq('kantoor_id', makelaar.kantoorId),
+    // `content_status` komt mee in dezelfde query (geen extra rondje) en voedt
+    // de contextregel in de banner: "N dossiers wachten op content".
+    service.from('objecten').select('fase, content_status').eq('kantoor_id', makelaar.kantoorId),
     service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
     haalEigenVerkopen<EigenVerkoopPlaatsRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
     dataTotEnMet(sessie),
   ])
 
   const fases = tellFases(objectenFase ?? [])
+
+  // Dossiers die al in verkoop staan maar nog geen content hebben — dat is het
+  // eerste wat aandacht vraagt, en dus de contextregel in de banner.
+  const wachtOpContent = (objectenFase ?? []).filter(
+    (o: { fase: string | null; content_status: string | null }) =>
+      o.fase === 'in_verkoop' && (o.content_status === 'geen' || o.content_status === 'fout'),
+  ).length
 
   // Eigen verkopen: looptijd + prijs t.o.v. vraagprijs over de laatste 12
   // maanden (glijdend venster), verkocht-telling + delta over dezelfde en de
@@ -107,10 +117,17 @@ export default async function DashboardPage() {
   return (
     <AppPagina>
       <StartBanner
-        url={branding.bannerUrl ?? branding.achtergrondUrl}
+        url={branding.bannerUrl}
+        focusY={branding.bannerFocusY}
         naam={makelaar.naam}
         kantoornaam={branding.naam}
-        focusY={branding.bannerFocusY}
+        datum={datumVoor(nu)}
+        begroeting={begroetingVoor(nu)}
+        context={contextregel({
+          wachtOpContent: wachtOpContent,
+          inVerkoop: fases.inVerkoop,
+          verkoopadviezen: fases.verkoopadvies,
+        })}
       />
       <Kerncijfers
         lopendeVerkoopadviezen={fases.verkoopadvies}

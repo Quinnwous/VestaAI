@@ -159,6 +159,37 @@
 .vui-tab:hover { color: var(--merk); }
 .vui-tab:focus-visible { outline: 2px solid var(--merk); outline-offset: -3px; border-radius: var(--merk-radius-sm, 10px); }
 
+/* Welkomstblok startpagina (app/(app)/dashboard/StartBanner.tsx, ontwerp uit
+   docs/ontwerp/startpagina.html § .kantoorbanner). Als CSS en niet als inline
+   style, omdat het om pseudo-achtige decoratielagen gaat; en als CSS-animatie
+   en niet als JS-state, zodat het blok ook zichtbaar is als de hydratie faalt
+   (die valkuil kostte ons het profielmenu, 19 sep 2026). */
+.vui-startbanner-raster {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+.vui-startbanner-glans {
+  position: absolute;
+  top: -40%;
+  right: -8%;
+  width: 65%;
+  height: 180%;
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.12) 52%, transparent 62%);
+}
+.vui-startbanner { animation: vui-fade-in 420ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .vui-startbanner { animation: none; }
+}
+/* Op een smal scherm botst het kantoorlabel met de contextregel — en de
+   kantoornaam staat daar toch al in de topbar. */
+@media (max-width: 600px) {
+  .vui-startbanner-merk { display: none; }
+}
+
 /* Formulier: 2-koloms grid collaps op mobile */
 .form-grid-2 {
   display: grid;
