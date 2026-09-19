@@ -689,7 +689,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht (7 sessies)
 
-- [ ] **6.0 Primitives-basis uit Radix** (1 sessie, § 3.8) — `npm i` van de
+- [x] **6.0 Primitives-basis uit Radix** (1 sessie, § 3.8) — `npm i` van de
   Radix-primitives via het shadcn/ui-patroon (`components/ui/` blijft de
   barrel; geen aparte `ui`-map ernaast), thema-mapping van shadcn's CSS-
   variabelen op `--merk*` (kleur, `--merk-radius-*`, font) in `globals.css`,
@@ -700,6 +700,21 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   `blue`-schaal.
   *Klaar als:* elk van deze primitives rendert in i4housing-stijl (strak,
   merkkleur) én in VestaAI-stijl (zacht, groen) zonder hardgecodeerde kleur.
+  *Opgeleverd 19 sep, mét één afwijking van deze spec.* **Wél** de zes Radix-
+  primitives + TanStack Table; **niet** het shadcn-class-patroon. Reden: shadcn
+  stuurt kleur via Tailwind-classes op een eigen tokenlaag
+  (`--background`/`--primary`/…), en die laag zou naast `components/ui/tokens.ts`
+  een tweede waarheid worden die synchroon gehouden moet blijven — precies de
+  drift waar de VestaAI-groen-bugs vandaan kwamen. Bovendien verbiedt de
+  bouwregel in CLAUDE.md Tailwind-kleurclasses achter de login (de `blue`-schaal
+  rendert groen). De primitives zijn daarom inline gestyled met `tokens.ts` +
+  `var(--merk*)`, net als alle bestaande primitives; alleen wat een inline style
+  niet kán uitdrukken (`[data-state]`, `:focus-visible`, `[data-highlighted]`)
+  staat als `.vui-*` in `globals.css`, inclusief `prefers-reduced-motion`.
+  Geen `clsx`/`cva`/`tailwind-merge` toegevoegd. De Radix-winst (focus-trap,
+  Escape, scroll-lock, focus-herstel, botsingscorrectie, toetsenbordnavigatie)
+  is volledig binnen. Bewijs in productie: de drawer "Referentie toevoegen"
+  (4.4) draait nu op `Sheet`, met de handmatige Escape-listener eruit.
 - [ ] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
   — bouwt daarbij `FilterBar`, `ChartCard`, `useFilterState`, `lib/opmaak.ts`,
   `lib/grafiekThema.ts`)*

@@ -61,11 +61,32 @@ setup('authenticate', async ({ page }) => {
     throw new Error(`Magic link genereren mislukt: ${await linkRes.text()}`)
   }
 
-  const { action_link } = (await linkRes.json()) as { action_link: string }
+  const { hashed_token } = (await linkRes.json()) as { hashed_token: string }
 
-  // Bezoek de magic link — Supabase redirect naar de app + zet een cookie
-  await page.goto(action_link)
-  await page.waitForURL(/\/(dashboard|object)/, { timeout: 15000 })
+  // De magic link zélf bezoeken werkt niet: Supabase redirect naar de
+  // productie-URL uit de projectinstellingen, dus je komt lokaal nooit ingelogd
+  // aan (zelfde valkuil als in scripts/lib/dodSessie.mjs, proefrit 17 sep 2026).
+  // Daarom wisselen we het token hier om en zetten we de sessiecookie zelf.
+  const otpRes = await fetch(`${supabaseUrl}/auth/v1/verify`, {
+    method: 'POST',
+    headers: { apikey: serviceKey, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'email', token_hash: hashed_token }),
+  })
+  if (!otpRes.ok) {
+    throw new Error(`Sessie omwisselen mislukt: ${await otpRes.text()}`)
+  }
+  const sessie = await otpRes.json()
+
+  const projectRef = new URL(supabaseUrl).hostname.split('.')[0]
+  const basis = new URL(process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000')
+  await page.context().addCookies([
+    {
+      name: `sb-${projectRef}-auth-token`,
+      value: 'base64-' + Buffer.from(JSON.stringify(sessie)).toString('base64'),
+      domain: basis.hostname,
+      path: '/',
+    },
+  ])
 
   // Sla de auth state (cookies + localStorage) op
   fs.mkdirSync(path.dirname(AUTH_FILE), { recursive: true })

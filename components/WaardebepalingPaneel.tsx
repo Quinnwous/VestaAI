@@ -23,7 +23,7 @@ import {
 } from '@/app/(app)/object/[id]/waardering-actions'
 import type { CbsIndexReeks } from '@/lib/cbsPrijsindex'
 import type { DataTotEnMet } from '@/lib/transactiesQuery'
-import { Badge, EmptyState, Skeleton } from '@/components/ui'
+import { Badge, EmptyState, Sheet, Skeleton } from '@/components/ui'
 import { colors, radius, shadow } from '@/components/ui/tokens'
 import { WaarderingKaartClient } from '@/components/WaarderingKaartClient'
 import { WaardebepalingPdfButton } from '@/components/WaardebepalingPdfButton'
@@ -213,12 +213,7 @@ export function WaardebepalingPaneel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objectId])
 
-  useEffect(() => {
-    if (!drawerOpen) return
-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setDrawerOpen(false) }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [drawerOpen])
+  // (Escape-afhandeling zat hier; `Sheet` (Radix Dialog) doet dat sinds item 6.0 zelf.)
 
   useEffect(() => {
     if (!drawerOpen) return
@@ -613,62 +608,52 @@ export function WaardebepalingPaneel({
         </>
       )}
 
-      {/* Drawer — referentie toevoegen (item 4.4) */}
-      <div
-        onClick={() => setDrawerOpen(false)}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(20,24,27,.34)', zIndex: 58, opacity: drawerOpen ? 1 : 0, pointerEvents: drawerOpen ? 'auto' : 'none', transition: 'opacity 220ms cubic-bezier(.2,.8,.2,1)' }}
-      />
-      <aside
-        role="dialog" aria-modal="true" aria-labelledby="wbDrawerTitel"
-        style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0, width: 'min(430px, 92vw)',
-          background: 'rgba(255,255,255,.96)', boxShadow: shadow.modal, zIndex: 59,
-          transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)', transition: 'transform 220ms cubic-bezier(.2,.8,.2,1)',
-          display: 'flex', flexDirection: 'column',
-        }}
+      {/* Drawer — referentie toevoegen (item 4.4). Sinds item 6.0 de gedeelde
+          `Sheet` (Radix Dialog) in plaats van handwerk: die geeft focus-trap,
+          focus-herstel naar de knop, scroll-lock en Escape gratis. */}
+      <Sheet
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        titel="Referentie toevoegen"
+        omschrijving="Zoek een verkoop en neem hem mee in de berekening."
       >
-        <div style={{ padding: '18px 20px', borderBottom: `1px solid ${colors.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-          <h2 id="wbDrawerTitel" style={{ margin: 0, fontSize: 17, fontWeight: 800, color: colors.text }}>Referentie toevoegen</h2>
-          <button type="button" onClick={() => setDrawerOpen(false)} aria-label="Sluiten" style={{ width: 32, height: 32, borderRadius: '50%', display: 'grid', placeItems: 'center', color: colors.body, background: 'none', border: 'none', cursor: 'pointer', fontSize: 18 }}>✕</button>
-        </div>
-        <div style={{ padding: '16px 20px 20px', overflowY: 'auto', flex: 1 }}>
-          <input
-            type="text" value={drawerZoek} onChange={e => setDrawerZoek(e.target.value)} placeholder="Zoek op adres…" aria-label="Zoek op adres"
-            style={{ width: '100%', height: 36, border: `1px solid ${colors.borderStrong}`, borderRadius: radius.sm, padding: '0 12px', fontSize: 13.5, background: colors.surfaceAlt, marginBottom: 14 }}
-          />
-          {drawerBezig ? (
-            <div style={{ display: 'grid', gap: 10 }}>
-              <Skeleton height={64} rounded={radius.md} />
-              <Skeleton height={64} rounded={radius.md} />
-              <Skeleton height={64} rounded={radius.md} />
-            </div>
-          ) : drawerResultaten.length === 0 ? (
-            <p style={{ fontSize: 12, color: colors.muted, margin: 0 }}>Geen kandidaten gevonden{drawerZoek.trim() ? ` voor "${drawerZoek.trim()}"` : ''}.</p>
-          ) : (
-            drawerResultaten.map(k => {
-              const toegevoegd = !!handmatigKandidaten[k.id] && !uitgeslotenIds.has(k.id)
-              return (
-                <div key={k.id} style={{ border: `1px solid ${colors.border}`, borderRadius: radius.md, padding: '12px 14px', marginBottom: 10, opacity: toegevoegd ? 0.55 : 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: colors.text }}>{k.adres}{k.plaats ? `, ${k.plaats}` : ''}</div>
-                  <div style={{ fontSize: 12, color: colors.body, marginTop: 3 }}>
-                    {k.woonoppervlak_m2 ? `${k.woonoppervlak_m2} m²` : '—'} · bouwjaar {k.bouwjaar ?? '—'} · verkocht {formatDatum(k.verkoopdatum)}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
-                    <span style={{ fontWeight: 800, color: 'var(--merk-diep)', fontSize: 13 }}>{formatEuro(k.verkoopprijs)}</span>
-                    {toegevoegd ? (
-                      <span style={{ fontSize: 12, color: colors.muted }}>Toegevoegd ✓</span>
-                    ) : (
-                      <button type="button" onClick={() => kandidaatToevoegen(k)} style={{ height: 30, padding: '0 12px', fontSize: 12, fontWeight: 700, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: 'pointer' }}>
-                        Toevoegen
-                      </button>
-                    )}
-                  </div>
+        <input
+          type="text" value={drawerZoek} onChange={e => setDrawerZoek(e.target.value)} placeholder="Zoek op adres…" aria-label="Zoek op adres"
+          className="vui-input"
+          style={{ width: '100%', height: 36, border: `1px solid ${colors.borderStrong}`, borderRadius: radius.sm, padding: '0 12px', fontSize: 13.5, background: colors.surfaceAlt, marginBottom: 14 }}
+        />
+        {drawerBezig ? (
+          <div style={{ display: 'grid', gap: 10 }}>
+            <Skeleton height={64} rounded={radius.md} />
+            <Skeleton height={64} rounded={radius.md} />
+            <Skeleton height={64} rounded={radius.md} />
+          </div>
+        ) : drawerResultaten.length === 0 ? (
+          <p style={{ fontSize: 12, color: colors.muted, margin: 0 }}>Geen kandidaten gevonden{drawerZoek.trim() ? ` voor "${drawerZoek.trim()}"` : ''}.</p>
+        ) : (
+          drawerResultaten.map(k => {
+            const toegevoegd = !!handmatigKandidaten[k.id] && !uitgeslotenIds.has(k.id)
+            return (
+              <div key={k.id} style={{ border: `1px solid ${colors.border}`, borderRadius: radius.md, padding: '12px 14px', marginBottom: 10, opacity: toegevoegd ? 0.55 : 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 13.5, color: colors.text }}>{k.adres}{k.plaats ? `, ${k.plaats}` : ''}</div>
+                <div style={{ fontSize: 12, color: colors.body, marginTop: 3 }}>
+                  {k.woonoppervlak_m2 ? `${k.woonoppervlak_m2} m²` : '—'} · bouwjaar {k.bouwjaar ?? '—'} · verkocht {formatDatum(k.verkoopdatum)}
                 </div>
-              )
-            })
-          )}
-        </div>
-      </aside>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 9 }}>
+                  <span style={{ fontWeight: 800, color: 'var(--merk-diep)', fontSize: 13 }}>{formatEuro(k.verkoopprijs)}</span>
+                  {toegevoegd ? (
+                    <span style={{ fontSize: 12, color: colors.muted }}>Toegevoegd ✓</span>
+                  ) : (
+                    <button type="button" onClick={() => kandidaatToevoegen(k)} style={{ height: 30, padding: '0 12px', fontSize: 12, fontWeight: 700, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: 'pointer' }}>
+                      Toevoegen
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })
+        )}
+      </Sheet>
 
       {toast && (
         <div style={{ position: 'fixed', left: '50%', bottom: 28, transform: 'translateX(-50%)', background: 'rgba(20,24,27,.94)', color: '#fff', padding: '11px 20px', borderRadius: radius.pill, fontSize: 13, fontWeight: 700, boxShadow: shadow.modal, zIndex: 90, whiteSpace: 'nowrap' }}>

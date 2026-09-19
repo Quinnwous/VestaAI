@@ -67,9 +67,11 @@ test('authenticated: dashboard laadt de startpagina (masterplan fase 1.6)', asyn
 
   await page.goto('/dashboard')
   await expect(page.url()).not.toContain('/login')
-  // Overzicht-startpagina: begroeting + snelkoppelingen, geen woningenlijst meer.
+  // Startpagina = StartBanner (begroeting) + kerncijfers. De snelkoppelingen
+  // zijn er bij item 1.9c uit gehaald (besluit Quinn 17 sep 2026), dus daar
+  // niet meer op toetsen — deze test verwachtte ze nog.
   await expect(page.getByText(/goede(morgen|middag|avond|nacht)/i).first()).toBeVisible()
-  await expect(page.getByText(/woning toevoegen/i).first()).toBeVisible()
+  await expect(page.getByText(/lopende verkoopadviezen/i).first()).toBeVisible()
   await ctx.close()
 })
 
