@@ -190,7 +190,8 @@ export async function uploadAchtergrondAlsAdmin(formData: FormData): Promise<Res
 
   const file = formData.get('achtergrond') as File | null
   const kantoorId = formData.get('kantoor_id') as string | null
-  const slot = formData.get('slot') === 'secundair' ? 'secundair' : 'primair'
+  const slotRuw = formData.get('slot')
+  const slot = slotRuw === 'secundair' ? 'secundair' : slotRuw === 'banner' ? 'banner' : 'primair'
   if (!file || !kantoorId || file.size === 0) return { ok: false, error: 'Ongeldig bestand' }
 
   const TOEGESTANE_TYPES = ['image/png', 'image/jpeg', 'image/webp']
@@ -207,7 +208,7 @@ export async function uploadAchtergrondAlsAdmin(formData: FormData): Promise<Res
 
   const { data: urlData } = service.storage.from('kantoor-assets').getPublicUrl(pad)
   const { data: kantoor } = await service.from('kantoren').select('huisstijl_json').eq('id', kantoorId).single()
-  const veld = slot === 'secundair' ? 'achtergrond_secundair_url' : 'achtergrond_url'
+  const veld = slot === 'secundair' ? 'achtergrond_secundair_url' : slot === 'banner' ? 'banner_url' : 'achtergrond_url'
   await service.from('kantoren').update({ huisstijl_json: { ...(kantoor?.huisstijl_json ?? {}), [veld]: urlData.publicUrl } }).eq('id', kantoorId)
 
   revalidatePath(`/admin/kantoor/${kantoorId}`)

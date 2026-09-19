@@ -53,6 +53,16 @@ export const HuisstijlSchema = z.object({
   // reserveslot voor toekomstig gebruik elders. Leeg = geen banner.
   achtergrond_url: z.string().min(1).optional(),
   achtergrond_secundair_url: z.string().min(1).optional(),
+  // Welkomstbanner op de startpagina. Apart van `achtergrond_url` omdat die
+  // óók de kantoorpagina en het watermerk voedt: de banner is breed en laag,
+  // dus daar werkt een andere (vaak liggende, of hoog uitgesneden) foto. Leeg
+  // = de banner valt terug op `achtergrond_url`.
+  banner_url: z.string().min(1).optional(),
+  // Verticale uitsnede van de bannerfoto, 0 = bovenkant, 100 = onderkant.
+  // Nodig omdat een staande foto in een brede, lage banner fors wordt
+  // bijgesneden: zonder dit toont de browser het midden (bij een teamfoto de
+  // tafel i.p.v. de gezichten).
+  banner_focus_y: z.number().min(0).max(100).optional(),
   // Contactgegevens voor de merkbalk bovenaan de ingelogde omgeving.
   telefoon: z.string().max(40).optional(),
   email: z.string().max(120).optional(),

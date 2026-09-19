@@ -7,20 +7,26 @@ import { useEffect, useState } from 'react'
  * een grote teamfoto met een begroeting erover, zodat het na inloggen meteen
  * voelt als "ons platform" i.p.v. direct in een werklijst te vallen.
  *
- * Gebruikt voorlopig `branding.achtergrondUrl` (hetzelfde sfeerbeeld als op
- * /kantoor) — een los `bannerfoto`-veld in de admin volgt zodra er een
- * goedgekeurde teamfoto is (zie docs/roadmap.md § Blokkades). Zonder
- * sfeerbeeld valt de banner terug op een merkverloop, nooit op een
- * gebroken-afbeelding-icoon (patroon uit KantoorBanner.tsx).
+ * Gebruikt `branding.bannerUrl` met terugval op `branding.achtergrondUrl`
+ * (hetzelfde sfeerbeeld als op /kantoor). Zonder foto valt de banner terug op
+ * een merkverloop, nooit op een gebroken-afbeelding-icoon (patroon uit
+ * KantoorBanner.tsx).
+ *
+ * `focusY` stuurt de verticale uitsnede. Dat is geen franje: de banner is breed
+ * en laag, dus van een staande foto is maar ~25 % van de hoogte in beeld. Zonder
+ * instelling toont `cover` het midden — bij een teamfoto dus de tafel in plaats
+ * van de gezichten.
  */
 export function StartBanner({
   url,
   naam,
   kantoornaam,
+  focusY = 50,
 }: {
   url: string | null
   naam: string | null
   kantoornaam: string
+  focusY?: number
 }) {
   const [kapot, setKapot] = useState(false)
   const [zichtbaar, setZichtbaar] = useState(false)
@@ -61,7 +67,14 @@ export function StartBanner({
           src={url}
           alt={`Het team van ${kantoornaam}`}
           onError={() => setKapot(true)}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%',
+            // `cover` schaalt op de breedte, dus de foto is zo ver uitgezoomd als
+            // hij kan zonder balken; alleen de hoogte wordt bijgesneden. `focusY`
+            // bepaalt wáár in die hoogte de uitsnede valt — boven én onder eraf.
+            objectFit: 'cover',
+            objectPosition: `center ${focusY}%`,
+          }}
         />
       )}
       {toonFoto && (

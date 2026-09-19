@@ -8,7 +8,7 @@ import { uploadAchtergrondAlsAdmin } from '../actions'
  * volle-breedte banner bovenaan de kantoorpagina — liggend, ca. 21:9. Het secundaire beeld
  * is een reserveslot voor toekomstig gebruik elders in de app.
  */
-type Slot = 'primair' | 'secundair'
+type Slot = 'primair' | 'secundair' | 'banner'
 
 function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
   kantoorId: string
@@ -85,10 +85,13 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
   )
 }
 
-export function AchtergrondUpload({ kantoorId, huidigPrimair, huidigSecundair }: {
+export function AchtergrondUpload({ kantoorId, huidigPrimair, huidigSecundair, huidigBanner, huidigFocusY, onFocusY }: {
   kantoorId: string
   huidigPrimair: string | null
   huidigSecundair: string | null
+  huidigBanner: string | null
+  huidigFocusY: number
+  onFocusY: (y: number) => void
 }) {
   return (
     <div>
@@ -100,6 +103,40 @@ export function AchtergrondUpload({ kantoorId, huidigPrimair, huidigSecundair }:
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <Vak kantoorId={kantoorId} slot="primair" label="Banner" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigPrimair} />
         <Vak kantoorId={kantoorId} slot="secundair" label="Reserve (nog niet gebruikt)" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigSecundair} />
+      </div>
+
+      <p className="text-sm font-medium text-gray-700 mb-1 mt-6">Welkomstbanner (startpagina)</p>
+      <p className="text-xs text-gray-500 mb-3 leading-relaxed">
+        Aparte foto voor de begroeting na inloggen. Leeg = de banner gebruikt het sfeerbeeld
+        hierboven. Deze banner is breed en laag, dus van een staande foto is maar een strook
+        zichtbaar — stel met de schuif in wélke strook dat is.
+      </p>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        <Vak kantoorId={kantoorId} slot="banner" label="Welkomstbanner" hint="JPG, PNG of WebP · max 5 MB" huidigUrl={huidigBanner} />
+
+        <div style={{ flex: '1 1 280px', minWidth: 240 }}>
+          <label htmlFor="bannerFocus" className="block text-xs font-medium text-gray-700 mb-2">
+            Uitsnede: {huidigFocusY}% {huidigFocusY < 40 ? '(naar boven)' : huidigFocusY > 60 ? '(naar onderen)' : '(midden)'}
+          </label>
+          <input
+            id="bannerFocus" type="range" min={0} max={100} step={1}
+            value={huidigFocusY}
+            onChange={(e) => onFocusY(Number(e.target.value))}
+            className="w-full"
+          />
+          <div className="flex justify-between text-[11px] text-gray-400 mt-1">
+            <span>bovenkant</span><span>midden</span><span>onderkant</span>
+          </div>
+          {huidigBanner && (
+            <div style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', border: '1px solid #E5E7EB', height: 72 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={huidigBanner} alt="Voorbeeld van de uitsnede"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: `center ${huidigFocusY}%` }}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

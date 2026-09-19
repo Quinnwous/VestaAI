@@ -35,6 +35,7 @@ export function HuisstijlForm({ kantoor }: Props) {
   const [telefoon, setTelefoon] = useState(huidig?.telefoon ?? '')
   const [email, setEmail] = useState(huidig?.email ?? '')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(huidig?.voorbeelden?.length ? huidig.voorbeelden : [''])
+  const [bannerFocusY, setBannerFocusY] = useState<number>(huidig?.banner_focus_y ?? 50)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [bezigUpload, setBezigUpload] = useState(false)
   const [uploadFout, setUploadFout] = useState('')
@@ -88,6 +89,7 @@ export function HuisstijlForm({ kantoor }: Props) {
       vorm,
       telefoon: telefoon.trim() || undefined,
       email: email.trim() || undefined,
+      banner_focus_y: bannerFocusY,
       voorbeelden: voorbeelden.filter(Boolean),
       brochure_stijl: broVb.length || slotTekst.trim()
         ? { voorbeelden: broVb, ...(slotTekst.trim() ? { slot_tekst: slotTekst.trim() } : {}) }
@@ -106,6 +108,9 @@ export function HuisstijlForm({ kantoor }: Props) {
         kantoorId={kantoor.id}
         huidigPrimair={huidig?.achtergrond_url ?? null}
         huidigSecundair={huidig?.achtergrond_secundair_url ?? null}
+        huidigBanner={huidig?.banner_url ?? null}
+        huidigFocusY={bannerFocusY}
+        onFocusY={setBannerFocusY}
       />
 
       <div>
