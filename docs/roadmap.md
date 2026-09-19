@@ -17,110 +17,25 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅ (fase 4 afgerond 18 sep),
-  fase 5 geblokkeerd op de exports. Plan v2 van kracht sinds 17 sep 2026.
-- **Laatst opgeleverd (17 sep, sessie Opus/Sonnet, deel 3):** **2.1** schema
-  v2 toegepast (`imports`, pijplijnkolommen, `adres_sleutel`, fase
-  `verkoopadvies`, `pitch_uitslag` weg, `controleer-schema.mjs`); **2.3**
-  demo-fixture live (kantoor "Demo Makelaardij", ~8.000 transacties, 15
-  dossiers, account `demo@vestaai.nl`, wachtwoord in `.env.local`); **2.4**
-  `meldFout` in alle API-routes + `global-error.tsx`. `dod:screens` draait nu
-  standaard met het demo-account. ⚠️ **Bekende bug tot 2.2 af is:** de
-  verkenners haalden max. 1.000 rijen — **opgelost in 2.2** (zie hieronder).
-- **Ook 17 sep, deel 4:** **2.2** `lib/transactiesQuery.ts` (enige plek die
-  `transacties` bevraagt, sessie-client + RLS) met 7 RPC's (75-200 ms op de
-  fixture) en range-lussen; guard-test; alle pagina's omgezet. Tussenfase
-  (bewust): de verkenners krijgen nog alle rijen via
-  `haalTransactiesVoorVerkenner` (~1,2-1,6 s) en houden hun oude UI; fase 6
-  zet ze op de RPC's. Transactietabel pagineert per 50. Fixture-generator
-  maakte 33 verkopen ná vandaag → gerepareerd (vaste peildatum) en opnieuw
-  geseed. **Productie-incident** opgelost: main had oude code tegen schema v2
-  (crash `/dashboard`); nieuwe code gemerged (PR #19), alle schermen 200.
-- **Eerder op 17 sep (sessie Opus/Sonnet, deel 2):**
-  **1.9c** — pitch-concept uit de code (scorebord, winratio, uitslag,
-  `setPitchUitslag`, `PitchUitslagSchema`), topbar plat met zes pillen en een
-  hamburgermenu ≤ 900 px, subnav marktinzichten weg, "Woning toevoegen" in de
-  kop van `/woningen`, labels "Verkoopadvies", kerncijfers: gem. looptijd en
-  prijs t.o.v. vraagprijs nu over de laatste 12 maanden. **1.9b** —
-  `npm run dod:screens` (huisstijl op 390/1280/1920 + screenshots van alle
-  ingelogde routes; start zelf een dev-server; faalt op groen, foutstaat,
-  `pageerror`, niet-2xx én horizontale overloop — aangetoond met een
-  opzettelijke crash op `/account`); gedeelde login-helper
-  `scripts/lib/dodSessie.mjs`. **1.10** — favicon.ico/icon.png/apple-icon
-  en manifest-iconen (VestaAI-beeldmerk), `app/robots.ts` met alle ingelogde
-  routes in disallow, sitemap zonder de opgeheven `wijken`, metadata en
-  OG-beeld op de nieuwe positionering, canonical per publieke pagina,
-  JSON-LD op de landingspagina; alle icoon-URL's 200 op de lokale
-  productiebuild. **Gevonden en gefixt bij de controle:** middleware stuurde
-  `/opengraph-image` naar `/login` (deelpreviews zonder beeld), OG-beeld
-  crashte in Satori, en de startbanner gaf 206 px horizontale scroll op
-  mobiel (aspect-ratio + min-height). DoD groen: typecheck, 153 tests, build,
-  `dod:screens` 27/27.
-- **Eerder op 17 sep (sessie Opus/Sonnet, deel 1):** item **0.1 Prototypes
-  bijgetrokken** — `kit.js` `topbar({ actief })` plat (zes pillen, geen
-  subnav), modal-sluier in `kit.css` zonder blur; `transacties.html` en
-  `verkoopkaart.html` kregen de kit-tegelrij (hero + tegels met n, delta,
-  sparkline) en kaarten met kaartkop; `marktanalyse.html` accentstreepje op
-  het kwartaalbericht; `startpagina.html` zonder snelkoppelingen/winratio/
-  pitch-uitslag; fase "Acquisitie" → "Verkoopadvies" in alle prototypes.
-  Ontwerpreview op 1280 px: alle zes AKKOORD (transacties en verkoopkaart na
-  één correctieronde), geen console-fouten. ⚠️ Artifacts nog niet opnieuw
-  gepubliceerd (auto-mode blokkeerde de upload; Quinn beslist, § 8).
-- **Eerder op 17 sep (proefrit-sessie):** item **1.9 Bugs +
-  fallback-opruiming** (a)-(e) volledig. Alle `var(--merk…, #hex)`- én
-  `var(--merk-rgb, r,g,b)`-fallbacks in `app/(app)/` en `components/`
-  opgeruimd (behalve `components/ui/tokens.ts`, bewuste uitzondering); één
-  centrale VestaAI-groene fallback op `:root` in `app/globals.css`;
-  `.claude/hooks/huisstijl-check.sh` uitgebreid met een fallback-check;
-  verouderde comments in `StatTile.tsx` en `globals.css` gefixt; i4housing
-  `huisstijl_json.vorm` van `strak` naar `zacht` geschreven
-  (`scripts/repair-i4housing-branding.mjs --write`) en `lib/branding.ts`
-  uitgebreid met `--merk-licht`/`--merk-accent-zacht`/`-rand`/`-rgb`. Ook
-  gefixt: hardgecodeerd `bg-green-100`/`text-green-900` in `StatusToggle`/
-  `FaseToggle`/`StatistiekenPaneel`, een kapotte Tailwind-class in
-  `StatusToggle`, en de demo-knop in `NewObjectForm` (nu alleen buiten
-  productie zichtbaar). DoD groen (typecheck/test/build,
-  `controleer-huisstijl.mjs` schoon op 390/1280/1920 px, 9 pagina's).
-  Volledig besluiten- en bevindingenlog: `docs/besluiten.md` (17 sep,
-  proefrit). De proefrit vond ook dat `/dashboard` (de startpagina, scène 1)
-  hard crashte (server→client functie-prop in `Kerncijfers.tsx`) terwijl
-  `controleer-huisstijl.mjs` "schoon" meldde — dezelfde ochtend gefixt
-  (`'use client'`) en het script faalt nu op runtime-fouten; de rest van de
-  tooling-oogst staat in item **1.9b**.
-- **Ook op 17 sep (Fable):** de rekenkern van fase 4 staat er al
-  (`lib/waardering.ts` v2, `lib/prijsindex.ts`, backtest, `docs/waardering-methode.md`
-  — zie § 3.3); **alle vier resterende ontwerpsessies gedaan** (Sonnet
-  gebouwd, Fable gereviewd, één correctieronde elk): `docs/ontwerp/transacties.html`
-  (6.2), `concurrentie.html` (6.3), `startpagina.html` (2.5/3.4/10.2),
-  `waardebepaling.html` (4.6). Artifact-links in `docs/besluiten.md` 17 sep.
-  Bij het bouwen van die items is het prototype de spec (§ 3.8): eerst
-  `ontwerpreview` AKKOORD, dan pas afvinken.
-- **Feedback Quinn op de prototypes (17 sep, na afloop):** de drie nieuwste
-  (`concurrentie.html`, `startpagina.html`, `waardebepaling.html`) zijn de
-  maatstaf; `transacties.html` wijkt stilistisch af en ook `marktanalyse.html`
-  en `verkoopkaart.html` moeten naar dat beeld; overal 2-3 kleine rode
-  accentdetails. Vastgelegd in `docs/ontwerp/README.md` § 1 (referentiebeeld,
-  regel 2b). **Mini-item 0.1 hieronder** doet de bijwerking; Sonnet kan dat
-  zelfstandig met een Sonnet-agent per bestand en `ontwerpreview` als check.
-- **Besluit Quinn 17 sep (avond), verwerkt als item 1.9c en in 0.1:** geen
-  pitch-concept meer (geen winratio, scorebord of uitslag), navigatie plat
-  (Overzicht · Woningdossier · Marktanalyse · Transacties · Concurrentie ·
-  Verkoopkaart, geen dropdowns), "Woning toevoegen" naar `/woningen`, geen
-  snelkoppelingen op de startpagina.
-- **Fase 4 afgerond op 18 sep** (alle 8 items, zie het ingeklapte fase-blok).
-  Laatste item 4.7: waardebepaling-pdf van één pagina, gemeten 1,0 s, met
-  kantoorlogo en -kleur. Scène 4 van het demoscript loopt nu van adres tot pdf.
-- **Live gezet op 18 sep:** PR #20 gemerged (25 commits, fases 2.2 t/m 4),
-  deploy READY, geen runtime-fouten. Rooktest op productie met het demo-account:
-  alle ingelogde routes 200, pdf-route 2,7 s. **Gemeten laadtijden productie:**
-  `/marktanalyse` 6,2 s · `/marktanalyse/transacties` 5,4 s ·
-  `/marktanalyse/concurrentie` 5,1 s — dat is de tussenfase die nog de hele
-  dataset ophaalt; fase 6 moet dit onder ~1,5 s brengen. Dossier 2,0 s,
-  dashboard 2,9 s (koude start).
-- **Volgende item:** **fase 6** (marktinzichten v2) — fase 5 (echte data-import)
-  blijft geblokkeerd tot de Brainbay-/Realworks-exports er zijn. Fase 6 haalt
-  de explorers óók van de tussenfase-volledige-dataset-fetch af.
-  ⚠️ NL+EN-contentgeneratie ~3 min (limiet 300 s) → fase 8.
+- **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅, fase 5 geblokkeerd op de
+  exports. Plan v2 van kracht sinds 17 sep 2026. De opleverdetails per fase
+  staan in `docs/besluiten.md`, niet hier — dit blok blijft kort.
+- **Laatst opgeleverd (19 sep):** **6.0** Radix-primitives (`Sheet`, `Popover`,
+  `Slider`, `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via
+  `tokens.ts`/`var(--merk*)` — bewust **zónder** de shadcn-classlaag (motivatie
+  bij het item en in `docs/besluiten.md`). Bewijs in productie: de drawer van
+  4.4 draait erop. Daarnaast het welkomstblok op de startpagina herbouwd naar
+  het prototype (verloop + raster + glans, geen foto) en een **hydratiebug**
+  gerepareerd die het profielmenu in de topbar onbruikbaar maakte.
+- **Volgende item:** **6.1** Marktanalyse-explorer v2 (port van
+  `docs/ontwerp/marktanalyse.html`). Bouwt onderweg `FilterBar`, `ChartCard`,
+  `useFilterState`, `lib/opmaak.ts` en `lib/grafiekThema.ts` — die vier zijn
+  ook de basis voor 6.2 en 6.3, dus 6.1 is bewust het eerste echte item.
+- **Prestatielat voor fase 6** (gemeten op productie 18-19 sep): `/marktanalyse`
+  ~6 s, `/marktanalyse/transacties` ~6-7 s, `/marktanalyse/concurrentie` ~5,5 s.
+  Dat is de tussenfase die nog de hele dataset ophaalt; fase 6 moet dit onder
+  ~1,5 s brengen. Dossier ~2,0 s, dashboard ~2,9 s (koude start).
+- ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
 - **Blokkades (geen van alle blokkeert fase 1-4):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
