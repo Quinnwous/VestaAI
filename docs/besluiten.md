@@ -6,6 +6,18 @@
 
 ---
 
+### 19 sep 2026 (sessie Opus) — item 6.0 + welkomstblok + hydratiebug
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 6.0 zonder shadcn | Wél de Radix-primitives, **niet** het shadcn-class-patroon dat de roadmap-spec noemde. shadcn stuurt kleur via Tailwind-classes op een eigen tokenlaag (`--background`/`--primary`/…); die zou naast `components/ui/tokens.ts` een tweede waarheid worden die synchroon moet blijven — precies de drift waar de VestaAI-groen-bugs vandaan kwamen. Bovendien verbiedt de bouwregel in CLAUDE.md Tailwind-kleurclasses achter de login (de `blue`-schaal rendert groen). Primitives dus inline gestyled met `tokens.ts` + `var(--merk*)`; alleen wat een inline style niet kán (`[data-state]`, `:focus-visible`, `[data-highlighted]`) staat als `.vui-*` in `globals.css`. Geen `clsx`/`cva`/`tailwind-merge` | Opus |
+| Primitives bewijzen in productie | Geen showcasepagina en geen dode code: de drawer "Referentie toevoegen" (4.4) is overgezet op `Sheet`. Gemeten in de browser dat focus-trap, scroll-lock, Escape en focus-herstel werken. Het handwerk had wél `aria-modal`, maar géén focus-trap en liet de achtergrond zichtbaar voor schermlezers — Radix zet in plaats daarvan `aria-hidden` op alles daarbuiten, wat beter wordt ondersteund | Opus |
+| e2e-auth gerepareerd | `e2e/auth.setup.ts` bezocht de magic link, die naar de **productie**-URL redirect; lokaal logde hij dus nooit in en alle ingelogde e2e-tests sloegen stilletjes over. Nu dezelfde cookie-aanpak als `scripts/lib/dodSessie.mjs`. Daarbij bleek de dashboard-smoketest nog te toetsen op de snelkoppelingen die 1.9c had verwijderd | Opus |
+| Welkomstbanner: geen foto | De aangeleverde teamfoto was 399×501 px en werd op desktop ~3× opgeschaald: te vaag (oordeel Quinn). In plaats daarvan het ontwerp dat al in `docs/ontwerp/startpagina.html` § `.kantoorbanner` stond — merkverloop met fijn raster en diagonale glans. Bewust beeld i.p.v. terugval, scherp op elk scherm, werkt in elke kantoorkleur. Contextregel eronder met een echt getal ("3 dossiers wachten op content"), meeliftend op de bestaande objecten-query. `banner_url`/`banner_focus_y` blijven bestaan voor een latere scherpe foto (≥ 1600 px) | Quinn + Opus |
+| ⚠️ Hydratie sloopt de hele pagina | `StartBanner` was een client component met `new Date()`: op Vercel (UTC) een andere begroeting dan in de browser (Amsterdam) → hydratiemismatch (React #425/#422). Op productie gemeten dat die fouten **alleen op `/dashboard`** optraden. Gevolg: de hele pagina bleef half-levend, inclusief het profielmenu in de topbar dat niet meer opende. Datum en begroeting komen nu uit `lib/begroeting.ts`, server-side in `Europe/Amsterdam`, als props. Banner is nu een server component en de fade-in is CSS i.p.v. JS-state — hij stond op `opacity: 0` tot JS draaide, dus bij falende hydratie simpelweg onzichtbaar | Opus |
+
+---
+
 ### 18 sep 2026 (sessie Opus) — fase 4 afgerond met item 4.7 (waardebepaling-pdf)
 
 | Onderwerp | Besluit | Door |
@@ -353,6 +365,16 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 19 sep 2026 — item **6.0**: Radix-primitives (`Sheet`, `Popover`, `Slider`,
+  `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via `tokens.ts`
+  en `var(--merk*)`, zónder shadcn-classlaag; drawer van 4.4 overgezet op
+  `Sheet`; `e2e/auth.setup.ts` gerepareerd (magic-link redirect naar productie
+  → alle ingelogde e2e-tests sloegen stil over). Daarnaast het welkomstblok op
+  de startpagina herbouwd naar het prototype (verloop, geen foto) en de
+  hydratiebug op `/dashboard` verholpen die het profielmenu onbruikbaar maakte.
+- 18 sep 2026 — fase **4** afgerond (4.7 waardebepaling-pdf, één pagina, ~1 s)
+  en fases 2.2 t/m 4 live gezet (PR #20): transactiesQuery, dossierkern en
+  waardering v2. Backtest 6,1 % mediane fout, 76 % binnen de band.
 - 16-17 sep 2026 — masterplan herzien naar v2 (demo-backwards, data eerst,
   Sonnet-klare item-specs); besluitenlogboek naar `docs/besluiten.md`;
   `goals.md`/`CLAUDE.md`/sessieskills in lijn gebracht. Geen code gewijzigd.
