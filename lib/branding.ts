@@ -84,6 +84,10 @@ export type Branding = {
   /** Sfeerbeeld (team/kantoor), scherp getoond als banner op kantoor-gerelateerde pagina's. */
   achtergrondUrl: string | null
   achtergrondSecundairUrl: string | null
+  /** Welkomstbanner op de startpagina; leeg = terugval op `achtergrondUrl`. */
+  bannerUrl: string | null
+  /** Verticale uitsnede van de banner in procenten (0 = boven, 100 = onder). */
+  bannerFocusY: number
   /** Contactgegevens voor de merkbalk bovenaan — leeg = balk verdwijnt. */
   telefoon: string | null
   email: string | null
@@ -182,6 +186,9 @@ export function bouwBranding(kantoor: {
     faviconUrl: tekst(huisstijl?.favicon_url),
     achtergrondUrl: tekst(huisstijl?.achtergrond_url),
     achtergrondSecundairUrl: tekst(huisstijl?.achtergrond_secundair_url),
+    bannerUrl: tekst(huisstijl?.banner_url),
+    // 50 % = het midden, het gedrag van `object-fit: cover` zonder instelling.
+    bannerFocusY: typeof huisstijl?.banner_focus_y === 'number' ? huisstijl.banner_focus_y : 50,
     telefoon: tekst(huisstijl?.telefoon),
     email: tekst(huisstijl?.email),
     primair,

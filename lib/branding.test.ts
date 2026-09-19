@@ -82,6 +82,28 @@ describe('kantoorbeeld en contactgegevens', () => {
     expect(b.achtergrondUrl).toBeNull()
     expect(b.achtergrondSecundairUrl).toBeNull()
   })
+
+  it('leest de welkomstbanner los van het sfeerbeeld', () => {
+    const b = bouwBranding({
+      name: 'i4 Housing',
+      huisstijl_json: { achtergrond_url: 'https://cdn/pand.webp', banner_url: 'https://cdn/team.webp', banner_focus_y: 33 },
+    })
+    expect(b.bannerUrl).toBe('https://cdn/team.webp')
+    expect(b.achtergrondUrl).toBe('https://cdn/pand.webp')
+    expect(b.bannerFocusY).toBe(33)
+  })
+
+  it('valt zonder bannerfoto terug op null, zodat de startpagina het sfeerbeeld pakt', () => {
+    const b = bouwBranding({ name: 'Kantoor', huisstijl_json: { achtergrond_url: 'https://cdn/pand.webp' } })
+    expect(b.bannerUrl).toBeNull()
+    // 50 % = het midden: precies wat `object-fit: cover` zonder instelling doet.
+    expect(b.bannerFocusY).toBe(50)
+  })
+
+  it('houdt uitsnede 0 overeind (bovenkant is een geldige keuze, geen "leeg")', () => {
+    // Valkuil: met `huisstijl.banner_focus_y || 50` zou 0 stilletjes 50 worden.
+    expect(bouwBranding({ name: 'K', huisstijl_json: { banner_focus_y: 0 } }).bannerFocusY).toBe(0)
+  })
 })
 
 describe('vormtaal in CSS-variabelen', () => {

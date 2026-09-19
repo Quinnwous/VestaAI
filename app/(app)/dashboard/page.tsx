@@ -106,7 +106,12 @@ export default async function DashboardPage() {
 
   return (
     <AppPagina>
-      <StartBanner url={branding.achtergrondUrl} naam={makelaar.naam} kantoornaam={branding.naam} />
+      <StartBanner
+        url={branding.bannerUrl ?? branding.achtergrondUrl}
+        naam={makelaar.naam}
+        kantoornaam={branding.naam}
+        focusY={branding.bannerFocusY}
+      />
       <Kerncijfers
         lopendeVerkoopadviezen={fases.verkoopadvies}
         inVerkoop={fases.inVerkoop}
