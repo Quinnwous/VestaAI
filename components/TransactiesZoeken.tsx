@@ -564,13 +564,17 @@ export function TransactiesZoeken({
                 <h2 style={{ fontSize: 16, fontWeight: 800, color: colors.text, margin: 0 }}>Transacties</h2>
                 <div style={{ fontSize: 12.5, color: colors.muted, marginTop: 2 }}>Gesorteerd op <b style={{ color: colors.bodyStrong }}>{sorteerLabel}</b></div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <SegmentedToggle
-                  size="sm"
-                  options={SORT_PRESETS.map(p => ({ value: `${p.key}|${p.dir}`, label: p.kort }))}
-                  value={`${filter.sortKey}|${filter.sortDir}`}
-                  onChange={v => { const [key, dir] = v.split('|'); zetFilterDeel({ sortKey: key, sortDir: dir as 'asc' | 'desc' }) }}
-                />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', minWidth: 0, maxWidth: '100%' }}>
+                {/* Eigen scrollstrip i.p.v. de paginabreedte op te rekken — 6 segmenten passen niet op 390 px (les 23 sep 2026: overflow altijd op het kleinste element dat het nodig heeft). */}
+                <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                  <SegmentedToggle
+                    size="sm"
+                    options={SORT_PRESETS.map(p => ({ value: `${p.key}|${p.dir}`, label: p.kort }))}
+                    value={`${filter.sortKey}|${filter.sortDir}`}
+                    onChange={v => { const [key, dir] = v.split('|'); zetFilterDeel({ sortKey: key, sortDir: dir as 'asc' | 'desc' }) }}
+                    style={{ flexShrink: 0 }}
+                  />
+                </div>
                 <span title={filter.alleenEigen ? 'Klaar om te exporteren' : 'Alleen eigen verkopen mogen geëxporteerd worden'} style={{ position: 'relative', display: 'inline-flex' }}>
                   <Button variant="secondary" size="sm" onClick={exporteerCsv} disabled={!filter.alleenEigen}>Exporteer CSV</Button>
                   {filter.alleenEigen && (
