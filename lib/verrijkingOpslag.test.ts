@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { naarVerrijkingOpslag, haalOpgeslagenVerrijking, formatEuro, formatGetal, formatAfstand, formatOpgehaaldOp } from './verrijkingOpslag'
+import { describe, it, expect } from 'vitest'
+import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking, formatEuro, formatGetal, formatAfstand, formatOpgehaaldOp } from './verrijkingOpslag'
 import type { VerrijkingData } from './verrijking'
 
 const VOLLEDIGE_DATA: VerrijkingData = {
@@ -78,46 +78,34 @@ describe('naarVerrijkingOpslag', () => {
   })
 })
 
-describe('haalOpgeslagenVerrijking', () => {
-  function maakClient(result: { data: unknown; error: unknown }) {
-    return {
-      from: vi.fn(() => ({
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue(result),
-      })),
-    }
-  }
-
-  it('geeft de gevalideerde opslag terug als de kolom bestaat en gevuld is', async () => {
+describe('verwerkOpgeslagenVerrijking', () => {
+  it('geeft de gevalideerde opslag terug als de kolom bestaat en gevuld is', () => {
     const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z')
-    const client = maakClient({ data: { verrijking_json: opslag }, error: null })
-    const resultaat = await haalOpgeslagenVerrijking(client, 'obj-1')
+    const resultaat = verwerkOpgeslagenVerrijking({ data: { verrijking_json: opslag }, error: null })
     expect(resultaat?.opgehaald_op).toBe('2026-09-23T10:00:00.000Z')
   })
 
-  it('geeft null als de kolom nog niet bestaat (undefined_column)', async () => {
-    const client = maakClient({ data: null, error: { code: '42703', message: 'column objecten.verrijking_json does not exist' } })
-    const resultaat = await haalOpgeslagenVerrijking(client, 'obj-1')
+  it('geeft null als de kolom nog niet bestaat (undefined_column)', () => {
+    const resultaat = verwerkOpgeslagenVerrijking({
+      data: null,
+      error: { code: '42703', message: 'column objecten.verrijking_json does not exist' },
+    })
     expect(resultaat).toBeNull()
   })
 
-  it('geeft null als verrijking_json nog leeg is', async () => {
-    const client = maakClient({ data: { verrijking_json: null }, error: null })
-    const resultaat = await haalOpgeslagenVerrijking(client, 'obj-1')
+  it('geeft null als verrijking_json nog leeg is', () => {
+    const resultaat = verwerkOpgeslagenVerrijking({ data: { verrijking_json: null }, error: null })
     expect(resultaat).toBeNull()
   })
 
-  it('geeft null bij een onverwachte/kapotte vorm i.p.v. te crashen', async () => {
-    const client = maakClient({ data: { verrijking_json: { iets: 'onverwachts' } }, error: null })
-    const resultaat = await haalOpgeslagenVerrijking(client, 'obj-1')
+  it('geeft null bij een onverwachte/kapotte vorm i.p.v. te crashen', () => {
+    const resultaat = verwerkOpgeslagenVerrijking({ data: { verrijking_json: { iets: 'onverwachts' } }, error: null })
     expect(resultaat).toBeNull()
   })
 
-  it('geeft null als de query zelf gooit', async () => {
-    const client = { from: vi.fn(() => { throw new Error('boom') }) }
-    const resultaat = await haalOpgeslagenVerrijking(client, 'obj-1')
-    expect(resultaat).toBeNull()
+  it('geeft null bij een ontbrekend of leeg resultaat', () => {
+    expect(verwerkOpgeslagenVerrijking(null)).toBeNull()
+    expect(verwerkOpgeslagenVerrijking(undefined)).toBeNull()
   })
 })
 

@@ -11,7 +11,7 @@ import { RegenereerButton } from './RegenereerButton'
 import { AppPagina } from '@/components/ui'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, PropertyInput } from '@/lib/schemas'
 import { migreerWaarderingJson } from '@/lib/waardering'
-import { haalOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
+import { verwerkOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
@@ -42,14 +42,24 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [object, makelaar, verrijkingInitieel] = await Promise.all([
+  const [object, makelaar, verrijkingRuw] = await Promise.all([
     getCachedObject(params.id),
     supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single().then(r => r.data),
-    // Item 10.3: losse, ongecachete query (zie lib/verrijkingOpslag.ts) — faalt
-    // gracieus zolang de migratie voor objecten.verrijking_json nog niet is
-    // toegepast, zonder de rest van deze pagina te raken.
-    haalOpgeslagenVerrijking(createServiceSupabaseClient(), params.id),
+    // Item 10.3: losse, ongecachete query t.o.v. getCachedObject hierboven —
+    // faalt gracieus (catch) zolang de migratie voor objecten.verrijking_json
+    // nog niet is toegepast, zonder de rest van deze pagina te raken. De
+    // verwerking (validatie/undefined_column-afhandeling) is een pure functie
+    // in lib/verrijkingOpslag.ts, los te testen.
+    (async () => {
+      try {
+        const r = await createServiceSupabaseClient().from('objecten').select('verrijking_json').eq('id', params.id).single()
+        return { data: r.data, error: r.error }
+      } catch {
+        return { data: null, error: null }
+      }
+    })(),
   ])
+  const verrijkingInitieel = verwerkOpgeslagenVerrijking(verrijkingRuw)
 
   if (!object || !makelaar || object.kantoor_id !== makelaar.kantoor_id) notFound()
 
