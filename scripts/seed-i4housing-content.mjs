@@ -3,11 +3,15 @@
  * een echte brochure (PDF → tekst via de Files API, zelfde pad als de app zelf) en de
  * vaste slottekst met kantoorgegevens. Draait standaard als dry-run.
  *
- *   node --env-file=.env.local scripts/seed-i4housing-content.mjs
- *   node --env-file=.env.local scripts/seed-i4housing-content.mjs --write
+ *   npx tsx --env-file=.env.local scripts/seed-i4housing-content.mjs
+ *   npx tsx --env-file=.env.local scripts/seed-i4housing-content.mjs --write
+ *
+ * (tsx i.p.v. node sinds item 8.1: dit script importeert lib/aiModellen.ts
+ * rechtstreeks — zelfde patroon als scripts/backtest-waardering.mjs.)
  */
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { EXTRACTIE } from '../lib/aiModellen.ts'
 
 const SCHRIJVEN = process.argv.includes('--write')
 const KANTOOR_EMAIL = 'quinn.berkouwer@icloud.com'
@@ -63,7 +67,7 @@ async function brochureNaarTekst(pdfUrl) {
     file: new File([bytes], 'brochure.pdf', { type: 'application/pdf' }),
   })
   const antwoord = await client.beta.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: EXTRACTIE,
     max_tokens: 4000,
     system: 'Je extraheert platte tekst uit een document. Geef uitsluitend de lopende tekst terug — geen opmaak, geen koppen-markering, geen inleiding of commentaar.',
     messages: [{
