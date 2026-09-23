@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
-import { FeedbackKnop } from '@/components/FeedbackKnop'
+import { FeedbackSheet, FEEDBACK_TRIGGER_DESKTOP_STYLE, FEEDBACK_TRIGGER_MOBIEL_STYLE } from '@/components/FeedbackKnop'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -67,6 +67,10 @@ export function AppTopbar({
   const [profielOpen, setProfielOpen] = useState(false)
   const [mobiel, setMobiel] = useState(false)
   const [logoKapot, setLogoKapot] = useState(false)
+  // Los van profielOpen/mobiel gehouden — zie de doc-comment op FeedbackSheet
+  // (components/FeedbackKnop.tsx) voor waarom deze niet in dat dropdown-/
+  // mobiele menu zelf mag leven.
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
 
   // Buiten de balk klikken of Escape sluit het profielmenu.
@@ -145,7 +149,15 @@ export function AppTopbar({
       >
         Kantoor
       </Link>
-      <FeedbackKnop onBeforeOpen={() => setProfielOpen(false)} />
+      <button
+        type="button"
+        role="menuitem"
+        className="vui-menuitem"
+        onClick={() => { setProfielOpen(false); setFeedbackOpen(true) }}
+        style={FEEDBACK_TRIGGER_DESKTOP_STYLE}
+      >
+        Feedback geven
+      </button>
       <form action="/api/auth/logout" method="POST">
         <button
           type="submit"
@@ -281,7 +293,13 @@ export function AppTopbar({
               <Link href="/kantoor" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
                 Kantoor
               </Link>
-              <FeedbackKnop variant="mobiel" onBeforeOpen={() => setMobiel(false)} />
+              <button
+                type="button"
+                onClick={() => { setMobiel(false); setFeedbackOpen(true) }}
+                style={FEEDBACK_TRIGGER_MOBIEL_STYLE}
+              >
+                Feedback geven
+              </button>
               <form action="/api/auth/logout" method="POST">
                 <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}>
                   Uitloggen
@@ -291,6 +309,8 @@ export function AppTopbar({
           </div>
         )}
       </header>
+
+      <FeedbackSheet open={feedbackOpen} onOpenChange={setFeedbackOpen} />
 
       <div>{children}</div>
     </div>
