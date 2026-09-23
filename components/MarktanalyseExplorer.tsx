@@ -23,7 +23,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
 } from 'recharts'
 import {
-  AppPagina, PageHeader, Badge, Button, Modal, EmptyState, Skeleton,
+  Badge, Button, Modal, EmptyState, Skeleton,
   FilterBar, FilterDropdown, FilterPills, RangeSlider, Chip, Checkbox,
   StatTile, ChartCard, Legenda, SegmentedToggle, Switch, SelectMenu,
   type FilterPil,
@@ -246,22 +246,22 @@ export function MarktanalyseExplorer({
   const vorigWaarde = (sleutel: (typeof tegelDefs)[number]['sleutel']): number | null =>
     sleutel === 'n' ? vorig.n : (vorig[sleutel] as number | null)
 
+  // Geen eigen <AppPagina>/eyebrow hier: `app/(app)/marktanalyse/layout.tsx`
+  // omhult alle vier Marktinzichten-schermen al met AppPagina + de gedeelde
+  // "Marktinzichten"-eyebrow ("Zoeken in de markt") — een tweede eyebrow zou
+  // een letterlijke dubbeling zijn. Dit blok is de schermspecifieke kop uit
+  // het prototype: titel + databadge + kwartaalbericht-knop.
   return (
-    <AppPagina>
-      <PageHeader
-        eyebrow="Marktinzichten"
-        title="Marktanalyse"
-        titleSize={30}
-        subtitle={undefined}
-        action={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-            <Badge dot color="var(--merk-accent, #C61E45)">
-              Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
-            </Badge>
-            <KwartaalberichtKnop />
-          </div>
-        }
-      />
+    <>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', color: colors.text, margin: 0 }}>Marktanalyse</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', maxWidth: '100%' }}>
+          <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+            Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
+          </Badge>
+          <KwartaalberichtKnop />
+        </div>
+      </div>
 
       <FilterBar
         pillenRij={pillen.length > 0 ? <FilterPills pillen={pillen} onWisAlles={() => zetFilterVolledig(standaard)} /> : undefined}
@@ -425,7 +425,7 @@ export function MarktanalyseExplorer({
         />
       ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 12, marginBottom: 14 }}>
+          <div className="vui-marktanalyse-tegels">
             {tegelDefs.map(d => {
               const w = huidigWaarde(d.sleutel)
               const v = vorigWaarde(d.sleutel)
@@ -449,7 +449,7 @@ export function MarktanalyseExplorer({
             })}
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12, marginBottom: 12 }}>
+          <div className="vui-marktanalyse-grafieken" style={{ marginBottom: 12 }}>
             <ChartCard
               titel="Mediaan verkoopprijs"
               subtitel={<>per kwartaal · {data.reeksMarkt.length} kwartalen · n = {nlNL.format(nu.n)}</>}
@@ -468,7 +468,7 @@ export function MarktanalyseExplorer({
             </ChartCard>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+          <div className="vui-marktanalyse-grafieken">
             <ChartCard
               titel="Mediaan looptijd"
               subtitel={<>dagen van aanmelding tot verkoop · n = {nlNL.format(nu.n)}</>}
@@ -498,7 +498,7 @@ export function MarktanalyseExplorer({
           </div>
         </>
       )}
-    </AppPagina>
+    </>
   )
 }
 

@@ -95,6 +95,15 @@
 .vui-chip[aria-pressed='true']:hover { border-color: var(--merk-hover) !important; }
 .vui-pill-remove:hover { background: var(--merk-accent) !important; color: #fff !important; }
 
+/* Marktanalyse-explorer v2 (item 6.1) — responsieve tegel-/grafiekrasters; op
+   390 px breekt niets (DoD). Inline styles kunnen geen media queries, vandaar
+   deze twee gedeelde classes i.p.v. losse per-scherm CSS. */
+.vui-marktanalyse-tegels { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+@media (max-width: 900px) { .vui-marktanalyse-tegels { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .vui-marktanalyse-tegels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.vui-marktanalyse-grafieken { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 900px) { .vui-marktanalyse-grafieken { grid-template-columns: minmax(0, 1fr); } }
+
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
    zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
    laadstaat is geen statusmelding. */
