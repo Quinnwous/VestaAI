@@ -5,6 +5,7 @@ import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
 import { ContentTekstenTab } from '@/components/ContentTekstenTab'
+import { BuurtDataTab } from '@/components/BuurtDataTab'
 import { NotitieVeld } from '@/components/NotitieVeld'
 import { StijlLerenPaneel } from '@/components/StijlLerenPaneel'
 import { VirtualStaging } from '@/components/VirtualStaging'
@@ -16,7 +17,7 @@ import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
-import type { ContentOutput, ObjectContentStatus, ObjectFase } from '@/lib/schemas'
+import type { ContentOutput, ObjectContentStatus, ObjectFase, VerrijkingOpslag } from '@/lib/schemas'
 import type { WaarderingUitkomst } from '@/lib/waardering'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
@@ -35,11 +36,12 @@ import type { TransactieMetCoordinaten } from '@/lib/supabase'
  *   DossierHeader.tsx).
  */
 
-type SectionId = 'waardering' | 'content'
+type SectionId = 'waardering' | 'buurt' | 'content'
 type ContentTab = 'content' | 'media' | 'documenten' | 'export'
 
 const SECTIONS: { id: SectionId; label: string }[] = [
   { id: 'waardering', label: 'Waardering' },
+  { id: 'buurt', label: 'Buurt & data' },
   { id: 'content', label: 'Content en media' },
 ]
 
@@ -96,6 +98,7 @@ export function ObjectWorkspace({
   uspsInitieel = [],
   contentStatus = 'klaar',
   contentBezigSinds = null,
+  verrijkingInitieel = null,
 }: {
   objectId: string
   address: string
@@ -120,6 +123,11 @@ export function ObjectWorkspace({
   contentStatus?: ObjectContentStatus
   /** Tijdstip waarop de huidige 'bezig'-lock is geclaimd — voedt de mm:ss-timer. */
   contentBezigSinds?: string | null
+  /** Item 10.3: laatst opgeslagen buurtdata (`objecten.verrijking_json`), of
+   * `null` als er nog niets is opgehaald — de tab "Buurt & data" probeert dan
+   * zelf eenmalig te verversen. `null` ook zolang de migratie voor deze kolom
+   * nog niet is toegepast (graceful, zie lib/verrijkingOpslag.ts). */
+  verrijkingInitieel?: VerrijkingOpslag | null
 }) {
   const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
   const [contentTab, setContentTab] = useState<ContentTab>('content')
@@ -142,13 +150,23 @@ export function ObjectWorkspace({
     />
   )
 
+  const buurtDataSectie = (
+    <div>
+      <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>Buurt & data</p>
+      <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
+    </div>
+  )
+
   // Verkoopadvies-fase: er zijn nog geen foto's of een vaste vraagprijs —
-  // alleen waardebepaling en verkoopadvies zijn relevant, geen tabbalk nodig.
+  // alleen waardebepaling, verkoopadvies en buurtdata zijn relevant, geen
+  // tabbalk nodig (item 10.3: "Buurt & data" is hier gestapeld i.p.v. een tab,
+  // net als de straal-kaart hieronder).
   if (fase === 'verkoopadvies') {
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         {waarderingSectie}
         {straalKaart}
+        {buurtDataSectie}
       </div>
     )
   }
@@ -167,6 +185,10 @@ export function ObjectWorkspace({
           {waarderingSectie}
           {straalKaart}
         </div>
+      </div>
+
+      <div style={{ display: active === 'buurt' ? 'block' : 'none' }}>
+        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
       </div>
 
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>

@@ -11,6 +11,7 @@ import { RegenereerButton } from './RegenereerButton'
 import { AppPagina } from '@/components/ui'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, PropertyInput } from '@/lib/schemas'
 import { migreerWaarderingJson } from '@/lib/waardering'
+import { haalOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
@@ -41,9 +42,13 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [object, makelaar] = await Promise.all([
+  const [object, makelaar, verrijkingInitieel] = await Promise.all([
     getCachedObject(params.id),
     supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single().then(r => r.data),
+    // Item 10.3: losse, ongecachete query (zie lib/verrijkingOpslag.ts) — faalt
+    // gracieus zolang de migratie voor objecten.verrijking_json nog niet is
+    // toegepast, zonder de rest van deze pagina te raken.
+    haalOpgeslagenVerrijking(createServiceSupabaseClient(), params.id),
   ])
 
   if (!object || !makelaar || object.kantoor_id !== makelaar.kantoor_id) notFound()
@@ -110,6 +115,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         uspsInitieel={uspsInitieel}
         contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}
         contentBezigSinds={object.content_bezig_sinds ?? null}
+        verrijkingInitieel={verrijkingInitieel}
       />
     </AppPagina>
   )
