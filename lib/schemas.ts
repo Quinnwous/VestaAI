@@ -424,6 +424,106 @@ export const WaarderingOpslagSchema = z.object({
 export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>
 
 // ---------------------------------------------------------------------------
+// Verrijkingsdata (item 10.3, docs/roadmap.md § fase 10) — opslagvorm van een
+// `fetchVerrijking()`-uitkomst (lib/verrijking.ts) op `objecten.verrijking_json`,
+// met tijdstempel "opgehaald op". Migratie <ts>_object_verrijking.sql
+// (additief, nog niet toegepast — zie besluiten.md). `versie: 1` naar analogie
+// van WaarderingOpslagSchema hierboven, zodat een toekomstige vormwijziging
+// dezelfde migratie-aanpak kan volgen.
+// ---------------------------------------------------------------------------
+
+const WozWaardeSchema = z.object({
+  peildatum: z.string(),
+  waarde: z.number(),
+  belastingjaar: z.number(),
+})
+
+export const WozDataSchema = z.object({
+  object_id: z.string().nullable(),
+  waarden: z.array(WozWaardeSchema),
+  stijging_pct: z.string().nullable(),
+  per_m2: z.number().nullable(),
+})
+
+export const CbsNiveauSchema = z.enum(['buurt', 'wijk', 'gemeente', 'nederland'])
+export type CbsNiveau = z.infer<typeof CbsNiveauSchema>
+
+const CbsMetriekSchema = z.object({ waarde: z.number(), niveau: CbsNiveauSchema })
+
+export const CbsDataSchema = z.object({
+  gemeente: z.string(),
+  buurtnaam: z.string().nullable(),
+  wijknaam: z.string().nullable(),
+  bron: z.string(),
+  fijnste_niveau: CbsNiveauSchema,
+  inkomen: CbsMetriekSchema.nullable(),
+  pct_koop: CbsMetriekSchema.nullable(),
+  woz_gem: CbsMetriekSchema.nullable(),
+  pct_hoog_opgeleid: CbsMetriekSchema.nullable(),
+  dichtheid_per_km2: CbsMetriekSchema.nullable(),
+  pct_eengezins: CbsMetriekSchema.nullable(),
+  huishoudensgrootte: CbsMetriekSchema.nullable(),
+  pct_65plus: CbsMetriekSchema.nullable(),
+  pct_met_kinderen: CbsMetriekSchema.nullable(),
+  dichtheid: z.string(),
+  buurtprofiel: z.enum(['Premium', 'Bovengemiddeld', 'Gemiddeld', 'Ondergemiddeld']),
+  nl: z.object({
+    inkomen: z.number().nullable(),
+    pct_koop: z.number().nullable(),
+    woz_gem: z.number().nullable(),
+    pct_hoog_opgeleid: z.number().nullable(),
+  }),
+  gemeente_niveau: z.object({
+    woz_gem: z.number().nullable(),
+    dichtheid_per_km2: z.number().nullable(),
+  }),
+})
+
+const VoorzieningItemSchema = z.object({
+  naam: z.string(),
+  afstand_m: z.number(),
+  looptijd_min: z.number(),
+})
+
+export const VoorzieningenDataSchema = z.object({
+  supermarkt: z.array(VoorzieningItemSchema),
+  apotheek: z.array(VoorzieningItemSchema),
+  huisarts: z.array(VoorzieningItemSchema),
+  scholen: z.array(VoorzieningItemSchema),
+  ov_haltes: z.array(VoorzieningItemSchema),
+  treinstation: z.array(VoorzieningItemSchema),
+  groen: z.array(VoorzieningItemSchema),
+  nabijheid_beoordeling: z.string(),
+})
+
+export const MarktDataSchema = z.object({
+  label: z.string(),
+  verkooptijd_weken: z.string(),
+  overbiedingskans_pct: z.string(),
+  overbod_pct: z.string(),
+  voorraad_maanden: z.string(),
+  marktomstandigheid: z.string(),
+  strategie: z.string(),
+  seizoen_advies: z.string(),
+  woz_trend_2019_2024: z.string(),
+  gemeente_type: z.enum(['premium', 'randstadcentrum', 'randstadbuiten', 'middelgroot', 'landelijk']),
+  herkomst: z.enum(['lijst', 'afgeleid']),
+})
+
+export const VerrijkingOpslagSchema = z.object({
+  versie: z.literal(1),
+  woz: WozDataSchema.nullable(),
+  cbs: CbsDataSchema.nullable(),
+  voorzieningen: VoorzieningenDataSchema.nullable(),
+  markt: MarktDataSchema.nullable(),
+  gemeente: z.string().nullable(),
+  coord: z.object({ lat: z.number(), lon: z.number() }).nullable(),
+  /** ISO-tijdstempel van het moment waarop deze verrijking is opgehaald. */
+  opgehaald_op: z.string(),
+})
+export type VerrijkingOpslag = z.infer<typeof VerrijkingOpslagSchema>
+
+// ---------------------------------------------------------------------------
 // Transactiefilter (item 2.2, docs/roadmap.md § 3.1 + docs/ontwerp/README.md
 // § 4 "Filtermodel") — voedt `p_filters jsonb` van elke RPC in
 // `lib/transactiesQuery.ts`. Alle velden optioneel: een lege filterset

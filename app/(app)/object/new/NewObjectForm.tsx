@@ -106,6 +106,14 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
         return
       }
       clearDraft()
+      // Buurtdata ophalen en opslaan (item 10.3) gebeurt los van deze
+      // aanmaakflow: niet awaiten, zodat de <5s-belofte van dossier aanmaken
+      // (item 3.1) intact blijft — `fetchVerrijking` doet drie parallelle
+      // externe calls met oplopend tot 10s timeout. `keepalive` laat het
+      // verzoek doorlopen ook al navigeert de browser meteen door naar het
+      // dossier; de tab "Buurt & data" probeert daar zelf nog een keer te
+      // verversen als dit nog niet klaar is.
+      fetch(`/api/object/${json.id}/verrijking`, { method: 'POST', keepalive: true }).catch(() => {})
       router.push(`/object/${json.id}`)
     } catch {
       // Netwerkfout of afgebroken verbinding — geen technische boodschap tonen.
