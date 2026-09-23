@@ -12,11 +12,11 @@ const SECURITY_HEADERS = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://plausible.io",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.resend.com",
+      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.resend.com https://plausible.io",
       "object-src 'none'",
       "base-uri 'self'",
     ].join('; '),
