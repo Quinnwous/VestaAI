@@ -256,9 +256,21 @@ export function MarktanalyseExplorer({
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', color: colors.text, margin: 0 }}>Marktanalyse</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', maxWidth: '100%' }}>
-          <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
-            Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
-          </Badge>
+          {geenResultaten || !dataTotEnMet ? (
+            // Fix review item 6.1, 24 sep 2026: bij 0 transacties (nieuw
+            // kantoor, bv. i4housing zonder import) las de rode live-stip +
+            // "Data t/m — · 0 transacties" als een foutmelding. Neutrale
+            // badge, geen losse "—"/"·", en geen accentkleur (die is nooit
+            // semantisch, CLAUDE.md § Conventies) — de rode live-stip blijft
+            // wél de norm zodra er wél data is (docs/ontwerp/README.md § 1.2b).
+            <Badge color={colors.muted} bg={colors.borderSoft}>
+              Nog geen transacties
+            </Badge>
+          ) : (
+            <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+              Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
+            </Badge>
+          )}
           <KwartaalberichtKnop />
         </div>
       </div>
@@ -397,9 +409,12 @@ export function MarktanalyseExplorer({
         </FilterDropdown>
 
         <span style={{ flex: 1 }} />
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: colors.bodyStrong, cursor: 'pointer' }}>
+        {/* Korter label (was "Vergelijk met segment B") — fix review item 6.1,
+            24 sep 2026: op 1280 px viel "Herstel" anders op een tweede regel;
+            de volledige omschrijving blijft staan als aria-label. */}
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: colors.bodyStrong, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           <Switch checked={filter.b} onChange={v => zetFilterDeel({ b: v, bPlaats: v && !filter.bPlaats ? (plaatsen.find(p => !filter.plaatsen.includes(p.label))?.label ?? '') : filter.bPlaats })} ariaLabel="Vergelijk met segment B" />
-          Vergelijk met segment B
+          Segment B
         </label>
         <button
           type="button"
