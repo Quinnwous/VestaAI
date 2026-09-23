@@ -12,6 +12,7 @@ import {
   filterStateNaarEigenFilter,
   segmentBFilter,
   subtypenVoorGroep,
+  vorigePeriodeFilter,
   type MarktanalyseFilterV2,
 } from './marktanalyse'
 import type { TransactieRow } from './supabase'
@@ -254,5 +255,26 @@ describe('segmentBFilter', () => {
   it('bGroep "alle" filtert niet op type', () => {
     const f = { ...standaardFilterState([]), b: true, bPlaats: 'Den Haag', bGroep: 'alle' }
     expect(segmentBFilter(f, { datumTot: null })?.typen).toBeUndefined()
+  })
+})
+
+describe('vorigePeriodeFilter (werk-around voor de vorig=0-bug in marktanalyse_samenvatting)', () => {
+  it('null zonder datum_van/datum_tot (periode "Alles" — geen vergelijking is dan correct)', () => {
+    expect(vorigePeriodeFilter({ plaatsen: ['Wassenaar'] })).toBeNull()
+  })
+
+  it('berekent exact dezelfde vorige-periodedatums als de RPC se vorig_span-formule (geverifieerd tegen productiedata 24 sep 2026)', () => {
+    const filter = vorigePeriodeFilter({ plaatsen: ['Wassenaar'], datum_van: '2024-09-18', datum_tot: '2026-09-17' })
+    expect(filter).toEqual({ plaatsen: ['Wassenaar'], datum_van: '2022-09-19', datum_tot: '2024-09-17' })
+  })
+
+  it('behoudt alle overige filtervelden ongewijzigd', () => {
+    const filter = vorigePeriodeFilter({ plaatsen: ['Wassenaar'], typen: ['Villa'], prijs_min: 500_000, datum_van: '2025-01-01', datum_tot: '2025-12-31' })
+    expect(filter).toMatchObject({ plaatsen: ['Wassenaar'], typen: ['Villa'], prijs_min: 500_000 })
+  })
+
+  it('een venster van precies 365 dagen geeft een even lang vorig venster (2024 is een schrikkeljaar: 366 dagen terug, dus 2 jan i.p.v. 1 jan)', () => {
+    const filter = vorigePeriodeFilter({ datum_van: '2025-01-01', datum_tot: '2025-12-31' })
+    expect(filter).toEqual({ datum_van: '2024-01-02', datum_tot: '2024-12-31' })
   })
 })

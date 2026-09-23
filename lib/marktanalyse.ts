@@ -438,3 +438,41 @@ export function segmentBFilter(f: MarktanalyseFilterState, opts: { datumTot: str
   }
   return filter
 }
+
+/**
+ * Werk-around (fix review item 6.1, 24 sep 2026) voor een bug in de RPC
+ * `marktanalyse_samenvatting` (migratie 20260917_rpc_transacties.sql, al
+ * toegepast vóór dit item): zodra `p_filters` een `datum_van`/`datum_tot`
+ * bevat, filtert `transacties_gefilterd()` — die de RPC intern ook voor zijn
+ * "basis" gebruikt — die twee datums zélf óók al, waardoor de "vorige
+ * periode"-join nooit meer iets kan vinden (0 resultaten, altijd "geen
+ * vergelijking"). Een SQL-fix staat klaar in
+ * `20260924_fix_marktanalyse_samenvatting_vorige_periode.sql` (nog niet
+ * toegepast), maar deze functie maakt de delta's ook zónder die migratie al
+ * kloppend: ze bouwt het RPC-filter voor de periode die *onmiddellijk aan
+ * `filtersHuidig` voorafgaat* (zelfde lengte, exact de `vorig_span`-formule
+ * uit de RPC: `van' = van - lengte`, `tot' = van - 1`), zodat de aanroeper
+ * `marktanalyseSamenvatting(client, filtersHuidig)` en
+ * `marktanalyseSamenvatting(client, vorigePeriodeFilter(filtersHuidig))`
+ * kan combineren tot `{ huidig: eerste.huidig, vorig: tweede.huidig }` — de
+ * "huidig"-tak van de RPC heeft deze bug namelijk niet.
+ *
+ * Geeft `null` als `filtersHuidig` geen `datum_van`/`datum_tot` heeft (de
+ * periode "Alles"): dan is er per definitie geen vorige periode en blijft
+ * "geen vergelijking" correct (docs/roadmap.md item 6.1).
+ */
+export function vorigePeriodeFilter(filtersHuidig: TransactieFilter): TransactieFilter | null {
+  if (!filtersHuidig.datum_van || !filtersHuidig.datum_tot) return null
+  const van = new Date(filtersHuidig.datum_van)
+  const tot = new Date(filtersHuidig.datum_tot)
+  const lengteDagen = Math.round((tot.getTime() - van.getTime()) / 86_400_000) + 1
+  const vorigTot = new Date(van)
+  vorigTot.setUTCDate(vorigTot.getUTCDate() - 1)
+  const vorigVan = new Date(van)
+  vorigVan.setUTCDate(vorigVan.getUTCDate() - lengteDagen)
+  return {
+    ...filtersHuidig,
+    datum_van: vorigVan.toISOString().slice(0, 10),
+    datum_tot: vorigTot.toISOString().slice(0, 10),
+  }
+}

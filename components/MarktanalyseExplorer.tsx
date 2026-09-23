@@ -256,9 +256,21 @@ export function MarktanalyseExplorer({
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', color: colors.text, margin: 0 }}>Marktanalyse</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', maxWidth: '100%' }}>
-          <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
-            Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
-          </Badge>
+          {geenResultaten || !dataTotEnMet ? (
+            // Fix review item 6.1, 24 sep 2026: bij 0 transacties (nieuw
+            // kantoor, bv. i4housing zonder import) las de rode live-stip +
+            // "Data t/m — · 0 transacties" als een foutmelding. Neutrale
+            // badge, geen losse "—"/"·", en geen accentkleur (die is nooit
+            // semantisch, CLAUDE.md § Conventies) — de rode live-stip blijft
+            // wél de norm zodra er wél data is (docs/ontwerp/README.md § 1.2b).
+            <Badge color={colors.muted} bg={colors.borderSoft}>
+              Nog geen transacties
+            </Badge>
+          ) : (
+            <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+              Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
+            </Badge>
+          )}
           <KwartaalberichtKnop />
         </div>
       </div>
@@ -397,9 +409,12 @@ export function MarktanalyseExplorer({
         </FilterDropdown>
 
         <span style={{ flex: 1 }} />
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: colors.bodyStrong, cursor: 'pointer' }}>
+        {/* Korter label (was "Vergelijk met segment B") — fix review item 6.1,
+            24 sep 2026: op 1280 px viel "Herstel" anders op een tweede regel;
+            de volledige omschrijving blijft staan als aria-label. */}
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600, color: colors.bodyStrong, cursor: 'pointer', whiteSpace: 'nowrap' }}>
           <Switch checked={filter.b} onChange={v => zetFilterDeel({ b: v, bPlaats: v && !filter.bPlaats ? (plaatsen.find(p => !filter.plaatsen.includes(p.label))?.label ?? '') : filter.bPlaats })} ariaLabel="Vergelijk met segment B" />
-          Vergelijk met segment B
+          Segment B
         </label>
         <button
           type="button"
@@ -464,7 +479,7 @@ export function MarktanalyseExplorer({
               laden={laden}
               legenda={<Legenda items={[{ label: 'Wij', kleur: SERIE.wij }, { label: 'Markt', kleur: SERIE.markt }, { label: 'Segment B', kleur: SERIE.b, getoond: segmentBActief }]} />}
             >
-              <LijnGrafiek data={samenvoegVoorGrafiek(data.reeksMarkt, reeksWij, data.reeksB, 'mediaanM2')} yFmt={v => '€ ' + nlNL.format(Math.round(v))} ttFmt={v => euro(v) + '/m²'} segmentB={segmentBActief} />
+              <LijnGrafiek data={samenvoegVoorGrafiek(data.reeksMarkt, reeksWij, data.reeksB, 'mediaanM2')} yFmt={euroKort} ttFmt={v => euro(v) + '/m²'} segmentB={segmentBActief} />
             </ChartCard>
           </div>
 
@@ -590,7 +605,18 @@ function LijnGrafiek({
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} tickFormatter={yFmt} width={56} tickCount={5} allowDecimals={false} domain={['dataMin', 'dataMax']} />
+        <YAxis
+          tick={{ fontSize: 11, fill: colors.muted }}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={yFmt}
+          // Genoeg breedte voor "€ 1,2 mln" op één regel (fix review item 6.1,
+          // 24 sep 2026: brak eerder af over twee regels bij width={56}).
+          width={68}
+          tickCount={5}
+          allowDecimals={false}
+          domain={['dataMin', 'dataMax']}
+        />
         <RTooltip content={<GrafiekTooltip fmt={ttFmt} />} />
         <Line type="monotone" dataKey="markt" stroke={SERIE.markt} strokeWidth={1.5} dot={false} connectNulls name="markt" />
         {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
