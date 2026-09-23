@@ -463,5 +463,12 @@ export const TransactieFilterSchema = z.object({
   makelaars: z.array(z.string()).optional(),
   kantoren: z.array(z.string()).optional(),
   alleen_eigen: z.boolean().optional(),
+  /**
+   * Vrij zoekveld op adres (item 6.2, "Transacties opzoeken v2") —
+   * case-insensitive substring-match. ⚠️ vereist de additieve migratie
+   * `supabase/migrations/20260923180000_transacties_zoeken_v2.sql` (nog niet
+   * toegepast); tot dan negeert `transacties_gefilterd()` dit veld stilzwijgend.
+   */
+  zoek: z.string().optional(),
 })
 export type TransactieFilter = z.infer<typeof TransactieFilterSchema>
