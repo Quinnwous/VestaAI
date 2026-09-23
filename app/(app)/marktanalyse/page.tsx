@@ -3,9 +3,6 @@ import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngel
 import { KantoorInstellingenSchema } from '@/lib/schemas'
 import {
   haalEigenVerkopen,
-  marktanalyseReeks,
-  marktanalyseSamenvatting,
-  marktanalyseVerdelingPrijsklasse,
   plaatsenWijken,
   dataTotEnMet,
   type PlaatsWijkRij,
@@ -13,6 +10,7 @@ import {
 import { standaardFilterState, filterStateNaarTransactieFilter } from '@/lib/marktanalyse'
 import type { TransactieRow } from '@/lib/supabase'
 import { MarktanalyseExplorer } from '@/components/MarktanalyseExplorer'
+import { haalMarktanalyseData } from './actions'
 
 export const metadata = { title: 'Marktanalyse' }
 
@@ -66,11 +64,10 @@ export default async function MarktanalysePage() {
   const standaardFilter = standaardFilterState(werkgebiedPlaatsen)
   const rpcFilter = filterStateNaarTransactieFilter(standaardFilter, { datumTot: dataTot.laatsteVerkoopdatum })
 
-  const [reeksMarkt, samenvatting, verdeling] = await Promise.all([
-    marktanalyseReeks(sessie, rpcFilter),
-    marktanalyseSamenvatting(sessie, rpcFilter),
-    marktanalyseVerdelingPrijsklasse(sessie, rpcFilter).catch(() => null),
-  ])
+  // Zelfde server action als een filterwijziging in de client gebruikt (§
+  // "Werk-around vorige periode" in actions.ts) — zo blijft er één plek met
+  // die logica, en toont de eerste paint meteen echte delta's.
+  const initieel = await haalMarktanalyseData(rpcFilter, rpcFilter, null)
 
   return (
     <MarktanalyseExplorer
@@ -78,7 +75,7 @@ export default async function MarktanalysePage() {
       plaatsenLijst={plaatsenLijst}
       eigenVerkopen={eigenVerkopen}
       dataTotEnMet={dataTot.laatsteVerkoopdatum}
-      initieel={{ reeksMarkt, reeksB: null, samenvatting, verdeling }}
+      initieel={initieel}
     />
   )
 }

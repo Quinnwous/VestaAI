@@ -19,6 +19,7 @@ import {
   type MarktanalyseSamenvatting,
   type PrijsklasseVerdelingRij,
 } from '@/lib/transactiesQuery'
+import { vorigePeriodeFilter } from '@/lib/marktanalyse'
 import type { TransactieFilter } from '@/lib/schemas'
 
 export type MarktanalyseData = {
@@ -41,9 +42,18 @@ export async function haalMarktanalyseData(
   filtersB: TransactieFilter | null,
 ): Promise<MarktanalyseData> {
   const supabase = createServerSupabaseClient()
-  const [reeksMarkt, samenvatting, verdeling, reeksB] = await Promise.all([
+  // Werk-around (fix review item 6.1, 24 sep 2026) voor een RPC-bug: zodra
+  // `filtersA` een datum_van/datum_tot heeft, geeft `marktanalyse_samenvatting`
+  // altijd `vorig.n = 0` terug (zie `vorigePeriodeFilter` in lib/marktanalyse.ts
+  // voor de volledige uitleg + de SQL-fix die daar ook naar verwijst). Tot die
+  // migratie is toegepast, halen we de vorige periode apart op via een tweede
+  // aanroep met de verschoven datums, en gebruiken we dáárvan de "huidig"-tak
+  // (die de bug niet heeft).
+  const vorigeFilter = vorigePeriodeFilter(filtersA)
+  const [reeksMarkt, samenvattingHuidig, samenvattingVorig, verdeling, reeksB] = await Promise.all([
     marktanalyseReeks(supabase, filtersA),
     marktanalyseSamenvatting(supabase, filtersA),
+    vorigeFilter ? marktanalyseSamenvatting(supabase, vorigeFilter) : Promise.resolve(null),
     // `marktanalyse_verdeling_prijsklasse` staat klaar in
     // supabase/migrations/20260923_marktanalyse_verdeling_en_plaatsen.sql maar
     // is nog niet toegepast (zie dat bestand) — tot dat gebeurt geeft de RPC
@@ -52,5 +62,9 @@ export async function haalMarktanalyseData(
     marktanalyseVerdelingPrijsklasse(supabase, filtersVerdeling).catch(() => null),
     filtersB ? marktanalyseReeks(supabase, filtersB) : Promise.resolve(null),
   ])
+  const samenvatting: MarktanalyseSamenvatting = {
+    huidig: samenvattingHuidig.huidig,
+    vorig: samenvattingVorig ? samenvattingVorig.huidig : samenvattingHuidig.vorig,
+  }
   return { reeksMarkt, samenvatting, verdeling, reeksB }
 }
