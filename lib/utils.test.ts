@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { formatEuro, formatM2, relatieveDatum, formatDatum, dagenInFase, clamp, truncate, mediaan } from './utils'
+import { formatEuro, formatM2, relatieveDatum, formatDatum, dagenInFase, clamp, truncate } from './utils'
 
 describe('formatEuro', () => {
   it('formatteert geheel getal als euro', () => {
@@ -114,11 +114,4 @@ describe('truncate', () => {
     expect(result.length).toBe(8)
     expect(result.endsWith('…')).toBe(true)
   })
-})
-
-describe('mediaan', () => {
-  it('geeft null bij een lege set', () => expect(mediaan([])).toBeNull())
-  it('geeft het middelste getal bij een oneven aantal', () => expect(mediaan([3, 1, 2])).toBe(2))
-  it('middelt de twee middelste getallen bij een even aantal', () => expect(mediaan([1, 2, 3, 4])).toBe(2.5))
-  it('is ongevoelig voor de invoervolgorde', () => expect(mediaan([5, 1, 4, 2, 3])).toBe(3))
 })

@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { heeftConcurrentiedata, marktaandeel, wieWintWelkSegment, presterenWijBeter, concurrentProfielen } from './concurrentie'
+import {
+  heeftConcurrentiedata, marktaandeel, wieWintWelkSegment, presterenWijBeter, concurrentProfielen,
+  heeftConcurrentiedataV2, ranglijstPerKantoor, wijVsMarkt, aandeelPerJaar, matrixWieWintWaar, concurrentProfielV2,
+} from './concurrentie'
 import type { TransactieRow } from './supabase'
 
 function maakRij(overrides: Partial<TransactieRow>): TransactieRow {
@@ -113,5 +116,128 @@ describe('concurrentProfielen', () => {
     expect(profiel.aantal).toBe(3)
     expect(profiel.gemiddeldePrijs).toBeCloseTo((800000 + 900000 + 300000) / 3, 0)
     expect(profiel.topSegment).toBe('Villa')
+  })
+})
+
+// ─────────────────────────────────────────────────────────────────────────
+// v2 (item 6.3) — werkt op verkopend_kantoor_norm, dedupliceert schrijfwijzen
+// ─────────────────────────────────────────────────────────────────────────
+
+describe('heeftConcurrentiedataV2', () => {
+  it('false zonder verkopend_kantoor_norm, ook als verkopend_kantoor wél gevuld is', () => {
+    expect(heeftConcurrentiedataV2([maakRij({ verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: null })])).toBe(false)
+  })
+
+  it('true zodra minstens één concurrent-rij een genormaliseerde naam heeft', () => {
+    expect(heeftConcurrentiedataV2([maakRij({ verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b' })])).toBe(true)
+  })
+})
+
+describe('ranglijstPerKantoor', () => {
+  it('dedupliceert schrijfwijzen via verkopend_kantoor_norm en toont de originele naam', () => {
+    const rijen = [
+      maakRij({ verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b', looptijd_dagen: 20 }),
+      maakRij({ verkopend_kantoor: 'MAKELAAR B', verkopend_kantoor_norm: 'makelaar b', looptijd_dagen: 40 }),
+      maakRij({ verkopend_kantoor: 'Makelaar C', verkopend_kantoor_norm: 'makelaar c', looptijd_dagen: 10 }),
+      maakRij({ eigen_verkoop: true, looptijd_dagen: 5 }),
+    ]
+    const lijst = ranglijstPerKantoor(rijen)
+    const b = lijst.find(r => r.kantoor === 'Makelaar B')
+    expect(b?.aantal).toBe(2)
+    expect(b?.aandeelPct).toBe(50)
+    expect(b?.mediaanLooptijd).toBe(30)
+    expect(lijst.find(r => r.kantoor === 'Eigen kantoor')?.aantal).toBe(1)
+  })
+
+  it('leeg bij lege dataset, geen crash', () => {
+    expect(ranglijstPerKantoor([])).toEqual([])
+  })
+})
+
+describe('wijVsMarkt', () => {
+  it('looptijd/m² als mediaan, t.o.v. vraagprijs als gemiddelde', () => {
+    const rijen = [
+      maakRij({ eigen_verkoop: true, looptijd_dagen: 10, prijs_m2: 5000, verkoopprijs: 550000, vraagprijs: 500000 }),
+      maakRij({ eigen_verkoop: true, looptijd_dagen: 30, prijs_m2: 6000, verkoopprijs: 500000, vraagprijs: 500000 }),
+      maakRij({ eigen_verkoop: false, looptijd_dagen: 40, prijs_m2: 4000, verkoopprijs: 480000, vraagprijs: 500000 }),
+      maakRij({ eigen_verkoop: false, looptijd_dagen: 60, prijs_m2: 4400, verkoopprijs: 500000, vraagprijs: 500000 }),
+    ]
+    const r = wijVsMarkt(rijen)
+    expect(r.looptijdWij).toBe(20)
+    expect(r.looptijdMarkt).toBe(50)
+    expect(r.m2Wij).toBe(5500)
+    expect(r.m2Markt).toBe(4200)
+    expect(r.ratioWij).toBeCloseTo(5, 1) // (10% + 0%) / 2
+    expect(r.ratioMarkt).toBeCloseTo(-2, 1) // (-4% + 0%) / 2
+    expect(r.nWij).toBe(2)
+    expect(r.nMarkt).toBe(2)
+  })
+
+  it('null bij een lege deelverzameling, geen crash', () => {
+    const r = wijVsMarkt([maakRij({ eigen_verkoop: true, looptijd_dagen: 10 })])
+    expect(r.looptijdMarkt).toBeNull()
+    expect(r.nMarkt).toBe(0)
+  })
+})
+
+describe('aandeelPerJaar', () => {
+  it('groepeert per jaar en kantoor, totaal blijft het jaartotaal ook bij een subset', () => {
+    const rijen = [
+      maakRij({ verkoopdatum: '2025-03-01', verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b' }),
+      maakRij({ verkoopdatum: '2025-06-01', verkopend_kantoor: 'Makelaar C', verkopend_kantoor_norm: 'makelaar c' }),
+      maakRij({ verkoopdatum: '2026-01-01', verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b' }),
+    ]
+    const alles = aandeelPerJaar(rijen)
+    expect(alles.filter(r => r.jaar === 2025).reduce((s, r) => s + r.aantal, 0)).toBe(2)
+    const beperkt = aandeelPerJaar(rijen, ['Makelaar B'])
+    expect(beperkt.every(r => r.kantoor === 'Makelaar B')).toBe(true)
+    const b2025 = beperkt.find(r => r.jaar === 2025)
+    expect(b2025?.aantal).toBe(1)
+    expect(b2025?.totaal).toBe(2) // jaartotaal blijft 2, ook al toont de output alleen Makelaar B
+  })
+})
+
+describe('matrixWieWintWaar', () => {
+  const rijen = [
+    maakRij({ plaats: 'Wassenaar', wijk: 'Centrum', woningtype_groep: 'vrijstaand', verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b' }),
+    maakRij({ plaats: 'Wassenaar', wijk: 'Centrum', woningtype_groep: 'vrijstaand', verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b' }),
+    maakRij({ plaats: 'Wassenaar', wijk: 'Oostdorp', woningtype_groep: 'vrijstaand', eigen_verkoop: true }),
+    maakRij({ plaats: 'Den Haag', wijk: 'Benoordenhout', woningtype_groep: 'appartement', verkopend_kantoor: 'Makelaar C', verkopend_kantoor_norm: 'makelaar c' }),
+  ]
+
+  it('op plaatsniveau: top-kantoor + top3 per plaats × typegroep', () => {
+    const matrix = matrixWieWintWaar(rijen, false)
+    const wassenaarVrijstaand = matrix.find(c => c.rijSleutel === 'Wassenaar' && c.woningtypeGroep === 'vrijstaand')
+    expect(wassenaarVrijstaand?.n).toBe(3)
+    expect(wassenaarVrijstaand?.top3[0]).toEqual({ kantoor: 'Makelaar B', aantal: 2, aandeelPct: expect.closeTo(66.7, 0) })
+  })
+
+  it('op wijkniveau: rijSleutel is "plaats|wijk"', () => {
+    const matrix = matrixWieWintWaar(rijen, true)
+    const cel = matrix.find(c => c.rijSleutel === 'Wassenaar|Centrum')
+    expect(cel?.rijLabel).toBe('Centrum')
+    expect(cel?.n).toBe(2)
+  })
+})
+
+describe('concurrentProfielV2', () => {
+  it('n/aandeel/looptijd/verdeling uit de selectie, sterkste plaats + trend uit de regio', () => {
+    const selectie = [
+      maakRij({ verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b', woningtype_groep: 'appartement', looptijd_dagen: 20 }),
+      maakRij({ verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b', woningtype_groep: 'vrijstaand', looptijd_dagen: 40 }),
+      maakRij({ eigen_verkoop: true }),
+    ]
+    const regio = [
+      ...selectie,
+      maakRij({ plaats: 'Wassenaar', verkopend_kantoor: 'Makelaar B', verkopend_kantoor_norm: 'makelaar b', verkoopdatum: '2025-01-01' }),
+      maakRij({ plaats: 'Den Haag', verkopend_kantoor: 'Makelaar C', verkopend_kantoor_norm: 'makelaar c' }),
+    ]
+    const profiel = concurrentProfielV2(selectie, regio, 'Makelaar B')
+    expect(profiel.n).toBe(2)
+    expect(profiel.aandeelPct).toBeCloseTo(66.7, 0)
+    expect(profiel.mediaanLooptijd).toBe(30)
+    expect(profiel.verdeling.find(v => v.woningtypeGroep === 'appartement')?.n).toBe(1)
+    expect(profiel.sterkstePlaats).toBe('Wassenaar')
+    expect(profiel.trend.reduce((s, t) => s + t.aantal, 0)).toBe(3) // 2 uit selectie + 1 extra regio-rij
   })
 })
