@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   heeftConcurrentiedata, marktaandeel, wieWintWelkSegment, presterenWijBeter, concurrentProfielen,
   heeftConcurrentiedataV2, ranglijstPerKantoor, wijVsMarkt, aandeelPerJaar, matrixWieWintWaar, concurrentProfielV2,
+  standaardConcurrentieFilter, concurrentieFilterNaarTransactieFilter, concurrentieFilterZonderPeriode,
 } from './concurrentie'
 import type { TransactieRow } from './supabase'
 
@@ -239,5 +240,58 @@ describe('concurrentProfielV2', () => {
     expect(profiel.verdeling.find(v => v.woningtypeGroep === 'appartement')?.n).toBe(1)
     expect(profiel.sterkstePlaats).toBe('Wassenaar')
     expect(profiel.trend.reduce((s, t) => s + t.aantal, 0)).toBe(3) // 2 uit selectie + 1 extra regio-rij
+  })
+})
+
+describe('standaardConcurrentieFilter', () => {
+  it('gebruikt het werkgebied als standaard plaatsen, verder alles leeg/uit', () => {
+    const f = standaardConcurrentieFilter(['Wassenaar'])
+    expect(f.plaatsen).toEqual(['Wassenaar'])
+    expect(f.wijken).toEqual([])
+    expect(f.periode).toBe(24)
+    expect(f.klassen).toEqual([])
+    expect(f.verborgen).toEqual([])
+    expect(f.sort).toBe('aandeel')
+  })
+})
+
+describe('concurrentieFilterNaarTransactieFilter', () => {
+  it('zet plaatsen/typen/periode om naar het RPC-filter', () => {
+    const f = standaardConcurrentieFilter(['Wassenaar'])
+    const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: '2026-09-17' })
+    expect(filter.plaatsen).toEqual(['Wassenaar'])
+    expect(filter.datum_tot).toBe('2026-09-17')
+    expect(filter.datum_van).toBeDefined()
+  })
+
+  it('vertaalt meerdere prijsklassen naar het laagste min en het hoogste max', () => {
+    const f = { ...standaardConcurrentieFilter([]), klassen: ['k1', 'k3'] }
+    const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+    expect(filter.prijs_min).toBe(0)
+    expect(filter.prijs_max).toBe(1_000_000)
+  })
+
+  it('laat prijs_max weg voor de hoogste (open) klasse', () => {
+    const f = { ...standaardConcurrentieFilter([]), klassen: ['k6'] }
+    const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+    expect(filter.prijs_min).toBe(2_500_000)
+    expect(filter.prijs_max).toBeUndefined()
+  })
+
+  it('zonder datumTot blijven datumvelden weg (RPC bepaalt dan zelf de span)', () => {
+    const f = standaardConcurrentieFilter(['Wassenaar'])
+    const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+    expect(filter.datum_van).toBeUndefined()
+    expect(filter.datum_tot).toBeUndefined()
+  })
+})
+
+describe('concurrentieFilterZonderPeriode', () => {
+  it('laat de datumvelden altijd weg, ook met een datumTot elders', () => {
+    const f = standaardConcurrentieFilter(['Wassenaar'])
+    const filter = concurrentieFilterZonderPeriode(f)
+    expect(filter.datum_van).toBeUndefined()
+    expect(filter.datum_tot).toBeUndefined()
+    expect(filter.plaatsen).toEqual(['Wassenaar'])
   })
 })

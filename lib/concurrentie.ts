@@ -1,6 +1,9 @@
+import { z } from 'zod'
 import type { TransactieRow } from './supabase'
 import { gemiddelde } from './utils'
 import { mediaan } from './prijsindex'
+import type { TransactieFilter } from './schemas'
+import { PRIJSKLASSEN, periodeNaarDatums, type PeriodeMaanden } from './marktanalyse'
 
 /**
  * Concurrentieanalyse (F6, besluit 16 sep 2026, zie CLAUDE.md §
@@ -368,4 +371,71 @@ export function concurrentProfielV2(
     .map(([jaar, aantal]) => ({ jaar, aantal }))
 
   return { kantoor: kantoorNaamWeergave, n, aandeelPct, mediaanLooptijd, gemRatio, verdeling, sterkstePlaats, sterksteAandeelPct, trend }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// FilterBar-staat → RPC-filter (item 6.3, zelfde patroon als
+// lib/marktanalyse.ts filterStateNaarTransactieFilter): de URL-state
+// (`useFilterState`) is compacter dan `TransactieFilterSchema` — deze functie
+// is de enige plek die de vertaling maakt. `periodeNaarDatums`/`PRIJSKLASSEN`
+// zijn bewust hergebruikt uit lib/marktanalyse.ts (geen eigen kopie van de
+// periode- of prijsklasse-logica — zie de opleverrapportage van 6.3 voor de
+// afwijking van het prototype: dat kent een eigen 5-klassenlijst, hier
+// dezelfde 6 klassen als de marktanalyse-explorer, voor consistentie).
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Zod-schema voor `useFilterState`. `klassen`/`verborgen` blijven client-only (zie de vertaalfunctie hieronder resp. de explorer). */
+export const ConcurrentieFilterSchema = z.object({
+  plaatsen: z.array(z.string()),
+  wijken: z.array(z.string()),
+  typen: z.array(z.string()),
+  periode: z.union([z.literal(12), z.literal(24), z.literal(36), z.literal(0)]),
+  klassen: z.array(z.string()),
+  verborgen: z.array(z.string()),
+  sort: z.enum(['aandeel', 'aantal', 'looptijd']),
+})
+export type ConcurrentieFilterState = z.infer<typeof ConcurrentieFilterSchema>
+
+/** Standaardfilter = werkgebied van het kantoor (zelfde besluit als item 6.1). */
+export function standaardConcurrentieFilter(werkgebiedPlaatsen: string[]): ConcurrentieFilterState {
+  return { plaatsen: werkgebiedPlaatsen, wijken: [], typen: [], periode: 24, klassen: [], verborgen: [], sort: 'aandeel' }
+}
+
+/**
+ * `klassen` (multi-select prijsklasse-dropdown, docs/ontwerp/README.md § 4:
+ * "Concurrentie: dropdown met 5 klassen... prijs_min/max (afgeleid)") vertaalt
+ * naar één prijs_min/prijs_max-bereik: het laagste minimum tot het hoogste
+ * maximum van de gekozen klassen. Bij niet-aaneengesloten klassen (bv. < 500k
+ * én 1-1,5 mln, niet 500k-1mln) vallen de tussenliggende klassen zo binnen
+ * het filter — een bewuste, in de architectuur zelf voorziene vereenvoudiging
+ * ("afgeleid"), geen fout.
+ */
+export function concurrentieFilterNaarTransactieFilter(
+  f: ConcurrentieFilterState,
+  opts: { datumTot: string | null },
+): TransactieFilter {
+  const { datumVan, datumTot } = periodeNaarDatums(f.periode as PeriodeMaanden, opts.datumTot)
+  const filter: TransactieFilter = {}
+  if (f.plaatsen.length) filter.plaatsen = f.plaatsen
+  if (f.wijken.length) filter.wijken = f.wijken
+  if (f.typen.length) filter.typen = f.typen
+  if (datumVan) filter.datum_van = datumVan
+  if (datumTot) filter.datum_tot = datumTot
+  if (f.klassen.length) {
+    const gekozen = PRIJSKLASSEN.filter(k => f.klassen.includes(k.key))
+    if (gekozen.length) {
+      filter.prijs_min = Math.min(...gekozen.map(k => k.min))
+      const max = Math.max(...gekozen.map(k => k.max))
+      if (Number.isFinite(max)) filter.prijs_max = max
+    }
+  }
+  return filter
+}
+
+/** Zelfde filter, maar zonder datumgrenzen — voor de trendgrafiek (marktaandeel per jaar), die het periodefilter bewust negeert. */
+export function concurrentieFilterZonderPeriode(f: ConcurrentieFilterState): TransactieFilter {
+  const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+  delete filter.datum_van
+  delete filter.datum_tot
+  return filter
 }
