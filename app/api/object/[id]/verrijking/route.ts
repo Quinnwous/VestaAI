@@ -58,7 +58,11 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       .eq('kantoor_id', makelaar.kantoor_id)
 
     if (error) {
-      if (error.code === '42703') {
+      // Postgres zelf geeft 42703 (undefined_column) terug; PostgREST/Supabase-js
+      // vertaalt een onbekende kolom bij een update vaker naar PGRST204
+      // ("Could not find the '…' column … in the schema cache") — beide zijn
+      // hier hetzelfde signaal: de migratie is nog niet toegepast.
+      if (error.code === '42703' || error.code === 'PGRST204') {
         return NextResponse.json(
           {
             error: 'Buurtdata kon niet opgeslagen worden: de migratie voor objecten.verrijking_json is nog niet toegepast.',
