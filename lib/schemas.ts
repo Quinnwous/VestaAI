@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
+import { SLUG_REGEX, SLUG_MIN_LENGTE, SLUG_MAX_LENGTE } from './slug'
 
 // Woningtype-taxonomie (docs/ontwerp/README.md § 5, waardering § 3.3): groep is
 // hard vereist (de waarderingskern filtert kandidaten erop), subtype optioneel.
@@ -83,6 +84,17 @@ export const HuisstijlSchema = z.object({
 })
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>
+
+// Slug voor de kantoorspecifieke inlogpagina (/login/[slug], item 9.1) — vorm
+// gedeeld met lib/slug.ts (normaliseerSlug/isGeldigeSlug) en de
+// databaseconstraint in supabase/migrations/20260923_kantoren_slug.sql.
+export const KantoorSlugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(SLUG_MIN_LENGTE, `Minimaal ${SLUG_MIN_LENGTE} tekens`)
+  .max(SLUG_MAX_LENGTE, `Maximaal ${SLUG_MAX_LENGTE} tekens`)
+  .regex(SLUG_REGEX, 'Alleen kleine letters, cijfers en één koppelteken tussen woorden (bv. i4housing)')
 
 // Zakelijke kantoorinstellingen — los van de visuele huisstijl hierboven.
 // Beheerd door de platform-admin in /admin (besluit 16 sep 2026: één rol per

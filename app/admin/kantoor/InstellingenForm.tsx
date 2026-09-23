@@ -2,19 +2,27 @@
 
 import { useState } from 'react'
 import type { KantoorInstellingen } from '@/lib/schemas'
-import { slaKantoorInstellingenOp, slaKantoorNaamOpAlsAdmin } from '../actions'
+import { normaliseerSlug, isGeldigeSlug } from '@/lib/slug'
+import { slaKantoorInstellingenOp, slaKantoorNaamOpAlsAdmin, slaKantoorSlugOpAlsAdmin } from '../actions'
 
 /**
  * Courtage, kantoorprofiel en werkgebied — zakelijke instellingen die het
  * verkoopadvies straks voeden (besluit 16 sep 2026, zie CLAUDE.md). Los van de
- * visuele huisstijl in HuisstijlForm.tsx.
+ * visuele huisstijl in HuisstijlForm.tsx. Bevat ook de slug voor de
+ * kantoorspecifieke inlogpagina (item 9.1, /login/[slug]) — dat is
+ * identiteit/gegevens, geen visuele huisstijl.
  */
-export function InstellingenForm({ kantoorId, naam, instellingen }: {
+export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
   kantoorId: string
   naam: string
+  /** `undefined` = migratie 20260923_kantoren_slug.sql nog niet toegepast (kolom bestaat niet). */
+  slug: string | null | undefined
   instellingen: KantoorInstellingen | null
 }) {
   const [kantoorNaam, setKantoorNaam] = useState(naam)
+  const [kantoorSlug, setKantoorSlug] = useState(slug ?? '')
+  const slugPreview = normaliseerSlug(kantoorSlug)
+  const slugGeldigOfLeeg = slugPreview === '' || isGeldigeSlug(slugPreview)
   const [percentage, setPercentage] = useState(instellingen?.courtage?.percentage?.toString() ?? '')
   const [opstartkosten, setOpstartkosten] = useState(instellingen?.courtage?.opstartkosten?.toString() ?? '')
   const [dienstverlening, setDienstverlening] = useState(instellingen?.courtage?.dienstverlening ?? '')
@@ -23,12 +31,17 @@ export function InstellingenForm({ kantoorId, naam, instellingen }: {
   const [kenmerken, setKenmerken] = useState(instellingen?.profiel?.kenmerken ?? '')
   const [plaatsen, setPlaatsen] = useState((instellingen?.werkgebied?.plaatsen ?? []).join(', '))
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [slugError, setSlugError] = useState('')
 
   const opslaan = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!slugGeldigOfLeeg) return
     setStatus('saving')
 
     const naamResult = kantoorNaam.trim() !== naam ? await slaKantoorNaamOpAlsAdmin(kantoorId, kantoorNaam) : { ok: true }
+    const slugResult: { ok: boolean; error?: string } = slug !== undefined && slugPreview !== (slug ?? '')
+      ? await slaKantoorSlugOpAlsAdmin(kantoorId, slugPreview)
+      : { ok: true }
 
     const data: KantoorInstellingen = {
       courtage: {
@@ -46,8 +59,10 @@ export function InstellingenForm({ kantoorId, naam, instellingen }: {
       },
     }
     const result = await slaKantoorInstellingenOp(kantoorId, data)
-    setStatus(naamResult.ok && result.ok ? 'saved' : 'error')
-    if (naamResult.ok && result.ok) setTimeout(() => setStatus('idle'), 2000)
+    const alleOk = naamResult.ok && slugResult.ok && result.ok
+    setStatus(alleOk ? 'saved' : 'error')
+    if (!slugResult.ok) setSlugError(slugResult.error ?? 'Opslaan mislukt')
+    if (alleOk) setTimeout(() => setStatus('idle'), 2000)
   }
 
   return (
@@ -55,6 +70,39 @@ export function InstellingenForm({ kantoorId, naam, instellingen }: {
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Kantoornaam</label>
         <input value={kantoorNaam} onChange={e => setKantoorNaam(e.target.value)} maxLength={100} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Inlogpagina in kantoorstijl</label>
+        {slug === undefined ? (
+          <p className="text-xs text-amber-600">
+            Nog niet beschikbaar — migratie <code>20260923_kantoren_slug.sql</code> moet eerst toegepast worden.
+          </p>
+        ) : (
+          <>
+            <p className="text-xs text-gray-500 mb-2">
+              Eigen inlogscherm met logo, kleuren en sfeerbeeld van dit kantoor. Leeg = geen eigen
+              inlogpagina, dan gebruikt dit kantoor de gewone <code>/login</code>.
+            </p>
+            <input
+              value={kantoorSlug}
+              onChange={e => { setKantoorSlug(e.target.value); setSlugError('') }}
+              maxLength={60}
+              placeholder="i4housing"
+              aria-label="Slug voor de kantoorlogin"
+              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 ${slugGeldigOfLeeg ? 'border-gray-300' : 'border-red-300'}`}
+            />
+            {slugPreview && (
+              <p className="text-xs text-gray-500 mt-1">
+                Wordt: <span className="font-mono">/login/{slugPreview}</span>
+              </p>
+            )}
+            {!slugGeldigOfLeeg && (
+              <p className="text-xs text-red-600 mt-1">Alleen kleine letters, cijfers en één koppelteken tussen woorden (bv. i4housing).</p>
+            )}
+            {slugError && <p className="text-xs text-red-600 mt-1">{slugError}</p>}
+          </>
+        )}
       </div>
 
       <div className="border-t border-gray-100 pt-5">
