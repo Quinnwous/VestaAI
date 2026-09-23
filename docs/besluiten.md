@@ -6,6 +6,21 @@
 
 ---
 
+### 23 sep 2026 (sessie Opus als regisseur + Sonnet-agents parallel) — 9.1, 13.1 en meer
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Werkwijze: parallelle agents | Opus plant en reviewt, Sonnet-subagents bouwen elk één item in een eigen git-worktree (`.claude/worktrees/`, nu in `.gitignore` en uitgesloten in `vitest.config.ts`/`tsconfig.json` — anders draaien de tests van élke worktree mee). Items gekozen op nul bestandsoverlap; elke agent een eigen dev-poort (31xx). Agents schrijven migraties maar passen ze niet toe; de hoofdsessie reviewt, maakt een back-up en past toe. Docs (`roadmap.md`/`besluiten.md`) alleen door de hoofdsessie, om merge-conflicten te voorkomen | Quinn + Opus |
+| Additieve migraties zelf toepassen | Quinn (23 sep): additieve migraties (nieuwe kolom/tabel/functie, backfill van alleen die nieuwe kolom) mag Claude zelf toepassen, **na een back-up**. Brekende of bestaande data wijzigende migraties blijven akkoord-plichtig | Quinn |
+| Eval-ronde content nog niet | Quinn (23 sep): de blinde A/B-ronde van 8.1 (betaalde API-calls) nog niet draaien; het script staat klaar in dry-run | Quinn |
+| 9.1 slug-lookup via RPC | `/login/[slug]` draait vóór er een sessie is, dus de branding komt uit `kantoor_branding_publiek(p_slug)` — `security definer`, vaste `search_path`, geeft alleen negen publieke brandingvelden terug (naam, logo, kleuren, lettertype, vorm, favicon, sfeerbeelden). Geen publieke RLS-policy op `kantoren`: die zou een hele rij blootgeven (instellingen, stijlprofiel). Migratie `20260923_kantoren_slug.sql` toegepast na back-up; slugs `i4housing` en `demo` | Sonnet + Opus |
+| 9.1 slug hoort bij kantoorgegevens | Bewerken in `InstellingenForm.tsx` naast de kantoornaam, niet in `HuisstijlForm` — het is identiteit/routing, geen visuele stijl. Na uitloggen: terug naar `/login/<slug>` (cookie `vesta_login_slug`, pad-vangrail tegen open redirect), zonder slug ongewijzigd naar `/` | Sonnet |
+| 9.1 kantoorlogin informeel | De kantoorlogin is de voordeur van de ingelogde omgeving, dus "je" (placeholder, resetteksten), neutrale grijzen i.p.v. de groen-getinte, en geen "Neem contact op"-link naar VestaAI's `/contact` maar "Vraag het na bij je kantoor". De generieke `/login` blijft publiek: formeel en VestaAI-groen. Dubbele tabtitel "Inloggen — VestaAI — VestaAI" gerepareerd (layout gaf het achtervoegsel zelf al mee) | Opus |
+| 13.1 publieke copy | Proefperiode-CTA van `/over-ons` weg (bestond niet meer), privacyverklaring feitelijk bijgewerkt (transactiedataset met VestaAI als verwerker, Google Gemini en Plausible als derde partijen toegevoegd, geen "opzegging/factuurgegevens"), `/vertrouwen` idem. Landingspagina had geen onware claims; herpositionering blijft 13.2 | Sonnet |
+| CSP: Plausible toegestaan | Het Plausible-script in `app/layout.tsx` werd op élke pagina door de CSP geblokkeerd (console-error) — de analytics hebben dus nooit gewerkt. `https://plausible.io` toegevoegd aan `script-src` en `connect-src` | Opus |
+
+---
+
 ### 23 sep 2026 (sessie Sonnet) — profielmenu viel weg achter de pagina
 
 | Onderwerp | Besluit | Door |
