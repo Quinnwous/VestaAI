@@ -16,7 +16,12 @@ const SECURITY_HEADERS = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.resend.com https://plausible.io",
+      // plausible.io (analytics, app/layout.tsx) + api.pdok.nl (item 7.1: MapLibre-
+      // vectortiles + glyphs voor de BRT-Achtergrondkaart) blijven/komen hier.
+      "connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.resend.com https://plausible.io https://api.pdok.nl",
+      // MapLibre GL parseert vectortiles in een web worker die het zelf als blob: laadt.
+      "worker-src 'self' blob:",
+      "child-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
     ].join('; '),
