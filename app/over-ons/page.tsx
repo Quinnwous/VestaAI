@@ -5,7 +5,7 @@ import { PublicNav } from '@/components/PublicNav'
 export const metadata: Metadata = {
   title: 'Over ons — VestaAI',
   description:
-    'Vesta AI is gebouwd door en voor makelaars. Ons doel: de complete online woningpresentatie in één Nederlands platform.',
+    'VestaAI is het platform voor de Nederlandse makelaardij: woningwaardering en marktinzicht op je eigen transactiedata, plus een complete contentsuite — in de huisstijl van je kantoor.',
   alternates: {
     canonical: '/over-ons',
   },
@@ -26,7 +26,7 @@ export default function OverOnsPage() {
             Gebouwd voor de Nederlandse makelaardij.
           </h1>
           <p style={{ fontSize: 20, lineHeight: 1.65, color: '#445249', maxWidth: 660, margin: 0 }}>
-            Vesta AI is opgericht met één doel: makelaars bevrijden van tijdrovend schrijfwerk, zodat zij meer tijd hebben voor het werk dat er echt toe doet — mensen helpen hun thuis te vinden.
+            Vesta AI is opgericht met één doel: makelaars een onderbouwde waardebepaling en scherp marktinzicht geven op hun eigen verkoopdata, en ze daarna te bevrijden van tijdrovend schrijfwerk — zodat er meer tijd overblijft voor het werk dat er echt toe doet: mensen helpen hun thuis te vinden.
           </p>
         </section>
 
@@ -37,10 +37,10 @@ export default function OverOnsPage() {
               Waarom Vesta AI?
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: '#445249', margin: '0 0 20px' }}>
-              Makelaars besteden veel te veel tijd aan schrijfwerk voor één woning. Funda-tekst, brochure, Instagram-posts, LinkedIn, koper-e-mail, buurtomschrijving — het wordt steeds meer. En het moet ook nog kloppen met de Funda-richtlijnen, de NVM-stijlregels en de huisstijl van het kantoor.
+              Een makelaar wint of verliest een opdracht op het moment van de waardebepaling, en verkoopt daarna met content die vaak generiek en tijdrovend is. Beide momenten gebeuren vandaag te vaak op onderbuikgevoel, een sjabloon en handwerk.
             </p>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: '#445249', margin: 0 }}>
-              VestaAI neemt dat werk razendsnel uit handen. Niet als een generieke vertaalde chatbot, maar als een complete toolkit die de Nederlandse vastgoedmarkt door en door kent — van de BAG tot Funda, van NVM tot AVG. Uw huisstijl, uw toon, uw kwaliteit.
+              VestaAI onderbouwt de waarde met de eigen verkoopdata van het kantoor en scenario&apos;s, en versnelt de content die daarna volgt — Funda-tekst, brochure, social, koper-e-mail, buurtomschrijving. Niet als generieke tool, maar als een toolkit die de Nederlandse vastgoedmarkt door en door kent — van de BAG tot Funda, van NVM tot AVG. Uw huisstijl, uw toon, uw data.
             </p>
           </div>
         </section>
@@ -54,8 +54,8 @@ export default function OverOnsPage() {
             {[
               { titel: 'Nederlands door en door', tekst: 'Geen vertaalde tool. Funda-richtlijnen, NVM-stijlregels en de cultuur van de Nederlandse huizenmarkt zitten in elk algoritme ingebakken.' },
               { titel: 'Uw stem, niet de onze', tekst: 'Vesta leert de schrijftoon, het logo en de stijl van uw kantoor. Elke tekst klinkt als u — niet als een robot.' },
-              { titel: 'Privacy boven alles', tekst: "Objectdata wordt uitsluitend gebruikt voor uw eigen generaties. Versleuteld op Nederlandse servers, volledig AVG-proof. We verkopen nooit uw data." },
-              { titel: 'Eén platform, niet tien tools', tekst: 'Tekst, virtual staging, documenten en export samengebracht in één werkplek. Minder logins, meer overzicht.' },
+              { titel: 'Privacy boven alles', tekst: "Objectdata en uw eigen transactiedata worden uitsluitend gebruikt om uw omgeving te laten werken. Versleuteld, in de EU, volledig AVG-proof. We verkopen nooit uw data." },
+              { titel: 'Eén platform, niet tien tools', tekst: 'Waardering, marktinzicht en content samengebracht in één werkplek, op uw eigen verkoopdata. Minder logins, meer overzicht.' },
             ].map(({ titel, tekst }) => (
               <div key={titel} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '26px 28px' }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: '0 0 10px' }}>{titel}</h3>
@@ -69,17 +69,17 @@ export default function OverOnsPage() {
         <section style={{ maxWidth: 840, margin: '0 auto', padding: '0 28px 100px' }}>
           <div style={{ background: 'linear-gradient(135deg,#114230,#1A6B45)', borderRadius: 24, padding: '54px 48px', textAlign: 'center' }}>
             <h2 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.1, color: '#fff', margin: '0 0 16px' }}>
-              Klaar om te starten?
+              Interesse?
             </h2>
             <p style={{ fontSize: 17, color: '#C8D7CF', margin: '0 0 28px' }}>
-              30 dagen gratis, geen creditcard, direct aan de slag.
+              Toegang tot VestaAI is admin-beheerd. Neem contact op om kennis te maken.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/login" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '14px 28px', borderRadius: 12, textDecoration: 'none' }}>
-                Start gratis proefperiode →
+              <Link href="/contact" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '14px 28px', borderRadius: 12, textDecoration: 'none' }}>
+                Neem contact op →
               </Link>
-              <Link href="/contact" style={{ fontSize: 16, fontWeight: 600, color: '#EAF5EE', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', padding: '14px 24px', borderRadius: 12, textDecoration: 'none' }}>
-                Plan een demo
+              <Link href="/login" style={{ fontSize: 16, fontWeight: 600, color: '#EAF5EE', background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', padding: '14px 24px', borderRadius: 12, textDecoration: 'none' }}>
+                Al klant? Inloggen
               </Link>
             </div>
           </div>

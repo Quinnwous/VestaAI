@@ -29,7 +29,7 @@ export default function PrivacyPage() {
 
       <main className="mx-auto max-w-2xl px-6 py-20">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Privacyverklaring</h1>
-        <p className="text-sm text-gray-400 mb-12">Laatst bijgewerkt: 29 juni 2026</p>
+        <p className="text-sm text-gray-400 mb-12">Laatst bijgewerkt: 23 september 2026</p>
 
         <div className="prose prose-sm prose-gray max-w-none space-y-10">
 
@@ -38,8 +38,10 @@ export default function PrivacyPage() {
             <p className="text-gray-600 leading-relaxed">
               VestaAI is een product van Quinn Berkouwer, gevestigd in Nederland.
               Contactadres: <a href="mailto:quinn.berkouwer@gmail.com" className="text-blue-600 underline">quinn.berkouwer@gmail.com</a>.
-              VestaAI is een SaaS-platform voor Nederlandse en Belgische makelaars waarmee zij razendsnel een
-              complete content-set per woning kunnen genereren.
+              VestaAI is een platform voor de Nederlandse makelaardij — in de huisstijl van uw kantoor —
+              met woningwaardering en marktinzicht op de eigen transactiedataset van het kantoor, plus een
+              complete contentsuite per woning. Toegang is admin-beheerd: uw kantoor kent geen registratie
+              in eigen beheer.
             </p>
           </section>
 
@@ -49,22 +51,32 @@ export default function PrivacyPage() {
               <div>
                 <p className="font-medium text-gray-800 mb-1">Accountgegevens</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Naam, e-mailadres en kantoorgegevens bij registratie. Opgeslagen via Supabase
-                  (GDPR-compliant, datacenters in de EU).
+                  Naam, e-mailadres en kantoorgegevens die de platform-admin voor uw kantoor aanmaakt.
+                  Opgeslagen via Supabase (GDPR-compliant, datacenters in de EU).
                 </p>
               </div>
               <div>
                 <p className="font-medium text-gray-800 mb-1">Objectdata</p>
                 <p className="text-gray-600 leading-relaxed">
                   Adres, woningtype, m², bouwjaar, energielabel, vraagprijs en USP&apos;s die u invoert.
-                  Deze gegevens worden uitsluitend gebruikt om de AI-generatie te maken.
+                  Deze gegevens worden gebruikt voor de waardebepaling en om content te genereren.
                   Wij verkopen of delen deze data niet met derden.
+                </p>
+              </div>
+              <div>
+                <p className="font-medium text-gray-800 mb-1">Transactiedataset</p>
+                <p className="text-gray-600 leading-relaxed">
+                  De eigen verkoopdata van uw kantoor (adres, verkoopprijs, verkoopdatum en woningkenmerken),
+                  die de platform-admin voor u importeert en gebruikt voor de waardebepaling, marktanalyse en
+                  concurrentieanalyse. Per kantoor afgeschermd via row-level security: uw kantoor ziet nooit de
+                  data van een ander kantoor. Voor deze dataset treedt VestaAI op als verwerker namens uw
+                  kantoor; uw kantoor blijft hiervoor verwerkingsverantwoordelijke.
                 </p>
               </div>
               <div>
                 <p className="font-medium text-gray-800 mb-1">Huisstijlgegevens</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Logo, schrijftoon en voorbeeldteksten die u instelt voor het huisstijlgeheugen.
+                  Logo, kleuren, lettertype en voorbeeldteksten van uw kantoor, beheerd door de platform-admin.
                   Opgeslagen in Supabase Storage, alleen toegankelijk voor uw kantoor.
                 </p>
               </div>
@@ -74,10 +86,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">3. Waarvoor gebruiken wij uw gegevens?</h2>
             <ul className="list-disc list-inside space-y-2 text-gray-600 leading-relaxed">
-              <li>Het uitvoeren van de dienst (content genereren via Claude AI)</li>
-              <li>Transactionele e-mails (accountmeldingen, teamuitnodigingen) via Resend</li>
+              <li>Het uitvoeren van de dienst (waardebepaling, marktinzicht en content genereren via Claude AI, virtual staging via Gemini)</li>
+              <li>Transactionele e-mails (accountmeldingen, wachtwoordherstel) via Resend</li>
               <li>Klantenservice en technische ondersteuning</li>
-              <li>Verbetering van de dienst op basis van anonieme gebruiksstatistieken</li>
+              <li>Verbetering van de dienst op basis van anonieme, cookieloze gebruiksstatistieken (Plausible)</li>
             </ul>
           </section>
 
@@ -86,12 +98,14 @@ export default function PrivacyPage() {
             <div className="space-y-3">
               {[
                 ['Supabase', 'Database, authenticatie en opslag — EU-servers, GDPR-compliant'],
-                ['Anthropic (Claude API)', 'AI-generatie — uw objectdata wordt per request verstuurd, niet permanent opgeslagen bij Anthropic'],
+                ['Anthropic (Claude API)', 'AI-generatie voor content en USP-extractie — uw objectdata wordt per request verstuurd, niet permanent opgeslagen bij Anthropic'],
+                ['Google (Gemini API)', 'AI-generatie voor virtual staging — een foto wordt per request verstuurd, niet permanent opgeslagen bij Google'],
                 ['Resend', 'Transactionele e-mails — GDPR-compliant'],
                 ['Vercel', 'Hosting en edge functions — EU-regio beschikbaar'],
+                ['Plausible', 'Cookieloze, geanonimiseerde websitestatistieken op onze publieke pagina\'s'],
               ].map(([partij, beschrijving]) => (
                 <div key={partij} className="flex gap-3">
-                  <span className="font-medium text-gray-800 w-32 flex-shrink-0">{partij}</span>
+                  <span className="font-medium text-gray-800 w-40 flex-shrink-0">{partij}</span>
                   <span className="text-gray-600">{beschrijving}</span>
                 </div>
               ))}
@@ -101,9 +115,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">5. Bewaartermijn</h2>
             <p className="text-gray-600 leading-relaxed">
-              Objectdata en gegenereerde teksten worden bewaard zolang uw account actief is.
-              Na opzegging worden uw gegevens binnen 90 dagen verwijderd.
-              Factuurgegevens bewaren wij 7 jaar conform de fiscale bewaarplicht.
+              Objectdata, de transactiedataset en gegenereerde teksten worden bewaard zolang de toegang van
+              uw kantoor actief is. Trekt de platform-admin de toegang van een kantoor in, dan worden de
+              gegevens binnen 90 dagen verwijderd, tenzij een wettelijke bewaarplicht een langere termijn
+              vereist.
             </p>
           </section>
 
@@ -123,7 +138,8 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">7. Cookies</h2>
             <p className="text-gray-600 leading-relaxed">
-              VestaAI gebruikt uitsluitend functionele sessie-cookies voor authenticatie (Supabase).
+              VestaAI gebruikt functionele sessie-cookies voor authenticatie (Supabase) en cookieloze,
+              geanonimiseerde websitestatistieken (Plausible) op onze publieke pagina&apos;s.
               Wij plaatsen geen tracking- of advertentiecookies. Er is geen cookiebanner nodig.
             </p>
           </section>

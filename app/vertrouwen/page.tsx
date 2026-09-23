@@ -25,7 +25,7 @@ const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [
   {
     icoon: '🧠',
     titel: 'Geen AI-training op jouw data',
-    tekst: 'De teksten en woninggegevens die je invoert worden niet gebruikt om AI-modellen te trainen. Ze gaan per opdracht naar Claude (Anthropic) en worden daar niet permanent bewaard of hergebruikt.',
+    tekst: 'De teksten en woninggegevens die je invoert worden niet gebruikt om AI-modellen te trainen. Ze gaan per opdracht naar Claude (Anthropic) of, voor virtual staging, naar Gemini (Google), en worden daar niet permanent bewaard of hergebruikt.',
   },
   {
     icoon: '🛡️',
@@ -89,8 +89,9 @@ export default function VertrouwenPage() {
         <div style={{ ...card, marginTop: 40, padding: '28px 30px' }}>
           <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Jouw AVG-rechten</h2>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: '#5A6B61', marginBottom: 12 }}>
-            Je hebt recht op inzage, correctie, verwijdering en overdracht van je persoonsgegevens. Na opzegging
-            verwijderen we je gegevens binnen 90 dagen (factuurgegevens bewaren we 7 jaar conform de fiscale bewaarplicht).
+            Je hebt recht op inzage, correctie, verwijdering en overdracht van je persoonsgegevens. Trekt de
+            platform-admin de toegang van je kantoor in, dan verwijderen we je gegevens binnen 90 dagen (tenzij
+            een wettelijke bewaarplicht een langere termijn vereist).
             Een verzoek of een verwerkersovereenkomst regel je via{' '}
             <a href="mailto:quinn.berkouwer@gmail.com" style={{ color: '#1A6B45', fontWeight: 600 }}>quinn.berkouwer@gmail.com</a>.
           </p>
