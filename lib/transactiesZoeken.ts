@@ -247,6 +247,12 @@ export function sorteringVoorRpc(sortKey: string, sortDir: 'asc' | 'desc'): Sort
 // "Verkocht door" — weergave (geen makelaar-kolom, zie het bestandscommentaar)
 // ─────────────────────────────────────────────────────────────────────────
 
+/** `(verkoopprijs - vraagprijs) / vraagprijs * 100` — `null` zonder prijs/vraagprijs of bij `vraagprijs = 0`. Zelfde formule als `lib/marktanalyse.ts` `wijKwartaalReeks()`/`filterEigenRijen()`. */
+export function ratioTovVraagprijs(rij: Pick<TransactieRow, 'verkoopprijs' | 'vraagprijs'>): number | null {
+  if (rij.verkoopprijs == null || rij.vraagprijs == null || rij.vraagprijs === 0) return null
+  return ((rij.verkoopprijs - rij.vraagprijs) / rij.vraagprijs) * 100
+}
+
 export function verkochtDoorLabel(
   rij: Pick<TransactieRow, 'eigen_verkoop' | 'verkopend_kantoor_norm' | 'verkopend_kantoor'>,
   eigenKantoorNaam: string,

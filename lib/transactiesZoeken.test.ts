@@ -8,6 +8,7 @@ import {
   volgendeSortering,
   isSorteerbareKolom,
   verkochtDoorLabel,
+  ratioTovVraagprijs,
   bouwTransactiesCsv,
   LOOPTIJD_MAX_STANDAARD,
 } from './transactiesZoeken'
@@ -191,6 +192,19 @@ describe('verkochtDoorLabel', () => {
   it('valt terug op de ruwe kantoornaam, dan op "Onbekend"', () => {
     expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: null, verkopend_kantoor: 'Ten Holt' }), 'i4 Housing')).toBe('Ten Holt')
     expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: null, verkopend_kantoor: null }), 'i4 Housing')).toBe('Onbekend')
+  })
+})
+
+describe('ratioTovVraagprijs', () => {
+  it('berekent het percentage boven/onder de vraagprijs', () => {
+    expect(ratioTovVraagprijs({ verkoopprijs: 550_000, vraagprijs: 500_000 })).toBeCloseTo(10)
+    expect(ratioTovVraagprijs({ verkoopprijs: 450_000, vraagprijs: 500_000 })).toBeCloseTo(-10)
+  })
+
+  it('geeft null zonder prijs/vraagprijs of bij vraagprijs 0', () => {
+    expect(ratioTovVraagprijs({ verkoopprijs: null, vraagprijs: 500_000 })).toBeNull()
+    expect(ratioTovVraagprijs({ verkoopprijs: 500_000, vraagprijs: null })).toBeNull()
+    expect(ratioTovVraagprijs({ verkoopprijs: 500_000, vraagprijs: 0 })).toBeNull()
   })
 })
 
