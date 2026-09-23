@@ -1,32 +1,67 @@
-import { redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngelogdeMakelaar'
+import { KantoorInstellingenSchema } from '@/lib/schemas'
+import { plaatsenWijken, dataTotEnMet, type PlaatsWijkRij } from '@/lib/transactiesQuery'
+import { standaardConcurrentieFilter, concurrentieFilterNaarTransactieFilter, concurrentieFilterZonderPeriode } from '@/lib/concurrentie'
 import { ConcurrentieExplorer } from '@/components/ConcurrentieExplorer'
-import { haalTransactiesVoorVerkenner, ALLE_TRANSACTIE_KOLOMMEN } from '@/lib/transactiesQuery'
-import type { TransactieRow } from '@/lib/supabase'
+import { haalConcurrentieData } from './actions'
 
-export const metadata = { title: 'Concurrentieanalyse' }
+export const metadata = { title: 'Concurrentie' }
 
 /**
- * Concurrentieanalyse — eigen kantoor vs. concurrenten in de regio (zie
- * CLAUDE.md § Hoofdstructuur). Draait op `verkopend_kantoor` in dezelfde
- * transactiedataset als de waardering, zodra dat veld gevuld is; anders een
- * eerlijke lege staat i.p.v. misleidende cijfers (zie ConcurrentieExplorer).
+ * Concurrentieanalyse v2 (item 6.3, docs/roadmap.md § 5 Fase 6 — port van
+ * `docs/ontwerp/concurrentie.html`). Werkt volledig via de RPC's op
+ * `verkopend_kantoor_norm` (patroon 2, § 3.1) — geen enkele rij komt meer
+ * client-side binnen (was ~5,5 s via `haalTransactiesVoorVerkenner`, nu de
+ * geaggregeerde tegels/matrix/ranglijst al vóór de eerste paint). De
+ * standaardfilter (werkgebied van het kantoor) wordt hier al opgehaald zodat
+ * de pagina meteen met cijfers rendert; elke volgende filterwijziging
+ * ververst via de server actions in `actions.ts` vanuit de client component.
  *
- * Tussenfase (item 2.2): de RPC's `concurrentie_marktaandeel`/
- * `concurrentie_segmenten` zijn gebouwd en getest, maar deze pagina houdt
- * voorlopig `ConcurrentieExplorer`'s bestaande client-side aggregatie aan —
- * alleen de databron wisselt naar `haalTransactiesVoorVerkenner` (geen
- * 1.000-rijen-plafond meer).
+ * ⚠️ De RPC's in `supabase/migrations/20260924_rpc_concurrentie_v2.sql` zijn
+ * nog niet toegepast — tot dat gebeurt geeft elk blok een "nog niet
+ * beschikbaar"-melding i.p.v. de pagina te laten crashen (zie actions.ts en
+ * ConcurrentieExplorer.tsx).
  */
 export default async function ConcurrentieAnalysePage() {
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const makelaar = await haalIngelogdeMakelaarOp()
+  if (!makelaar) return <AccountWordtKlaargezet />
 
-  const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
-  if (!makelaar) redirect('/login')
+  const service = createServiceSupabaseClient()
+  const sessie = createServerSupabaseClient()
 
-  const transacties = await haalTransactiesVoorVerkenner<TransactieRow>(supabase, ALLE_TRANSACTIE_KOLOMMEN)
+  const [{ data: kantoorRow }, dataTot] = await Promise.all([
+    service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
+    dataTotEnMet(sessie),
+  ])
 
-  return <ConcurrentieExplorer transacties={transacties} />
+  const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
+  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+
+  // `transacties_plaatsen_wijken` staat klaar sinds item 6.1 (migratie
+  // 20260923_marktanalyse_verdeling_en_plaatsen.sql) — val terug op het
+  // werkgebied zodat de plaats-dropdown nooit leeg is als de RPC om wat voor
+  // reden dan ook faalt.
+  let plaatsenLijst: PlaatsWijkRij[]
+  try {
+    plaatsenLijst = await plaatsenWijken(sessie)
+  } catch {
+    plaatsenLijst = werkgebiedPlaatsen.map(plaats => ({ plaats, wijk: null, n: 0 }))
+  }
+
+  const standaardFilter = standaardConcurrentieFilter(werkgebiedPlaatsen)
+  const rpcFilter = concurrentieFilterNaarTransactieFilter(standaardFilter, { datumTot: dataTot.laatsteVerkoopdatum })
+  const rpcFilterZonderPeriode = concurrentieFilterZonderPeriode(standaardFilter)
+  const opWijkniveau = standaardFilter.plaatsen.length === 1
+
+  const initieel = await haalConcurrentieData(rpcFilter, rpcFilterZonderPeriode, opWijkniveau)
+
+  return (
+    <ConcurrentieExplorer
+      werkgebiedPlaatsen={werkgebiedPlaatsen}
+      plaatsenLijst={plaatsenLijst}
+      dataTotEnMet={dataTot.laatsteVerkoopdatum}
+      initieel={initieel}
+    />
+  )
 }

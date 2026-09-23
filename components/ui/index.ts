@@ -40,3 +40,8 @@ export { FilterPills } from './FilterPills'
 export type { FilterPil } from './FilterPills'
 export { RangeSlider } from './RangeSlider'
 export { ChartCard, Legenda } from './ChartCard'
+
+// Item 6.3 (Concurrentie-explorer v2): wij-vs-markt-vergelijking, poort van
+// docs/ontwerp/concurrentie.html bouwDumbbell() — herbruikbaar voor elke
+// twee-punts-vergelijking (looptijd, t.o.v. vraagprijs, € per m²).
+export { DumbbellStat } from './DumbbellStat'
