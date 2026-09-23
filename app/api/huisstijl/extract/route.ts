@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { meldFout } from '@/lib/fouten'
+import { EXTRACTIE } from '@/lib/aiModellen'
 
 export const maxDuration = 60
 
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
       file: new File([bytes], bestand.name, { type: bestand.type }),
     })
     const raw = await (client.beta.messages.create as unknown as (p: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
-      model: 'claude-haiku-4-5-20251001',
+      model: EXTRACTIE,
       max_tokens: 4000,
       system: 'Je extraheert platte tekst uit een document. Geef uitsluitend de lopende tekst terug — geen opmaak, geen koppen-markering, geen inleiding of commentaar.',
       messages: [{

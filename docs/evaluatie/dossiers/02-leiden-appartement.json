@@ -1,0 +1,36 @@
+{
+  "adres": "Herensingel 42, Leiden",
+  "woningtype_groep": "appartement",
+  "woningtype_sub": "Portiekwoning",
+  "kamers": 3,
+  "oppervlak_m2": 78,
+  "inhoud_m3": 235,
+  "bouwjaar": 1932,
+  "energielabel": "C",
+  "slaapkamers": 2,
+  "badkamers": 1,
+  "woonlagen": 1,
+  "vraagprijs": 385000,
+  "usps": "Karakteristiek jaren '30 appartement met originele details, hoog plafond, op loopafstand van de Leidse binnenstad en het station, eigen berging in de kelder",
+  "doelgroep": "Starters en young professionals die dicht bij het centrum en de universiteit willen wonen",
+  "staat_afwerking": {
+    "onderhoud_binnen": "goed",
+    "onderhoud_buiten": "goed",
+    "keuken_jaar": 2016,
+    "isolatie": ["glas"],
+    "zonnepanelen": false,
+    "recent_verbouwd": "Keuken vervangen in 2016, badkamer origineel maar goed onderhouden"
+  },
+  "ligging_buitenruimte": {
+    "ligging": "tussenwoning",
+    "balkon_dakterras": true,
+    "garage_parkeren": "openbaar",
+    "berging": true,
+    "uitzicht": "Uitzicht over de singel",
+    "bijzondere_ligging": ["water"],
+    "vve_bijdrage_per_maand": 145
+  },
+  "courtagevoorstel_percentage": 1.8,
+  "prijsverwachting_verkoper": 395000,
+  "content_keuzes": ["followup", "marktanalyse"]
+}

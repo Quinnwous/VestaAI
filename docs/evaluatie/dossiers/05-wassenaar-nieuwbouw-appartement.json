@@ -1,0 +1,38 @@
+{
+  "adres": "Jonkerlaan 51, Wassenaar",
+  "woningtype_groep": "appartement",
+  "woningtype_sub": "Penthouse",
+  "kamers": 4,
+  "oppervlak_m2": 142,
+  "inhoud_m3": 425,
+  "bouwjaar": 2019,
+  "energielabel": "A++",
+  "slaapkamers": 3,
+  "badkamers": 2,
+  "woonlagen": 1,
+  "vraagprijs": 1095000,
+  "usps": "Luxe penthouse met wraparound dakterras van 60 m², eigen lift naar het appartement, vloerverwarming en -koeling, ondergrondse parkeerplaats inbegrepen",
+  "doelgroep": "Empty nesters en vermogende kopers die luxe en gemak zoeken zonder tuinonderhoud",
+  "staat_afwerking": {
+    "onderhoud_binnen": "uitstekend",
+    "onderhoud_buiten": "uitstekend",
+    "keuken_jaar": 2019,
+    "badkamer_jaar": 2019,
+    "isolatie": ["dak", "muur", "vloer", "glas"],
+    "zonnepanelen": true,
+    "recent_verbouwd": "Nieuwbouw (2019), volledig afgewerkt met natuursteen vloeren en domotica"
+  },
+  "ligging_buitenruimte": {
+    "ligging": "vrijstaand",
+    "balkon_dakterras": true,
+    "garage_parkeren": "garage",
+    "berging": true,
+    "uitzicht": "Panoramisch uitzicht over Wassenaar en de duinen",
+    "bijzondere_ligging": ["park"],
+    "vve_bijdrage_per_maand": 320,
+    "erfpacht": { "van_toepassing": false }
+  },
+  "courtagevoorstel_percentage": 1.4,
+  "prijsverwachting_verkoper": 1150000,
+  "content_keuzes": ["video", "energieadvies"]
+}

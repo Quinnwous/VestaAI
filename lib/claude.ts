@@ -9,6 +9,7 @@ import {
   type HuisstijlConfig,
   type PrijswijzigingOutput,
 } from './schemas'
+import { CONTENT, SAMENVATTING } from './aiModellen'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
@@ -90,42 +91,44 @@ Guidelines per extra field:
 
 No text outside the JSON object.`
 
-function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'): string {
-  const base = taal === 'en' ? BASE_SYSTEM_PROMPT_EN : BASE_SYSTEM_PROMPT_NL
-  if (!huisstijl) return base
+/** Eén systeemprompt-tekstblok, optioneel met een cache-breekpunt (prompt caching, item 8.1). */
+type PromptBlok = { type: 'text'; text: string; cache_control?: { type: 'ephemeral' } }
 
+/**
+ * Bouwt het kantoor-specifieke huisstijlblok — stijlprofiel, voorbeeldteksten,
+ * geleerde regels, brochurestijl. Bewust met VASTE Nederlandse labels,
+ * ongeacht de generatietaal: dit blok bevat letterlijk dezelfde brontekst van
+ * het kantoor voor een NL- én een EN-aanroep, en moet dus byte-voor-byte
+ * identiek zijn om als gedeelde cache-prefix te dienen (zie
+ * `buildSystemPromptBlokken` hieronder). Vóór deze herstructurering (item
+ * 8.1) kregen de labels een Engelse vertaling bij `taal: 'en'` — dat brak de
+ * gedeelde prefix, dus is bewust losgelaten; de inhoud (stijlprofiel,
+ * voorbeelden, slogan) verandert niet.
+ */
+function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
   const schrijftoonLabel = {
-    formeel: taal === 'en' ? 'Formal and professional' : 'Formeel en professioneel',
-    informeel: taal === 'en' ? 'Informal and accessible' : 'Informeel en toegankelijk',
-    enthousiast: taal === 'en' ? 'Enthusiastic and inviting' : 'Enthousiast en uitnodigend',
+    formeel: 'Formeel en professioneel',
+    informeel: 'Informeel en toegankelijk',
+    enthousiast: 'Enthousiast en uitnodigend',
   }[huisstijl.schrijftoon]
 
-  const toonLabel = taal === 'en' ? 'Tone of voice' : 'Schrijftoon'
-  const sloganLabel = taal === 'en' ? 'Slogan' : 'Slogan'
-  const voorbeeldLabel = taal === 'en' ? 'Example texts (use as style reference)' : 'Voorbeeldteksten (gebruik als stijlreferentie)'
-  const profielLabel = taal === 'en' ? 'Agency style profile (follow closely)' : 'Stijlprofiel van het kantoor (volg dit nauwgezet)'
-  const kantoorLabel = taal === 'en' ? "Agency's house style" : 'Huisstijl van het makelaarskantoor'
+  let blok = `Huisstijl van het makelaarskantoor:\n- Schrijftoon: ${schrijftoonLabel}`
+  if (huisstijl.slogan) blok += `\n- Slogan: "${huisstijl.slogan}"`
 
-  let extra = `\n\n${kantoorLabel}:\n- ${toonLabel}: ${schrijftoonLabel}`
-  if (huisstijl.slogan) extra += `\n- ${sloganLabel}: "${huisstijl.slogan}"`
-
-  // Het gedestilleerde stijlprofiel is leidend. In beide gevallen sturen we hooguit 3 integrale
+  // Het gedestilleerde stijlprofiel is leidend. We sturen hooguit 3 integrale
   // voorbeelden mee als concrete referentie — meer zou de prompt (en de kosten) onnodig opblazen.
   if (huisstijl.stijlprofiel) {
-    extra += `\n\n${profielLabel}:\n${huisstijl.stijlprofiel}`
+    blok += `\n\nStijlprofiel van het kantoor (volg dit nauwgezet):\n${huisstijl.stijlprofiel}`
   }
   // Geleerde regels uit eerdere handmatige bewerkingen (na review geaccepteerd) — leidend.
   if (huisstijl.geleerde_regels) {
-    const geleerdLabel = taal === 'en'
-      ? "Learned rules from the agency's own edits (apply these)"
-      : 'Geleerde regels uit de eigen bewerkingen van het kantoor (pas deze toe)'
-    extra += `\n\n${geleerdLabel}:\n${huisstijl.geleerde_regels}`
+    blok += `\n\nGeleerde regels uit de eigen bewerkingen van het kantoor (pas deze toe):\n${huisstijl.geleerde_regels}`
   }
   const topVoorbeelden = huisstijl.voorbeelden.filter(Boolean).slice(0, 3)
   if (topVoorbeelden.length > 0) {
-    extra += `\n\n${voorbeeldLabel}:\n`
+    blok += `\n\nVoorbeeldteksten (gebruik als stijlreferentie):\n`
     topVoorbeelden.forEach((v, i) => {
-      extra += `\n--- ${taal === 'en' ? 'Example' : 'Voorbeeld'} ${i + 1} ---\n${v}\n`
+      blok += `\n--- Voorbeeld ${i + 1} ---\n${v}\n`
     })
   }
 
@@ -133,17 +136,57 @@ function buildSystemPrompt(huisstijl?: HuisstijlConfig, taal: 'nl' | 'en' = 'nl'
   const bro = huisstijl.brochure_stijl
   const broVoorbeelden = bro?.voorbeelden?.filter(Boolean).slice(0, 2) ?? []
   if (bro?.stijlprofiel || broVoorbeelden.length > 0) {
-    const broLabel = taal === 'en'
-      ? 'Brochure-specific style (apply ONLY to brochure_kort and brochure_lang)'
-      : 'Brochure-specifieke stijl (pas ALLEEN toe op brochure_kort en brochure_lang)'
-    extra += `\n\n${broLabel}:`
-    if (bro?.stijlprofiel) extra += `\n${bro.stijlprofiel}`
+    blok += `\n\nBrochure-specifieke stijl (pas ALLEEN toe op brochure_kort en brochure_lang):`
+    if (bro?.stijlprofiel) blok += `\n${bro.stijlprofiel}`
     broVoorbeelden.forEach((v, i) => {
-      extra += `\n\n--- ${taal === 'en' ? 'Brochure example' : 'Brochure-voorbeeld'} ${i + 1} ---\n${v}`
+      blok += `\n\n--- Brochure-voorbeeld ${i + 1} ---\n${v}`
     })
   }
 
-  return base + extra
+  return blok
+}
+
+/**
+ * Bouwt het systeemprompt op als (maximaal) twee cachebare tekstblokken, zodat
+ * een NL- en een EN-generatie voor hetzelfde kantoor een gedeelde cache-
+ * prefix kunnen delen (prompt caching, item 8.1, roadmap § 3.6):
+ *
+ * 1. **Gedeeld blok** (huisstijl, alleen als geconfigureerd) — voorop gezet
+ *    en met een eigen `cache_control`-breekpunt, zodat `generateContentBeideTalen`
+ *    (parallelle NL+EN-aanroep, zelfde kantoor) voor dít deel dezelfde
+ *    cache-entry kan lezen/schrijven ondanks de verschillende taal erna.
+ * 2. **Taalspecifiek blok** (`BASE_SYSTEM_PROMPT_NL`/`_EN`, ongewijzigd) —
+ *    ná het eerste breekpunt, met een eigen tweede `cache_control`, zodat
+ *    opeenvolgende generaties in dezelfde taal (andere dossiers, zelfde
+ *    kantoor) in elk geval dát deel hergebruiken, ook al verschilt het
+ *    tussen NL en EN.
+ *
+ * ⚠️ Gecontroleerd (item 8.1, eindrapport): het cachen is een prefix-match
+ * met een model-afhankelijke ondergrens (voor `claude-sonnet-4-6`: 1024
+ * tokens — `shared/prompt-caching.md` in de claude-api-skill). Een live
+ * `count_tokens`-call (gratis endpoint, geen generatiekosten) op een
+ * realistisch i4housing-achtig huisstijlblok (stijlprofiel + 3
+ * voorbeeldteksten op het schemamaximum) mat **3373 tokens** — ruim boven de
+ * ondergrens. Zelfs het taalspecifieke blok alléén (`BASE_SYSTEM_PROMPT_NL`,
+ * zonder huisstijl) mat **1569 tokens** — óók boven de ondergrens, dus zelfs
+ * zonder geconfigureerde huisstijl profiteren opeenvolgende generaties in
+ * dezelfde taal van caching. Alleen bij een zeer kaal huisstijlblok (geen
+ * stijlprofiel, hooguit één korte voorbeeldtekst) kan het gedeelde blok onder
+ * de ondergrens duiken — geen fout, gewoon geen besparing voor dát blok
+ * (`cache_creation_input_tokens: 0`).
+ */
+function buildSystemPromptBlokken(huisstijl: HuisstijlConfig | undefined, taal: 'nl' | 'en' = 'nl'): PromptBlok[] {
+  const blokken: PromptBlok[] = []
+
+  if (huisstijl) {
+    const gedeeld = buildHuisstijlBlok(huisstijl)
+    if (gedeeld) blokken.push({ type: 'text', text: gedeeld, cache_control: { type: 'ephemeral' } })
+  }
+
+  const taalspecifiek = taal === 'en' ? BASE_SYSTEM_PROMPT_EN : BASE_SYSTEM_PROMPT_NL
+  blokken.push({ type: 'text', text: taalspecifiek, cache_control: { type: 'ephemeral' } })
+
+  return blokken
 }
 
 // Destilleert uit (max 20) voorbeeldteksten één compact, herbruikbaar stijlprofiel.
@@ -168,7 +211,7 @@ export async function distilleerStijlprofiel(
   const voorbeeldBlok = nietLeeg.map((v, i) => `--- Voorbeeld ${i + 1} ---\n${v}`).join('\n\n')
 
   const message = await c.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: SAMENVATTING,
     max_tokens: 1200,
     system:
       'Je bent een redactioneel analist. Je destilleert uit voorbeeldteksten van één makelaarskantoor een compact, herbruikbaar stijlprofiel waarmee een AI-copywriter in exact díe huisstijl kan schrijven.',
@@ -214,7 +257,7 @@ export async function distilleerBewerkingsregels(
     : ''
 
   const message = await c.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: SAMENVATTING,
     max_tokens: 800,
     system:
       'Je bent een redactioneel analist. Een makelaar bewerkt door AI gegenereerde teksten handmatig. Uit de verschillen tussen origineel en bewerkte versie leid je de SYSTEMATISCHE voorkeuren van dit kantoor af.',
@@ -312,6 +355,10 @@ export async function generateContent(
   clientArg?: Anthropic,
   verrijkingTekst?: string,
   documentFileIds?: string[],
+  // Alleen voor de blinde evaluatieset (item 8.1, scripts/evalueer-content.mjs):
+  // laat die het CONTENT_KANDIDAAT-model draaien zonder de prompt-opbouw te
+  // dupliceren. Productiecode geeft dit nooit door — default blijft CONTENT.
+  modelOverride?: string,
 ): Promise<ContentOutput> {
   let huisstijl: HuisstijlConfig | undefined
   let client: Anthropic
@@ -328,15 +375,22 @@ export async function generateContent(
     // aftikken. timeout ruim binnen maxDuration=300s.
     client = clientArg ?? new Anthropic({ maxRetries: 1, timeout: 280_000 })
   }
-  let systemPrompt = buildSystemPrompt(huisstijl, input.taal ?? 'nl')
+  // Twee cachebare blokken (huisstijl gedeeld tussen NL/EN + taalspecifieke basisregels) —
+  // zie buildSystemPromptBlokken hierboven voor de cache-redenering (item 8.1).
+  const systemBlokken = buildSystemPromptBlokken(huisstijl, input.taal ?? 'nl')
 
   // Bijgevoegde documenten (meetrapport, bouwkundige keuring, taxatie): feitelijke gegevens
-  // hieruit moeten de teksten aanscherpen — vooral de technische staat en de FAQ.
+  // hieruit moeten de teksten aanscherpen — vooral de technische staat en de FAQ. Als eigen,
+  // ongecachet blok ná de twee cachebare blokken: dit varieert per aanvraag en mag de
+  // cache-prefix van de eerste twee blokken niet raken.
   const docIds = documentFileIds?.filter(Boolean) ?? []
   if (docIds.length > 0) {
-    systemPrompt += input.taal === 'en'
-      ? `\n\nATTACHED DOCUMENTS: one or more documents are attached (e.g. a survey, structural inspection or valuation). Use the factual data from them — exact floor areas, structural condition, defects found, installations and particularities — in the texts, especially funda_tekst (technical condition), brochure_lang, energie_advies and kopersvragen_faq. Only use what is actually stated in the documents; never invent facts.`
-      : `\n\nBIJGEVOEGDE DOCUMENTEN: er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — in de teksten, met name in funda_tekst (technische staat), brochure_lang, energie_advies en kopersvragen_faq. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.`
+    systemBlokken.push({
+      type: 'text',
+      text: input.taal === 'en'
+        ? `ATTACHED DOCUMENTS: one or more documents are attached (e.g. a survey, structural inspection or valuation). Use the factual data from them — exact floor areas, structural condition, defects found, installations and particularities — in the texts, especially funda_tekst (technical condition), brochure_lang, energie_advies and kopersvragen_faq. Only use what is actually stated in the documents; never invent facts.`
+        : `BIJGEVOEGDE DOCUMENTEN: er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — in de teksten, met name in funda_tekst (technische staat), brochure_lang, energie_advies en kopersvragen_faq. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.`,
+    })
   }
 
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -352,13 +406,14 @@ export async function generateContent(
     // generatie minuten; streaming houdt de verbinding warm (geen idle-timeout/504)
     // en is de door Anthropic aanbevolen aanpak voor hoge max_tokens.
     let text = ''
+    const model = modelOverride ?? CONTENT
     if (docIds.length > 0) {
       // Documenten aanwezig → Files API-beta; hang de document-blokken vóór de tekst.
       const docBlocks = docIds.map(id => ({ type: 'document', source: { type: 'file', file_id: id } }))
       const stream = (client.beta.messages.stream as unknown as (p: Record<string, unknown>) => { finalMessage: () => Promise<Anthropic.Beta.Messages.BetaMessage> })({
-        model: 'claude-sonnet-4-6',
+        model,
         max_tokens: 16000,
-        system: systemPrompt,
+        system: systemBlokken,
         messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
         betas: ['files-api-2025-04-14'],
       })
@@ -366,9 +421,9 @@ export async function generateContent(
       text = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
     } else {
       const message = await client.messages.stream({
-        model: 'claude-sonnet-4-6',
+        model,
         max_tokens: 16000,
-        system: systemPrompt,
+        system: systemBlokken,
         messages: [{ role: 'user', content: userText }],
       }).finalMessage()
       text = message.content[0].type === 'text' ? message.content[0].text : ''
@@ -442,7 +497,7 @@ Genereer de drie berichten als JSON.`
 
   for (let attempt = 0; attempt < 2; attempt++) {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: CONTENT,
       max_tokens: 2000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userMessage }],
@@ -463,13 +518,17 @@ Genereer de drie berichten als JSON.`
 // AI USP-extractor (F7, zie CLAUDE.md § Hoofdstructuur): losse, kleine prompt
 // naast de hoofdwaardering — vertaalt de vrije intaketekst naar
 // gestructureerde USP's die zowel de waardering als de content voeden.
+// Model: SAMENVATTING (huidige model, ongewijzigd) — zie de noot bij EXTRACTIE
+// in lib/aiModellen.ts: dit is qua taak dicht bij extractie, maar interpreteert
+// vrije tekst (meer dan letterlijk overtypen) en is daarom bewust niet zonder
+// kwaliteitscheck naar Haiku (EXTRACTIE) verplaatst.
 export async function extraheerUsps(vrijeTekst: string, client?: Anthropic): Promise<string[]> {
   const tekst = vrijeTekst.trim()
   if (!tekst) return []
   const c = client ?? new Anthropic()
 
   const message = await c.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: SAMENVATTING,
     max_tokens: 500,
     system: 'Je vertaalt vrije tekst met bijzonderheden van een woning naar korte, losse Unique Selling Points (USP\'s). Geef ALLEEN een JSON-array van strings terug, geen uitleg. Elke USP is kort (max. 6 woorden), concreet en begint met een kenmerk, niet met een lidwoord. Voorbeeld invoer: "heeft een mooie garage en nieuw dakkapel uit 2023" → ["Ruime garage", "Nieuw dakkapel (2023)"]. Onbekende of vage input levert een lege array op — verzin niets.',
     messages: [{ role: 'user', content: tekst }],
