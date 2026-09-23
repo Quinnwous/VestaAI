@@ -88,6 +88,13 @@
 .vui-navitem { transition: background .15s, color .15s; }
 .vui-navitem:hover { background: var(--merk-zacht) !important; }
 
+/* FilterDropdown/Chip/FilterPills (item 6.1) — hover die inline styles niet kunnen. */
+.vui-filterbtn { transition: all .15s; }
+.vui-filterbtn:hover { border-color: var(--merk) !important; color: var(--merk) !important; }
+.vui-chip:hover { border-color: var(--merk) !important; }
+.vui-chip[aria-pressed='true']:hover { border-color: var(--merk-hover) !important; }
+.vui-pill-remove:hover { background: var(--merk-accent) !important; color: #fff !important; }
+
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
    zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
    laadstaat is geen statusmelding. */
