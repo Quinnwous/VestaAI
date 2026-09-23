@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { PropertyInputSchema, ContentOutputSchema } from './claude'
 import type Anthropic from '@anthropic-ai/sdk'
+import type { HuisstijlConfig } from './schemas'
 
 const validInput = {
   adres: 'Herengracht 1, Amsterdam',
@@ -268,5 +269,110 @@ describe('generateContentBeideTalen', () => {
 
     expect(result.nl.funda_tekst).toContain('Herengracht')
     expect(result.en).toBeNull()
+  })
+})
+
+// Vorm van het stukje request dat generateContent naar client.messages.stream stuurt —
+// alleen het veld dat deze tests nodig hebben (item 8.1, prompt caching).
+type GevangenSysteemAanroep = {
+  system: { type: string; text: string; cache_control?: { type: 'ephemeral' } }[]
+}
+
+describe('cache_control op het systeemprompt (prompt caching, item 8.1)', () => {
+  // Realistische i4housing-achtige huisstijl: stijlprofiel + 3 voorbeeldteksten op hun
+  // schemamaximum (elk 2000 tekens, zie HuisstijlSchema in lib/schemas.ts) — dit is de
+  // vorm die een echt geconfigureerd kantoor (met voorbeeldteksten) oplevert.
+  const huisstijl: HuisstijlConfig = {
+    schrijftoon: 'enthousiast',
+    slogan: 'Wonen met een glimlach',
+    primaire_kleur: '#0080C8',
+    accent_kleur: '#C61E45',
+    voorbeelden: [
+      'Prachtig gelegen woning met veel lichtinval. '.repeat(50).slice(0, 2000),
+      'Ruime living met openslaande deuren naar de tuin. '.repeat(50).slice(0, 2000),
+      'Sfeervolle keuken met alle gemakken. '.repeat(60).slice(0, 2000),
+    ],
+    stijlprofiel: 'Schrijf warm en persoonlijk, gebruik korte zinnen en vermijd jargon. '.repeat(60).slice(0, 4000),
+    geleerde_regels: 'Gebruik altijd "wij" in plaats van "ik". '.repeat(20).slice(0, 1000),
+  }
+
+  const inputBasis = {
+    adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement' as const, kamers: 3,
+    oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' as const,
+    vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
+  }
+
+  it('plaatst een cache_control-breekpunt op zowel het huisstijlblok als het taalspecifieke blok', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, huisstijl, mockClient)
+
+    const call = mockStream.mock.calls[0][0] as unknown as GevangenSysteemAanroep
+    expect(Array.isArray(call.system)).toBe(true)
+    expect(call.system).toHaveLength(2)
+    expect(call.system[0].cache_control).toEqual({ type: 'ephemeral' })
+    expect(call.system[1].cache_control).toEqual({ type: 'ephemeral' })
+  })
+
+  it('deelt een byte-identiek huisstijlblok tussen een NL- en een EN-aanroep voor hetzelfde kantoor', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, huisstijl, mockClient)
+    await generateContent({ ...inputBasis, taal: 'en' }, huisstijl, mockClient)
+
+    const [nlCall, enCall] = mockStream.mock.calls.map(c => c[0] as unknown as GevangenSysteemAanroep)
+    expect(nlCall.system[0].text).toBe(enCall.system[0].text)
+    // De taalspecifieke blokken (BASE_SYSTEM_PROMPT_NL/_EN) moeten juist wél verschillen —
+    // dat is precies het deel dat ná het gedeelde cache-breekpunt hoort te staan.
+    expect(nlCall.system[1].text).not.toBe(enCall.system[1].text)
+  })
+
+  it('het gedeelde huisstijlblok haalt naar schatting de minimale cachebare lengte voor claude-sonnet-4-6 (1024 tokens)', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, huisstijl, mockClient)
+
+    const call = mockStream.mock.calls[0][0] as unknown as GevangenSysteemAanroep
+    const gedeeldBlok = call.system[0].text
+    // Ruwe, behoudende schatting (≥4 tekens/token — Nederlandse tekst zit doorgaans
+    // dichter bij 3-3,5 tekens/token, dus dit onderschat het werkelijke aantal tokens).
+    // Een live count_tokens-call (gratis endpoint) op precies dit blok mat 3373 tokens —
+    // zie de kanttekening bij buildSystemPromptBlokken in lib/claude.ts en het eindrapport.
+    expect(gedeeldBlok.length / 4).toBeGreaterThan(1024)
+  })
+
+  it('zonder geconfigureerde huisstijl is er precies één (taalspecifiek) systeemblok', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, undefined, mockClient)
+
+    const call = mockStream.mock.calls[0][0] as unknown as GevangenSysteemAanroep
+    expect(call.system).toHaveLength(1)
+    expect(call.system[0].cache_control).toEqual({ type: 'ephemeral' })
+  })
+
+  it('een bijgevoegd document komt als apart, ongecacht derde blok ná de twee cachebare blokken', async () => {
+    const mockBetaStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = {
+      messages: { stream: vi.fn() },
+      beta: { messages: { stream: mockBetaStream } },
+    } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, huisstijl, mockClient, undefined, ['file-123'])
+
+    const call = mockBetaStream.mock.calls[0][0] as unknown as GevangenSysteemAanroep
+    expect(call.system).toHaveLength(3)
+    expect(call.system[0].cache_control).toEqual({ type: 'ephemeral' }) // huisstijl
+    expect(call.system[1].cache_control).toEqual({ type: 'ephemeral' }) // taalspecifiek
+    expect(call.system[2].cache_control).toBeUndefined() // documenten-instructie, per-aanvraag
   })
 })

@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 import { meldFout } from '@/lib/fouten'
+import { SAMENVATTING } from '@/lib/aiModellen'
 
 export const maxDuration = 60
 
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
     if (doc.anthropic_file_id) {
       // Gebruik de Anthropic Files API file_id via beta endpoint
       const rawMessage = await (client.beta.messages.create as unknown as (params: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
-        model: 'claude-sonnet-4-6',
+        model: SAMENVATTING,
         max_tokens: 1500,
         system: `Je bent een juridisch assistent gespecialiseerd in Nederlands vastgoedrecht. Je analyseert documenten en beantwoordt vragen van makelaars. Geef heldere, feitelijke antwoorden. Geef bij twijfel altijd aan dat een notaris of jurist geraadpleegd moet worden.`,
         messages: [{
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
       const base64 = Buffer.from(buffer).toString('base64')
 
       const message = await client.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: SAMENVATTING,
         max_tokens: 1500,
         system: `Je bent een juridisch assistent gespecialiseerd in Nederlands vastgoedrecht. Analyseer het document en beantwoord de vraag van de makelaar. Geef heldere, feitelijke antwoorden. Vermeld bij juridische onzekerheid altijd dat een notaris geraadpleegd moet worden.`,
         messages: [{

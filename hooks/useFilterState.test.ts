@@ -1,67 +1,65 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { z } from 'zod'
-import { serialiseerFilterState, deserialiseerFilterState } from './useFilterState'
+import { serialiseerFilterState, parseerFilterState } from './useFilterState'
 
 const Schema = z.object({
   plaatsen: z.array(z.string()),
   periode: z.number(),
-  actief: z.boolean(),
-  sort: z.string(),
+  prijs: z.tuple([z.number(), z.number()]),
+  tuin: z.boolean(),
+  tov: z.string(),
 })
 type Filter = z.infer<typeof Schema>
-const DEFAULTS: Filter = { plaatsen: ['wassenaar'], periode: 24, actief: false, sort: 'aandeel' }
+const DEFAULTS: Filter = { plaatsen: ['wassenaar'], periode: 24, prijs: [0, 5_000_000], tuin: false, tov: 'alle' }
 
-describe('serialiseerFilterState', () => {
-  it('laat velden gelijk aan de default weg', () => {
-    expect(serialiseerFilterState(DEFAULTS, DEFAULTS).toString()).toBe('')
+describe('serialiseerFilterState (hooks/useFilterState.ts)', () => {
+  it('laat velden die gelijk zijn aan de standaard weg', () => {
+    const params = serialiseerFilterState(DEFAULTS, DEFAULTS)
+    expect(params.toString()).toBe('')
   })
 
-  it('serialiseert een array die afwijkt van de default, kommagescheiden', () => {
-    const params = serialiseerFilterState({ ...DEFAULTS, plaatsen: ['denhaag', 'voorschoten'] }, DEFAULTS)
-    expect(params.get('plaatsen')).toBe('denhaag,voorschoten')
+  it('serialiseert een afwijkende multi-select met komma\'s', () => {
+    const params = serialiseerFilterState({ ...DEFAULTS, plaatsen: ['wassenaar', 'denhaag'] }, DEFAULTS)
+    expect(params.get('plaatsen')).toBe('wassenaar,denhaag')
   })
 
-  it('is ongevoelig voor de volgorde van array-elementen', () => {
-    const params = serialiseerFilterState({ ...DEFAULTS, plaatsen: ['wassenaar'] }, DEFAULTS)
-    expect(params.has('plaatsen')).toBe(false)
+  it('serialiseert een afwijkend getallenbereik met een streepje', () => {
+    const params = serialiseerFilterState({ ...DEFAULTS, prijs: [200_000, 800_000] }, DEFAULTS)
+    expect(params.get('prijs')).toBe('200000-800000')
   })
 
-  it('serialiseert number/boolean/string-afwijkingen', () => {
-    const params = serialiseerFilterState({ ...DEFAULTS, periode: 12, actief: true, sort: 'aantal' }, DEFAULTS)
+  it('serialiseert een booleaanse afwijking als "1", en laat "false" weg', () => {
+    expect(serialiseerFilterState({ ...DEFAULTS, tuin: true }, DEFAULTS).get('tuin')).toBe('1')
+    expect(serialiseerFilterState({ ...DEFAULTS, tuin: false }, DEFAULTS).has('tuin')).toBe(false)
+  })
+
+  it('serialiseert getal en string direct', () => {
+    const params = serialiseerFilterState({ ...DEFAULTS, periode: 12, tov: 'boven' }, DEFAULTS)
     expect(params.get('periode')).toBe('12')
-    expect(params.get('actief')).toBe('true')
-    expect(params.get('sort')).toBe('aantal')
-  })
-
-  it('laat een lege array (afwijkend van een niet-lege default) weg uit de URL', () => {
-    const params = serialiseerFilterState({ ...DEFAULTS, plaatsen: [] }, DEFAULTS)
-    expect(params.has('plaatsen')).toBe(false)
+    expect(params.get('tov')).toBe('boven')
   })
 })
 
-describe('deserialiseerFilterState', () => {
-  it('geeft de defaults terug bij lege querystring', () => {
-    const state = deserialiseerFilterState(new URLSearchParams(), Schema, DEFAULTS)
-    expect(state).toEqual(DEFAULTS)
+describe('parseerFilterState', () => {
+  it('valt terug op de standaard als er geen querystring is', () => {
+    expect(parseerFilterState(Schema, DEFAULTS, new URLSearchParams())).toEqual(DEFAULTS)
   })
 
-  it('leest alle veldtypes correct terug', () => {
-    const params = new URLSearchParams('plaatsen=denhaag,voorschoten&periode=12&actief=true&sort=aantal')
-    const state = deserialiseerFilterState(params, Schema, DEFAULTS)
-    expect(state).toEqual({ plaatsen: ['denhaag', 'voorschoten'], periode: 12, actief: true, sort: 'aantal' })
+  it('parseert alle veldtypes correct terug (round-trip)', () => {
+    const staat: Filter = { plaatsen: ['wassenaar', 'denhaag'], periode: 12, prijs: [200_000, 800_000], tuin: true, tov: 'boven' }
+    const params = serialiseerFilterState(staat, DEFAULTS)
+    expect(parseerFilterState(Schema, DEFAULTS, params)).toEqual(staat)
   })
 
-  it('valt terug op de defaults bij een ongeldige waarde (schema-validatie)', () => {
-    const params = new URLSearchParams('periode=niet-een-getal-en-toch-ongeldig')
-    // 'periode' wordt NaN → Number.isFinite guard vangt dit al af naar de default
-    const state = deserialiseerFilterState(params, Schema, DEFAULTS)
-    expect(state.periode).toBe(24)
+  it('valt terug op de standaard bij een ongeldige/verouderde URL i.p.v. te crashen', () => {
+    const params = new URLSearchParams('periode=niet-een-getal&prijs=kapot')
+    const resultaat = parseerFilterState(Schema, DEFAULTS, params)
+    expect(resultaat).toEqual(DEFAULTS)
   })
 
-  it('rondtrip: serialiseren en weer deserialiseren geeft dezelfde state', () => {
-    const origineel: Filter = { plaatsen: ['denhaag'], periode: 36, actief: true, sort: 'looptijd' }
-    const params = serialiseerFilterState(origineel, DEFAULTS)
-    const terug = deserialiseerFilterState(params, Schema, DEFAULTS)
-    expect(terug).toEqual(origineel)
+  it('een lege multi-select ("plaatsen=") geeft een lege lijst terug, gevalideerd door het schema', () => {
+    const params = new URLSearchParams('plaatsen=')
+    // leeg array is geldig voor z.array(z.string()); std blijft anders intact
+    expect(parseerFilterState(Schema, DEFAULTS, params).plaatsen).toEqual([])
   })
 })

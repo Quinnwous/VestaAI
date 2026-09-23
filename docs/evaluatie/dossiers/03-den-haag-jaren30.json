@@ -1,0 +1,41 @@
+{
+  "adres": "Frankenstraat 34, Den Haag",
+  "woningtype_groep": "rijwoning",
+  "woningtype_sub": "Herenhuis",
+  "kamers": 5,
+  "oppervlak_m2": 165,
+  "perceel_m2": 140,
+  "inhoud_m3": 560,
+  "bouwjaar": 1928,
+  "energielabel": "D",
+  "slaapkamers": 3,
+  "badkamers": 1,
+  "woonlagen": 3,
+  "vraagprijs": 895000,
+  "usps": "Statig jaren '20 herenhuis in het Statenkwartier, hoge plafonds met originele stucwerk, dubbele suite, zonnige achtertuin op het zuidwesten",
+  "doelgroep": "Gezinnen die een karakteristieke stadswoning zoeken met ruimte om te groeien",
+  "staat_afwerking": {
+    "onderhoud_binnen": "goed",
+    "onderhoud_buiten": "voldoende",
+    "keuken_jaar": 2010,
+    "badkamer_jaar": 2008,
+    "isolatie": ["glas"],
+    "zonnepanelen": false,
+    "recent_verbouwd": "Cv-ketel vervangen in 2020, verder grotendeels origineel"
+  },
+  "ligging_buitenruimte": {
+    "ligging": "tussenwoning",
+    "tuin_m2": 45,
+    "tuin_orientatie": "zuidwest",
+    "achterom": true,
+    "balkon_dakterras": false,
+    "garage_parkeren": "openbaar",
+    "berging": true,
+    "uitzicht": "Rustige, groene straat in het Statenkwartier",
+    "bijzondere_ligging": ["park"],
+    "erfpacht": { "van_toepassing": false }
+  },
+  "courtagevoorstel_percentage": 1.6,
+  "prijsverwachting_verkoper": 925000,
+  "content_keuzes": ["video", "kopersvragen", "energieadvies"]
+}

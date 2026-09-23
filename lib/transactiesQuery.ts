@@ -314,6 +314,35 @@ export async function marktanalyseSamenvatting(client: SessieClient, filters?: T
   }
 }
 
+export type PrijsklasseVerdelingRij = { klasse: string; label: string; n: number; nEigen: number }
+
+type PrijsklasseVerdelingRpcRij = { klasse: string; label: string; n: number; n_eigen: number }
+
+/**
+ * RPC `marktanalyse_verdeling_prijsklasse` (item 6.1, migratie
+ * `20260923_marktanalyse_verdeling_en_plaatsen.sql` — nog niet toegepast,
+ * zie het bestandscommentaar daar) — telling per prijsklasse, referentie-
+ * implementatie: `lib/marktanalyse.ts` `PRIJSKLASSEN`.
+ */
+export async function marktanalyseVerdelingPrijsklasse(client: SessieClient, filters?: TransactieFilter): Promise<PrijsklasseVerdelingRij[]> {
+  const { data, error } = await client.rpc('marktanalyse_verdeling_prijsklasse', { p_filters: metFilters(filters) })
+  if (error) throw new Error(`marktanalyseVerdelingPrijsklasse: ${error.message}`)
+  return ((data ?? []) as PrijsklasseVerdelingRpcRij[]).map(r => ({ klasse: r.klasse, label: r.label, n: r.n, nEigen: r.n_eigen }))
+}
+
+export type PlaatsWijkRij = { plaats: string; wijk: string | null; n: number }
+
+/**
+ * RPC `transacties_plaatsen_wijken` (zelfde migratie als hierboven) —
+ * distincte plaats/wijk-combinaties + aantal, voedt de plaats/wijk-dropdown
+ * in `FilterBar` (i.p.v. een hardgecodeerde lijst zoals het ontwerp-prototype).
+ */
+export async function plaatsenWijken(client: SessieClient): Promise<PlaatsWijkRij[]> {
+  const { data, error } = await client.rpc('transacties_plaatsen_wijken')
+  if (error) throw new Error(`plaatsenWijken: ${error.message}`)
+  return (data ?? []) as PlaatsWijkRij[]
+}
+
 type ConcurrentieMarktaandeelRpcRij = { kantoor: string; aantal: number; aandeel_pct: number }
 
 /** RPC `concurrentie_marktaandeel` — referentie-implementatie: lib/concurrentie.ts marktaandeel(). */

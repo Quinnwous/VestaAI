@@ -28,3 +28,15 @@ export { SelectMenu } from './SelectMenu'
 export type { SelectOptie } from './SelectMenu'
 export { Tabs } from './Tabs'
 export type { TabDef } from './Tabs'
+
+// Item 6.1 (Marktanalyse-explorer v2, roadmap § 3.7/3.8): FilterBar-bouwstenen
+// en chart-primitives, geëxporteerd voor hergebruik door de volgende
+// verkenners (6.2 Transacties, 6.3 Concurrentie).
+export { Chip } from './Chip'
+export { Checkbox } from './Checkbox'
+export { FilterBar } from './FilterBar'
+export { FilterDropdown } from './FilterDropdown'
+export { FilterPills } from './FilterPills'
+export type { FilterPil } from './FilterPills'
+export { RangeSlider } from './RangeSlider'
+export { ChartCard, Legenda } from './ChartCard'

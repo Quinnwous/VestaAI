@@ -1,50 +1,74 @@
 /**
- * Gedeelde getalopmaak voor de interactieve verkenners (docs/roadmap.md §
- * 3.7: "élk getal" via deze module). 1-op-1 overgenomen van
- * `docs/ontwerp/kit.js` (`K.euro`/`K.procent`/`K.dagen`/`K.datum`/`K.m2`/
- * `K.nl`) zodat de geport­eerde schermen exact dezelfde notatie tonen als het
- * prototype. Puur functies, geen React — zie lib/opmaak.test.ts.
- *
- * ⚠️ `datum()` formatteert een gegeven `Date`, roept zelf nooit `new Date()`
- * voor "nu" aan (zie CLAUDE.md § new Date()-les) — de aanroeper geeft een
- * server-berekende of expliciete datum door.
+ * Gedeelde getal-/datumopmaak voor élke interactieve verkenner (item 6.1,
+ * docs/roadmap.md § 3.7 — bindend: "lib/opmaak.ts (euro, procent, dagen,
+ * datum, m2, nlNL) voor élk getal"). Poort van `docs/ontwerp/kit.js` §
+ * Opmaak. Puur, geen React — te gebruiken in server- én clientcomponenten,
+ * StatTiles, tooltips en het kwartaalbericht-feitenblad (6.4).
  */
+
+/** Gedeelde `Intl.NumberFormat('nl-NL')` — hergebruiken i.p.v. steeds een nieuwe aanmaken. */
+export const nlNL = new Intl.NumberFormat('nl-NL')
+
+/** `€ 1.234.567` — hele euro's, nooit centen (transactieprijzen zijn hele bedragen). */
+export function euro(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  return '€ ' + nlNL.format(Math.round(waarde))
+}
+
+/** Compacte euro-notatie voor y-assen en tegels: `€ 850 k` / `€ 1,2 mln`. */
+export function euroKort(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  if (Math.abs(waarde) >= 1_000_000) {
+    return '€ ' + (waarde / 1_000_000).toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' mln'
+  }
+  return '€ ' + nlNL.format(Math.round(waarde / 1000)) + ' k'
+}
+
+/** `+3,2%` / `-1,0%` — `teken = false` laat het `+` bij een positieve waarde weg. */
+export function procent(waarde: number | null | undefined, teken = true): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  const voorteken = teken && waarde > 0 ? '+' : ''
+  return voorteken + waarde.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%'
+}
+
+/** `42 dgn`. */
+export function dagen(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  return Math.round(waarde) + ' dgn'
+}
 
 const MAAND_KORT = ['jan', 'feb', 'mrt', 'apr', 'mei', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec']
 
-/** Gedeelde `Intl.NumberFormat('nl-NL')` — gebruik deze i.p.v. zelf een formatter aan te maken. */
-export const nlNL = new Intl.NumberFormat('nl-NL')
+/** `12 sep 2026` — voor "data t/m" en het kwartaalbericht. Aanvaardt een ISO-string of Date. */
+export function datum(waarde: string | Date | null | undefined): string {
+  if (waarde == null) return '—'
+  const d = typeof waarde === 'string' ? new Date(waarde) : waarde
+  if (Number.isNaN(d.getTime())) return '—'
+  return `${d.getUTCDate()} ${MAAND_KORT[d.getUTCMonth()]} ${d.getUTCFullYear()}`
+}
 
-/** `€ 1.234.567` — `—` bij `null`. Geen decimalen (zoals kit.js `K.euro`). */
-export function euro(v: number | null | undefined): string {
-  if (v == null || Number.isNaN(v)) return '—'
-  return '€ ' + nlNL.format(Math.round(v))
+/** `120 m²`. */
+export function m2(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  return nlNL.format(Math.round(waarde)) + ' m²'
+}
+
+/** `"2026-Q1"` → `"Q1 2026"` — leesbare kwartaallabel voor de x-as en tooltips. */
+export function kwartaalLabel(kwartaal: string): string {
+  const m = /^(\d{4})-Q([1-4])$/.exec(kwartaal)
+  if (!m) return kwartaal
+  return `Q${m[2]} ${m[1]}`
 }
 
 /**
- * `+1,3%` / `-1,3%` / `1,3%` — `teken = false` onderdrukt het `+` bij een
- * positieve waarde (het minteken staat er via `toLocaleString` altijd bij).
- * `—` bij `null`.
+ * "Mooie" as-stap voor grafieken (recharts `ticks`): rondt een ruwe stap af
+ * naar 1/2/5 × 10^n, zodat de y-as nette getallen toont i.p.v. 733,4. Poort
+ * van `kit.js` `mooieStap()`.
  */
-export function procent(v: number | null | undefined, teken = true): string {
-  if (v == null || Number.isNaN(v)) return '—'
-  const teken_prefix = teken && v > 0 ? '+' : ''
-  return teken_prefix + v.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%'
-}
-
-/** `124 dgn` — `—` bij `null`. Afgerond op hele dagen. */
-export function dagen(v: number | null | undefined): string {
-  if (v == null || Number.isNaN(v)) return '—'
-  return Math.round(v) + ' dgn'
-}
-
-/** `12 sep 2026` — Nederlandse maandafkorting, zoals kit.js `K.datum`. */
-export function datum(d: Date): string {
-  return `${d.getDate()} ${MAAND_KORT[d.getMonth()]} ${d.getFullYear()}`
-}
-
-/** `140 m²` — `—` bij `null`. Afgerond op hele m². */
-export function m2(v: number | null | undefined): string {
-  if (v == null || Number.isNaN(v)) return '—'
-  return nlNL.format(Math.round(v)) + ' m²'
+export function mooieStap(ruw: number): number {
+  if (!Number.isFinite(ruw) || ruw <= 0) return 1
+  const macht = Math.pow(10, Math.floor(Math.log10(ruw)))
+  const r = ruw / macht
+  const stap = r < 1.5 ? 1 : r < 3 ? 2 : r < 7 ? 5 : 10
+  return stap * macht
 }

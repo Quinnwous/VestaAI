@@ -716,7 +716,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 8 — Content in i4housing-format (4 sessies; parallel via subagent in een worktree zodra fase 3 is gemerged — raakt `lib/claude.ts`, `lib/schemas.ts` (alleen `ContentOutputSchema`/`HuisstijlSchema`), `components/ResultTabs.tsx`, pdf-routes, `HuisstijlForm.tsx`)
 
-- [ ] **8.1 `lib/aiModellen.ts` + prompt caching + evaluatieset** —
+- [x] **8.1 `lib/aiModellen.ts` + prompt caching + evaluatieset** —
   modelconstanten (§ 3.6), `cache_control` op systeemprompt; `docs/evaluatie/`
   met 5 dossiers (JSON-fixtures, echte i4housing-achtige woningen) en
   `scripts/evalueer-content.mjs` dat per dossier twee anonieme varianten
@@ -743,7 +743,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 9 — White-label-wow (2 sessies)
 
-- [ ] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
+- [x] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
   `app/login/[slug]/page.tsx` (logo, kleuren, sfeerbeeld, tabtitel/favicon van
   het kantoor), middleware laat `/login/` door, na uitloggen terug naar de
   laatst gebruikte slug (cookie), `/login` zonder slug blijft VestaAI-groen.
@@ -812,7 +812,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 ### Fase 13 — Publieke site (parallel via subagent, 2-3 sessies; niet kritiek)
 
 Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
-- [ ] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
+- [x] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
 - [ ] 13.2 `LandingPageClient.tsx` herpositioneren naar het nieuwe verhaal
   (data + waardering + content, één klant, geen prijzen).
 - **Klaar als:** geen claim in strijd met het huidige model; Lighthouse > 90/95.

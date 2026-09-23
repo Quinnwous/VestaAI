@@ -15,8 +15,10 @@ import {
 import { haalEigenVerkopen, marktanalyseSamenvatting, dataTotEnMet } from '@/lib/transactiesQuery'
 import { KantoorInstellingenSchema } from '@/lib/schemas'
 import { begroetingVoor, datumVoor, contextregel } from '@/lib/begroeting'
+import { haalRecentBekekenOp, dedupliceerRecentBekeken, relatieveTijdVoorGebruik } from '@/lib/gebruik'
 import { StartBanner } from './StartBanner'
 import { Kerncijfers } from './Kerncijfers'
+import { RecentBekeken, type RecentBekekenItem } from './RecentBekeken'
 import { AppPagina } from '@/components/ui'
 
 const EIGEN_VERKOOP_KOLOMMEN = ['verkoopprijs', 'vraagprijs', 'looptijd_dagen', 'verkoopdatum', 'plaats'] as const
@@ -41,11 +43,14 @@ function isoDag(d: Date): string {
  * en "data t/m". Dossier-tellingen (in verkoop, lopende verkoopadviezen)
  * blijven op `objecten`.
  *
- * "Recent bekeken" (op basis van gebruik_events) en een los `bannerfoto`-veld
- * in de admin staan nog open — die vereisen een nieuwe migratie resp. een
- * door Quinn goedgekeurde teamfoto, zie docs/roadmap.md § Stand van zaken.
- * De banner valt tot die tijd terug op het bestaande sfeerbeeld (hetzelfde
- * als op /kantoor) of een merkverloop.
+ * "Recent bekeken" (item 10.4) draait op `gebruik_events` (lib/gebruik.ts) —
+ * de laatste ~5 unieke dossiers die déze makelaar opende, gededupliceerd en
+ * met een server-side berekende "…geleden"-tekst. Faalt stil (lege lijst +
+ * lege staat) zolang de migratie nog niet is toegepast door de hoofdsessie.
+ * Een los `bannerfoto`-veld in de admin staat nog open (vereist een door
+ * Quinn goedgekeurde teamfoto, zie docs/roadmap.md § Stand van zaken) — de
+ * banner valt tot die tijd terug op het bestaande sfeerbeeld (hetzelfde als
+ * op /kantoor) of een merkverloop.
  */
 export default async function DashboardPage() {
   const makelaar = await haalIngelogdeMakelaarOp()
@@ -55,13 +60,16 @@ export default async function DashboardPage() {
   const sessie = createServerSupabaseClient()
   const nu = new Date()
 
-  const [{ data: objectenFase }, { data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
+  const [{ data: objectenFase }, { data: kantoorRow }, eigenVerkopen, dataTot, recentBekekenRuw] = await Promise.all([
     // `content_status` komt mee in dezelfde query (geen extra rondje) en voedt
     // de contextregel in de banner: "N dossiers wachten op content".
     service.from('objecten').select('fase, content_status').eq('kantoor_id', makelaar.kantoorId),
     service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
     haalEigenVerkopen<EigenVerkoopPlaatsRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
     dataTotEnMet(sessie),
+    // Item 10.4: "Recent bekeken" — faalt stil (lege lijst) zolang de tabel
+    // gebruik_events nog niet is toegepast, zie lib/gebruik.ts.
+    haalRecentBekekenOp(sessie, makelaar.userId),
   ])
 
   const fases = tellFases(objectenFase ?? [])
@@ -114,6 +122,16 @@ export default async function DashboardPage() {
 
   const branding = bouwBranding(makelaar.kantoor)
 
+  // Item 10.4: dedupliceren op dossier + relatieve tijd server-side uitrekenen
+  // met de `nu` hierboven — nooit new Date() in de (client-)weergave, zie
+  // CLAUDE.md ⚠️ "Nooit new Date() in een client component".
+  const recentBekekenItems: RecentBekekenItem[] = dedupliceerRecentBekeken(recentBekekenRuw).map(rij => ({
+    objectId: rij.objectId,
+    address: rij.address,
+    fase: rij.fase,
+    tijdGeleden: relatieveTijdVoorGebruik(rij.bekekenOp, nu),
+  }))
+
   return (
     <AppPagina>
       <StartBanner
@@ -141,6 +159,7 @@ export default async function DashboardPage() {
         marktaandeel={marktaandeel}
         dataTotEnMet={dataTot.laatsteVerkoopdatum}
       />
+      <RecentBekeken items={recentBekekenItems} />
     </AppPagina>
   )
 }

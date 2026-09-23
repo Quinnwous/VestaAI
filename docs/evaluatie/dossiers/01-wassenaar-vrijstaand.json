@@ -1,0 +1,41 @@
+{
+  "adres": "Van Polanenpark 183, Wassenaar",
+  "woningtype_groep": "vrijstaand",
+  "woningtype_sub": "Villa",
+  "kamers": 6,
+  "oppervlak_m2": 245,
+  "perceel_m2": 890,
+  "inhoud_m3": 980,
+  "bouwjaar": 1998,
+  "energielabel": "A",
+  "slaapkamers": 4,
+  "badkamers": 2,
+  "woonlagen": 2,
+  "vraagprijs": 1795000,
+  "usps": "Vrijstaande villa in bosrijke omgeving, eigen oprit met carport voor 3 auto's, open keuken met kookeiland (2021), zwembad in de tuin, dubbele garage",
+  "doelgroep": "Gezinnen met kinderen die ruimte en privacy zoeken dicht bij Den Haag",
+  "staat_afwerking": {
+    "onderhoud_binnen": "uitstekend",
+    "onderhoud_buiten": "uitstekend",
+    "keuken_jaar": 2021,
+    "badkamer_jaar": 2019,
+    "isolatie": ["dak", "muur", "vloer", "glas"],
+    "zonnepanelen": true,
+    "recent_verbouwd": "Volledig gerenoveerde keuken en hoofdbadkamer in 2021, nieuw dak met zonnepanelen in 2022"
+  },
+  "ligging_buitenruimte": {
+    "ligging": "vrijstaand",
+    "tuin_m2": 620,
+    "tuin_orientatie": "zuidwest",
+    "achterom": true,
+    "balkon_dakterras": false,
+    "garage_parkeren": "garage",
+    "berging": true,
+    "uitzicht": "Vrij uitzicht over eigen tuin en aangrenzend bos",
+    "bijzondere_ligging": ["park"],
+    "erfpacht": { "van_toepassing": false }
+  },
+  "courtagevoorstel_percentage": 1.5,
+  "prijsverwachting_verkoper": 1850000,
+  "content_keuzes": ["energieadvies", "kopersvragen"]
+}

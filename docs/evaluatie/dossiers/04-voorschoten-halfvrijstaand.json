@@ -1,0 +1,42 @@
+{
+  "adres": "Generaal Winkelmanlaan 50, Voorschoten",
+  "woningtype_groep": "halfvrijstaand",
+  "kamers": 5,
+  "oppervlak_m2": 132,
+  "perceel_m2": 260,
+  "inhoud_m3": 480,
+  "bouwjaar": 1975,
+  "energielabel": "B",
+  "slaapkamers": 4,
+  "badkamers": 1,
+  "woonlagen": 2,
+  "vraagprijs": 675000,
+  "usps": "Ruime twee-onder-een-kapwoning met aangebouwde garage, uitgebouwde living, tuin op het zuiden met vrij uitzicht over weiland",
+  "doelgroep": "Doorstromende gezinnen uit de regio Leiden/Den Haag die rust en ruimte zoeken",
+  "staat_afwerking": {
+    "onderhoud_binnen": "goed",
+    "onderhoud_buiten": "goed",
+    "keuken_jaar": 2018,
+    "badkamer_jaar": 2015,
+    "isolatie": ["dak", "glas"],
+    "zonnepanelen": true,
+    "recent_verbouwd": "Living uitgebouwd in 2017, keuken vernieuwd in 2018, 12 zonnepanelen geplaatst in 2021"
+  },
+  "ligging_buitenruimte": {
+    "ligging": "twee_onder_een_kap",
+    "tuin_m2": 180,
+    "tuin_orientatie": "zuid",
+    "achterom": true,
+    "balkon_dakterras": false,
+    "garage_parkeren": "garage",
+    "berging": true,
+    "uitzicht": "Vrij uitzicht over weiland aan de achterzijde",
+    "bijzondere_ligging": [],
+    "erfpacht": { "van_toepassing": false }
+  },
+  "courtagevoorstel_percentage": 1.7,
+  "prijsverwachting_verkoper": 695000,
+  "open_huis_datum": "2026-10-04",
+  "open_huis_tijd": "11:00-13:00",
+  "content_keuzes": ["followup", "kopersvragen"]
+}

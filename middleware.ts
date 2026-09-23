@@ -56,8 +56,9 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // /login: ingelogden doorsturen naar dashboard, niet-ingelogden doorlaten
-  if (pathname === '/login') {
+  // /login (en /login/<slug>, de kantoorspecifieke inlogpagina — item 9.1):
+  // ingelogden doorsturen naar dashboard, niet-ingelogden doorlaten.
+  if (pathname === '/login' || pathname.startsWith('/login/')) {
     if (user) return NextResponse.redirect(new URL('/dashboard', request.url))
     return NextResponse.next()
   }
