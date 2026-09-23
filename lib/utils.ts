@@ -52,6 +52,18 @@ export function gemiddelde(waarden: number[], decimalen = 2): number | null {
   return Math.round((waarden.reduce((s, v) => s + v, 0) / waarden.length) * factor) / factor
 }
 
+/**
+ * Mediaan (kleinste-middelste bij een even aantal: gemiddelde van de twee
+ * middelste) — `null` bij een lege set. Referentie-implementatie voor de
+ * `percentile_cont(0.5)`-RPC's op de transactiedataset (lib/transactiesQuery.ts).
+ */
+export function mediaan(waarden: number[]): number | null {
+  if (waarden.length === 0) return null
+  const gesorteerd = [...waarden].sort((a, b) => a - b)
+  const m = gesorteerd.length >> 1
+  return gesorteerd.length % 2 ? gesorteerd[m] : (gesorteerd[m - 1] + gesorteerd[m]) / 2
+}
+
 export function truncate(str: string, max: number): string {
   return str.length > max ? str.slice(0, max - 1) + '…' : str
 }
