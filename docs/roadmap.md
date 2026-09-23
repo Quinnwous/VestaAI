@@ -20,12 +20,18 @@
 - **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅, fase 5 geblokkeerd op de
   exports. Plan v2 van kracht sinds 17 sep 2026. De opleverdetails per fase
   staan in `docs/besluiten.md`, niet hier — dit blok blijft kort.
-- **Laatst opgeleverd (19 sep):** **6.0** Radix-primitives (`Sheet`, `Popover`,
+- **Laatst opgeleverd (23 sep):** bugfix — het profielmenu in de topbar viel
+  weg achter de pagina doordat de topbar-rij `overflow: hidden` had en zo het
+  (absoluut gepositioneerde) menu clipte; nav-pillen scrollen al zelf via hun
+  eigen `overflowX: auto`, dus de clip op de hele rij kon weg. Los van de
+  hydratiebug op dezelfde component uit de vorige sessie (19 sep). Fix in
+  `components/AppTopbar.tsx`, direct gemerged naar `main` (PR #26).
+- **Daarvoor (19 sep):** **6.0** Radix-primitives (`Sheet`, `Popover`,
   `Slider`, `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via
   `tokens.ts`/`var(--merk*)` — bewust **zónder** de shadcn-classlaag (motivatie
   bij het item en in `docs/besluiten.md`). Bewijs in productie: de drawer van
   4.4 draait erop. Daarnaast het welkomstblok op de startpagina herbouwd naar
-  het prototype (verloop + raster + glans, geen foto) en een **hydratiebug**
+  het prototype (verloop + raster + glans, geen foto) en een hydratiebug
   gerepareerd die het profielmenu in de topbar onbruikbaar maakte.
 - **Volgende item:** **6.1** Marktanalyse-explorer v2 (port van
   `docs/ontwerp/marktanalyse.html`). Bouwt onderweg `FilterBar`, `ChartCard`,
