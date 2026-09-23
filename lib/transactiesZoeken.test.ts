@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   standaardTransactiesFilterState,
   transactiesFilterNaarTransactieFilter,
-  transactiesFilterNaarEigenFilter,
   filtreerEigenVoorExport,
   sorteringVoorRpc,
   volgendeSortering,
