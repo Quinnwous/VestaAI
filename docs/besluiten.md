@@ -6,6 +6,16 @@
 
 ---
 
+### 23 sep 2026 (sessie Sonnet) — profielmenu viel weg achter de pagina
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Dropdown geclipt door `overflow: hidden` | Quinn meldde dat het profielmenu (avatarknop rechtsboven) achter de pagina viel — een andere oorzaak dan de hydratiebug van 19 sep op dezelfde component. De topbar-rij (`components/AppTopbar.tsx`) had `overflow: hidden` om de nav-pillen binnen de balk te houden; het (absoluut gepositioneerde) profielmenu zat in diezelfde container en werd daardoor geclipt in plaats van getoond. Nav-pillen scrollen al zelf via hun eigen `overflowX: auto`, dus de clip op de hele rij was overbodig — verwijderd. Eén regel, geen andere aanpak overwogen | Sonnet |
+| Direct live | Op Quinns verzoek meteen gepusht, PR #26 aangemaakt en gemerged naar `main` — niet gewacht tot sessie-einde, conform de uitzondering in CLAUDE.md dat Quinn buiten de normale afspraak om alsnog expliciet om live kan vragen | Quinn + Sonnet |
+| DoD achteraf gecontroleerd | `npm run typecheck && npm run test && npm run build` groen, huisstijl-hook schoon op het gewijzigde bestand. `npm run dod:screens` crashte lokaal (exit 137, vermoedelijk resource-limiet van de sandbox); in plaats daarvan `scripts/controleer-huisstijl.mjs` los gedraaid tegen een handmatig gestarte dev-server — alle ingelogde routes groen, geen runtime-errors, geen VestaAI-groen-lek | Sonnet |
+
+---
+
 ### 19 sep 2026 (sessie Opus) — item 6.0 + welkomstblok + hydratiebug
 
 | Onderwerp | Besluit | Door |
@@ -365,6 +375,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 23 sep 2026 — bugfix: profielmenu in de topbar viel weg achter de pagina
+  door `overflow: hidden` op de topbar-rij; direct live (PR #26).
 - 19 sep 2026 — item **6.0**: Radix-primitives (`Sheet`, `Popover`, `Slider`,
   `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via `tokens.ts`
   en `var(--merk*)`, zónder shadcn-classlaag; drawer van 4.4 overgezet op
