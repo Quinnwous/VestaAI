@@ -5,6 +5,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { haalEigenVerkopen, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { DossierHeader } from '@/components/DossierHeader'
+import { logGebruik } from '@/lib/gebruik'
 import { InvoerToggle } from './InvoerToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
@@ -47,6 +48,12 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   ])
 
   if (!object || !makelaar || object.kantoor_id !== makelaar.kantoor_id) notFound()
+
+  // Item 10.4 (docs/roadmap.md § Fase 10): voedt "Recent bekeken" op
+  // /dashboard. Fire-and-forget — niet awaiten, en logGebruik() faalt zelf
+  // altijd stil (console.warn) zolang gebruik_events nog niet bestaat, dus
+  // dit mag de dossierpagina nooit vertragen of laten crashen.
+  void logGebruik(supabase, { kantoorId: makelaar.kantoor_id, makelaarId: user.id, objectId: object.id, type: 'dossier_bekeken' })
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
