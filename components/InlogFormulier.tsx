@@ -135,16 +135,34 @@ export function InlogFormulier({ branding, slug }: Props) {
   const achtergrondUrl = branding?.achtergrondUrl ?? null
   const tagline = branding ? `Log in op je omgeving.` : 'Woningwaardering voor makelaars.'
 
+  // De kantoorlogin is de voordeur van de ingelogde omgeving: informeel ("je")
+  // en neutrale grijzen (groen-getinte grijzen vloeken bij een blauw/rood
+  // kantoor). De generieke /login blijft publiek: formeel ("u") en VestaAI-grijs.
+  const grijs = branding
+    ? { tekst: '#16181D', sub: '#5F6470', zacht: '#9A9FA8', rand: '#DADDE2' }
+    : { tekst: '#0E1A13', sub: '#5A6B61', zacht: '#9AA6A0', rand: '#DCE5DF' }
+  const tekst = branding
+    ? {
+        emailPlaceholder: 'je@emailadres.nl',
+        resetVerstuurd: 'Check je inbox voor een link om je wachtwoord opnieuw in te stellen.',
+        resetUitleg: 'Vul je e-mailadres in. Je ontvangt een link om een nieuw wachtwoord in te stellen.',
+      }
+    : {
+        emailPlaceholder: 'uw@emailadres.nl',
+        resetVerstuurd: 'Check uw inbox voor een link om uw wachtwoord opnieuw in te stellen.',
+        resetUitleg: 'Vul uw e-mailadres in. U ontvangt een link om een nieuw wachtwoord in te stellen.',
+      }
+
   // Kleuren/vorm lopen altijd via var(--merk*, <letterlijke VestaAI-fallback>):
   // zonder branding-wrapper (generieke /login) resolven ze naar exact de oude
   // hardgecodeerde waarden; mét wrapper (kantoorlogin) naar de kantoorstijl.
   const inputStyle: React.CSSProperties = {
     width: '100%',
     borderRadius: 'var(--merk-radius-md, 11px)',
-    border: '1px solid #DCE5DF',
+    border: `1px solid ${grijs.rand}`,
     padding: '11px 14px',
     fontSize: 15,
-    color: '#0E1A13',
+    color: grijs.tekst,
     background: '#fff',
     outline: 'none',
     boxSizing: 'border-box',
@@ -167,7 +185,7 @@ export function InlogFormulier({ branding, slug }: Props) {
   }
 
   const focusAan = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = 'var(--merk, #1A6B45)' }
-  const focusUit = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = '#DCE5DF' }
+  const focusUit = (e: React.FocusEvent<HTMLInputElement>) => { e.target.style.borderColor = grijs.rand }
 
   return (
     <div
@@ -198,7 +216,7 @@ export function InlogFormulier({ branding, slug }: Props) {
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
                 />
               ) : (
-                <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-.02em', color: '#0E1A13' }}>{naam}</span>
+                <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-.02em', color: grijs.tekst }}>{naam}</span>
               )}
             </div>
           ) : (
@@ -206,12 +224,12 @@ export function InlogFormulier({ branding, slug }: Props) {
               <span style={{ width: 40, height: 40, borderRadius: 12, background: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 16px rgba(26,107,69,.28)' }}>
                 <span style={{ color: '#fff', fontWeight: 800, fontSize: 22, letterSpacing: '-.04em' }}>V</span>
               </span>
-              <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-.02em', color: '#0E1A13' }}>
+              <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-.02em', color: grijs.tekst }}>
                 Vesta<span style={{ color: '#1A6B45' }}>AI</span>
               </span>
             </Link>
           )}
-          <p style={{ marginTop: 12, fontSize: 14, color: '#5A6B61' }}>
+          <p style={{ marginTop: 12, fontSize: 14, color: grijs.sub }}>
             {tagline}
           </p>
         </div>
@@ -234,8 +252,8 @@ export function InlogFormulier({ branding, slug }: Props) {
           {/* Dev mode */}
           {!supabaseConfigured ? (
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', marginBottom: 8 }}>Auth niet geconfigureerd</h2>
-              <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 20 }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: grijs.tekst, marginBottom: 8 }}>Auth niet geconfigureerd</h2>
+              <p style={{ fontSize: 14, color: grijs.sub, marginBottom: 20 }}>
                 Stel <code>NEXT_PUBLIC_SUPABASE_URL</code> en <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> in.
               </p>
               <Link href="/object/new" style={{ ...btnPrimary, display: 'inline-block', textDecoration: 'none', padding: '11px 22px' }}>
@@ -251,9 +269,9 @@ export function InlogFormulier({ branding, slug }: Props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 10 }}>E-mail verstuurd</h2>
-              <p style={{ fontSize: 14, color: '#5A6B61', lineHeight: 1.6 }}>
-                Check uw inbox voor een link om uw wachtwoord opnieuw in te stellen.
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: grijs.tekst, marginBottom: 10 }}>E-mail verstuurd</h2>
+              <p style={{ fontSize: 14, color: grijs.sub, lineHeight: 1.6 }}>
+                {tekst.resetVerstuurd}
               </p>
               <button
                 onClick={() => resetForm('login')}
@@ -269,14 +287,14 @@ export function InlogFormulier({ branding, slug }: Props) {
               {mode === 'login' && (
                 <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 6 }}>E-mailadres</label>
+                    <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: grijs.tekst, marginBottom: 6 }}>E-mailadres</label>
                     <input
                       type="email"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       required
                       autoFocus
-                      placeholder="uw@emailadres.nl"
+                      placeholder={tekst.emailPlaceholder}
                       style={inputStyle}
                       onFocus={focusAan}
                       onBlur={focusUit}
@@ -284,7 +302,7 @@ export function InlogFormulier({ branding, slug }: Props) {
                   </div>
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <label style={{ fontSize: 14, fontWeight: 600, color: '#0E1A13' }}>Wachtwoord</label>
+                      <label style={{ fontSize: 14, fontWeight: 600, color: grijs.tekst }}>Wachtwoord</label>
                       <button
                         type="button"
                         onClick={() => resetForm('forgot')}
@@ -314,8 +332,10 @@ export function InlogFormulier({ branding, slug }: Props) {
                   >
                     {status === 'loading' ? 'Bezig...' : 'Inloggen →'}
                   </button>
-                  <p style={{ fontSize: 12.5, color: '#9AA6A0', textAlign: 'center', margin: 0 }}>
-                    Nog geen toegang? <Link href="/contact" style={{ color: 'var(--merk, #1A6B45)', fontWeight: 600 }}>Neem contact op</Link>.
+                  <p style={{ fontSize: 12.5, color: grijs.zacht, textAlign: 'center', margin: 0 }}>
+                    {branding
+                      ? <>Nog geen account? Vraag het na bij je kantoor.</>
+                      : <>Nog geen toegang? <Link href="/contact" style={{ color: 'var(--merk, #1A6B45)', fontWeight: 600 }}>Neem contact op</Link>.</>}
                   </p>
                 </form>
               )}
@@ -325,24 +345,24 @@ export function InlogFormulier({ branding, slug }: Props) {
                 <>
                   <button
                     onClick={() => resetForm('login')}
-                    style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#5A6B61', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 20 }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: grijs.sub, background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginBottom: 20 }}
                   >
                     ← Terug
                   </button>
-                  <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 8 }}>Wachtwoord vergeten</h2>
-                  <p style={{ fontSize: 14, color: '#5A6B61', marginBottom: 24, lineHeight: 1.5 }}>
-                    Vul uw e-mailadres in. U ontvangt een link om een nieuw wachtwoord in te stellen.
+                  <h2 style={{ fontSize: 18, fontWeight: 700, color: grijs.tekst, marginBottom: 8 }}>Wachtwoord vergeten</h2>
+                  <p style={{ fontSize: 14, color: grijs.sub, marginBottom: 24, lineHeight: 1.5 }}>
+                    {tekst.resetUitleg}
                   </p>
                   <form onSubmit={handleForgot} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#0E1A13', marginBottom: 6 }}>E-mailadres</label>
+                      <label style={{ display: 'block', fontSize: 14, fontWeight: 600, color: grijs.tekst, marginBottom: 6 }}>E-mailadres</label>
                       <input
                         type="email"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
                         required
                         autoFocus
-                        placeholder="uw@emailadres.nl"
+                        placeholder={tekst.emailPlaceholder}
                         style={inputStyle}
                         onFocus={focusAan}
                         onBlur={focusUit}
