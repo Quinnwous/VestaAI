@@ -15,13 +15,18 @@ export function euro(waarde: number | null | undefined): string {
   return '€ ' + nlNL.format(Math.round(waarde))
 }
 
-/** Compacte euro-notatie voor y-assen en tegels: `€ 850 k` / `€ 1,2 mln`. */
+/**
+ * Compacte euro-notatie voor y-assen en tegels: `€ 850 k` / `€ 1,2 mln` /
+ * `€ 8,7 k`. Hooguit één decimaal (fix review item 6.1, 24 sep 2026: `€
+ * 1,33 mln` was net te lang voor de y-as en brak af over twee regels) —
+ * ronde bedragen tonen geen overbodige `,0`.
+ */
 export function euroKort(waarde: number | null | undefined): string {
   if (waarde == null || Number.isNaN(waarde)) return '—'
   if (Math.abs(waarde) >= 1_000_000) {
-    return '€ ' + (waarde / 1_000_000).toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 2 }) + ' mln'
+    return '€ ' + (waarde / 1_000_000).toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' mln'
   }
-  return '€ ' + nlNL.format(Math.round(waarde / 1000)) + ' k'
+  return '€ ' + (waarde / 1000).toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' k'
 }
 
 /** `+3,2%` / `-1,0%` — `teken = false` laat het `+` bij een positieve waarde weg. */

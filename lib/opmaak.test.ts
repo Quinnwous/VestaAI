@@ -9,10 +9,12 @@ describe('lib/opmaak', () => {
     expect(euro(undefined)).toBe('—')
   })
 
-  it('euroKort toont k/mln-notatie', () => {
+  it('euroKort toont k/mln-notatie met hooguit één decimaal (kort genoeg voor de y-as)', () => {
     expect(euroKort(850000)).toBe('€ 850 k')
-    expect(euroKort(1_230_000)).toBe('€ 1,23 mln')
+    expect(euroKort(8663)).toBe('€ 8,7 k')
+    expect(euroKort(1_230_000)).toBe('€ 1,2 mln')
     expect(euroKort(1_500_000)).toBe('€ 1,5 mln')
+    expect(euroKort(1_330_000)).toBe('€ 1,3 mln')
     expect(euroKort(null)).toBe('—')
   })
 

@@ -464,7 +464,7 @@ export function MarktanalyseExplorer({
               laden={laden}
               legenda={<Legenda items={[{ label: 'Wij', kleur: SERIE.wij }, { label: 'Markt', kleur: SERIE.markt }, { label: 'Segment B', kleur: SERIE.b, getoond: segmentBActief }]} />}
             >
-              <LijnGrafiek data={samenvoegVoorGrafiek(data.reeksMarkt, reeksWij, data.reeksB, 'mediaanM2')} yFmt={v => '€ ' + nlNL.format(Math.round(v))} ttFmt={v => euro(v) + '/m²'} segmentB={segmentBActief} />
+              <LijnGrafiek data={samenvoegVoorGrafiek(data.reeksMarkt, reeksWij, data.reeksB, 'mediaanM2')} yFmt={euroKort} ttFmt={v => euro(v) + '/m²'} segmentB={segmentBActief} />
             </ChartCard>
           </div>
 
@@ -590,7 +590,18 @@ function LijnGrafiek({
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} tickFormatter={yFmt} width={56} tickCount={5} allowDecimals={false} domain={['dataMin', 'dataMax']} />
+        <YAxis
+          tick={{ fontSize: 11, fill: colors.muted }}
+          tickLine={false}
+          axisLine={false}
+          tickFormatter={yFmt}
+          // Genoeg breedte voor "€ 1,2 mln" op één regel (fix review item 6.1,
+          // 24 sep 2026: brak eerder af over twee regels bij width={56}).
+          width={68}
+          tickCount={5}
+          allowDecimals={false}
+          domain={['dataMin', 'dataMax']}
+        />
         <RTooltip content={<GrafiekTooltip fmt={ttFmt} />} />
         <Line type="monotone" dataKey="markt" stroke={SERIE.markt} strokeWidth={1.5} dot={false} connectNulls name="markt" />
         {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
