@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { APP_URL } from '@/lib/appUrl'
+import { PLATFORM_ADMIN_EMAILS } from '@/lib/admin'
 
 let _resend: Resend | null = null
 
@@ -157,6 +158,44 @@ export async function sendNieuweKlantMelding(
         </tr>
       </table>
       ${btn(`${APP_URL}/admin`, 'Bekijk in beheer')}
+    `),
+  })
+}
+
+/**
+ * Feedbackknop (item 12.4, docs/roadmap.md § Fase 12): stuurt de tekst uit
+ * de sheet in het avatarmenu naar de platform-admin(s), met genoeg context
+ * om zonder terugvragen te kunnen reageren. `replyTo` is de makelaar zelf,
+ * zodat Quinn rechtstreeks kan antwoorden.
+ */
+export async function sendFeedbackEmail(input: {
+  van: { naam: string; email: string }
+  kantoorNaam: string
+  pagina: string
+  tekst: string
+}) {
+  await getResend().emails.send({
+    from: FROM,
+    to: PLATFORM_ADMIN_EMAILS,
+    replyTo: input.van.email,
+    subject: `Feedback — ${input.kantoorNaam}`,
+    html: baseTemplate(`
+      <h2 style="margin:0 0 16px;font-size:20px;font-weight:700;color:#111827;">Nieuwe feedback</h2>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:16px;">
+        <tr style="background:#f9fafb;">
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Van</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;border-bottom:1px solid #e5e7eb;">${esc(input.van.naam)} (${esc(input.van.email)})</td>
+        </tr>
+        <tr>
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Kantoor</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;border-bottom:1px solid #e5e7eb;">${esc(input.kantoorNaam)}</td>
+        </tr>
+        <tr style="background:#f9fafb;">
+          <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#374151;">Pagina</td>
+          <td style="padding:12px 16px;font-size:13px;color:#374151;text-align:right;">${esc(input.pagina)}</td>
+        </tr>
+      </table>
+      <p style="margin:0;font-size:14px;line-height:1.6;color:#374151;white-space:pre-wrap;">${esc(input.tekst)}</p>
     `),
   })
 }
