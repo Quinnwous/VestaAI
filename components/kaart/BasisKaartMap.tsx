@@ -35,6 +35,15 @@ export function BasisKaartMap({
   useEffect(() => {
     if (!containerRef.current) return
 
+    // MapLibre bouwt zijn worker standaard uit een blob: URL — een CSP die
+    // dat via `worker-src blob:` toestaat is een noodzakelijke maar geen
+    // voldoende voorwaarde (de blob-worker importeert intern nog een
+    // "maplibre-gl-shared.mjs", wat in de praktijk alsnog "Worker failed to
+    // load" gaf). Zelf-hosten via `setWorkerUrl` (public/maplibre-gl/,
+    // gekopieerd uit node_modules/maplibre-gl/dist/) is de door MapLibre
+    // aanbevolen route bij CSP en werkt wél same-origin.
+    maplibregl.setWorkerUrl('/maplibre-gl/maplibre-gl-worker.mjs')
+
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: pdokPastelStijl(),
@@ -62,16 +71,22 @@ export function BasisKaartMap({
   }, [])
 
   return (
+    // ⚠️ overflow: hidden staat bewust NIET op deze buitenste div (les 23 sep
+    // 2026, CLAUDE.md): HoverKaart is een position:absolute kind hiervan en
+    // zou anders aan de rand afgekapt worden. De afgeronde hoek komt van de
+    // canvas-container zelf, die verder niets anders bevat.
     <div
       style={{
         height: hoogte,
         borderRadius: 'var(--merk-radius-card-lg, 18px)',
-        overflow: 'hidden',
         border: '1px solid #E6E9EC',
         position: 'relative',
       }}
     >
-      <div ref={containerRef} style={{ height: '100%', width: '100%' }} />
+      <div
+        ref={containerRef}
+        style={{ height: '100%', width: '100%', borderRadius: 'inherit', overflow: 'hidden' }}
+      />
       <KaartContext.Provider value={mapInstance}>{mapInstance ? children : null}</KaartContext.Provider>
     </div>
   )

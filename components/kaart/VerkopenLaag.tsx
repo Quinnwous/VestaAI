@@ -52,53 +52,69 @@ export function VerkopenLaag({
     }
   }, [map])
 
+  type Punt = TransactieMetCoordinaten & { lat: number; lng: number }
+
   const punten = useMemo(
     () =>
       transacties.filter(
-        (t): t is TransactieMetCoordinaten & { lat: number; lng: number } => t.lat !== null && t.lng !== null,
+        (t): t is Punt => t.lat !== null && t.lng !== null,
       ),
     [transacties],
   )
 
+  const puntenById = useMemo(() => new Map(punten.map((p) => [p.id, p])), [punten])
+
   useEffect(() => {
     if (!map) return
 
-    const toonClusters = punten.length > CLUSTER_DREMPEL
     const nieuweMarkers: maplibregl.Marker[] = []
 
-    if (toonClusters) {
+    const maakPinMarker = (p: Punt) => {
+      const basisVariant = p.id === geselecteerdId ? 'gekozen' : 'normaal'
+      const el = document.createElement('div')
+      el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
+      el.style.cursor = 'pointer'
+      el.setAttribute(
+        'aria-label',
+        `${p.adres}, ${p.verkoopprijs ? `€${p.verkoopprijs.toLocaleString('nl-NL')}` : 'prijs onbekend'}`,
+      )
+
+      el.addEventListener('mouseenter', () => {
+        el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
+        const punt = map.project([p.lng, p.lat])
+        onHover?.({ transactie: p, x: punt.x, y: punt.y })
+      })
+      el.addEventListener('mouseleave', () => {
+        el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
+        onHover?.(null)
+      })
+      el.addEventListener('click', () => onSelect?.(p.id))
+
+      return new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat])
+    }
+
+    const toonClusters = punten.length > CLUSTER_DREMPEL
+
+    if (!toonClusters) {
+      for (const p of punten) nieuweMarkers.push(maakPinMarker(p).addTo(map))
+    } else {
       const invoer: ClusterPunt[] = punten.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng }))
       const clusters = clusterPunten(invoer, celGradenVoorZoom(zoom))
       for (const cluster of clusters) {
+        // Een "cluster" van 1 is gewoon een pin — ook diep ingezoomd blijft
+        // hover/klik dan werken, ook al zit het totale kantoor boven 200.
+        if (cluster.aantal === 1) {
+          const enkelPunt = puntenById.get(cluster.ids[0])
+          if (enkelPunt) {
+            nieuweMarkers.push(maakPinMarker(enkelPunt).addTo(map))
+            continue
+          }
+        }
         const el = document.createElement('div')
         el.innerHTML = renderToStaticMarkup(<Pin variant="cluster" aantal={cluster.aantal} />)
         el.style.cursor = 'pointer'
         nieuweMarkers.push(
           new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([cluster.lng, cluster.lat]).addTo(map),
-        )
-      }
-      onHover?.(null)
-    } else {
-      for (const p of punten) {
-        const basisVariant = p.id === geselecteerdId ? 'gekozen' : 'normaal'
-        const el = document.createElement('div')
-        el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-        el.style.cursor = 'pointer'
-        el.setAttribute('aria-label', `${p.adres}, ${p.verkoopprijs ? `€${p.verkoopprijs.toLocaleString('nl-NL')}` : 'prijs onbekend'}`)
-
-        el.addEventListener('mouseenter', () => {
-          el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
-          const punt = map.project([p.lng, p.lat])
-          onHover?.({ transactie: p, x: punt.x, y: punt.y })
-        })
-        el.addEventListener('mouseleave', () => {
-          el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-          onHover?.(null)
-        })
-        el.addEventListener('click', () => onSelect?.(p.id))
-
-        nieuweMarkers.push(
-          new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat]).addTo(map),
         )
       }
     }
@@ -111,7 +127,7 @@ export function VerkopenLaag({
       markersRef.current = []
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, punten, zoom, geselecteerdId])
+  }, [map, punten, puntenById, zoom, geselecteerdId])
 
   return null
 }

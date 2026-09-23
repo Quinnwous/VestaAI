@@ -18,8 +18,16 @@ const BRON_ID = 'straal-laag-bron'
 const VLAK_LAAG_ID = 'straal-laag-vlak'
 const RAND_LAAG_ID = 'straal-laag-rand'
 
-/** Native MapLibre-paint kent geen var(...) — hier eenmalig de --merk-waarde uitlezen. */
-function leesMerkKleur(naam: string, fallback: string): string {
+/**
+ * Native MapLibre-paint kent geen var(...) — hier eenmalig de --merk-waarde
+ * uitlezen. Bewust een neutrale (niet-merk) fallbackkleur: CLAUDE.md
+ * waarschuwt dat een merkkleurige fallback (bv. i4housing-blauw) een kapotte
+ * kantoor-lookup onzichtbaar maakt door 'm als normaal ogende huisstijl te
+ * tonen. Deze fallback is een edge case (StraalLaag mount pas ná de
+ * server-side gezette CSS-variabelen), maar mag dan liever zichtbaar
+ * "kapot" ogen dan een willekeurig kantoor nabootsen.
+ */
+function leesMerkKleur(naam: string, fallback = '#8A93A0'): string {
   if (typeof window === 'undefined') return fallback
   const waarde = getComputedStyle(document.documentElement).getPropertyValue(naam).trim()
   return waarde || fallback
@@ -31,7 +39,7 @@ export function StraalLaag({ center, straalM }: { center: Coord; straalM: number
 
   useEffect(() => {
     if (!map) return
-    const kleur = leesMerkKleur('--merk', '#0080C8')
+    const kleur = leesMerkKleur('--merk')
     const polygoon = cirkelPolygoon(center, straalM)
 
     const bron = map.getSource(BRON_ID) as GeoJSONSource | undefined

@@ -13,6 +13,7 @@
  *     <HoverKaart info={hover} />
  *   </BasisKaart>
  */
+import { useLayoutEffect, useRef, useState } from 'react'
 import type { VerkoopHoverInfo } from './VerkopenLaag'
 
 const euroOpmaak = new Intl.NumberFormat('nl-NL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 })
@@ -28,16 +29,41 @@ function formatDatum(iso: string | null): string {
 }
 
 export function HoverKaart({ info }: { info: VerkoopHoverInfo | null }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  // Klemt de kaart binnen de kaartcontainer — zonder dit valt de hover-kaart
+  // bij een pin dicht bij de rand (vooral op 390 px) half buiten beeld.
+  // useLayoutEffect vóór de eerste paint, dus geen zichtbare sprong.
+  const [dx, setDx] = useState(0)
+  const [dy, setDy] = useState(0)
+
+  useLayoutEffect(() => {
+    if (!info || !ref.current?.parentElement) {
+      setDx(0)
+      setDy(0)
+      return
+    }
+    const kaartRect = ref.current.parentElement.getBoundingClientRect()
+    const eigenRect = ref.current.getBoundingClientRect()
+    const marge = 8
+    let nieuweDx = 0
+    if (eigenRect.left < kaartRect.left + marge) nieuweDx = kaartRect.left + marge - eigenRect.left
+    else if (eigenRect.right > kaartRect.right - marge) nieuweDx = kaartRect.right - marge - eigenRect.right
+    const nieuweDy = eigenRect.top < kaartRect.top + marge ? kaartRect.top + marge - eigenRect.top : 0
+    setDx(nieuweDx)
+    setDy(nieuweDy)
+  }, [info])
+
   if (!info) return null
   const { transactie, x, y } = info
 
   return (
     <div
+      ref={ref}
       style={{
         position: 'absolute',
         left: x,
         top: y - 14,
-        transform: 'translate(-50%, -100%)',
+        transform: `translate(calc(-50% + ${dx}px), calc(-100% + ${dy}px))`,
         pointerEvents: 'none',
         background: 'rgba(255,255,255,0.82)',
         backdropFilter: 'blur(10px)',
