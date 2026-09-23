@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel } from './opmaak'
+import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel, afstand, datumTijd } from './opmaak'
 
 describe('lib/opmaak', () => {
   it('euro formatteert hele bedragen met duizendtalpunten en geen centen', () => {
@@ -54,5 +54,17 @@ describe('lib/opmaak', () => {
   it('kwartaalLabel draait de volgorde om voor leesbaarheid', () => {
     expect(kwartaalLabel('2026-Q1')).toBe('Q1 2026')
     expect(kwartaalLabel('onzin')).toBe('onzin')
+  })
+
+  it('afstand toont meters onder de kilometer, anders km met komma (item 10.3)', () => {
+    expect(afstand(450)).toBe('450 m')
+    expect(afstand(1200)).toBe('1,2 km')
+    expect(afstand(null)).toBe('—')
+  })
+
+  it('datumTijd geeft datum + tijd, en "—" bij een ongeldige tijdstempel', () => {
+    expect(datumTijd('2026-09-23T14:32:00.000Z')).toBe('23 sep 2026 om 14:32')
+    expect(datumTijd('niet-een-datum')).toBe('—')
+    expect(datumTijd(null)).toBe('—')
   })
 })

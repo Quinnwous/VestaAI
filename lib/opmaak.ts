@@ -53,6 +53,30 @@ export function m2(waarde: number | null | undefined): string {
   return nlNL.format(Math.round(waarde)) + ' m²'
 }
 
+/** `450 m` onder de kilometer, anders `1,2 km` (item 10.3: voorzieningen op afstand in het dossier). */
+export function afstand(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  if (Math.abs(waarde) >= 1000) {
+    return (waarde / 1000).toLocaleString('nl-NL', { maximumFractionDigits: 1 }) + ' km'
+  }
+  return nlNL.format(Math.round(waarde)) + ' m'
+}
+
+/**
+ * `23 sep 2026 om 14:32` — datum + tijd (bv. "opgehaald op"-tijdstempels).
+ * Leest de UTC-componenten uit net als `datum()` hierboven — zelfde
+ * hydratie-afweging (server en client komen altijd op dezelfde weergave uit,
+ * ongeacht hun eigen tijdzone), consistent gehouden binnen deze module.
+ */
+export function datumTijd(waarde: string | Date | null | undefined): string {
+  if (waarde == null) return '—'
+  const d = typeof waarde === 'string' ? new Date(waarde) : waarde
+  if (Number.isNaN(d.getTime())) return '—'
+  const uur = String(d.getUTCHours()).padStart(2, '0')
+  const minuut = String(d.getUTCMinutes()).padStart(2, '0')
+  return `${datum(d)} om ${uur}:${minuut}`
+}
+
 /** `"2026-Q1"` → `"Q1 2026"` — leesbare kwartaallabel voor de x-as en tooltips. */
 export function kwartaalLabel(kwartaal: string): string {
   const m = /^(\d{4})-Q([1-4])$/.exec(kwartaal)

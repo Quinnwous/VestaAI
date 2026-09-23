@@ -45,13 +45,21 @@ vi.mock('@/lib/verrijking', () => ({
   fetchVerrijking: (...args: unknown[]) => fetchVerrijking(...args),
 }))
 
+const marktanalyseSamenvatting = vi.fn()
+vi.mock('@/lib/transactiesQuery', () => ({
+  marktanalyseSamenvatting: (...args: unknown[]) => marktanalyseSamenvatting(...args),
+}))
+
 vi.mock('@/lib/fouten', () => ({ meldFout: vi.fn(() => 'ref123') }))
 
 import { POST } from './route'
 
 const VOLLEDIGE_VERRIJKING = {
-  woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null, coord: null,
+  woz: null, cbs: null, voorzieningen: null, gemeente: null, coord: null,
+  bronnen: { woz: 'leeg', cbs: 'leeg', voorzieningen: 'leeg' },
 }
+
+const LEGE_SAMENVATTING = { huidig: { van: null, tot: null, n: 0, mediaanPrijs: null, mediaanM2: null, mediaanLooptijd: null, pctTovVraag: null }, vorig: { van: null, tot: null, n: 0, mediaanPrijs: null, mediaanM2: null, mediaanLooptijd: null, pctTovVraag: null } }
 
 function makeRequest() {
   return new Request('http://localhost/api/object/object-1/verrijking', { method: 'POST' })
@@ -66,6 +74,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
       data: { id: 'object-1', address: 'Herengracht 1, Amsterdam', input_json: { adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3, oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' } },
     })
     fetchVerrijking.mockResolvedValue(VOLLEDIGE_VERRIJKING)
+    marktanalyseSamenvatting.mockResolvedValue(LEGE_SAMENVATTING)
     serviceFromImpl = () => selectChain()
   })
 
@@ -101,6 +110,46 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     expect(fetchVerrijking).toHaveBeenCalledWith('Herengracht 1, Amsterdam', 85)
     expect(data.verrijking.versie).toBe(1)
     expect(data.verrijking.opgehaald_op).toBeTypeOf('string')
+  })
+
+  it('haalt "Markt in [plaats]" op uit de eigen transactiedataset, gefilterd op de plaats van het adres', async () => {
+    let callCount = 0
+    serviceFromImpl = () => {
+      callCount += 1
+      return callCount === 1 ? selectChain() : updateChain({ error: null })
+    }
+    marktanalyseSamenvatting.mockResolvedValue({
+      huidig: { van: '2025-09-24', tot: '2026-09-24', n: 12, mediaanPrijs: 850000, mediaanM2: 5200, mediaanLooptijd: 45, pctTovVraag: -1.0 },
+      vorig: { van: '2024-09-24', tot: '2025-09-23', n: 10, mediaanPrijs: 800000, mediaanM2: 5000, mediaanLooptijd: 50, pctTovVraag: -1.5 },
+    })
+
+    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(marktanalyseSamenvatting).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ plaatsen: ['Amsterdam'] }),
+    )
+    expect(data.verrijking.marktEigen).toEqual({
+      plaats: 'Amsterdam', periodeVan: '2025-09-24', periodeTot: '2026-09-24',
+      n: 12, mediaanPrijs: 850000, mediaanM2: 5200, mediaanLooptijd: 45, pctTovVraag: -1.0,
+    })
+  })
+
+  it('slaat marktEigen op als null als de RPC faalt (bv. nog geen transacties/migratie)', async () => {
+    let callCount = 0
+    serviceFromImpl = () => {
+      callCount += 1
+      return callCount === 1 ? selectChain() : updateChain({ error: null })
+    }
+    marktanalyseSamenvatting.mockRejectedValue(new Error('relatie transacties bestaat niet'))
+
+    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(data.verrijking.marktEigen).toBeNull()
   })
 
   it('meldt duidelijk dat de migratie nog niet is toegepast bij undefined_column (42703)', async () => {

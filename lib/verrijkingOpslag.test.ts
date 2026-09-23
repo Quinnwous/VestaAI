@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking, formatEuro, formatGetal, formatAfstand, formatOpgehaaldOp } from './verrijkingOpslag'
+import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking } from './verrijkingOpslag'
 import type { VerrijkingData } from './verrijking'
+import type { MarktEigenData } from './schemas'
 
 const VOLLEDIGE_DATA: VerrijkingData = {
   woz: {
@@ -54,35 +55,84 @@ const VOLLEDIGE_DATA: VerrijkingData = {
   },
   gemeente: 'Wassenaar',
   coord: { lat: 52.14, lon: 4.4 },
+  bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'ok' },
+}
+
+const MARKT_EIGEN: MarktEigenData = {
+  plaats: 'Wassenaar',
+  periodeVan: '2025-09-24',
+  periodeTot: '2026-09-24',
+  n: 12,
+  mediaanPrijs: 850000,
+  mediaanM2: 5200,
+  mediaanLooptijd: 45,
+  pctTovVraag: -1.0,
 }
 
 describe('naarVerrijkingOpslag', () => {
-  it('bouwt een geldige opslagvorm met versie en tijdstempel', () => {
-    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z')
+  it('bouwt een geldige opslagvorm met versie, tijdstempel, bronnen en eigen marktdata', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z', MARKT_EIGEN)
     expect(opslag.versie).toBe(1)
     expect(opslag.opgehaald_op).toBe('2026-09-23T10:00:00.000Z')
     expect(opslag.woz?.waarden[0].waarde).toBe(500000)
     expect(opslag.cbs?.buurtprofiel).toBe('Premium')
+    expect(opslag.bronnen).toEqual({ woz: 'ok', cbs: 'ok', voorzieningen: 'ok' })
+    expect(opslag.marktEigen?.plaats).toBe('Wassenaar')
+    expect(opslag.marktEigen?.n).toBe(12)
   })
 
-  it('accepteert volledig lege verrijking (adres niet gevonden)', () => {
-    const leeg: VerrijkingData = { woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null, coord: null }
-    const opslag = naarVerrijkingOpslag(leeg, '2026-09-23T10:00:00.000Z')
+  it('accepteert volledig lege verrijking (adres niet gevonden) en geen eigen marktdata', () => {
+    const leeg: VerrijkingData = {
+      woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null, coord: null,
+      bronnen: { woz: 'leeg', cbs: 'leeg', voorzieningen: 'leeg' },
+    }
+    const opslag = naarVerrijkingOpslag(leeg, '2026-09-23T10:00:00.000Z', null)
     expect(opslag.woz).toBeNull()
     expect(opslag.cbs).toBeNull()
+    expect(opslag.marktEigen).toBeNull()
+  })
+
+  it('bewaart het onderscheid mislukt vs. leeg per bron', () => {
+    const mislukt: VerrijkingData = {
+      ...VOLLEDIGE_DATA,
+      woz: null,
+      voorzieningen: null,
+      bronnen: { woz: 'mislukt', cbs: 'ok', voorzieningen: 'mislukt' },
+    }
+    const opslag = naarVerrijkingOpslag(mislukt, '2026-09-23T10:00:00.000Z', null)
+    expect(opslag.bronnen).toEqual({ woz: 'mislukt', cbs: 'ok', voorzieningen: 'mislukt' })
   })
 
   it('gooit een fout bij een onverwachte vorm', () => {
     const kapot = { woz: { onverwacht: true } } as unknown as VerrijkingData
-    expect(() => naarVerrijkingOpslag(kapot, '2026-09-23T10:00:00.000Z')).toThrow()
+    expect(() => naarVerrijkingOpslag(kapot, '2026-09-23T10:00:00.000Z', null)).toThrow()
   })
 })
 
 describe('verwerkOpgeslagenVerrijking', () => {
   it('geeft de gevalideerde opslag terug als de kolom bestaat en gevuld is', () => {
-    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z')
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z', MARKT_EIGEN)
     const resultaat = verwerkOpgeslagenVerrijking({ data: { verrijking_json: opslag }, error: null })
     expect(resultaat?.opgehaald_op).toBe('2026-09-23T10:00:00.000Z')
+  })
+
+  it('blijft geldig voor een oudere rij zonder bronnen/marktEigen (vóór deze fix)', () => {
+    const oud = {
+      versie: 1,
+      woz: null,
+      cbs: null,
+      voorzieningen: null,
+      gemeente: 'Wassenaar',
+      coord: null,
+      opgehaald_op: '2026-09-23T08:00:00.000Z',
+      // oude vorm had hier nog `markt`, geen `bronnen`/`marktEigen` — Zod
+      // negeert de onbekende `markt`-sleutel stilzwijgend.
+      markt: { label: 'Premiumgemeente' },
+    }
+    const resultaat = verwerkOpgeslagenVerrijking({ data: { verrijking_json: oud }, error: null })
+    expect(resultaat).not.toBeNull()
+    expect(resultaat?.bronnen).toBeUndefined()
+    expect(resultaat?.marktEigen).toBeUndefined()
   })
 
   it('geeft null als de kolom nog niet bestaat (undefined_column)', () => {
@@ -106,33 +156,5 @@ describe('verwerkOpgeslagenVerrijking', () => {
   it('geeft null bij een ontbrekend of leeg resultaat', () => {
     expect(verwerkOpgeslagenVerrijking(null)).toBeNull()
     expect(verwerkOpgeslagenVerrijking(undefined)).toBeNull()
-  })
-})
-
-describe('nl-NL formattering', () => {
-  it('formatEuro gebruikt euro-opmaak zonder decimalen', () => {
-    expect(formatEuro(500000)).toMatch(/€\s?500\.000/)
-  })
-
-  it('formatGetal gebruikt duizendtalpunten', () => {
-    expect(formatGetal(2000)).toBe('2.000')
-  })
-
-  it('formatAfstand toont meters onder de kilometer', () => {
-    expect(formatAfstand(450)).toBe('450 m')
-  })
-
-  it('formatAfstand toont kilometers met komma vanaf 1000m', () => {
-    expect(formatAfstand(1200)).toBe('1,2 km')
-  })
-
-  it('formatOpgehaaldOp geeft een leesbare nl-NL datum/tijd', () => {
-    const resultaat = formatOpgehaaldOp('2026-09-23T10:00:00.000Z')
-    expect(resultaat).toContain('2026')
-    expect(resultaat).toContain('september')
-  })
-
-  it('formatOpgehaaldOp valt terug op "onbekend" bij een ongeldige tijdstempel', () => {
-    expect(formatOpgehaaldOp('niet-een-datum')).toBe('onbekend')
   })
 })
