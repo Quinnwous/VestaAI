@@ -72,6 +72,11 @@ export function RecentBekeken({ items }: { items: RecentBekekenItem[] }) {
           <EmptyState
             titel="Nog geen dossiers bekeken"
             beschrijving="Open een woningdossier en het verschijnt hier, zodat je snel terug kunt naar waar je gebleven was."
+            actie={
+              <Link href="/woningen" style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none' }}>
+                Naar je woningen →
+              </Link>
+            }
           />
         </div>
       ) : (
