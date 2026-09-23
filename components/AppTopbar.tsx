@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
+import { FeedbackKnop } from '@/components/FeedbackKnop'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -27,7 +28,8 @@ import type { Branding } from '@/lib/branding'
  * Kantoor staat niet meer los in de balk maar uitsluitend in het
  * profielmenu (rechtsboven), samen met "Mijn account" en "Uitloggen" — de
  * blauwe contactbalk erboven (telefoon/e-mail) is ook weg, zie
- * app/(app)/layout.tsx.
+ * app/(app)/layout.tsx. Sinds item 12.4 (docs/roadmap.md § Fase 12) zit
+ * daar ook "Feedback geven" (components/FeedbackKnop.tsx) tussen.
  *
  * Alle merkkleuren komen uit CSS-variabelen (`--merk*`) die de (app)-layout zet,
  * zodat elk kantoor zijn eigen omgeving ziet.
@@ -143,6 +145,7 @@ export function AppTopbar({
       >
         Kantoor
       </Link>
+      <FeedbackKnop onBeforeOpen={() => setProfielOpen(false)} />
       <form action="/api/auth/logout" method="POST">
         <button
           type="submit"
@@ -278,6 +281,7 @@ export function AppTopbar({
               <Link href="/kantoor" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
                 Kantoor
               </Link>
+              <FeedbackKnop variant="mobiel" onBeforeOpen={() => setMobiel(false)} />
               <form action="/api/auth/logout" method="POST">
                 <button type="submit" style={{ fontSize: 14, fontWeight: 600, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0' }}>
                   Uitloggen

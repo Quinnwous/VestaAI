@@ -58,7 +58,7 @@ export function RecentBekeken({ items }: { items: RecentBekekenItem[] }) {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, padding: '18px 20px 14px', borderBottom: items.length ? `1px solid ${colors.border}` : 'none' }}>
         <div>
           <h2 style={{ fontSize: 15, fontWeight: 800, color: colors.text, margin: 0 }}>Recent bekeken</h2>
-          <p style={{ fontSize: 12.5, color: colors.muted, margin: '2px 0 0' }}>de dossiers die je 't laatst opende</p>
+          <p style={{ fontSize: 12.5, color: colors.muted, margin: '2px 0 0' }}>de dossiers die je het laatst opende</p>
         </div>
         {items.length > 0 && (
           <Link href="/woningen" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none', flexShrink: 0 }}>
