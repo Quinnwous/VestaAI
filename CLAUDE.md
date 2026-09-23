@@ -23,6 +23,13 @@
 > chat, plan mode alleen bij items gemarkeerd *(ontwerpkeuze)*). `/sessie-start` bij het
 > begin, `/sessie-afronden` bij het einde van elke sessie.
 >
+> **Parallel met agents (sinds 23 sep 2026):** de hoofdsessie regisseert, Sonnet-subagents
+> bouwen elk één roadmap-item in een eigen worktree (`isolation: worktree`, eigen dev-poort
+> 31xx, node_modules als symlink). Keuze op nul bestandsoverlap; agents schrijven migraties
+> maar passen ze niet toe, en raken `docs/roadmap.md`/`docs/besluiten.md` niet aan. Elke agent
+> commit **na elke deelstap** (limietbestendig: bij een op gebruikslimiet gestopte sessie
+> blijft het werk staan en wordt de agent hervat via SendMessage, niet opnieuw gestart).
+>
 > **Push/merge/live (besluit Quinn 17 sep 2026, geldt tot hij anders zegt):** tijdens een
 > sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
 > te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
