@@ -6,7 +6,8 @@ import { isPlatformAdmin } from '@/lib/admin'
 import { sendAccountToegevoegdEmail } from '@/lib/email'
 import { distilleerStijlprofiel } from '@/lib/claude'
 import type { HuisstijlConfig, KantoorInstellingen } from '@/lib/schemas'
-import { HuisstijlSchema, KantoorInstellingenSchema } from '@/lib/schemas'
+import { HuisstijlSchema, KantoorInstellingenSchema, KantoorSlugSchema } from '@/lib/schemas'
+import { normaliseerSlug } from '@/lib/slug'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -284,5 +285,39 @@ export async function slaKantoorNaamOpAlsAdmin(kantoorId: string, naam: string):
   if (error) return { ok: false, error: error.message }
   revalidatePath(`/admin/kantoor/${kantoorId}`)
   revalidatePath('/admin')
+  return { ok: true }
+}
+
+/**
+ * Slug voor de kantoorspecifieke inlogpagina (/login/[slug], item 9.1).
+ * Vereist migratie 20260923_kantoren_slug.sql (kolom + unique constraint) —
+ * die is nog niet toegepast op het moment van bouwen, dus deze actie geeft
+ * een duidelijke foutmelding i.p.v. te crashen als de kolom nog ontbreekt.
+ * Lege string mag: dat verwijdert de slug weer (kantoor valt terug op de
+ * generieke /login).
+ */
+export async function slaKantoorSlugOpAlsAdmin(kantoorId: string, ruweSlug: string): Promise<Result> {
+  if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+
+  const genormaliseerd = normaliseerSlug(ruweSlug)
+  if (genormaliseerd) {
+    const parsed = KantoorSlugSchema.safeParse(genormaliseerd)
+    if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige slug' }
+  }
+
+  const service = createServiceSupabaseClient()
+  const { error } = await service
+    .from('kantoren')
+    .update({ slug: genormaliseerd || null })
+    .eq('id', kantoorId)
+
+  if (error) {
+    // 23505 = unique_violation (Postgres), 42703 = ontbrekende kolom (migratie nog niet toegepast)
+    if (error.code === '23505') return { ok: false, error: 'Deze slug is al in gebruik door een ander kantoor.' }
+    if (error.code === '42703') return { ok: false, error: 'De slug-kolom bestaat nog niet — migratie 20260923_kantoren_slug.sql moet eerst toegepast worden.' }
+    return { ok: false, error: error.message }
+  }
+
+  revalidatePath(`/admin/kantoor/${kantoorId}`)
   return { ok: true }
 }
