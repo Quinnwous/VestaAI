@@ -253,8 +253,19 @@ stable
 security invoker
 set search_path = public
 as $$
+  -- De sleutel komt uit de data zelf: `verkopend_kantoor_norm` strip ook
+  -- leestekens/diakrieten ("Huys & Partners" → "huys partners"), dus
+  -- lower(trim(naam)) zou zo'n kantoor missen. lower(trim()) is alleen terugval.
   with doel as (
-    select case when p_kantoor = 'Eigen kantoor' then 'Eigen kantoor' else lower(trim(p_kantoor)) end as sleutel
+    select case
+      when p_kantoor = 'Eigen kantoor' then 'Eigen kantoor'
+      else coalesce(
+        (select t.verkopend_kantoor_norm from transacties t
+          where trim(t.verkopend_kantoor) = trim(p_kantoor) and t.verkopend_kantoor_norm is not null
+          limit 1),
+        lower(trim(p_kantoor))
+      )
+    end as sleutel
   ),
   selectie as (
     select
