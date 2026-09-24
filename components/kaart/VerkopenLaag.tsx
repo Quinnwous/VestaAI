@@ -8,6 +8,12 @@
  * terug via `onHover`/`onSelect` zodat een zijlijst of `HoverKaart` kan
  * meebewegen.
  *
+ * `gemarkeerdId` (item 7.2, optioneel/additief): highlight een pin vanuit een
+ * externe bron — de zijlijst van de verkoopkaart-explorer zet dit bij het
+ * hoveren van een rij, zodat lijst → kaart net zo synchroon is als kaart →
+ * lijst (dat laatste loopt al via `onHover`). Los van `geselecteerdId`
+ * (klik/gekozen), dat voorrang houdt op de highlight.
+ *
  * Gebruik: als kind van <BasisKaart> — leest de kaartinstantie via context.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -30,11 +36,14 @@ export type VerkoopHoverInfo = {
 export function VerkopenLaag({
   transacties,
   geselecteerdId = null,
+  gemarkeerdId = null,
   onHover,
   onSelect,
 }: {
   transacties: TransactieMetCoordinaten[]
   geselecteerdId?: string | null
+  /** Highlight vanuit een externe bron (bv. hover op een zijlijst-rij) — zie bestandscommentaar. */
+  gemarkeerdId?: string | null
   onHover?: (info: VerkoopHoverInfo | null) => void
   onSelect?: (id: string) => void
 }) {
@@ -70,7 +79,7 @@ export function VerkopenLaag({
     const nieuweMarkers: maplibregl.Marker[] = []
 
     const maakPinMarker = (p: Punt) => {
-      const basisVariant = p.id === geselecteerdId ? 'gekozen' : 'normaal'
+      const basisVariant = p.id === geselecteerdId ? 'gekozen' : p.id === gemarkeerdId ? 'hover' : 'normaal'
       const el = document.createElement('div')
       el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
       el.style.cursor = 'pointer'
@@ -127,7 +136,7 @@ export function VerkopenLaag({
       markersRef.current = []
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, punten, puntenById, zoom, geselecteerdId])
+  }, [map, punten, puntenById, zoom, geselecteerdId, gemarkeerdId])
 
   return null
 }
