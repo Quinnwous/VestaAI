@@ -664,7 +664,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
   `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
   "markt").
-- [ ] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
+- [x] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/transacties.html`, § 3.8)* — `DataTable` (TanStack,
   server-gepagineerd via `zoekTransacties`, 50/pagina, sorteerbaar, dichte
   rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
@@ -921,8 +921,8 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 **Vóór de demo oppakken (uit de sessie van 23-24 sep):** WOZ-loket en
 Overpass geven in "Buurt & data" "kon niet worden opgehaald" voor een
 Wassenaars adres — oorzaak zoeken (endpoint gewijzigd? timeout? coördinaten?)
-vóór scène 4 · SQL-fix `20260924_fix_marktanalyse_samenvatting_vorige_periode.sql`
-toepassen en de omweg `vorigePeriodeFilter()` weghalen (12.3) · gedeelde kop
+vóór scène 4 · omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
+minikaart in de transactie-sheet op `BasisKaart` (7.2) · gedeelde kop
 "Zoeken in de markt" in `app/(app)/marktanalyse/layout.tsx` weg zodra alle
 vier verkenners een eigen kop hebben (kop-op-kop) · pastelkleuren van de kaart
 laten beoordelen door Quinn (`pdokPastelStijl()`).
