@@ -5,6 +5,11 @@ import {
   MET_COORDINATEN_KOLOMMEN,
   concurrentieMarktaandeel,
   concurrentieSegmenten,
+  concurrentieRanglijst,
+  concurrentieWijVsMarkt,
+  concurrentieAandeelJaar,
+  concurrentieMatrix,
+  concurrentieProfiel,
   dataTotEnMet,
   haalTransactiesVoorVerkenner,
   marktanalyseReeks,
@@ -13,7 +18,10 @@ import {
   referentiesInStraal,
   zoekTransacties,
 } from './transactiesQuery'
-import { marktaandeel, wieWintWelkSegment } from './concurrentie'
+import {
+  marktaandeel, wieWintWelkSegment,
+  ranglijstPerKantoor, wijVsMarkt, aandeelPerJaar, matrixWieWintWaar, concurrentProfielV2,
+} from './concurrentie'
 import { bouwIndex, kwartaalVan, mediaan, type IndexRij } from './prijsindex'
 import { afstandMeters } from './geo'
 import type { TransactieMetCoordinaten, TransactieRow } from './supabase'
@@ -160,6 +168,73 @@ describe.skipIf(!AAN)('transactiesQuery — RPC-vergelijking (SUPABASE_TEST=1, d
       // winnaar kiezen dan Array.sort (stabiel op invoervolgorde) — vergelijk
       // daarom het aantal van de RPC-winnaar, niet de naam, bij een tie.
     }
+  })
+
+  // ── Concurrentie v2 (item 6.3, migratie 20260924_rpc_concurrentie_v2.sql —
+  // NOG NIET TOEGEPAST) — deze vijf tests falen met "function does not
+  // exist" tot Quinn de migratie toepast; ze draaien alleen mee onder
+  // SUPABASE_TEST=1 en zijn dus niet onderdeel van de gewone `npm run test`. ──
+
+  it('concurrentie_ranglijst komt overeen met lib/concurrentie.ts ranglijstPerKantoor()', async () => {
+    const rpc = await tijd('concurrentie_ranglijst', concurrentieRanglijst(client))
+    const referentie = ranglijstPerKantoor(alleRijen)
+    expect(rpc.length).toBe(referentie.length)
+    const perKantoorRpc = new Map(rpc.map(r => [r.kantoor, r]))
+    for (const ref of referentie) {
+      const r = perKantoorRpc.get(ref.kantoor)
+      expect(r, `kantoor ${ref.kantoor} ontbreekt in RPC-uitkomst`).toBeTruthy()
+      expect(r!.aantal).toBe(ref.aantal)
+      expect(r!.aandeelPct).toBeCloseTo(ref.aandeelPct, 1)
+      if (ref.mediaanLooptijd != null) expect(r!.mediaanLooptijd!).toBeCloseTo(ref.mediaanLooptijd, 0)
+    }
+  })
+
+  it('concurrentie_wij_vs_markt komt overeen met lib/concurrentie.ts wijVsMarkt()', async () => {
+    const rpc = await tijd('concurrentie_wij_vs_markt', concurrentieWijVsMarkt(client))
+    const referentie = wijVsMarkt(alleRijen)
+    expect(rpc.nWij).toBe(referentie.nWij)
+    expect(rpc.nMarkt).toBe(referentie.nMarkt)
+    if (referentie.looptijdWij != null) expect(rpc.looptijdWij!).toBeCloseTo(referentie.looptijdWij, 0)
+    if (referentie.looptijdMarkt != null) expect(rpc.looptijdMarkt!).toBeCloseTo(referentie.looptijdMarkt, 0)
+    if (referentie.ratioWij != null) expect(rpc.ratioWij!).toBeCloseTo(referentie.ratioWij, 1)
+    if (referentie.m2Wij != null) expect(rpc.m2Wij!).toBeCloseTo(referentie.m2Wij, 0)
+  })
+
+  it('concurrentie_aandeel_jaar komt overeen met lib/concurrentie.ts aandeelPerJaar() (Eigen kantoor)', async () => {
+    const rpc = await tijd('concurrentie_aandeel_jaar', concurrentieAandeelJaar(client, undefined, ['Eigen kantoor']))
+    const referentie = aandeelPerJaar(alleRijen, ['Eigen kantoor'])
+    expect(rpc.length).toBe(referentie.length)
+    const perJaarRpc = new Map(rpc.map(r => [r.jaar, r]))
+    for (const ref of referentie) {
+      const r = perJaarRpc.get(ref.jaar)
+      expect(r, `jaar ${ref.jaar} ontbreekt in RPC-uitkomst`).toBeTruthy()
+      expect(r!.aantal).toBe(ref.aantal)
+      expect(r!.totaal).toBe(ref.totaal)
+    }
+  })
+
+  it('concurrentie_matrix (plaatsniveau) komt overeen met lib/concurrentie.ts matrixWieWintWaar()', async () => {
+    const rpc = await tijd('concurrentie_matrix', concurrentieMatrix(client, undefined, false))
+    const referentie = matrixWieWintWaar(alleRijen, false)
+    expect(rpc.length).toBe(referentie.length)
+    const perCelRpc = new Map(rpc.map(r => [`${r.rijSleutel}::${r.woningtypeGroep}`, r]))
+    for (const ref of referentie) {
+      const r = perCelRpc.get(`${ref.rijSleutel}::${ref.woningtypeGroep}`)
+      expect(r, `cel ${ref.rijSleutel}/${ref.woningtypeGroep} ontbreekt in RPC-uitkomst`).toBeTruthy()
+      expect(r!.n).toBe(ref.n)
+      expect(r!.top3[0]?.kantoor).toBe(ref.top3[0]?.kantoor)
+      expect(r!.top3[0]?.aantal).toBe(ref.top3[0]?.aantal)
+    }
+  })
+
+  it('concurrentie_profiel (Eigen kantoor) komt overeen met lib/concurrentie.ts concurrentProfielV2()', async () => {
+    const rpc = await tijd('concurrentie_profiel', concurrentieProfiel(client, undefined, 'Eigen kantoor'))
+    const referentie = concurrentProfielV2(alleRijen, alleRijen, 'Eigen kantoor')
+    expect(rpc.n).toBe(referentie.n)
+    if (referentie.aandeelPct != null) expect(rpc.aandeelPct!).toBeCloseTo(referentie.aandeelPct, 1)
+    if (referentie.mediaanLooptijd != null) expect(rpc.mediaanLooptijd!).toBeCloseTo(referentie.mediaanLooptijd, 0)
+    expect(rpc.sterkstePlaats).toBe(referentie.sterkstePlaats)
+    expect(rpc.trend.reduce((s, t) => s + t.aantal, 0)).toBe(referentie.trend.reduce((s, t) => s + t.aantal, 0))
   })
 
   it('transacties_zoeken: totaal komt overeen met de volledige (niet-uitgesloten) set', async () => {

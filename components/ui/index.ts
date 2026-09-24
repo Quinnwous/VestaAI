@@ -46,3 +46,8 @@ export { ChartCard, Legenda } from './ChartCard'
 // schermen (bv. fase 10 dossierlijst).
 export { DataTable, dataTableFeatures } from './DataTable'
 export type { DataTableKolom, DataTableSortering, DataTablePaginatie } from './DataTable'
+
+// Item 6.3 (Concurrentie-explorer v2): wij-vs-markt-vergelijking, poort van
+// docs/ontwerp/concurrentie.html bouwDumbbell() — herbruikbaar voor elke
+// twee-punts-vergelijking (looptijd, t.o.v. vraagprijs, € per m²).
+export { DumbbellStat } from './DumbbellStat'
