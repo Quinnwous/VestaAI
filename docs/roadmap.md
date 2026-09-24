@@ -960,7 +960,9 @@ maakt bovendien bij elke nieuwe auth-user een proefkantoor aan (erfenis van
 zelf-aanmelden, 17 sep gezien bij de demo-fixture) → trigger droppen
 (accounts ontstaan alleen via `/admin`, `plaatsInKantoor`) en `revoke execute … from anon`
 (en `rls_auto_enable` ook van `authenticated`); **migratie staat klaar (24 sep), wacht op akkoord (§ 8 punt 10)** · `object_fotos` en
-`stijl_bewerkingen` hebben RLS zonder policy (bewust service-role? nagaan);
+`stijl_bewerkingen` hebben RLS zonder policy — *nagegaan 24 sep: bewust en correct;
+alle zeven routes gebruiken de service-role-client en filteren zelf op `kantoor_id`,
+en zonder policy is de tabel voor anon/authenticated dicht (deny-all)*;
 leaked-password-protection aan (§ 8 punt 3). Uiterlijk in fase 12.
 
 **Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
