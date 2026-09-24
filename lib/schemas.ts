@@ -496,28 +496,53 @@ export const VoorzieningenDataSchema = z.object({
   nabijheid_beoordeling: z.string(),
 })
 
-export const MarktDataSchema = z.object({
-  label: z.string(),
-  verkooptijd_weken: z.string(),
-  overbiedingskans_pct: z.string(),
-  overbod_pct: z.string(),
-  voorraad_maanden: z.string(),
-  marktomstandigheid: z.string(),
-  strategie: z.string(),
-  seizoen_advies: z.string(),
-  woz_trend_2019_2024: z.string(),
-  gemeente_type: z.enum(['premium', 'randstadcentrum', 'randstadbuiten', 'middelgroot', 'landelijk']),
-  herkomst: z.enum(['lijst', 'afgeleid']),
+// Item 10.3-fix (23 sep 2026, review hoofdsessie): het vuistregel-marktblok
+// (`MarktData`/`marktProfielOpzoeken()` in lib/verrijking.ts — vaste cijfers
+// per gemeentetype, geen echte meting) sprak de eigen marktanalyse op basis
+// van i4housing's transactiedataset tegen (bv. "-1,0% t.o.v. vraagprijs" in
+// marktanalyse vs. een hardgecodeerde "5-15% boven vraagprijs" hier). Het
+// blok is uit het dossier gehaald; deze schema's dragen in plaats daarvan een
+// eigen-data-samenvatting (`marktanalyseSamenvatting()` in
+// lib/transactiesQuery.ts, RPC `marktanalyse_samenvatting`) voor de plaats
+// van het adres. `lib/verrijking.ts` MarktData/`markt` blijft ongewijzigd
+// bestaan — die voedt uitsluitend de Claude-contentprompt
+// (`verrijkingNaarPrompt()`), niet dit dossierscherm.
+export const MarktEigenDataSchema = z.object({
+  plaats: z.string(),
+  periodeVan: z.string().nullable(),
+  periodeTot: z.string().nullable(),
+  n: z.number(),
+  mediaanPrijs: z.number().nullable(),
+  mediaanM2: z.number().nullable(),
+  mediaanLooptijd: z.number().nullable(),
+  pctTovVraag: z.number().nullable(),
 })
+export type MarktEigenData = z.infer<typeof MarktEigenDataSchema>
+
+// Per bron (WOZ/CBS/voorzieningen) of het antwoord 'ok' (data), 'leeg' (bron
+// antwoordde, dit adres levert niets op) of 'mislukt' (netwerkfout/timeout)
+// was — zelfde union als lib/verrijking.ts `FetchStatus` (bewust hier
+// opnieuw gedefinieerd i.p.v. geïmporteerd: lib/schemas.ts is client-safe en
+// mag geen afhankelijkheid krijgen van lib/verrijking.ts se fetch-logica).
+// `.optional()` op het veld zelf omdat rijen van vóór deze fix dit niet
+// hebben; ontbreekt het, dan valt de UI terug op het oude gedrag (afleiden
+// uit de aan-/afwezigheid van data).
+export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt'])
+export type FetchStatus = z.infer<typeof FetchStatusSchema>
 
 export const VerrijkingOpslagSchema = z.object({
   versie: z.literal(1),
   woz: WozDataSchema.nullable(),
   cbs: CbsDataSchema.nullable(),
   voorzieningen: VoorzieningenDataSchema.nullable(),
-  markt: MarktDataSchema.nullable(),
+  marktEigen: MarktEigenDataSchema.nullable().optional(),
   gemeente: z.string().nullable(),
   coord: z.object({ lat: z.number(), lon: z.number() }).nullable(),
+  bronnen: z.object({
+    woz: FetchStatusSchema,
+    cbs: FetchStatusSchema,
+    voorzieningen: FetchStatusSchema,
+  }).optional(),
   /** ISO-tijdstempel van het moment waarop deze verrijking is opgehaald. */
   opgehaald_op: z.string(),
 })

@@ -3,15 +3,19 @@ import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking } from '@/lib/verrijking'
 import { naarVerrijkingOpslag } from '@/lib/verrijkingOpslag'
-import { PropertyInputSchema } from '@/lib/schemas'
+import { marktanalyseSamenvatting } from '@/lib/transactiesQuery'
+import { PropertyInputSchema, type MarktEigenData } from '@/lib/schemas'
 import { meldFout } from '@/lib/fouten'
 
 export const maxDuration = 30
 
 /**
  * (Opnieuw) ophalen en opslaan van de buurtdata bij een dossier — item 10.3,
- * docs/roadmap.md § fase 10: WOZ, CBS-buurtcijfers, voorzieningen en het
- * marktprofiel uit lib/verrijking.ts, met tijdstempel "opgehaald op" op
+ * docs/roadmap.md § fase 10: WOZ, CBS-buurtcijfers, voorzieningen (uit
+ * lib/verrijking.ts) en een "Markt in [plaats]"-samenvatting uit de eigen
+ * transactiedataset (`marktanalyseSamenvatting()`, lib/transactiesQuery.ts —
+ * vervangt sinds de review van 23 sep 2026 het vuistregel-marktblok, dat de
+ * eigen marktanalyse tegensprak), met tijdstempel "opgehaald op" op
  * `objecten.verrijking_json`. Dezelfde route bedient twee aanroepers:
  *
  * 1. Een fire-and-forget aanroep (`keepalive: true`, niet ge-awaited) vanuit
@@ -47,9 +51,47 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const invoer = PropertyInputSchema.safeParse(object.input_json)
   const oppervlak = invoer.success ? invoer.data.oppervlak_m2 : undefined
 
+  // Eigen-marktdata voor het blok "Markt in [plaats]" (item 10.3-fix, review
+  // hoofdsessie): plaats van het adres is het laatste, door een komma
+  // gescheiden onderdeel — zelfde "straat huisnr, Plaats"-conventie als
+  // overal elders in de intake (zie PropertyForm.tsx/NewObjectForm.tsx demodata).
+  // Bewust geen filter op woningtype: de RPC filtert `typen` op het exacte
+  // subtype (`woningtype_sub`), dat voor deze datasetgrootte vrijwel altijd
+  // op n=0 uitkomt — een "Markt in [plaats]"-blok over de hele plaats geeft
+  // een bruikbaarder n.
+  const delen = object.address.split(',')
+  const plaats = delen.length > 1 ? delen[delen.length - 1].trim() : null
+
+  let marktEigen: MarktEigenData | null = null
+  if (plaats) {
+    try {
+      const nu = new Date()
+      const twaalfMaandenGeleden = new Date(nu)
+      twaalfMaandenGeleden.setFullYear(twaalfMaandenGeleden.getFullYear() - 1)
+      const samenvatting = await marktanalyseSamenvatting(supabase, {
+        plaatsen: [plaats],
+        datum_van: twaalfMaandenGeleden.toISOString().slice(0, 10),
+        datum_tot: nu.toISOString().slice(0, 10),
+      })
+      marktEigen = {
+        plaats,
+        periodeVan: samenvatting.huidig.van,
+        periodeTot: samenvatting.huidig.tot,
+        n: samenvatting.huidig.n,
+        mediaanPrijs: samenvatting.huidig.mediaanPrijs,
+        mediaanM2: samenvatting.huidig.mediaanM2,
+        mediaanLooptijd: samenvatting.huidig.mediaanLooptijd,
+        pctTovVraag: samenvatting.huidig.pctTovVraag,
+      }
+    } catch (err) {
+      meldFout('object/[id]/verrijking:markteigen', err, { objectId: params.id, plaats })
+      marktEigen = null
+    }
+  }
+
   try {
     const data = await fetchVerrijking(object.address, oppervlak)
-    const opslag = naarVerrijkingOpslag(data, new Date().toISOString())
+    const opslag = naarVerrijkingOpslag(data, new Date().toISOString(), marktEigen)
 
     const { error } = await serviceClient
       .from('objecten')

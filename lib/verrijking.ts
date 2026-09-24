@@ -6,17 +6,45 @@
 
 const FETCH_TIMEOUT = 8000
 
-async function fetchMet<T>(url: string, init?: RequestInit, timeoutMs = FETCH_TIMEOUT): Promise<T | null> {
+/**
+ * Onderscheid tussen "leeg" (de bron antwoordde, maar dit adres levert niets
+ * op — een geldig resultaat) en "mislukt" (netwerkfout, timeout, serverfout).
+ * Item 10.3-fix (23 sep 2026): vóór dit onderscheid werden beide stilzwijgend
+ * tot `null` gereduceerd, en toonde het dossier "geen WOZ-gegevens gevonden"
+ * ook wanneer de bron simpelweg niet bereikbaar was — misleidend voor de
+ * makelaar, die dan denkt dat er structureel geen data bestaat.
+ */
+export type FetchStatus = 'ok' | 'leeg' | 'mislukt'
+
+interface FetchPoging<T> {
+  status: FetchStatus
+  data: T | null
+  /** Alleen gezet bij 'mislukt' — voor logging/diagnose, niet voor de UI. */
+  reden?: string
+}
+
+async function fetchMetStatus<T>(url: string, init?: RequestInit, timeoutMs = FETCH_TIMEOUT): Promise<FetchPoging<T>> {
   try {
     const res = await fetch(url, {
       ...init,
       signal: AbortSignal.timeout(timeoutMs),
     })
-    if (!res.ok) return null
-    return (await res.json()) as T
-  } catch {
-    return null
+    if (!res.ok) {
+      // 4xx behandelen we als "leeg" (bron bestaat, dit adres/deze id niet);
+      // 5xx is een serverfout bij de bron zelf — dat is 'mislukt'.
+      return { status: res.status >= 500 ? 'mislukt' : 'leeg', data: null, reden: `HTTP ${res.status}` }
+    }
+    const data = (await res.json()) as T
+    return { status: 'ok', data }
+  } catch (err) {
+    const timeout = err instanceof Error && err.name === 'TimeoutError'
+    return { status: 'mislukt', data: null, reden: timeout ? 'timeout' : err instanceof Error ? err.message : 'onbekende fout' }
   }
+}
+
+/** Backward-compatibele wrapper voor call-sites die alleen de data nodig hebben (bv. PDOK-lookup). */
+async function fetchMet<T>(url: string, init?: RequestInit, timeoutMs = FETCH_TIMEOUT): Promise<T | null> {
+  return (await fetchMetStatus<T>(url, init, timeoutMs)).data
 }
 
 // ─── PDOK Locatieserver ───────────────────────────────────────────────────────
@@ -78,16 +106,32 @@ export interface WozData {
   per_m2: number | null
 }
 
-async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Promise<WozData | null> {
-  if (!adresseerbaarobjectId) return null
+/**
+ * ⚠️ Onderzoek 23 sep 2026 (item 10.3-fix): `api.wozwaardeloket.nl` bestaat
+ * niet meer — DNS lost het domein niet eens op (`ENOTFOUND`). WOZ Waardeloket
+ * is een Angular-website zonder gepubliceerde publieke API en staat expliciet
+ * geen geautomatiseerde bevraging toe; een gereverse-engineerde route
+ * (`www.wozwaardeloket.nl/wozwaardeloket-api/v1/wozwaarde/nummeraanduiding/…`,
+ * gedocumenteerd door derden) gaf bij een echte test alleen de lege Angular-
+ * shell terug (waarschijnlijk client-side-only bevraagd of achteraf
+ * dichtgezet). Geen betrouwbare gratis vervanger gevonden binnen deze sessie
+ * — de enige geverifieerde alternatieven zijn betaald (bv. woz-api.nl) of
+ * uitsluitend voor gemeenten (Kadaster Haal Centraal, PKI-certificaat
+ * vereist). Beslissing voor Quinn: WOZ blijft tot nader order op 'mislukt'
+ * staan (nette "kon niet worden opgehaald"-melding i.p.v. een dode aanroep
+ * verbergen) — zie docs/besluiten.md.
+ */
+async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Promise<FetchPoging<WozData>> {
+  if (!adresseerbaarobjectId) return { status: 'leeg', data: null }
 
-  const data = await fetchMet<{ _embedded?: { wozObjecten?: WozObject[] }; identificatie?: string }>(
+  const poging = await fetchMetStatus<{ _embedded?: { wozObjecten?: WozObject[] }; identificatie?: string }>(
     `https://api.wozwaardeloket.nl/v1/wozobjecten?adresseerbaarobject=${adresseerbaarobjectId}`,
     { headers: { Accept: 'application/json' } },
   )
+  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: poging.reden }
 
-  const objecten = data?._embedded?.wozObjecten
-  if (!objecten?.length) return null
+  const objecten = poging.data?._embedded?.wozObjecten
+  if (!objecten?.length) return { status: 'leeg', data: null }
 
   const obj = objecten[0]
   const waarden = (obj.wozWaarden ?? [])
@@ -99,7 +143,7 @@ async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Pr
     .sort((a, b) => b.belastingjaar - a.belastingjaar)
     .slice(0, 5)
 
-  if (!waarden.length) return null
+  if (!waarden.length) return { status: 'leeg', data: null }
 
   const nieuwste = waarden[0].waarde
   const oudste = waarden[waarden.length - 1].waarde
@@ -108,10 +152,13 @@ async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Pr
     : null
 
   return {
-    object_id: data?.identificatie ?? null,
-    waarden,
-    stijging_pct,
-    per_m2: oppervlakM2 ? Math.round(nieuwste / oppervlakM2) : null,
+    status: 'ok',
+    data: {
+      object_id: poging.data?.identificatie ?? null,
+      waarden,
+      stijging_pct,
+      per_m2: oppervlakM2 ? Math.round(nieuwste / oppervlakM2) : null,
+    },
   }
 }
 
@@ -128,7 +175,7 @@ export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; p
   const bagId = pdok?.adresseerbaarobject_id
   if (!bagId) return null
   const woz = await fetchWoz(bagId)
-  const meestRecent = woz?.waarden[0]
+  const meestRecent = woz.data?.waarden[0]
   return meestRecent ? { waarde: meestRecent.waarde, peildatum: meestRecent.peildatum } : null
 }
 
@@ -434,7 +481,22 @@ function toVoorzieningItems(elements: OverpassElement[], lat: number, lon: numbe
     .slice(0, max)
 }
 
-async function fetchVoorzieningen(lat: number, lon: number, radius = 1500): Promise<VoorzieningenData | null> {
+/**
+ * Onderzoek 23 sep 2026 (item 10.3-fix): de publieke `overpass-api.de` wees
+ * onze aanroepen af (HTTP 406) zonder herkenbare `User-Agent` — de publieke
+ * Overpass-instances rate-limiten expliciet op een ontbrekende/generieke UA.
+ * Met een beschrijvende UA werkt `overpass-api.de` weer, maar duurt een
+ * volle query (7 filters) er ~9s over — net over onze oude timeout van 8s,
+ * wat de stille "geen voorzieningen"-uitval verklaart. `lz4.overpass-api.de`
+ * (dezelfde dataset, load-balanced replica van het project zelf) bleek in
+ * dezelfde test 10-15× sneller (<1s) en is nu de primaire URL; de timeout
+ * staat iets ruimer (12s) als marge voor drukte.
+ */
+const OVERPASS_URL = 'https://lz4.overpass-api.de/api/interpreter'
+const OVERPASS_USER_AGENT = 'VestaAI-platform/1.0 (+https://vestaai.nl; makelaarsplatform, buurtdata-verrijking)'
+const OVERPASS_TIMEOUT = 12000
+
+async function fetchVoorzieningen(lat: number, lon: number, radius = 1500): Promise<FetchPoging<VoorzieningenData>> {
   const query = `[out:json][timeout:15];
 (
   node["shop"~"supermarket|convenience"]["name"](around:${radius},${lat},${lon});
@@ -447,15 +509,15 @@ async function fetchVoorzieningen(lat: number, lon: number, radius = 1500): Prom
 );
 out center;`
 
-  const data = await fetchMet<{ elements: OverpassElement[] }>('https://overpass-api.de/api/interpreter', {
+  const poging = await fetchMetStatus<{ elements: OverpassElement[] }>(OVERPASS_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': OVERPASS_USER_AGENT },
     body: `data=${encodeURIComponent(query)}`,
-  })
+  }, OVERPASS_TIMEOUT)
+  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: poging.reden }
+  if (!poging.data?.elements?.length) return { status: 'leeg', data: null }
 
-  if (!data?.elements?.length) return null
-
-  const els = data.elements
+  const els = poging.data.elements
 
   const supermarkten = toVoorzieningItems(els.filter(e => e.tags?.shop === 'supermarket' || e.tags?.shop === 'convenience'), lat, lon)
   const apotheken = toVoorzieningItems(els.filter(e => e.tags?.amenity === 'pharmacy'), lat, lon)
@@ -475,14 +537,17 @@ out center;`
   })()
 
   return {
-    supermarkt: supermarkten,
-    apotheek: apotheken,
-    huisarts: huisartsen,
-    scholen,
-    ov_haltes: ovHaltes,
-    treinstation: treinstations,
-    groen,
-    nabijheid_beoordeling: nabijheid,
+    status: 'ok',
+    data: {
+      supermarkt: supermarkten,
+      apotheek: apotheken,
+      huisarts: huisartsen,
+      scholen,
+      ov_haltes: ovHaltes,
+      treinstation: treinstations,
+      groen,
+      nabijheid_beoordeling: nabijheid,
+    },
   }
 }
 
@@ -617,6 +682,15 @@ export interface VerrijkingData {
   gemeente: string | null
   /** Coördinaat van het adres — voedt de straal-uitsnede van de verkoopkaart in het woningdossier. */
   coord: { lat: number; lon: number } | null
+  /**
+   * Item 10.3-fix (23 sep 2026): per externe bron of hij `ok` (data), `leeg`
+   * (bron antwoordde, dit adres levert niets op) of `mislukt` (netwerkfout/
+   * timeout/serverfout) gaf — voedt "kon niet worden opgehaald" vs "geen data
+   * gevonden" in `components/BuurtDataTab.tsx`. CBS wordt hier niet los op
+   * 'mislukt' getest (bleek in de praktijk stabiel te reageren) — 'leeg' dekt
+   * zowel "geen rijen" als een falende call.
+   */
+  bronnen: { woz: FetchStatus; cbs: FetchStatus; voorzieningen: FetchStatus }
 }
 
 export async function fetchVerrijking(adres: string, oppervlakM2?: number): Promise<VerrijkingData> {
@@ -626,9 +700,9 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
   const gemeente = pdok?.gemeentenaam ?? null
   const bagId = pdok?.adresseerbaarobject_id ?? null
 
-  const [woz, voorzieningen, cbsRuw] = await Promise.all([
-    bagId ? fetchWoz(bagId, oppervlakM2) : Promise.resolve(null),
-    coord ? fetchVoorzieningen(coord.lat, coord.lon) : Promise.resolve(null),
+  const [wozPoging, voorzieningenPoging, cbsRuw] = await Promise.all([
+    bagId ? fetchWoz(bagId, oppervlakM2) : Promise.resolve<FetchPoging<WozData>>({ status: 'leeg', data: null }),
+    coord ? fetchVoorzieningen(coord.lat, coord.lon) : Promise.resolve<FetchPoging<VoorzieningenData>>({ status: 'leeg', data: null }),
     fetchCbs(pdok?.buurtcode ?? null, pdok?.wijkcode ?? null, pdok?.gemeentecode ?? null),
   ])
 
@@ -644,7 +718,15 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
 
   const markt = gemeente ? marktProfielOpzoeken(gemeente, cbs) : null
 
-  return { woz, cbs, voorzieningen, markt, gemeente, coord }
+  return {
+    woz: wozPoging.data,
+    cbs,
+    voorzieningen: voorzieningenPoging.data,
+    markt,
+    gemeente,
+    coord,
+    bronnen: { woz: wozPoging.status, cbs: cbs ? 'ok' : 'leeg', voorzieningen: voorzieningenPoging.status },
+  }
 }
 
 // ─── Verrijking → leesbare string voor Claude-prompt ─────────────────────────
