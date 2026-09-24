@@ -104,6 +104,11 @@
 .vui-marktanalyse-grafieken { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 900px) { .vui-marktanalyse-grafieken { grid-template-columns: minmax(0, 1fr); } }
 
+/* Concurrentie-explorer v2 (item 6.3) — matrix + ranglijst naast elkaar,
+   stapelt onder 900 px (zelfde patroon als .vui-marktanalyse-grafieken). */
+.vui-concurrentie-matrix-ranglijst { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; }
+@media (max-width: 900px) { .vui-concurrentie-matrix-ranglijst { grid-template-columns: minmax(0, 1fr); } }
+
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
    zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
    laadstaat is geen statusmelding. */

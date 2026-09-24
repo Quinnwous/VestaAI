@@ -346,7 +346,7 @@ export function ConcurrentieExplorer({
           </div>
 
           {/* ── Matrix + Ranglijst ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', gap: 12 }} className="concurrentie-matrix-ranglijst">
+          <div className="vui-concurrentie-matrix-ranglijst">
             <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: radius.cardLg, padding: '16px 18px', minWidth: 0 }}>
               <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: '0 0 2px', color: colors.text }}>Wie wint waar</h2>
               <div style={{ fontSize: 12, color: colors.muted, marginBottom: 10 }}>
