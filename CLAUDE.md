@@ -163,6 +163,7 @@ VestaAI/
 ├── app/
 │   ├── page.tsx               # landingspagina (LandingPageClient) — gesloten platform, geen prijzen
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
+│   ├── login/[slug]/          # kantoorlogin in huisstijl (9.1) — branding via RPC kantoor_branding_publiek
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
 │   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
 │   │   │                       #   StartBanner + Kerncijfers (geen snelkoppelingen sinds 1.9c)
@@ -190,6 +191,9 @@ VestaAI/
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
 │   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
+│   ├── InlogFormulier.tsx      # gedeelde login (generiek VestaAI-groen of kantoorstijl)
+│   ├── kaart/                  # MapLibre-stack (7.1): BasisKaart, VerkopenLaag, StraalLaag, HoverKaart;
+│   │                           #   worker zelf gehost in public/maplibre-gl/ (guard-test)
 │   └── ui/                     # design-system: tokens.ts + primitives (o.a. AppPagina, StatTile,
 │                               #   EmptyState, Skeleton — sinds fase 1.1)
 ├── lib/
@@ -202,6 +206,9 @@ VestaAI/
 │   ├── admin.ts                # platform-admin-lijst (isPlatformAdmin)
 │   ├── schemas.ts              # Zod-schemas + TypeScript types (client-safe)
 │   ├── claude.ts                # Claude API wrapper (contentsuite NL+EN, USP-extractor)
+│   ├── aiModellen.ts            # énige plek voor Claude-modelstrings (8.1, guard-test)
+│   ├── opmaak.ts                # nl-NL-opmaak voor élk getal/datum (Amsterdamse tijd)
+│   ├── gebruik.ts               # logGebruik() → gebruik_events (Recent bekeken, 10.4)
 │   ├── verrijking.ts            # WOZ/CBS/Overpass/PDOK-verrijking (incl. coördinaat)
 │   ├── ensureMakelaar.ts        # vangnet: koppelt uitgenodigd account aan zijn kantoor
 │   └── supabase.ts · email.ts
