@@ -907,7 +907,9 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
 8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
 9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
-10. Akkoord op de opruimmigratie (na back-up).
+10. Akkoord op de opruimmigratie (na back-up) én op de hardening-migratie
+    `20260924_hardening_security_definer.sql` (trigger `handle_new_user` weg,
+    `execute` van anon intrekken; klaar en toegelicht in het bestand).
 11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
     verwerkersovereenkomst, prijsafspraak.
 13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
@@ -957,7 +959,7 @@ zijn via `/rest/v1/rpc` aan te roepen door `anon`; de trigger `handle_new_user`
 maakt bovendien bij elke nieuwe auth-user een proefkantoor aan (erfenis van
 zelf-aanmelden, 17 sep gezien bij de demo-fixture) → trigger droppen
 (accounts ontstaan alleen via `/admin`, `plaatsInKantoor`) en `revoke execute … from anon`
-(en `rls_auto_enable` ook van `authenticated`); `object_fotos` en
+(en `rls_auto_enable` ook van `authenticated`); **migratie staat klaar (24 sep), wacht op akkoord (§ 8 punt 10)** · `object_fotos` en
 `stijl_bewerkingen` hebben RLS zonder policy (bewust service-role? nagaan);
 leaked-password-protection aan (§ 8 punt 3). Uiterlijk in fase 12.
 
