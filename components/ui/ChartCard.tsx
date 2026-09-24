@@ -57,7 +57,7 @@ export function ChartCard({
 /** Pil-legenda (wij/markt/segment B) — geen legendabox, zie docs/ontwerp/README.md § 1.9. */
 export function Legenda({ items }: { items: { label: string; kleur: string; getoond?: boolean }[] }) {
   return (
-    <div style={{ display: 'flex', gap: 6, fontSize: 12, color: colors.body }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 12, color: colors.body }}>
       {items.filter(i => i.getoond !== false).map(i => (
         <span key={i.label} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '3px 9px', borderRadius: radius.pill, background: colors.tint2 }}>
           <span style={{ width: 10, height: 10, borderRadius: '50%', background: i.kleur, display: 'inline-block' }} />
