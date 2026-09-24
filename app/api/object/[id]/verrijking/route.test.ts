@@ -46,8 +46,10 @@ vi.mock('@/lib/verrijking', () => ({
 }))
 
 const marktanalyseSamenvatting = vi.fn()
+const dataTotEnMet = vi.fn()
 vi.mock('@/lib/transactiesQuery', () => ({
   marktanalyseSamenvatting: (...args: unknown[]) => marktanalyseSamenvatting(...args),
+  dataTotEnMet: (...args: unknown[]) => dataTotEnMet(...args),
 }))
 
 vi.mock('@/lib/fouten', () => ({ meldFout: vi.fn(() => 'ref123') }))
@@ -75,6 +77,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     })
     fetchVerrijking.mockResolvedValue(VOLLEDIGE_VERRIJKING)
     marktanalyseSamenvatting.mockResolvedValue(LEGE_SAMENVATTING)
+    dataTotEnMet.mockResolvedValue({ laatsteVerkoopdatum: '2026-09-17', laatsteImportKlaarOp: null })
     serviceFromImpl = () => selectChain()
   })
 
@@ -127,12 +130,13 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     const data = await res.json()
 
     expect(res.status).toBe(200)
+    // Periode verankerd aan de laatste verkoopdatum (niet aan vandaag), net als /marktanalyse.
     expect(marktanalyseSamenvatting).toHaveBeenCalledWith(
       expect.anything(),
-      expect.objectContaining({ plaatsen: ['Amsterdam'] }),
+      expect.objectContaining({ plaatsen: ['Amsterdam'], datum_van: '2025-09-17', datum_tot: '2026-09-17' }),
     )
     expect(data.verrijking.marktEigen).toEqual({
-      plaats: 'Amsterdam', periodeVan: '2025-09-24', periodeTot: '2026-09-24',
+      plaats: 'Amsterdam', periodeVan: '2025-09-24', periodeTot: '2026-09-17',
       n: 12, mediaanPrijs: 850000, mediaanM2: 5200, mediaanLooptijd: 45, pctTovVraag: -1.0,
     })
   })
