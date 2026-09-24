@@ -37,9 +37,11 @@
   `lib/claude.ts`: niet tegelijk).
 - **Buurt & data (24 sep, opgelost op `feat/sessie-24sep`):** Overpass is
   overbelast, niet stuk → terugval-mirror + CBS-buurtafstanden; WOZ per woning
-  is **niet gekoppeld** (loket heeft geen toegestane API) → CBS-buurtgemiddelde
-  als ijkpunt. Scène 4 ("BAG/WOZ vullen voor", "WOZ ernaast") hangt af van
-  Quinns keuze voor een WOZ-bron (§ 8, punt 14). Details: `docs/besluiten.md`.
+  is **niet gekoppeld** (geen gratis toegestane API) → de makelaar vult hem zelf
+  in (intakestap 6 of inline in "Buurt & data", met link naar het loket); anders
+  het CBS-buurtgemiddelde. Scène 4: WOZ vooraf invullen in het demo-dossier.
+  Nog open: `wozHandmatig` doorgeven van `object/[id]/page.tsx` via
+  `ObjectWorkspace` naar `BuurtDataTab` (na merge van 10.2). Details: `docs/besluiten.md`.
 - **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
   concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
@@ -53,8 +55,7 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** WOZ-bron voor scène 4 (§ 8, punt 14)? ·
-  blinde evaluatieronde content (8.1) draaien? ·
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
   pastelkleuren van de nieuwe kaart goed (`?kaart=v2`)?
 
 ---
@@ -907,21 +908,16 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
 8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
 9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
-10. Akkoord op de opruimmigratie (na back-up) én op de hardening-migratie
-    `20260924_hardening_security_definer.sql` (trigger `handle_new_user` weg,
-    `execute` van anon intrekken; klaar en toegelicht in het bestand).
+10. Akkoord op de opruimmigratie (na back-up). De hardening-migratie
+    `20260924_hardening_security_definer.sql` heeft akkoord (24 sep) en een
+    back-up, maar auto-mode blokkeert `apply_migration` zonder permissieregel:
+    regel toevoegen (zie `docs/besluiten.md` 24 sep) of hem zelf in de Supabase
+    SQL-editor plakken.
 11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
     verwerkersovereenkomst, prijsafspraak.
 13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
     pusht, merget en zet live bij "rond af" (besluit 17 sep, CLAUDE.md).
     Wel daarna: Search Console (punt 6).
-14. **WOZ per woning (scène 4):** kiezen tussen (a) een betaalde WOZ-API — o.a.
-    Altum AI (al in gebruik bij Dealwijs; prijs per call en voorwaarden voor
-    gebruik in een klantplatform nog te checken) of woz-api.nl; (b) de makelaar
-    vult de WOZ uit de beschikking van de verkoper in bij de intake (gratis,
-    één veld); (c) zo laten: CBS-buurtgemiddelde. Advies Claude: (b) nu, (a)
-    alleen als i4housing het automatisch wil. Bouwen = `fetchWoz` in
-    `lib/verrijking.ts` + `WOZ_GEKOPPELD`.
 12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
     bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
     Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
