@@ -1,33 +1,81 @@
-import { redirect } from 'next/navigation'
-import { createServerSupabaseClient } from '@/lib/supabase'
-import { MarktanalyseExplorer } from '@/components/MarktanalyseExplorer'
-import { haalTransactiesVoorVerkenner, ALLE_TRANSACTIE_KOLOMMEN } from '@/lib/transactiesQuery'
+import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
+import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngelogdeMakelaar'
+import { KantoorInstellingenSchema } from '@/lib/schemas'
+import {
+  haalEigenVerkopen,
+  plaatsenWijken,
+  dataTotEnMet,
+  type PlaatsWijkRij,
+} from '@/lib/transactiesQuery'
+import { standaardFilterState, filterStateNaarTransactieFilter } from '@/lib/marktanalyse'
 import type { TransactieRow } from '@/lib/supabase'
+import { MarktanalyseExplorer } from '@/components/MarktanalyseExplorer'
+import { haalMarktanalyseData } from './actions'
 
 export const metadata = { title: 'Marktanalyse' }
 
+/** Kolommen voor de eigen-verkopenreeks ("wij", patroon 1 — client-side filteren, § 3.1). */
+const EIGEN_VERKOOP_KOLOMMEN = [
+  'id', 'plaats', 'wijk', 'verkoopprijs', 'vraagprijs', 'verkoopdatum', 'looptijd_dagen',
+  'woonoppervlak_m2', 'perceel_m2', 'bouwjaar', 'energielabel', 'kamers', 'garage', 'tuin',
+  'woningtype_groep', 'woningtype_sub', 'prijs_m2',
+] as const
+
 /**
- * Marktanalyse — macro-trends, los van één woning (zie CLAUDE.md §
- * Hoofdstructuur). Interactieve explorer (besluit 16 sep 2026): filters op
- * type/wijk/periode met live hertekenende grafieken, plus segmentvergelijking
- * — zie components/MarktanalyseExplorer.tsx. Draait op de volledige
- * transactiedataset van het kantoor (eigen én overige verkopen).
- *
- * Tussenfase (item 2.2, docs/roadmap.md § 3.1): haalt alle niet-uitgesloten
- * rijen op via `haalTransactiesVoorVerkenner` (range-lus, geen 1.000-rijen-
- * plafond meer) — de RPC's `marktanalyse_reeks`/`marktanalyse_samenvatting`
- * zijn gebouwd en getest, maar deze pagina schakelt er pas op over als de
- * visuele v2 in fase 6 de aggregatie naar Postgres verplaatst.
+ * Marktanalyse-explorer v2 (item 6.1, docs/roadmap.md § 5 Fase 6 — port van
+ * `docs/ontwerp/marktanalyse.html`). Prestatie-eis: van ~6 s naar < ~1,5 s —
+ * dit haalt niet langer de hele transactietabel op (dat deed de v1-pagina via
+ * `haalTransactiesVoorVerkenner`), maar:
+ *  - de eigen verkopen één keer, compact (patroon 1, ≤ 2.000 rijen) — voor de
+ *    "wij"-lijn/sparklines, client-side gefilterd (`lib/marktanalyse.ts`
+ *    `filterEigenRijen`/`wijKwartaalReeks`);
+ *  - de regionale aggregaties via de RPC's (patroon 2), voor de standaardfilter
+ *    (werkgebied van het kantoor) al vóór de eerste paint, zodat de pagina
+ *    meteen met data rendert i.p.v. een lege skeleton. Elke volgende
+ *    filterwijziging ververst via de server action `actions.ts`
+ *    (`haalMarktanalyseData`) vanuit de client component.
  */
 export default async function MarktanalysePage() {
-  const supabase = createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  const makelaar = await haalIngelogdeMakelaarOp()
+  if (!makelaar) return <AccountWordtKlaargezet />
 
-  const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
-  if (!makelaar) redirect('/login')
+  const service = createServiceSupabaseClient()
+  const sessie = createServerSupabaseClient()
 
-  const transacties = await haalTransactiesVoorVerkenner<TransactieRow>(supabase, ALLE_TRANSACTIE_KOLOMMEN)
+  const [{ data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
+    service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
+    haalEigenVerkopen<TransactieRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
+    dataTotEnMet(sessie),
+  ])
 
-  return <MarktanalyseExplorer transacties={transacties} />
+  const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
+  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+
+  // `transacties_plaatsen_wijken` staat klaar in dezelfde (nog niet
+  // toegepaste) migratie als de verdeling-RPC hieronder — val tot die tijd
+  // terug op het werkgebied, zodat de plaats-dropdown nooit leeg is.
+  let plaatsenLijst: PlaatsWijkRij[]
+  try {
+    plaatsenLijst = await plaatsenWijken(sessie)
+  } catch {
+    plaatsenLijst = werkgebiedPlaatsen.map(plaats => ({ plaats, wijk: null, n: 0 }))
+  }
+
+  const standaardFilter = standaardFilterState(werkgebiedPlaatsen)
+  const rpcFilter = filterStateNaarTransactieFilter(standaardFilter, { datumTot: dataTot.laatsteVerkoopdatum })
+
+  // Zelfde server action als een filterwijziging in de client gebruikt (§
+  // "Werk-around vorige periode" in actions.ts) — zo blijft er één plek met
+  // die logica, en toont de eerste paint meteen echte delta's.
+  const initieel = await haalMarktanalyseData(rpcFilter, rpcFilter, null)
+
+  return (
+    <MarktanalyseExplorer
+      werkgebiedPlaatsen={werkgebiedPlaatsen}
+      plaatsenLijst={plaatsenLijst}
+      eigenVerkopen={eigenVerkopen}
+      dataTotEnMet={dataTot.laatsteVerkoopdatum}
+      initieel={initieel}
+    />
+  )
 }

@@ -1,5 +1,9 @@
+import { z } from 'zod'
 import type { TransactieRow } from './supabase'
 import { gemiddelde } from './utils'
+import { mediaan } from './prijsindex'
+import type { TransactieFilter } from './schemas'
+import { PRIJSKLASSEN, periodeNaarDatums, type PeriodeMaanden } from './marktanalyse'
 
 /**
  * Concurrentieanalyse (F6, besluit 16 sep 2026, zie CLAUDE.md §
@@ -112,4 +116,326 @@ export function concurrentProfielen(rijen: TransactieRow[]): ConcurrentProfiel[]
       }
     })
     .sort((a, b) => b.aantal - a.aantal)
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// v2 (item 6.3, docs/roadmap.md § 5 Fase 6 — port van
+// docs/ontwerp/concurrentie.html): marktaandeel per jaar, "wie wint waar"
+// (plaats × typegroep), "wij vs. markt" en het concurrentprofiel.
+// Referentie-implementatie voor de RPC's in de nieuwe (nog niet toegepaste)
+// migratie `supabase/migrations/<ts>_rpc_concurrentie_v2.sql` — zie
+// `lib/transactiesQuery.rpc.test.ts` voor de live vergelijkingstests.
+//
+// ⚠️ Werkt op `verkopend_kantoor_norm` (kleine letters, gedeeld met de
+// import-normalisatie), niet op het rauwe `verkopend_kantoor` dat v1
+// hierboven gebruikt: twee schrijfwijzen van dezelfde naam
+// ("Wassenaar Makelaars" vs "wassenaar makelaars") mogen niet als twee
+// aparte concurrenten tellen. De sleutel is dus altijd genormaliseerd; de
+// weergavenaam ("Wassenaar Makelaars") komt van de eerste rij in die groep.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Groepeersleutel (genormaliseerd) — nooit tonen, alleen om rijen bij elkaar te zoeken. */
+function kantoorSleutelV2(r: TransactieRow): string {
+  if (r.eigen_verkoop) return EIGEN_KANTOOR_LABEL
+  return r.verkopend_kantoor_norm?.trim() || '__onbekend__'
+}
+
+/** Weergavenaam bij een rij — de originele schrijfwijze uit `verkopend_kantoor`. */
+function kantoorWeergaveV2(r: TransactieRow): string {
+  if (r.eigen_verkoop) return EIGEN_KANTOOR_LABEL
+  return r.verkopend_kantoor?.trim() || 'Onbekend'
+}
+
+/** (verkoop - vraag) / vraag × 100 — `null` zonder verkoop- of vraagprijs. */
+function pctTovVraag(r: TransactieRow): number | null {
+  if (r.verkoopprijs == null || !r.vraagprijs) return null
+  return ((r.verkoopprijs - r.vraagprijs) / r.vraagprijs) * 100
+}
+
+function jaarVan(iso: string): number {
+  return new Date(iso).getUTCFullYear()
+}
+
+/**
+ * v2 van `heeftConcurrentiedata`: kijkt naar `verkopend_kantoor_norm` (item
+ * 6.3-spec) i.p.v. het rauwe veld. Aparte functie i.p.v. de bestaande
+ * aan te passen — dat zou de bestaande RPC-vergelijkingstest tegen
+ * `concurrentie_marktaandeel`/`concurrentie_segmenten` (die nog op het rauwe
+ * veld draaien) kunnen laten wankelen.
+ */
+export function heeftConcurrentiedataV2(rijen: TransactieRow[]): boolean {
+  return rijen.some(r => !r.eigen_verkoop && !!r.verkopend_kantoor_norm?.trim())
+}
+
+export type RanglijstRij = { kantoor: string; aantal: number; aandeelPct: number; mediaanLooptijd: number | null }
+
+/** "Kantoren in dit segment" — marktaandeel + mediaan looptijd per kantoor, gesorteerd op aantal. Referentie voor RPC `concurrentie_ranglijst`. */
+export function ranglijstPerKantoor(rijen: TransactieRow[]): RanglijstRij[] {
+  const totaal = rijen.length
+  if (totaal === 0) return []
+  const perSleutel = new Map<string, { weergave: string; rijen: TransactieRow[] }>()
+  for (const r of rijen) {
+    const sleutel = kantoorSleutelV2(r)
+    const bestaand = perSleutel.get(sleutel)
+    if (bestaand) bestaand.rijen.push(r)
+    else perSleutel.set(sleutel, { weergave: kantoorWeergaveV2(r), rijen: [r] })
+  }
+  return Array.from(perSleutel.values())
+    .map(({ weergave, rijen: set }) => ({
+      kantoor: weergave,
+      aantal: set.length,
+      aandeelPct: Math.round((set.length / totaal) * 1000) / 10,
+      mediaanLooptijd: mediaan(set.map(r => r.looptijd_dagen).filter((v): v is number => v != null)),
+    }))
+    .sort((a, b) => b.aantal - a.aantal)
+}
+
+export type WijVsMarkt = {
+  looptijdWij: number | null
+  looptijdMarkt: number | null
+  ratioWij: number | null
+  ratioMarkt: number | null
+  m2Wij: number | null
+  m2Markt: number | null
+  nWij: number
+  nMarkt: number
+}
+
+/**
+ * "Wij" vs. "markt" (de rest) binnen de huidige selectie. Zelfde statistiek
+ * per veld als het prototype (`docs/ontwerp/concurrentie.html`): looptijd en
+ * €/m² zijn mediaan, t.o.v. vraagprijs is een gemiddelde. Referentie voor RPC
+ * `concurrentie_wij_vs_markt`.
+ */
+export function wijVsMarkt(rijen: TransactieRow[]): WijVsMarkt {
+  const wij = rijen.filter(r => r.eigen_verkoop)
+  const markt = rijen.filter(r => !r.eigen_verkoop)
+  return {
+    looptijdWij: mediaan(wij.map(r => r.looptijd_dagen).filter((v): v is number => v != null)),
+    looptijdMarkt: mediaan(markt.map(r => r.looptijd_dagen).filter((v): v is number => v != null)),
+    ratioWij: gemiddelde(wij.map(pctTovVraag).filter((v): v is number => v != null), 1),
+    ratioMarkt: gemiddelde(markt.map(pctTovVraag).filter((v): v is number => v != null), 1),
+    m2Wij: mediaan(wij.map(r => r.prijs_m2).filter((v): v is number => v != null)),
+    m2Markt: mediaan(markt.map(r => r.prijs_m2).filter((v): v is number => v != null)),
+    nWij: wij.length,
+    nMarkt: markt.length,
+  }
+}
+
+export type AandeelJaarRij = { jaar: number; kantoor: string; aantal: number; totaal: number }
+
+/**
+ * Marktaandeel per jaar voor de gevraagde kantoor-weergavenamen (of alle
+ * kantoren zonder `kantoren`) — `totaal` is per jaar altijd het totaal over
+ * ALLE kantoren, ook als de output tot een subset beperkt is (voor het
+ * percentage). Bewust ONAFHANKELIJK van het periodefilter (roadmap 6.3): geef
+ * hier de op plaats/type/prijsklasse gefilterde, maar niet op periode
+ * gefilterde rijenset mee. Referentie voor RPC `concurrentie_aandeel_jaar`.
+ */
+export function aandeelPerJaar(rijen: TransactieRow[], kantoren?: string[]): AandeelJaarRij[] {
+  const perJaar = new Map<number, TransactieRow[]>()
+  for (const r of rijen) {
+    if (!r.verkoopdatum) continue
+    const jaar = jaarVan(r.verkoopdatum)
+    const set = perJaar.get(jaar) ?? []
+    set.push(r)
+    perJaar.set(jaar, set)
+  }
+  const resultaat: AandeelJaarRij[] = []
+  for (const [jaar, set] of Array.from(perJaar.entries()).sort((a, b) => a[0] - b[0])) {
+    const totaal = set.length
+    const perSleutel = new Map<string, { weergave: string; aantal: number }>()
+    for (const r of set) {
+      const sleutel = kantoorSleutelV2(r)
+      const bestaand = perSleutel.get(sleutel)
+      if (bestaand) bestaand.aantal++
+      else perSleutel.set(sleutel, { weergave: kantoorWeergaveV2(r), aantal: 1 })
+    }
+    for (const { weergave, aantal } of Array.from(perSleutel.values())) {
+      if (kantoren && !kantoren.includes(weergave)) continue
+      resultaat.push({ jaar, kantoor: weergave, aantal, totaal })
+    }
+  }
+  return resultaat
+}
+
+export type MatrixKantoorAandeel = { kantoor: string; aantal: number; aandeelPct: number }
+export type MatrixCel = { rijSleutel: string; rijLabel: string; woningtypeGroep: string; n: number; top3: MatrixKantoorAandeel[] }
+
+/**
+ * "Wie wint waar": top-kantoor (+ top 3 voor de tooltip) per rij × woningtype-
+ * groep. `opWijkniveau = true` splitst rijen naar wijk (`"plaats|wijk"`,
+ * gebruikt zodra precies één plaats geselecteerd is — zie de explorer),
+ * anders naar plaats. Rijen zonder plaats/wijk/woningtype_groep tellen niet
+ * mee. Referentie voor RPC `concurrentie_matrix`.
+ */
+export function matrixWieWintWaar(rijen: TransactieRow[], opWijkniveau: boolean): MatrixCel[] {
+  const perCel = new Map<string, { rijSleutel: string; rijLabel: string; woningtypeGroep: string; rijen: TransactieRow[] }>()
+  for (const r of rijen) {
+    const groep = r.woningtype_groep
+    if (!r.plaats || !groep) continue
+    if (opWijkniveau && !r.wijk) continue
+    const rijSleutel = opWijkniveau ? `${r.plaats}|${r.wijk}` : r.plaats
+    const rijLabel = opWijkniveau ? r.wijk! : r.plaats
+    const key = `${rijSleutel}::${groep}`
+    const bestaand = perCel.get(key)
+    if (bestaand) bestaand.rijen.push(r)
+    else perCel.set(key, { rijSleutel, rijLabel, woningtypeGroep: groep, rijen: [r] })
+  }
+  return Array.from(perCel.values()).map(({ rijSleutel, rijLabel, woningtypeGroep, rijen: set }) => {
+    const perSleutel = new Map<string, { weergave: string; aantal: number }>()
+    for (const r of set) {
+      const sleutel = kantoorSleutelV2(r)
+      const bestaand = perSleutel.get(sleutel)
+      if (bestaand) bestaand.aantal++
+      else perSleutel.set(sleutel, { weergave: kantoorWeergaveV2(r), aantal: 1 })
+    }
+    const top3 = Array.from(perSleutel.values())
+      .map(({ weergave, aantal }) => ({ kantoor: weergave, aantal, aandeelPct: Math.round((aantal / set.length) * 1000) / 10 }))
+      .sort((a, b) => b.aantal - a.aantal)
+      .slice(0, 3)
+    return { rijSleutel, rijLabel, woningtypeGroep, n: set.length, top3 }
+  })
+}
+
+export type ConcurrentProfielV2 = {
+  kantoor: string
+  n: number
+  aandeelPct: number | null
+  mediaanLooptijd: number | null
+  gemRatio: number | null
+  verdeling: { woningtypeGroep: string; n: number }[]
+  sterkstePlaats: string | null
+  sterksteAandeelPct: number | null
+  trend: { jaar: number; aantal: number }[]
+}
+
+/**
+ * Concurrentprofiel voor de drawer (item 6.3). `rijenSelectie` = de huidige
+ * pagina-filterselectie (voor n/aandeel/mediaan looptijd/gem. ratio/
+ * verdeling per woningtype); `rijenRegio` = de volledige kantoordataset
+ * (alleen `uitgesloten_reden is null`, geen paginafilters) voor de sterkste
+ * plaats en de trend per jaar — bewust breder dan de paginaselectie, zie de
+ * opleverrapportage van 6.3 voor de afweging t.o.v. het prototype (dat een
+ * middenweg-verbreding gebruikt: plaats/type-filter negeren maar
+ * periode/klasse niet). Referentie voor RPC `concurrentie_profiel`.
+ */
+export function concurrentProfielV2(
+  rijenSelectie: TransactieRow[],
+  rijenRegio: TransactieRow[],
+  kantoorNaamWeergave: string,
+): ConcurrentProfielV2 {
+  const sleutel = kantoorNaamWeergave === EIGEN_KANTOOR_LABEL ? EIGEN_KANTOOR_LABEL : kantoorNaamWeergave.trim().toLowerCase()
+  const isDitKantoor = (r: TransactieRow) => kantoorSleutelV2(r) === sleutel
+
+  const setSelectie = rijenSelectie.filter(isDitKantoor)
+  const n = setSelectie.length
+  const aandeelPct = rijenSelectie.length ? Math.round((n / rijenSelectie.length) * 1000) / 10 : null
+  const mediaanLooptijd = mediaan(setSelectie.map(r => r.looptijd_dagen).filter((v): v is number => v != null))
+  const gemRatio = gemiddelde(setSelectie.map(pctTovVraag).filter((v): v is number => v != null), 1)
+
+  const perGroep = new Map<string, number>()
+  for (const r of setSelectie) {
+    const groep = r.woningtype_groep ?? 'onbekend'
+    perGroep.set(groep, (perGroep.get(groep) ?? 0) + 1)
+  }
+  const verdeling = Array.from(perGroep.entries()).map(([woningtypeGroep, telling]) => ({ woningtypeGroep, n: telling }))
+
+  const perPlaats = new Map<string, { eigen: number; totaal: number }>()
+  for (const r of rijenRegio) {
+    if (!r.plaats) continue
+    const rec = perPlaats.get(r.plaats) ?? { eigen: 0, totaal: 0 }
+    rec.totaal++
+    if (isDitKantoor(r)) rec.eigen++
+    perPlaats.set(r.plaats, rec)
+  }
+  let sterkstePlaats: string | null = null
+  let sterksteAandeelPct: number | null = null
+  for (const [plaats, rec] of Array.from(perPlaats.entries())) {
+    if (!rec.eigen) continue
+    const pct = (rec.eigen / rec.totaal) * 100
+    if (sterksteAandeelPct == null || pct > sterksteAandeelPct) {
+      sterkstePlaats = plaats
+      sterksteAandeelPct = Math.round(pct * 10) / 10
+    }
+  }
+
+  const perJaar = new Map<number, number>()
+  for (const r of rijenRegio.filter(isDitKantoor)) {
+    if (!r.verkoopdatum) continue
+    const jaar = jaarVan(r.verkoopdatum)
+    perJaar.set(jaar, (perJaar.get(jaar) ?? 0) + 1)
+  }
+  const trend = Array.from(perJaar.entries())
+    .sort((a, b) => a[0] - b[0])
+    .map(([jaar, aantal]) => ({ jaar, aantal }))
+
+  return { kantoor: kantoorNaamWeergave, n, aandeelPct, mediaanLooptijd, gemRatio, verdeling, sterkstePlaats, sterksteAandeelPct, trend }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// FilterBar-staat → RPC-filter (item 6.3, zelfde patroon als
+// lib/marktanalyse.ts filterStateNaarTransactieFilter): de URL-state
+// (`useFilterState`) is compacter dan `TransactieFilterSchema` — deze functie
+// is de enige plek die de vertaling maakt. `periodeNaarDatums`/`PRIJSKLASSEN`
+// zijn bewust hergebruikt uit lib/marktanalyse.ts (geen eigen kopie van de
+// periode- of prijsklasse-logica — zie de opleverrapportage van 6.3 voor de
+// afwijking van het prototype: dat kent een eigen 5-klassenlijst, hier
+// dezelfde 6 klassen als de marktanalyse-explorer, voor consistentie).
+// ─────────────────────────────────────────────────────────────────────────
+
+/** Zod-schema voor `useFilterState`. `klassen`/`verborgen` blijven client-only (zie de vertaalfunctie hieronder resp. de explorer). */
+export const ConcurrentieFilterSchema = z.object({
+  plaatsen: z.array(z.string()),
+  wijken: z.array(z.string()),
+  typen: z.array(z.string()),
+  periode: z.union([z.literal(12), z.literal(24), z.literal(36), z.literal(0)]),
+  klassen: z.array(z.string()),
+  verborgen: z.array(z.string()),
+  sort: z.enum(['aandeel', 'aantal', 'looptijd']),
+})
+export type ConcurrentieFilterState = z.infer<typeof ConcurrentieFilterSchema>
+
+/** Standaardfilter = werkgebied van het kantoor (zelfde besluit als item 6.1). */
+export function standaardConcurrentieFilter(werkgebiedPlaatsen: string[]): ConcurrentieFilterState {
+  return { plaatsen: werkgebiedPlaatsen, wijken: [], typen: [], periode: 24, klassen: [], verborgen: [], sort: 'aandeel' }
+}
+
+/**
+ * `klassen` (multi-select prijsklasse-dropdown, docs/ontwerp/README.md § 4:
+ * "Concurrentie: dropdown met 5 klassen... prijs_min/max (afgeleid)") vertaalt
+ * naar één prijs_min/prijs_max-bereik: het laagste minimum tot het hoogste
+ * maximum van de gekozen klassen. Bij niet-aaneengesloten klassen (bv. < 500k
+ * én 1-1,5 mln, niet 500k-1mln) vallen de tussenliggende klassen zo binnen
+ * het filter — een bewuste, in de architectuur zelf voorziene vereenvoudiging
+ * ("afgeleid"), geen fout.
+ */
+export function concurrentieFilterNaarTransactieFilter(
+  f: ConcurrentieFilterState,
+  opts: { datumTot: string | null },
+): TransactieFilter {
+  const { datumVan, datumTot } = periodeNaarDatums(f.periode as PeriodeMaanden, opts.datumTot)
+  const filter: TransactieFilter = {}
+  if (f.plaatsen.length) filter.plaatsen = f.plaatsen
+  if (f.wijken.length) filter.wijken = f.wijken
+  if (f.typen.length) filter.typen = f.typen
+  if (datumVan) filter.datum_van = datumVan
+  if (datumTot) filter.datum_tot = datumTot
+  if (f.klassen.length) {
+    const gekozen = PRIJSKLASSEN.filter(k => f.klassen.includes(k.key))
+    if (gekozen.length) {
+      filter.prijs_min = Math.min(...gekozen.map(k => k.min))
+      const max = Math.max(...gekozen.map(k => k.max))
+      if (Number.isFinite(max)) filter.prijs_max = max
+    }
+  }
+  return filter
+}
+
+/** Zelfde filter, maar zonder datumgrenzen — voor de trendgrafiek (marktaandeel per jaar), die het periodefilter bewust negeert. */
+export function concurrentieFilterZonderPeriode(f: ConcurrentieFilterState): TransactieFilter {
+  const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+  delete filter.datum_van
+  delete filter.datum_tot
+  return filter
 }

@@ -17,43 +17,49 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅, fase 5 geblokkeerd op de
-  exports. Plan v2 van kracht sinds 17 sep 2026. De opleverdetails per fase
-  staan in `docs/besluiten.md`, niet hier — dit blok blijft kort.
-- **Laatst opgeleverd (23 sep):** bugfix — het profielmenu in de topbar viel
-  weg achter de pagina doordat de topbar-rij `overflow: hidden` had en zo het
-  (absoluut gepositioneerde) menu clipte; nav-pillen scrollen al zelf via hun
-  eigen `overflowX: auto`, dus de clip op de hele rij kon weg. Los van de
-  hydratiebug op dezelfde component uit de vorige sessie (19 sep). Fix in
-  `components/AppTopbar.tsx`, direct gemerged naar `main` (PR #26).
-- **Daarvoor (19 sep):** **6.0** Radix-primitives (`Sheet`, `Popover`,
-  `Slider`, `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via
-  `tokens.ts`/`var(--merk*)` — bewust **zónder** de shadcn-classlaag (motivatie
-  bij het item en in `docs/besluiten.md`). Bewijs in productie: de drawer van
-  4.4 draait erop. Daarnaast het welkomstblok op de startpagina herbouwd naar
-  het prototype (verloop + raster + glans, geen foto) en een hydratiebug
-  gerepareerd die het profielmenu in de topbar onbruikbaar maakte.
-- **Volgende item:** **6.1** Marktanalyse-explorer v2 (port van
-  `docs/ontwerp/marktanalyse.html`). Bouwt onderweg `FilterBar`, `ChartCard`,
-  `useFilterState`, `lib/opmaak.ts` en `lib/grafiekThema.ts` — die vier zijn
-  ook de basis voor 6.2 en 6.3, dus 6.1 is bewust het eerste echte item.
-- **Prestatielat voor fase 6** (gemeten op productie 18-19 sep): `/marktanalyse`
-  ~6 s, `/marktanalyse/transacties` ~6-7 s, `/marktanalyse/concurrentie` ~5,5 s.
-  Dat is de tussenfase die nog de hele dataset ophaalt; fase 6 moet dit onder
-  ~1,5 s brengen. Dossier ~2,0 s, dashboard ~2,9 s (koude start).
+- **Fase:** 6 grotendeels af (6.1-6.3 ✅, 6.4 kwartaalbericht open); uit 7, 8, 9,
+  10, 12 en 13 zijn losse items vooruit gebouwd door parallelle Sonnet-agents
+  (werkwijze: CLAUDE.md § Parallel met agents). Fase 5 geblokkeerd op de exports.
+  Opleverdetails staan in `docs/besluiten.md`, niet hier.
+- **Laatst opgeleverd (23-24 sep, PR `feat/fase-6`):** 6.1 marktanalyse v2
+  (~6 s → ~1,2 s), 6.2 transacties v2, 6.3 concurrentie v2, 7.1 `BasisKaart`
+  (MapLibre, proef achter `/marktanalyse/kaart?kaart=v2`), 8.1 `lib/aiModellen.ts`
+  + prompt caching + evaluatieset (nog niet gedraaid), 9.1 inloggen in
+  kantoorstijl (`/login/i4housing`), 10.3 Buurt & data, 10.4 Recent bekeken,
+  10.6 stijl-leren vindbaar, 12.4 feedbackknop, 13.1 publieke copy. Plus: CSP liet
+  Plausible nooit toe (gerepareerd), kantoorkleuren ontbraken in alle
+  Radix-portals (gerepareerd via `brandingRootCss()`). Zeven migraties toegepast
+  (alle additief of achterwaarts compatibel, na back-up).
+- **Volgende items:** **6.4** kwartaalbericht (gebruikt `lib/aiModellen.ts`) ·
+  **7.2** verkoopkaart-explorer v2 op `BasisKaart` (daarna 7.3, 7.4) · **8.2**
+  tekstsjabloon-model · **10.1/10.2** woningen- en dossierheader v2. Deze zijn
+  grotendeels onafhankelijk → weer parallel te verdelen (6.4 en 8.2 raken allebei
+  `lib/claude.ts`: niet tegelijk).
+- **Eerst oppakken, in deze volgorde (open na sessie 23-24 sep):**
+  1. Controleren dat PR #28 (`feat/fase-6`) op `main` staat en de Vercel-deploy
+     READY is zonder runtime-errors (Vercel-MCP). Staat hij nog open: mergen
+     (Quinn gaf op 24 sep expliciet akkoord) en dan de deploy controleren.
+  2. Worktrees van de agents opruimen: `git worktree list`, per worktree onder
+     `.claude/worktrees/` checken dat de branch in `main` zit, dan
+     `git worktree remove` + `git branch -d`. Nieuwe sessie op een nieuwe
+     featurebranch vanaf `main`.
+  3. WOZ-loket en Overpass geven "kon niet worden opgehaald" in Buurt & data —
+     oorzaak zoeken vóór de demo (backlog-top, § 9).
+- **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
+  concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
-- **Blokkades (geen van alle blokkeert fase 1-4):**
+- **Blokkades (geen van alle blokkeert het bouwen):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
-  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1).
+  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; status 23 sep).
   - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
     regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
   - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
-  - Vercel-team staat op **Hobby** (gecontroleerd 17 sep via de Vercel-MCP):
-    vóór de demo naar Pro, zie § 8.
-- **Open vragen:** geen. (Vier vragen beantwoord op 17 sep — `docs/besluiten.md`.)
+  - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
+  pastelkleuren van de nieuwe kaart goed (`?kaart=v2`)?
 
 ---
 
@@ -636,7 +642,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   Escape, scroll-lock, focus-herstel, botsingscorrectie, toetsenbordnavigatie)
   is volledig binnen. Bewijs in productie: de drawer "Referentie toevoegen"
   (4.4) draait nu op `Sheet`, met de handmatige Escape-listener eruit.
-- [ ] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
+- [x] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
   — bouwt daarbij `FilterBar`, `ChartCard`, `useFilterState`, `lib/opmaak.ts`,
   `lib/grafiekThema.ts`)*
   *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
@@ -664,13 +670,13 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
   `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
   "markt").
-- [ ] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
+- [x] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/transacties.html`, § 3.8)* — `DataTable` (TanStack,
   server-gepagineerd via `zoekTransacties`, 50/pagina, sorteerbaar, dichte
   rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
   referentie" (4.4), CSV-export uitsluitend eigen verkopen (client-side uit
   `haalEigenVerkopen`). URL-state.
-- [ ] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
+- [x] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/concurrentie.html`, § 3.8)* — marktaandeel per plaats/typegroep/prijsklasse
   met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
   wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
@@ -692,7 +698,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 7 — Kaart (4 sessies)
 
-- [ ] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
+- [x] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
   PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
   `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
   (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
@@ -716,7 +722,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 8 — Content in i4housing-format (4 sessies; parallel via subagent in een worktree zodra fase 3 is gemerged — raakt `lib/claude.ts`, `lib/schemas.ts` (alleen `ContentOutputSchema`/`HuisstijlSchema`), `components/ResultTabs.tsx`, pdf-routes, `HuisstijlForm.tsx`)
 
-- [ ] **8.1 `lib/aiModellen.ts` + prompt caching + evaluatieset** —
+- [x] **8.1 `lib/aiModellen.ts` + prompt caching + evaluatieset** —
   modelconstanten (§ 3.6), `cache_control` op systeemprompt; `docs/evaluatie/`
   met 5 dossiers (JSON-fixtures, echte i4housing-achtige woningen) en
   `scripts/evalueer-content.mjs` dat per dossier twee anonieme varianten
@@ -743,7 +749,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 9 — White-label-wow (2 sessies)
 
-- [ ] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
+- [x] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
   `app/login/[slug]/page.tsx` (logo, kleuren, sfeerbeeld, tabtitel/favicon van
   het kantoor), middleware laat `/login/` door, na uitloggen terug naar de
   laatst gebruikte slug (cookie), `/login` zonder slug blijft VestaAI-groen.
@@ -762,16 +768,16 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 - [ ] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
   merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
   (pdf, content, fase).
-- [ ] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
+- [x] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
   CBS-buurtcijfers, voorzieningen (uit `lib/verrijking.ts`, al opgehaald bij
   de intake; opslaan in `objecten.verrijking_json` via migratie).
-- [ ] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
+- [x] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
   `gebruik_events` (kantoor_id, makelaar_id, object_id, type, created_at; RLS),
   `lib/gebruik.ts` `logGebruik()`, `RecentBekeken` op `/dashboard`;
   dossiertijdlijn (schrapbaar).
 - [ ] **10.5 Intake tweekoloms** (schrapbaar) — wizard links, `WoningdataPanel`
   rechts, `AppPagina` volle breedte op `object/new`.
-- [ ] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
+- [x] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
   teller "3 bewerkingen wachten op je oordeel".
 - **Klaar als:** dossier leest als één verhaal; fase in één oogopslag.
 
@@ -799,7 +805,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 - [ ] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
   (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
   op echte data gelogd in `docs/data/performance.md`.
-- [ ] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
+- [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
 - [ ] **12.5 Demo-voorbereiding** — `docs/demoscript.md` (§ 2 uitgewerkt tot
   klik-voor-klik, met terugvalplan per scène), drie demo-dossiers uit echte
@@ -812,7 +818,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 ### Fase 13 — Publieke site (parallel via subagent, 2-3 sessies; niet kritiek)
 
 Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
-- [ ] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
+- [x] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
 - [ ] 13.2 `LandingPageClient.tsx` herpositioneren naar het nieuwe verhaal
   (data + waardering + content, één klant, geen prijzen).
 - **Klaar als:** geen claim in strijd met het huidige model; Lighthouse > 90/95.
@@ -917,6 +923,15 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
     doen in een sessie zonder auto-mode.
 
 ## 9. Backlog & geparkeerd
+
+**Vóór de demo oppakken (uit de sessie van 23-24 sep):** WOZ-loket en
+Overpass geven in "Buurt & data" "kon niet worden opgehaald" voor een
+Wassenaars adres — oorzaak zoeken (endpoint gewijzigd? timeout? coördinaten?)
+vóór scène 4 · omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
+minikaart in de transactie-sheet op `BasisKaart` (7.2) · gedeelde kop
+"Zoeken in de markt" in `app/(app)/marktanalyse/layout.tsx` weg zodra alle
+vier verkenners een eigen kop hebben (kop-op-kop) · pastelkleuren van de kaart
+laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
 content naar de UI (nu: timer + skeletons) · statische kaart in de

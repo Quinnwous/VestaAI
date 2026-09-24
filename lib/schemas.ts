@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
+import { SLUG_REGEX, SLUG_MIN_LENGTE, SLUG_MAX_LENGTE } from './slug'
 
 // Woningtype-taxonomie (docs/ontwerp/README.md § 5, waardering § 3.3): groep is
 // hard vereist (de waarderingskern filtert kandidaten erop), subtype optioneel.
@@ -83,6 +84,17 @@ export const HuisstijlSchema = z.object({
 })
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>
+
+// Slug voor de kantoorspecifieke inlogpagina (/login/[slug], item 9.1) — vorm
+// gedeeld met lib/slug.ts (normaliseerSlug/isGeldigeSlug) en de
+// databaseconstraint in supabase/migrations/20260923_kantoren_slug.sql.
+export const KantoorSlugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .min(SLUG_MIN_LENGTE, `Minimaal ${SLUG_MIN_LENGTE} tekens`)
+  .max(SLUG_MAX_LENGTE, `Maximaal ${SLUG_MAX_LENGTE} tekens`)
+  .regex(SLUG_REGEX, 'Alleen kleine letters, cijfers en één koppelteken tussen woorden (bv. i4housing)')
 
 // Zakelijke kantoorinstellingen — los van de visuele huisstijl hierboven.
 // Beheerd door de platform-admin in /admin (besluit 16 sep 2026: één rol per
@@ -412,6 +424,131 @@ export const WaarderingOpslagSchema = z.object({
 export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>
 
 // ---------------------------------------------------------------------------
+// Verrijkingsdata (item 10.3, docs/roadmap.md § fase 10) — opslagvorm van een
+// `fetchVerrijking()`-uitkomst (lib/verrijking.ts) op `objecten.verrijking_json`,
+// met tijdstempel "opgehaald op". Migratie <ts>_object_verrijking.sql
+// (additief, nog niet toegepast — zie besluiten.md). `versie: 1` naar analogie
+// van WaarderingOpslagSchema hierboven, zodat een toekomstige vormwijziging
+// dezelfde migratie-aanpak kan volgen.
+// ---------------------------------------------------------------------------
+
+const WozWaardeSchema = z.object({
+  peildatum: z.string(),
+  waarde: z.number(),
+  belastingjaar: z.number(),
+})
+
+export const WozDataSchema = z.object({
+  object_id: z.string().nullable(),
+  waarden: z.array(WozWaardeSchema),
+  stijging_pct: z.string().nullable(),
+  per_m2: z.number().nullable(),
+})
+
+export const CbsNiveauSchema = z.enum(['buurt', 'wijk', 'gemeente', 'nederland'])
+export type CbsNiveau = z.infer<typeof CbsNiveauSchema>
+
+const CbsMetriekSchema = z.object({ waarde: z.number(), niveau: CbsNiveauSchema })
+
+export const CbsDataSchema = z.object({
+  gemeente: z.string(),
+  buurtnaam: z.string().nullable(),
+  wijknaam: z.string().nullable(),
+  bron: z.string(),
+  fijnste_niveau: CbsNiveauSchema,
+  inkomen: CbsMetriekSchema.nullable(),
+  pct_koop: CbsMetriekSchema.nullable(),
+  woz_gem: CbsMetriekSchema.nullable(),
+  pct_hoog_opgeleid: CbsMetriekSchema.nullable(),
+  dichtheid_per_km2: CbsMetriekSchema.nullable(),
+  pct_eengezins: CbsMetriekSchema.nullable(),
+  huishoudensgrootte: CbsMetriekSchema.nullable(),
+  pct_65plus: CbsMetriekSchema.nullable(),
+  pct_met_kinderen: CbsMetriekSchema.nullable(),
+  dichtheid: z.string(),
+  buurtprofiel: z.enum(['Premium', 'Bovengemiddeld', 'Gemiddeld', 'Ondergemiddeld']),
+  nl: z.object({
+    inkomen: z.number().nullable(),
+    pct_koop: z.number().nullable(),
+    woz_gem: z.number().nullable(),
+    pct_hoog_opgeleid: z.number().nullable(),
+  }),
+  gemeente_niveau: z.object({
+    woz_gem: z.number().nullable(),
+    dichtheid_per_km2: z.number().nullable(),
+  }),
+})
+
+const VoorzieningItemSchema = z.object({
+  naam: z.string(),
+  afstand_m: z.number(),
+  looptijd_min: z.number(),
+})
+
+export const VoorzieningenDataSchema = z.object({
+  supermarkt: z.array(VoorzieningItemSchema),
+  apotheek: z.array(VoorzieningItemSchema),
+  huisarts: z.array(VoorzieningItemSchema),
+  scholen: z.array(VoorzieningItemSchema),
+  ov_haltes: z.array(VoorzieningItemSchema),
+  treinstation: z.array(VoorzieningItemSchema),
+  groen: z.array(VoorzieningItemSchema),
+  nabijheid_beoordeling: z.string(),
+})
+
+// Item 10.3-fix (23 sep 2026, review hoofdsessie): het vuistregel-marktblok
+// (`MarktData`/`marktProfielOpzoeken()` in lib/verrijking.ts — vaste cijfers
+// per gemeentetype, geen echte meting) sprak de eigen marktanalyse op basis
+// van i4housing's transactiedataset tegen (bv. "-1,0% t.o.v. vraagprijs" in
+// marktanalyse vs. een hardgecodeerde "5-15% boven vraagprijs" hier). Het
+// blok is uit het dossier gehaald; deze schema's dragen in plaats daarvan een
+// eigen-data-samenvatting (`marktanalyseSamenvatting()` in
+// lib/transactiesQuery.ts, RPC `marktanalyse_samenvatting`) voor de plaats
+// van het adres. `lib/verrijking.ts` MarktData/`markt` blijft ongewijzigd
+// bestaan — die voedt uitsluitend de Claude-contentprompt
+// (`verrijkingNaarPrompt()`), niet dit dossierscherm.
+export const MarktEigenDataSchema = z.object({
+  plaats: z.string(),
+  periodeVan: z.string().nullable(),
+  periodeTot: z.string().nullable(),
+  n: z.number(),
+  mediaanPrijs: z.number().nullable(),
+  mediaanM2: z.number().nullable(),
+  mediaanLooptijd: z.number().nullable(),
+  pctTovVraag: z.number().nullable(),
+})
+export type MarktEigenData = z.infer<typeof MarktEigenDataSchema>
+
+// Per bron (WOZ/CBS/voorzieningen) of het antwoord 'ok' (data), 'leeg' (bron
+// antwoordde, dit adres levert niets op) of 'mislukt' (netwerkfout/timeout)
+// was — zelfde union als lib/verrijking.ts `FetchStatus` (bewust hier
+// opnieuw gedefinieerd i.p.v. geïmporteerd: lib/schemas.ts is client-safe en
+// mag geen afhankelijkheid krijgen van lib/verrijking.ts se fetch-logica).
+// `.optional()` op het veld zelf omdat rijen van vóór deze fix dit niet
+// hebben; ontbreekt het, dan valt de UI terug op het oude gedrag (afleiden
+// uit de aan-/afwezigheid van data).
+export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt'])
+export type FetchStatus = z.infer<typeof FetchStatusSchema>
+
+export const VerrijkingOpslagSchema = z.object({
+  versie: z.literal(1),
+  woz: WozDataSchema.nullable(),
+  cbs: CbsDataSchema.nullable(),
+  voorzieningen: VoorzieningenDataSchema.nullable(),
+  marktEigen: MarktEigenDataSchema.nullable().optional(),
+  gemeente: z.string().nullable(),
+  coord: z.object({ lat: z.number(), lon: z.number() }).nullable(),
+  bronnen: z.object({
+    woz: FetchStatusSchema,
+    cbs: FetchStatusSchema,
+    voorzieningen: FetchStatusSchema,
+  }).optional(),
+  /** ISO-tijdstempel van het moment waarop deze verrijking is opgehaald. */
+  opgehaald_op: z.string(),
+})
+export type VerrijkingOpslag = z.infer<typeof VerrijkingOpslagSchema>
+
+// ---------------------------------------------------------------------------
 // Transactiefilter (item 2.2, docs/roadmap.md § 3.1 + docs/ontwerp/README.md
 // § 4 "Filtermodel") — voedt `p_filters jsonb` van elke RPC in
 // `lib/transactiesQuery.ts`. Alle velden optioneel: een lege filterset
@@ -451,5 +588,12 @@ export const TransactieFilterSchema = z.object({
   makelaars: z.array(z.string()).optional(),
   kantoren: z.array(z.string()).optional(),
   alleen_eigen: z.boolean().optional(),
+  /**
+   * Vrij zoekveld op adres (item 6.2, "Transacties opzoeken v2") —
+   * case-insensitive substring-match. ⚠️ vereist de additieve migratie
+   * `supabase/migrations/20260923180000_transacties_zoeken_v2.sql` (nog niet
+   * toegepast); tot dan negeert `transacties_gefilterd()` dit veld stilzwijgend.
+   */
+  zoek: z.string().optional(),
 })
 export type TransactieFilter = z.infer<typeof TransactieFilterSchema>

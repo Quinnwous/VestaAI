@@ -11,6 +11,10 @@ export type Kantoor = {
   logo_url: string | null
   huisstijl_json: HuisstijlConfig | null
   instellingen_json?: KantoorInstellingen | null
+  // Kantoorspecifieke inlogpagina (/login/[slug], item 9.1, migratie
+  // 20260923_kantoren_slug.sql) — optioneel omdat de kolom nog toegepast
+  // moet worden en niet elk kantoor er meteen een heeft.
+  slug?: string | null
 }
 
 // `role` is een historisch veld uit de tijd van kantoor-admin/makelaar-onderscheid.

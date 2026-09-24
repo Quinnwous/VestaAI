@@ -135,3 +135,14 @@ describe('afgeleide tokens (roadmap 1.9e)', () => {
     expect(vars['--merk-accent-zacht']).not.toBe(vars['--merk-zacht'])
   })
 })
+
+describe('brandingRootCss (portals erven de kantoorkleuren)', () => {
+  it('schrijft dezelfde variabelen als :root-regel', async () => {
+    const { bouwBranding, brandingRootCss } = await import('./branding')
+    const css = brandingRootCss(bouwBranding({ name: 'Test', logo_url: null, huisstijl_json: { primaire_kleur: '#0080C8', accent_kleur: '#C61E45' } } as never))
+    expect(css.startsWith(':root{')).toBe(true)
+    expect(css).toContain('--merk:#0080C8;')
+    expect(css).toContain('--merk-accent:#C61E45;')
+    expect(css).not.toContain('<')
+  })
+})

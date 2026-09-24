@@ -21,12 +21,18 @@ export default async function AdminKantoorPage({ params }: { params: { id: strin
   if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')
 
   const service = createServiceSupabaseClient()
-  const [{ data: kantoor }, { data: teamleden }] = await Promise.all([
+  const [{ data: kantoor }, { data: teamleden }, slugResultaat] = await Promise.all([
     service.from('kantoren').select('id, name, logo_url, huisstijl_json, instellingen_json').eq('id', params.id).single(),
     service.from('makelaars').select('id, name, email').eq('kantoor_id', params.id).order('name', { ascending: true }),
+    // Losse query (item 9.1): faalt gracieus (undefined) zolang migratie
+    // 20260923_kantoren_slug.sql nog niet is toegepast, zonder de rest van
+    // de admin-pagina te breken.
+    service.from('kantoren').select('slug').eq('id', params.id).single(),
   ])
 
   if (!kantoor) notFound()
+
+  const slug: string | null | undefined = slugResultaat.error ? undefined : (slugResultaat.data?.slug ?? null)
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -40,7 +46,7 @@ export default async function AdminKantoorPage({ params }: { params: { id: strin
 
       <section className="mb-12 border-t border-gray-100 pt-10">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">Kantoorinstellingen</h2>
-        <InstellingenForm kantoorId={kantoor.id} naam={kantoor.name} instellingen={(kantoor as Kantoor).instellingen_json ?? null} />
+        <InstellingenForm kantoorId={kantoor.id} naam={kantoor.name} slug={slug} instellingen={(kantoor as Kantoor).instellingen_json ?? null} />
       </section>
 
       <section className="border-t border-gray-100 pt-10">

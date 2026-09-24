@@ -1,0 +1,12 @@
+-- Item 10.3 (docs/roadmap.md § fase 10): verrijkingsdata (WOZ, CBS-
+-- buurtcijfers, voorzieningen, markttype — lib/verrijking.ts) opgeslagen bij
+-- het aanmaken van het dossier, met tijdstempel "opgehaald op". Nullable en
+-- puur additief: bestaande dossiers hebben geen verrijking_json tot ze
+-- ververst worden via POST /api/object/[id]/verrijking (zie
+-- lib/verrijkingOpslag.ts VerrijkingOpslagSchema voor de vorm).
+--
+-- ⚠️ Nog NIET toegepast op de productiedatabase — dat doet de hoofdsessie na
+-- akkoord. De applicatiecode (route + BuurtDataTab) werkt gracieus zolang
+-- deze kolom nog ontbreekt: een update die de kolom niet vindt geeft Postgres-
+-- foutcode 42703, die de route expliciet afvangt en meldt i.p.v. te crashen.
+alter table objecten add column if not exists verrijking_json jsonb;

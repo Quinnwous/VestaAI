@@ -5,6 +5,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { woningtypeLabel, type PropertyInput } from '@/lib/schemas'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 import { meldFout } from '@/lib/fouten'
+import { HERSCHRIJF } from '@/lib/aiModellen'
 
 export const maxDuration = 60
 
@@ -120,7 +121,7 @@ export async function POST(
   try {
     const client = new Anthropic()
     const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: HERSCHRIJF,
       max_tokens: ctx.maxTokens,
       messages: [{ role: 'user', content: prompt }],
     })

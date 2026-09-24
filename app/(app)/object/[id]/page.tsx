@@ -5,12 +5,14 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { haalEigenVerkopen, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import { ObjectWorkspace } from '@/components/ObjectWorkspace'
 import { DossierHeader } from '@/components/DossierHeader'
+import { logGebruik } from '@/lib/gebruik'
 import { InvoerToggle } from './InvoerToggle'
 import { DeleteButton } from './DeleteButton'
 import { RegenereerButton } from './RegenereerButton'
 import { AppPagina } from '@/components/ui'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, PropertyInput } from '@/lib/schemas'
 import { migreerWaarderingJson } from '@/lib/waardering'
+import { verwerkOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
@@ -41,12 +43,32 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [object, makelaar] = await Promise.all([
+  const [object, makelaar, verrijkingRuw] = await Promise.all([
     getCachedObject(params.id),
     supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single().then(r => r.data),
+    // Item 10.3: losse, ongecachete query t.o.v. getCachedObject hierboven —
+    // faalt gracieus (catch) zolang de migratie voor objecten.verrijking_json
+    // nog niet is toegepast, zonder de rest van deze pagina te raken. De
+    // verwerking (validatie/undefined_column-afhandeling) is een pure functie
+    // in lib/verrijkingOpslag.ts, los te testen.
+    (async () => {
+      try {
+        const r = await createServiceSupabaseClient().from('objecten').select('verrijking_json').eq('id', params.id).single()
+        return { data: r.data, error: r.error }
+      } catch {
+        return { data: null, error: null }
+      }
+    })(),
   ])
+  const verrijkingInitieel = verwerkOpgeslagenVerrijking(verrijkingRuw)
 
   if (!object || !makelaar || object.kantoor_id !== makelaar.kantoor_id) notFound()
+
+  // Item 10.4 (docs/roadmap.md § Fase 10): voedt "Recent bekeken" op
+  // /dashboard. Fire-and-forget — niet awaiten, en logGebruik() faalt zelf
+  // altijd stil (console.warn) zolang gebruik_events nog niet bestaat, dus
+  // dit mag de dossierpagina nooit vertragen of laten crashen.
+  void logGebruik(supabase, { kantoorId: makelaar.kantoor_id, makelaarId: user.id, objectId: object.id, type: 'dossier_bekeken' })
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase
   const geo = object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null
@@ -110,6 +132,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         uspsInitieel={uspsInitieel}
         contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}
         contentBezigSinds={object.content_bezig_sinds ?? null}
+        verrijkingInitieel={verrijkingInitieel}
       />
     </AppPagina>
   )

@@ -47,3 +47,6 @@ next-env.d.ts
 
 # screenshots van scripts/screenshots.mjs — lokaal beoordelingsmateriaal, geen historie
 /screenshots/
+
+# worktrees van parallelle agents
+/.claude/worktrees/

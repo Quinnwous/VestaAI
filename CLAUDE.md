@@ -23,6 +23,13 @@
 > chat, plan mode alleen bij items gemarkeerd *(ontwerpkeuze)*). `/sessie-start` bij het
 > begin, `/sessie-afronden` bij het einde van elke sessie.
 >
+> **Parallel met agents (sinds 23 sep 2026):** de hoofdsessie regisseert, Sonnet-subagents
+> bouwen elk één roadmap-item in een eigen worktree (`isolation: worktree`, eigen dev-poort
+> 31xx, node_modules als symlink). Keuze op nul bestandsoverlap; agents schrijven migraties
+> maar passen ze niet toe, en raken `docs/roadmap.md`/`docs/besluiten.md` niet aan. Elke agent
+> commit **na elke deelstap** (limietbestendig: bij een op gebruikslimiet gestopte sessie
+> blijft het werk staan en wordt de agent hervat via SendMessage, niet opnieuw gestart).
+>
 > **Push/merge/live (besluit Quinn 17 sep 2026, geldt tot hij anders zegt):** tijdens een
 > sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
 > te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
@@ -97,6 +104,10 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **`overflow: hidden` op een container clipt ook een `position: absolute`-kind erin** — les 23 sep 2026: het profielmenu in `AppTopbar.tsx` viel "weg achter de pagina" doordat de topbar-rij `overflow: hidden` had (bedoeld om de scrollende nav-pillen binnen de balk te houden) en het dropdown-menu daar toevallig ook in stond. Geen stacking-/z-index-bug, gewoon geclipt. Zet `overflow: hidden`/`auto` altijd op het kleinste element dat het echt nodig heeft (hier: de nav zelf, die al zijn eigen `overflowX: auto` had), nooit op een gedeelde rij-container waar ook een popover/dropdown in leeft.
 
+⚠️ **Een Sheet/Dialog die je opent vanuit een menu, mount je búiten dat menu** — les 23 sep 2026 (feedbackknop, 12.4): de sheet stond eerst ín het avatar-/mobiele menu; het sluiten van dat menu bij het openen van de sheet unmountte de sheet meteen weer, dus hij ging op 390 px nooit open. Lift de open-state naar de ouder (`AppTopbar`) en houd de sheet zelf altijd gemount (zie `components/FeedbackKnop.tsx`).
+
+⚠️ **Radix-portals staan búiten de merk-variabelen** — les 24 sep 2026: `--merk*` stond alleen inline op de layout-div van `app/(app)/layout.tsx`, maar Sheet/Popover/Tooltip/SelectMenu renderen via een portal direct in `<body>` en erfden daar de VestaAI-groene terugval van `:root` uit `globals.css` (het concurrentprofiel was groen bij een zwart kantoor). Sindsdien schrijft de layout de variabelen óók als `:root`-regel (`brandingRootCss()` in `lib/branding.ts`). Zie je groen in een drawer/dropdown: eerst controleren of die regel er staat.
+
 **Landingspagina** (`components/LandingPageClient.tsx`) — het oorspronkelijke, uitgebreide marketingontwerp. Geen prijzen, geen zelf-aanmelden — CTA's wijzen naar `/contact` (toegang aanvragen) of `/login`. Nieuwe kantoren worden handmatig klaargezet via `/admin`.
 
 **Content-vlag** (`lib/features.ts`, `CONTENT_VERGRENDELD`) — momenteel `false` (ontgrendeld). Zet 'm op `true` om de contentsuite in één keer weer op slot te zetten. Content genereert sinds 16 sep 2026 altijd **NL + EN parallel** (`generateContentBeideTalen` in `lib/claude.ts`, draait de bestaande generateContent-pipeline twee keer — Engels is best-effort en blokkeert NL niet bij falen); `ResultTabs.tsx` toont een NL/EN-toggle zodra Engelse content bestaat, bewerken/herschrijven blijft uitsluitend op NL werken. De makelaar vinkt in de intake (stap 5) aan welke *optionele* contentvormen (follow-up/video/energieadvies/kopersvragen/marktanalyse) hij wil — `toepassenContentKeuzes()` filtert Claude's volledige respons achteraf; kernteksten (Funda/brochure/social/e-mail/buurt) worden altijd gegenereerd.
@@ -152,6 +163,7 @@ VestaAI/
 ├── app/
 │   ├── page.tsx               # landingspagina (LandingPageClient) — gesloten platform, geen prijzen
 │   ├── login/page.tsx         # alleen inloggen + wachtwoord-reset
+│   ├── login/[slug]/          # kantoorlogin in huisstijl (9.1) — branding via RPC kantoor_branding_publiek
 │   ├── (app)/                 # ingelogde route-group met topbar (AppTopbar) + kantoorbranding
 │   │   ├── dashboard/          #   startpagina na inloggen (sinds fase 1.6, 16-17 sep 2026):
 │   │   │                       #   StartBanner + Kerncijfers (geen snelkoppelingen sinds 1.9c)
@@ -179,6 +191,9 @@ VestaAI/
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
 │   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
+│   ├── InlogFormulier.tsx      # gedeelde login (generiek VestaAI-groen of kantoorstijl)
+│   ├── kaart/                  # MapLibre-stack (7.1): BasisKaart, VerkopenLaag, StraalLaag, HoverKaart;
+│   │                           #   worker zelf gehost in public/maplibre-gl/ (guard-test)
 │   └── ui/                     # design-system: tokens.ts + primitives (o.a. AppPagina, StatTile,
 │                               #   EmptyState, Skeleton — sinds fase 1.1)
 ├── lib/
@@ -191,6 +206,9 @@ VestaAI/
 │   ├── admin.ts                # platform-admin-lijst (isPlatformAdmin)
 │   ├── schemas.ts              # Zod-schemas + TypeScript types (client-safe)
 │   ├── claude.ts                # Claude API wrapper (contentsuite NL+EN, USP-extractor)
+│   ├── aiModellen.ts            # énige plek voor Claude-modelstrings (8.1, guard-test)
+│   ├── opmaak.ts                # nl-NL-opmaak voor élk getal/datum (Amsterdamse tijd)
+│   ├── gebruik.ts               # logGebruik() → gebruik_events (Recent bekeken, 10.4)
 │   ├── verrijking.ts            # WOZ/CBS/Overpass/PDOK-verrijking (incl. coördinaat)
 │   ├── ensureMakelaar.ts        # vangnet: koppelt uitgenodigd account aan zijn kantoor
 │   └── supabase.ts · email.ts

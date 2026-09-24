@@ -28,3 +28,26 @@ export { SelectMenu } from './SelectMenu'
 export type { SelectOptie } from './SelectMenu'
 export { Tabs } from './Tabs'
 export type { TabDef } from './Tabs'
+
+// Item 6.1 (Marktanalyse-explorer v2, roadmap § 3.7/3.8): FilterBar-bouwstenen
+// en chart-primitives, geëxporteerd voor hergebruik door de volgende
+// verkenners (6.2 Transacties, 6.3 Concurrentie).
+export { Chip } from './Chip'
+export { Checkbox } from './Checkbox'
+export { FilterBar } from './FilterBar'
+export { FilterDropdown } from './FilterDropdown'
+export { FilterPills } from './FilterPills'
+export type { FilterPil } from './FilterPills'
+export { RangeSlider } from './RangeSlider'
+export { ChartCard, Legenda } from './ChartCard'
+
+// Item 6.2 (Transacties opzoeken v2, roadmap § 3.8): TanStack Table-primitive
+// voor server-gepagineerde datatabellen — herbruikbaar door latere lijst-
+// schermen (bv. fase 10 dossierlijst).
+export { DataTable, dataTableFeatures } from './DataTable'
+export type { DataTableKolom, DataTableSortering, DataTablePaginatie } from './DataTable'
+
+// Item 6.3 (Concurrentie-explorer v2): wij-vs-markt-vergelijking, poort van
+// docs/ontwerp/concurrentie.html bouwDumbbell() — herbruikbaar voor elke
+// twee-punts-vergelijking (looptijd, t.o.v. vraagprijs, € per m²).
+export { DumbbellStat } from './DumbbellStat'

@@ -5,7 +5,7 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 import { isPlatformAdmin } from '@/lib/admin'
 import { AppTopbar } from '@/components/AppTopbar'
 import { TooltipProvider } from '@/components/ui'
-import { bouwBranding, brandingCssVars, VESTA_MERK } from '@/lib/branding'
+import { bouwBranding, brandingCssVars, brandingRootCss, VESTA_MERK } from '@/lib/branding'
 
 type KantoorRij = {
   name: string
@@ -75,6 +75,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ ...brandingCssVars(branding), minHeight: '100vh', background: '#FAFBFB', fontFamily: 'var(--merk-font-body, var(--font-jakarta))' }}>
+      {/* Ook op :root, zodat Radix-portals (in <body>, buiten deze div) de kantoorkleuren erven. */}
+      <style dangerouslySetInnerHTML={{ __html: brandingRootCss(branding) }} />
       {/* Contactbalk (telefoon/e-mail) verwijderd — masterplan fase 1.2, 16-17 sep 2026,
           zie docs/roadmap.md. branding.telefoon/branding.email blijven bestaan voor
           gebruik in pdf's en e-mails. */}

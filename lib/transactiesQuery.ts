@@ -33,7 +33,10 @@ import type { TransactieRow } from './supabase'
 import type { createServerSupabaseClient } from './supabase'
 import type { Kandidaat, Typegroep } from './waardering'
 import { glad, type IndexPunt, type Kwartaal, type PrijsindexReeks } from './prijsindex'
-import type { MarktaandeelPunt, SegmentWinnaar } from './concurrentie'
+import type {
+  MarktaandeelPunt, SegmentWinnaar,
+  RanglijstRij, WijVsMarkt, AandeelJaarRij, MatrixCel, ConcurrentProfielV2,
+} from './concurrentie'
 
 /** Sessie-gebonden Supabase-client (RLS actief) — nooit de service-client. */
 export type SessieClient = ReturnType<typeof createServerSupabaseClient> | SupabaseClient
@@ -314,6 +317,35 @@ export async function marktanalyseSamenvatting(client: SessieClient, filters?: T
   }
 }
 
+export type PrijsklasseVerdelingRij = { klasse: string; label: string; n: number; nEigen: number }
+
+type PrijsklasseVerdelingRpcRij = { klasse: string; label: string; n: number; n_eigen: number }
+
+/**
+ * RPC `marktanalyse_verdeling_prijsklasse` (item 6.1, migratie
+ * `20260923_marktanalyse_verdeling_en_plaatsen.sql` — nog niet toegepast,
+ * zie het bestandscommentaar daar) — telling per prijsklasse, referentie-
+ * implementatie: `lib/marktanalyse.ts` `PRIJSKLASSEN`.
+ */
+export async function marktanalyseVerdelingPrijsklasse(client: SessieClient, filters?: TransactieFilter): Promise<PrijsklasseVerdelingRij[]> {
+  const { data, error } = await client.rpc('marktanalyse_verdeling_prijsklasse', { p_filters: metFilters(filters) })
+  if (error) throw new Error(`marktanalyseVerdelingPrijsklasse: ${error.message}`)
+  return ((data ?? []) as PrijsklasseVerdelingRpcRij[]).map(r => ({ klasse: r.klasse, label: r.label, n: r.n, nEigen: r.n_eigen }))
+}
+
+export type PlaatsWijkRij = { plaats: string; wijk: string | null; n: number }
+
+/**
+ * RPC `transacties_plaatsen_wijken` (zelfde migratie als hierboven) —
+ * distincte plaats/wijk-combinaties + aantal, voedt de plaats/wijk-dropdown
+ * in `FilterBar` (i.p.v. een hardgecodeerde lijst zoals het ontwerp-prototype).
+ */
+export async function plaatsenWijken(client: SessieClient): Promise<PlaatsWijkRij[]> {
+  const { data, error } = await client.rpc('transacties_plaatsen_wijken')
+  if (error) throw new Error(`plaatsenWijken: ${error.message}`)
+  return (data ?? []) as PlaatsWijkRij[]
+}
+
 type ConcurrentieMarktaandeelRpcRij = { kantoor: string; aantal: number; aandeel_pct: number }
 
 /** RPC `concurrentie_marktaandeel` — referentie-implementatie: lib/concurrentie.ts marktaandeel(). */
@@ -330,10 +362,148 @@ export async function concurrentieSegmenten(client: SessieClient, filters?: Tran
   return (data ?? []) as SegmentWinnaar[]
 }
 
+// ─────────────────────────────────────────────────────────────────────────
+// Concurrentie v2 (item 6.3, migratie <ts>_rpc_concurrentie_v2.sql — NOG NIET
+// TOEGEPAST, zie dat bestand): werkt op `verkopend_kantoor_norm` i.p.v. het
+// rauwe veld hierboven. Elke wrapper hieronder kan een "function does not
+// exist"-fout gooien tot de migratie is toegepast — de aanroepende server
+// action vangt dat op met een nette "nog niet beschikbaar"-staat i.p.v. de
+// pagina te laten crashen (zelfde patroon als marktanalyseVerdelingPrijsklasse
+// hierboven).
+// ─────────────────────────────────────────────────────────────────────────
+
+type ConcurrentieRanglijstRpcRij = { kantoor: string; aantal: number; aandeel_pct: number; mediaan_looptijd: number | null }
+
+/** RPC `concurrentie_ranglijst` — referentie-implementatie: lib/concurrentie.ts ranglijstPerKantoor(). */
+export async function concurrentieRanglijst(client: SessieClient, filters?: TransactieFilter): Promise<RanglijstRij[]> {
+  const { data, error } = await client.rpc('concurrentie_ranglijst', { p_filters: metFilters(filters) })
+  if (error) throw new Error(`concurrentieRanglijst: ${error.message}`)
+  return ((data ?? []) as ConcurrentieRanglijstRpcRij[]).map(r => ({
+    kantoor: r.kantoor, aantal: r.aantal, aandeelPct: r.aandeel_pct, mediaanLooptijd: r.mediaan_looptijd,
+  }))
+}
+
+type ConcurrentieWijVsMarktRpcRij = {
+  looptijd_wij: number | null; looptijd_markt: number | null
+  ratio_wij: number | null; ratio_markt: number | null
+  m2_wij: number | null; m2_markt: number | null
+  n_wij: number; n_markt: number
+}
+
+const LEGE_WIJ_VS_MARKT: WijVsMarkt = {
+  looptijdWij: null, looptijdMarkt: null, ratioWij: null, ratioMarkt: null, m2Wij: null, m2Markt: null, nWij: 0, nMarkt: 0,
+}
+
+/** RPC `concurrentie_wij_vs_markt` — referentie-implementatie: lib/concurrentie.ts wijVsMarkt(). */
+export async function concurrentieWijVsMarkt(client: SessieClient, filters?: TransactieFilter): Promise<WijVsMarkt> {
+  const { data, error } = await client.rpc('concurrentie_wij_vs_markt', { p_filters: metFilters(filters) })
+  if (error) throw new Error(`concurrentieWijVsMarkt: ${error.message}`)
+  const r = ((data ?? []) as ConcurrentieWijVsMarktRpcRij[])[0]
+  if (!r) return LEGE_WIJ_VS_MARKT
+  return {
+    looptijdWij: r.looptijd_wij, looptijdMarkt: r.looptijd_markt,
+    ratioWij: r.ratio_wij, ratioMarkt: r.ratio_markt,
+    m2Wij: r.m2_wij, m2Markt: r.m2_markt,
+    nWij: r.n_wij, nMarkt: r.n_markt,
+  }
+}
+
+type ConcurrentieAandeelJaarRpcRij = { jaar: number; kantoor: string; aantal: number; totaal: number }
+
+/**
+ * RPC `concurrentie_aandeel_jaar` — referentie-implementatie: lib/concurrentie.ts
+ * aandeelPerJaar(). Bewust ONAFHANKELIJK van `filters.datum_van`/`datum_tot`
+ * (de RPC negeert die zelf, zie de migratie) — geef hier gerust het volledige
+ * periodefilter mee, alleen plaats/type/prijsklasse tellen mee.
+ */
+export async function concurrentieAandeelJaar(
+  client: SessieClient,
+  filters?: TransactieFilter,
+  kantoren?: string[],
+): Promise<AandeelJaarRij[]> {
+  const { data, error } = await client.rpc('concurrentie_aandeel_jaar', {
+    p_filters: metFilters(filters),
+    p_kantoren: kantoren ?? null,
+  })
+  if (error) throw new Error(`concurrentieAandeelJaar: ${error.message}`)
+  return ((data ?? []) as ConcurrentieAandeelJaarRpcRij[]).map(r => ({ jaar: r.jaar, kantoor: r.kantoor, aantal: r.aantal, totaal: r.totaal }))
+}
+
+type ConcurrentieMatrixRpcRij = {
+  rij_sleutel: string; rij_label: string; woningtype_groep: string; n: number
+  top3: { kantoor: string; aantal: number; aandeelPct: number }[]
+}
+
+/**
+ * RPC `concurrentie_matrix` — referentie-implementatie: lib/concurrentie.ts
+ * matrixWieWintWaar(). `opWijkniveau = true` zodra de explorer precies één
+ * plaats geselecteerd heeft (zie ConcurrentieExplorer.tsx).
+ */
+export async function concurrentieMatrix(
+  client: SessieClient,
+  filters: TransactieFilter | undefined,
+  opWijkniveau: boolean,
+): Promise<MatrixCel[]> {
+  const { data, error } = await client.rpc('concurrentie_matrix', {
+    p_filters: metFilters(filters),
+    p_op_wijkniveau: opWijkniveau,
+  })
+  if (error) throw new Error(`concurrentieMatrix: ${error.message}`)
+  return ((data ?? []) as ConcurrentieMatrixRpcRij[]).map(r => ({
+    rijSleutel: r.rij_sleutel, rijLabel: r.rij_label, woningtypeGroep: r.woningtype_groep, n: r.n, top3: r.top3 ?? [],
+  }))
+}
+
+type ConcurrentieProfielRpcRij = {
+  n: number; aandeel_pct: number | null; mediaan_looptijd: number | null; gem_ratio: number | null
+  verdeling: { woningtypeGroep: string; n: number }[] | null
+  sterkste_plaats: string | null; sterkste_aandeel_pct: number | null
+  trend: { jaar: number; aantal: number }[] | null
+}
+
+/**
+ * RPC `concurrentie_profiel` — referentie-implementatie: lib/concurrentie.ts
+ * concurrentProfielV2(). `kantoor` is de weergavenaam ("Wassenaar Makelaars")
+ * of exact `"Eigen kantoor"`.
+ */
+export async function concurrentieProfiel(
+  client: SessieClient,
+  filters: TransactieFilter | undefined,
+  kantoor: string,
+): Promise<ConcurrentProfielV2> {
+  const { data, error } = await client.rpc('concurrentie_profiel', { p_filters: metFilters(filters), p_kantoor: kantoor })
+  if (error) throw new Error(`concurrentieProfiel: ${error.message}`)
+  const r = ((data ?? []) as ConcurrentieProfielRpcRij[])[0]
+  if (!r) return { kantoor, n: 0, aandeelPct: null, mediaanLooptijd: null, gemRatio: null, verdeling: [], sterkstePlaats: null, sterksteAandeelPct: null, trend: [] }
+  return {
+    kantoor,
+    n: r.n,
+    aandeelPct: r.aandeel_pct,
+    mediaanLooptijd: r.mediaan_looptijd,
+    gemRatio: r.gem_ratio,
+    verdeling: r.verdeling ?? [],
+    sterkstePlaats: r.sterkste_plaats,
+    sterksteAandeelPct: r.sterkste_aandeel_pct,
+    trend: r.trend ?? [],
+  }
+}
+
 export type Sortering =
   | 'verkoopdatum_desc' | 'verkoopdatum_asc'
   | 'prijs_desc' | 'prijs_asc'
   | 'looptijd_desc' | 'looptijd_asc'
+  // Item 6.2 ("Transacties opzoeken v2"): extra kolomsortering voor de
+  // DataTable — vereist de additieve migratie
+  // supabase/migrations/20260923180000_transacties_zoeken_v2.sql (nog niet
+  // toegepast). Tot dan valt de RPC voor deze sleutels stil terug op
+  // ongesorteerd (`id asc`) i.p.v. een fout te geven — zie dat bestand.
+  | 'adres_asc' | 'adres_desc'
+  | 'plaats_asc' | 'plaats_desc'
+  | 'type_asc' | 'type_desc'
+  | 'opp_asc' | 'opp_desc'
+  | 'm2_asc' | 'm2_desc'
+  | 'ratio_asc' | 'ratio_desc'
+  | 'verkochtdoor_asc' | 'verkochtdoor_desc'
 
 export type ZoekTransactiesResultaat = { rijen: TransactieRow[]; totaal: number }
 

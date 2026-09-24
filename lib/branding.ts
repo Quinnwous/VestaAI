@@ -269,3 +269,19 @@ export function brandingCssVars(b: Branding): React.CSSProperties {
     '--merk-shadow-modal': schaduw.modal,
   } as React.CSSProperties
 }
+
+/**
+ * Dezelfde variabelen als `brandingCssVars`, als `:root { … }`-regel. Nodig
+ * voor Radix-portals (Sheet, Popover, Tooltip, SelectMenu): die renderen direct
+ * in `<body>`, búiten de layout-div met de inline variabelen, en erven anders
+ * de VestaAI-groene terugval van `:root` in globals.css (les 24 sep 2026:
+ * concurrentprofiel-drawer was groen bij een blauw/zwart kantoor).
+ * `<` wordt geweigerd zodat een waarde nooit uit de `<style>`-tag kan breken.
+ */
+export function brandingRootCss(b: Branding): string {
+  const regels = Object.entries(brandingCssVars(b) as Record<string, string | number>)
+    .filter(([, waarde]) => !String(waarde).includes('<'))
+    .map(([naam, waarde]) => `${naam}:${waarde};`)
+    .join('')
+  return `:root{${regels}}`
+}
