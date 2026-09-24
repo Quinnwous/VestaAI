@@ -10,6 +10,7 @@ import {
   type PrijswijzigingOutput,
 } from './schemas'
 import { CONTENT, SAMENVATTING } from './aiModellen'
+import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
@@ -542,5 +543,66 @@ export async function extraheerUsps(vrijeTekst: string, client?: Anthropic): Pro
   } catch {
     return []
   }
+}
+
+/**
+ * Kwartaalbericht (item 6.4, docs/roadmap.md § 5 Fase 6): schrijft 250-350
+ * woorden op basis van UITSLUITEND het feitenblad (`lib/kwartaalbericht.ts`
+ * `bouwFeitenblad`) — nooit op basis van eigen kennis van de woningmarkt.
+ * Guardrail: elk getal in de gegenereerde tekst moet in het feitenblad
+ * voorkomen (`controleerGuardrail`); faalt dat, dan één herkansing met een
+ * expliciete correctie-instructie, en anders een eerlijke foutmelding (geen
+ * derde stille poging — de aanroeper toont de fout in de UI).
+ */
+export async function schrijfKwartaalbericht(
+  feitenblad: Feitenblad,
+  opts: { taal: 'nl' | 'en'; kantoorNaam?: string; huisstijl?: HuisstijlConfig },
+  client?: Anthropic,
+): Promise<{ tekst: string }> {
+  const c = client ?? new Anthropic()
+  const stijlBlok = opts.huisstijl ? buildHuisstijlBlok(opts.huisstijl) : ''
+  const taalInstructie = opts.taal === 'en'
+    ? 'Schrijf de lopende tekst in het Engels, maar behoud de Nederlandse getalnotatie EXACT zoals in het feitenblad (punt als duizendtal-scheiding, komma als decimaalteken — bv. "€ 1.235.000" en "3,2%"). Vertaal getallen niet naar Engelse notatie (geen "€1,235,000" of "3.2%").'
+    : 'Schrijf de tekst in het Nederlands.'
+
+  const systemPrompt = `Je bent de kantoortekstschrijver van een makelaarskantoor. Je schrijft een kort, feitelijk kwartaalbericht over de woningmarkt voor de eigen website of nieuwsbrief van het kantoor.
+
+REGELS (hard, geen uitzondering):
+- Gebruik UITSLUITEND de cijfers uit het FEITENBLAD hieronder. Verzin geen enkel getal, bedrag, percentage of aantal dat daar niet in staat — ook geen cijfers uit je eigen kennis van de woningmarkt.
+- Elk getal dat je noemt moet letterlijk of in een voor de hand liggende afgeronde vorm uit het feitenblad komen (bv. "€ 1.235.000" mag als "ruim € 1,2 miljoen").
+- Lengte: 250-350 woorden.
+- ${taalInstructie}
+- Toon: namens ${opts.kantoorNaam || 'het kantoor'}, informeel ("je/jouw"), noem nergens de naam "VestaAI".
+- Structuur: pakkende opening over de markt in de regio, de kernstatistieken in lopende tekst (geen opsomming, geen bullets, geen kopjes), de vergelijking met de vorige periode, en het eigen aandeel van het kantoor. Sluit af met een korte, natuurlijke uitnodiging (bijvoorbeeld voor een waardebepaling) zonder concrete contactgegevens te verzinnen.
+- Staat er in het feitenblad een waarschuwing over weinig data of een ontbrekende vergelijking? Benoem dat dan voorzichtig — geen schijnzekerheid.
+- Platte lopende tekst in alinea's. Geen JSON, geen markdown-opmaak.
+
+${stijlBlok}
+
+${feitenblad.tekst}`
+
+  let laatsteFout: { onbekend: string[] } | null = null
+  for (let poging = 0; poging < 2; poging++) {
+    const correctie = poging > 0
+      ? `\n\nJe vorige poging bevatte een getal dat niet in het feitenblad staat (${laatsteFout?.onbekend.join(', ')}). Schrijf de tekst opnieuw en gebruik dit keer uitsluitend cijfers uit het feitenblad.`
+      : ''
+
+    const message = await c.messages.create({
+      model: CONTENT,
+      max_tokens: 1200,
+      system: systemPrompt + correctie,
+      messages: [{ role: 'user', content: 'Schrijf het kwartaalbericht.' }],
+    })
+    const tekst = message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
+
+    const guardrail = controleerGuardrail(tekst, feitenblad)
+    if (guardrail.ok) return { tekst }
+
+    laatsteFout = { onbekend: guardrail.onbekend.map(g => g.ruw) }
+    if (poging === 1) {
+      throw new Error(`Het kwartaalbericht bevatte na 2 pogingen nog een getal dat niet in het feitenblad staat (${laatsteFout.onbekend.join(', ')}). Probeer het later opnieuw.`)
+    }
+  }
+  throw new Error('Onverwachte fout bij het schrijven van het kwartaalbericht')
 }
 

@@ -13,8 +13,9 @@
  * wordt aangeroepen — de pagina zelf levert al de standaardfilter-data mee,
  * dus de eerste paint toont meteen cijfers zonder skeleton.
  *
- * Niet in deze explorer: de echte kwartaalbericht-generatie (item 6.4) — de
- * knop/modal hieronder is bewust een placeholder-schil.
+ * Kwartaalbericht (item 6.4): `KwartaalberichtModal` (los bestand) doet de
+ * echte generatie via `POST /api/kwartaalbericht` — deze explorer geeft
+ * alleen de actieve `filter` door en toont/verbergt de modal.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -23,11 +24,12 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
 } from 'recharts'
 import {
-  Badge, Button, Modal, EmptyState, Skeleton,
+  Badge, Button, EmptyState,
   FilterBar, FilterDropdown, FilterPills, RangeSlider, Chip, Checkbox,
   StatTile, ChartCard, Legenda, SegmentedToggle, Switch, SelectMenu,
   type FilterPil,
 } from '@/components/ui'
+import { KwartaalberichtModal } from '@/components/KwartaalberichtModal'
 import { colors } from '@/components/ui/tokens'
 import { useFilterState } from '@/hooks/useFilterState'
 import {
@@ -271,7 +273,7 @@ export function MarktanalyseExplorer({
               Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
             </Badge>
           )}
-          <KwartaalberichtKnop />
+          <KwartaalberichtKnop filter={filter} disabled={geenResultaten} />
         </div>
       </div>
 
@@ -706,28 +708,21 @@ function PrijsklasseVerdeling({
   )
 }
 
-// ── Kwartaalbericht: placeholder-schil (echte generatie = item 6.4, niet bouwen) ──
-function KwartaalberichtKnop() {
+// ── Kwartaalbericht (item 6.4): knop + modal, echte generatie in KwartaalberichtModal ──
+function KwartaalberichtKnop({ filter, disabled }: { filter: MarktanalyseFilterState; disabled: boolean }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <Button variant="primary" size="sm" onClick={() => setOpen(true)}>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={() => setOpen(true)}
+        disabled={disabled}
+        title={disabled ? 'Geen transacties in de huidige selectie' : undefined}
+      >
         Kwartaalbericht schrijven
       </Button>
-      {open && (
-        <Modal onClose={() => setOpen(false)} title="Kwartaalbericht">
-          <p style={{ fontSize: 13.5, color: colors.body, lineHeight: 1.6, margin: 0 }}>
-            De automatische kwartaalbericht-generatie komt in een volgend item (6.4): een feitenblad uit de huidige
-            selectie, waarna elk getal in de tekst tegen dat feitenblad gecontroleerd wordt voordat je hem kopieert
-            of downloadt. Deze knop is voorlopig een schil.
-          </p>
-          <div style={{ marginTop: 16 }}>
-            <Skeleton height={12} width="90%" />
-            <Skeleton height={12} width="100%" style={{ marginTop: 10 }} />
-            <Skeleton height={12} width="70%" style={{ marginTop: 10 }} />
-          </div>
-        </Modal>
-      )}
+      {open && <KwartaalberichtModal filter={filter} onClose={() => setOpen(false)} />}
     </>
   )
 }
