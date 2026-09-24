@@ -23,13 +23,23 @@ import { euro, procent, dagen, datum, datumTijd, afstand, nlNL } from '@/lib/opm
  *
  * Zolang `initieel` leeg is (nieuw dossier waarvan de fire-and-forget-fetch
  * uit `NewObjectForm.tsx` nog niet klaar is, of een ouder dossier van vóór dit
- * item) probeert dit paneel één keer automatisch op te halen via dezelfde
- * "Ververs"-actie — daarna alleen nog op expliciete klik, geen achtergrond-
- * polling.
+ * item) of een verouderde vorm heeft (zie `isVerouderd`), probeert dit paneel
+ * één keer automatisch op te halen via dezelfde "Ververs"-actie — daarna
+ * alleen nog op expliciete klik, geen achtergrond-polling.
  */
+
+/**
+ * Rijen van vóór 23 sep 2026 missen `bronnen` (en vouwden fouten stil op tot
+ * "leeg"); rijen van vóór 24 sep missen de CBS-buurtafstanden. Die tonen we,
+ * maar halen we bij het openen één keer opnieuw op.
+ */
+function isVerouderd(d: VerrijkingOpslag | null): boolean {
+  return !d || !d.bronnen || (d.cbs != null && !d.cbs.nabijheid)
+}
+
 export function BuurtDataTab({ objectId, initieel }: { objectId: string; initieel: VerrijkingOpslag | null }) {
   const [data, setData] = useState<VerrijkingOpslag | null>(initieel)
-  const [laden, setLaden] = useState(!initieel)
+  const [laden, setLaden] = useState(isVerouderd(initieel))
   const [fout, setFout] = useState('')
 
   const ververs = async () => {
@@ -52,7 +62,7 @@ export function BuurtDataTab({ objectId, initieel }: { objectId: string; initiee
   }
 
   useEffect(() => {
-    if (!initieel) ververs()
+    if (isVerouderd(initieel)) ververs()
     // Eenmalig bij mount — zie toelichting hierboven.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -93,12 +103,20 @@ export function BuurtDataTab({ objectId, initieel }: { objectId: string; initiee
   }
 
   const { woz, cbs, voorzieningen, marktEigen } = data
-  // Oudere rijen (vóór deze fix) hebben nog geen `bronnen` — dan afleiden uit
-  // de aan-/afwezigheid van data (het oude gedrag), i.p.v. deze rij te
-  // negeren en een geforceerde herophaal af te dwingen.
-  const statusWoz: FetchStatus = data.bronnen?.woz ?? (woz ? 'ok' : 'leeg')
+  // Oudere rijen hebben nog geen `bronnen` (ze worden op de achtergrond
+  // ververst, zie isVerouderd). Tot dan afleiden uit de data — waarbij
+  // ontbrekende WOZ/voorzieningen toen een stille fout waren, geen "leeg":
+  // WOZ werkte in productie nooit, Overpass faalde zonder User-Agent.
+  const statusWoz: FetchStatus = data.bronnen?.woz ?? (woz ? 'ok' : 'niet_gekoppeld')
   const statusCbs: FetchStatus = data.bronnen?.cbs ?? (cbs ? 'ok' : 'leeg')
-  const statusVoorzieningen: FetchStatus = data.bronnen?.voorzieningen ?? (voorzieningen ? 'ok' : 'leeg')
+  const statusVoorzieningen: FetchStatus = data.bronnen?.voorzieningen ?? (voorzieningen ? 'ok' : 'mislukt')
+  const n = cbs?.nabijheid
+  const cbsNabijheid = ([
+    ['Supermarkt', n?.supermarkt_km],
+    ['Huisarts', n?.huisarts_km],
+    ['School', n?.school_km],
+    ['Kinderopvang', n?.kinderdagverblijf_km],
+  ] as const).flatMap(([titel, m]) => (m ? [{ titel, m }] : []))
 
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -131,10 +149,26 @@ export function BuurtDataTab({ objectId, initieel }: { objectId: string; initiee
               </div>
             )}
           </div>
-        ) : (
+        ) : statusWoz === 'ok' || statusWoz === 'leeg' ? (
           <BronMelding status={statusWoz} leeg="Geen WOZ-gegevens gevonden voor dit adres." />
+        ) : (
+          // WOZ per woning is niet gekoppeld (lib/verrijking.ts fetchWoz). Oudere
+          // rijen staan nog op 'mislukt' van de dode WOZ-aanroep — zelfde verhaal,
+          // want Ververs levert daar nooit iets op.
+          <div>
+            {cbs?.woz_gem ? (
+              <>
+                <div style={cijferKlein}>{euro(cbs.woz_gem.waarde)}</div>
+                <p style={bronStijl}>Gemiddelde WOZ-waarde van woningen in {cbs.woz_gem.niveau === 'nederland' ? 'Nederland' : `de ${NIVEAU_LABEL[cbs.woz_gem.niveau]}`} — niet de waarde van deze woning</p>
+              </>
+            ) : (
+              <p style={legeTekst}>Geen WOZ-gegevens beschikbaar voor dit adres.</p>
+            )}
+          </div>
         )}
-        <p style={bronStijl}>Bron: WOZ Waardeloket</p>
+        <p style={bronStijl}>
+          {statusWoz === 'ok' || statusWoz === 'leeg' ? 'Bron: WOZ-waardeloket' : `WOZ per woning is nog niet gekoppeld${cbs?.woz_gem ? ` · bron: ${cbs.bron ?? 'CBS Kerncijfers wijken en buurten'}` : ''}`}
+        </p>
       </div>
 
       {/* CBS-buurtcijfers */}
@@ -172,10 +206,30 @@ export function BuurtDataTab({ objectId, initieel }: { objectId: string; initiee
             <Voorziening titel="Station" items={voorzieningen.treinstation} />
             <Voorziening titel="Groen" items={voorzieningen.groen} />
           </div>
+        ) : statusVoorzieningen === 'mislukt' && cbsNabijheid.length > 0 ? (
+          // De publieke Overpass-servers zijn vaak overbelast (meting 24 sep 2026):
+          // val dan terug op de CBS-buurtafstanden i.p.v. alleen "mislukt".
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+              {cbsNabijheid.map(({ titel, m }) => (
+                <div key={titel}>
+                  <p style={{ fontSize: 12, fontWeight: 650, color: '#98A0A6', margin: '0 0 4px' }}>{titel}</p>
+                  <p style={{ fontSize: 13, color: '#14181B', margin: 0 }}>{afstand(m.waarde * 1000)} <span style={{ color: '#98A0A6' }}>({NIVEAU_LABEL[m.niveau]})</span></p>
+                </div>
+              ))}
+            </div>
+            <p style={{ ...legeTekst, fontSize: 12, marginTop: 12 }}>
+              Gemiddelde afstand in de buurt. De exacte afstanden vanaf dit adres konden niet worden opgehaald — probeer <strong>Ververs</strong> later opnieuw.
+            </p>
+          </>
         ) : (
           <BronMelding status={statusVoorzieningen} leeg="Geen voorzieningen gevonden binnen 1,5 km." />
         )}
-        <p style={bronStijl}>Bron: OpenStreetMap (Overpass)</p>
+        <p style={bronStijl}>
+          {statusVoorzieningen === 'mislukt' && cbsNabijheid.length > 0
+            ? cbs?.bron ?? 'CBS Kerncijfers wijken en buurten'
+            : 'Bron: OpenStreetMap (Overpass)'}
+        </p>
       </div>
 
       {/* Markt in [plaats] — eigen transactiedataset (vervangt sinds de review
@@ -242,8 +296,9 @@ const badgeStijl: React.CSSProperties = {
   background: 'var(--merk-zacht)', color: 'var(--merk)', whiteSpace: 'nowrap',
 }
 
+const NIVEAU_LABEL: Record<CbsNiveau, string> = { buurt: 'buurt', wijk: 'wijk', gemeente: 'gemeente', nederland: 'NL' }
+
 function Cijfer({ titel, waarde, niveau }: { titel: string; waarde: string; niveau: CbsNiveau }) {
-  const NIVEAU_LABEL: Record<CbsNiveau, string> = { buurt: 'buurt', wijk: 'wijk', gemeente: 'gemeente', nederland: 'NL' }
   return (
     <div>
       <div style={cijferKlein}>{waarde}</div>

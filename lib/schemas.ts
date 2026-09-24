@@ -476,7 +476,13 @@ export const CbsDataSchema = z.object({
   gemeente_niveau: z.object({
     woz_gem: z.number().nullable(),
     dichtheid_per_km2: z.number().nullable(),
-  }),
+  }),  // Optioneel: rijen van vóór 24 sep 2026 hebben dit nog niet.
+  nabijheid: z.object({
+    supermarkt_km: CbsMetriekSchema.nullable(),
+    huisarts_km: CbsMetriekSchema.nullable(),
+    school_km: CbsMetriekSchema.nullable(),
+    kinderdagverblijf_km: CbsMetriekSchema.nullable(),
+  }).optional(),
 })
 
 const VoorzieningItemSchema = z.object({
@@ -520,14 +526,15 @@ export const MarktEigenDataSchema = z.object({
 export type MarktEigenData = z.infer<typeof MarktEigenDataSchema>
 
 // Per bron (WOZ/CBS/voorzieningen) of het antwoord 'ok' (data), 'leeg' (bron
-// antwoordde, dit adres levert niets op) of 'mislukt' (netwerkfout/timeout)
+// antwoordde, dit adres levert niets op), 'mislukt' (netwerkfout/timeout) of
+// 'niet_gekoppeld' (de bron is bewust niet aangesloten — WOZ, 24 sep 2026)
 // was — zelfde union als lib/verrijking.ts `FetchStatus` (bewust hier
 // opnieuw gedefinieerd i.p.v. geïmporteerd: lib/schemas.ts is client-safe en
 // mag geen afhankelijkheid krijgen van lib/verrijking.ts se fetch-logica).
 // `.optional()` op het veld zelf omdat rijen van vóór deze fix dit niet
 // hebben; ontbreekt het, dan valt de UI terug op het oude gedrag (afleiden
 // uit de aan-/afwezigheid van data).
-export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt'])
+export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt', 'niet_gekoppeld'])
 export type FetchStatus = z.infer<typeof FetchStatusSchema>
 
 export const VerrijkingOpslagSchema = z.object({
