@@ -35,8 +35,16 @@
   tekstsjabloon-model · **10.1/10.2** woningen- en dossierheader v2. Deze zijn
   grotendeels onafhankelijk → weer parallel te verdelen (6.4 en 8.2 raken allebei
   `lib/claude.ts`: niet tegelijk).
-- **Eerst oppakken (backlog-top, § 9):** WOZ-loket en Overpass geven "kon niet
-  worden opgehaald" in Buurt & data — oorzaak zoeken vóór de demo.
+- **Eerst oppakken, in deze volgorde (open na sessie 23-24 sep):**
+  1. Controleren dat PR #28 (`feat/fase-6`) op `main` staat en de Vercel-deploy
+     READY is zonder runtime-errors (Vercel-MCP). Staat hij nog open: mergen
+     (Quinn gaf op 24 sep expliciet akkoord) en dan de deploy controleren.
+  2. Worktrees van de agents opruimen: `git worktree list`, per worktree onder
+     `.claude/worktrees/` checken dat de branch in `main` zit, dan
+     `git worktree remove` + `git branch -d`. Nieuwe sessie op een nieuwe
+     featurebranch vanaf `main`.
+  3. WOZ-loket en Overpass geven "kon niet worden opgehaald" in Buurt & data —
+     oorzaak zoeken vóór de demo (backlog-top, § 9).
 - **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
   concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
