@@ -263,8 +263,8 @@ export function ConcurrentieExplorer({
                 <StatTile
                   hero
                   label="Marktaandeel eigen kantoor"
-                  waarde={eigenRij?.aandeelPct ?? undefined}
-                  opmaak={n => `${(n / 10).toFixed(1)}%`}
+                  waarde={eigenRij?.aandeelPct != null ? eigenRij.aandeelPct * 10 : undefined}
+                  opmaak={n => procent(n / 10, false)}
                   bijschrift={rpcBeschikbaar ? `n = ${nlNL.format(nTotaal)} · data t/m ${datum(dataTotEnMet)}` : undefined}
                   waarschuwing={!rpcBeschikbaar ? 'Nog niet beschikbaar.' : weinigData ? `Te weinig verkopen (${nTotaal}) voor een betrouwbaar cijfer.` : undefined}
                 />
@@ -276,7 +276,7 @@ export function ConcurrentieExplorer({
                   waarschuwing={!rpcBeschikbaar ? 'Nog niet beschikbaar.' : undefined}
                 />
                 <StatTile
-                  label="Gem. looptijd (wij)"
+                  label="Mediaan looptijd (wij)"
                   waarde={data.wijVsMarkt?.looptijdWij ?? undefined}
                   opmaak={dagenGetalOpmaak}
                   bijschrift={data.wijVsMarkt ? `n = ${nlNL.format(data.wijVsMarkt.nWij)} · markt ${dagen(data.wijVsMarkt.looptijdMarkt)}` : undefined}
@@ -318,7 +318,7 @@ export function ConcurrentieExplorer({
                 <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>T.o.v. vraagprijs</div>
                   <DumbbellStat wij={data.wijVsMarkt.ratioWij} markt={data.wijVsMarkt.ratioMarkt} fmt={v => procent(v)} gunstig={1}
-                    deltaFmt={dl => `${dl > 0 ? '+' : ''}${dl.toFixed(1)} pt t.o.v. de markt`} />
+                    deltaFmt={dl => `${procent(dl).replace('%', '')} pt t.o.v. de markt`} />
                 </div>
                 <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>€ per m²</div>
@@ -550,7 +550,7 @@ function TrendTooltip({ active, payload, label, series }: { active?: boolean; pa
               <i style={{ width: 8, height: 8, borderRadius: '50%', background: s.kleur, display: 'inline-block' }} />
               {s.naam}
             </span>
-            <b style={{ fontVariantNumeric: 'tabular-nums' }}>{punt.value == null ? '—' : `${punt.value.toFixed(1)}%`}</b>
+            <b style={{ fontVariantNumeric: 'tabular-nums' }}>{punt.value == null ? '—' : procent(punt.value, false)}</b>
           </div>
         )
       })}
@@ -651,7 +651,7 @@ function Ranglijst({ rijen, sort, onKies }: { rijen: RanglijstRij[]; sort: Concu
             <span style={{ display: 'block', height: '100%', width: `${(r.aandeelPct / maxAandeel) * 100}%`, background: r.kantoor === ONS ? 'var(--merk)' : colors.bodyStrong, borderRadius: radius.pill }} />
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: colors.bodyStrong, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
-            {r.aandeelPct.toFixed(1)}% <small style={{ fontWeight: 500, color: colors.muted }}>· n={r.aantal} · {dagen(r.mediaanLooptijd)}</small>
+            {procent(r.aandeelPct, false)} <small style={{ fontWeight: 500, color: colors.muted }}>· n={r.aantal} · {dagen(r.mediaanLooptijd)}</small>
           </span>
         </div>
       ))}
@@ -670,10 +670,10 @@ function ConcurrentDrawerInhoud({ profiel, magSchrappen, onSchrap }: { profiel: 
         </div>
         <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
           <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Aandeel</span>
-          <span style={{ fontSize: 17, fontWeight: 800 }}>{profiel.aandeelPct == null ? '—' : `${profiel.aandeelPct.toFixed(1)}%`}</span>
+          <span style={{ fontSize: 17, fontWeight: 800 }}>{procent(profiel.aandeelPct, false)}</span>
         </div>
         <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
-          <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Gem. looptijd</span>
+          <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Mediaan looptijd</span>
           <span style={{ fontSize: 17, fontWeight: 800 }}>{dagen(profiel.mediaanLooptijd)}</span>
         </div>
         <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
