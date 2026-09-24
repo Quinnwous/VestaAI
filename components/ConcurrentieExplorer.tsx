@@ -138,12 +138,18 @@ export function ConcurrentieExplorer({
   if (filter.verborgen.length) pillen.push({ label: 'Verborgen', waarde: `${filter.verborgen.length} kantoor${filter.verborgen.length > 1 ? 'en' : ''}`, onVerwijder: () => zetFilterDeel({ verborgen: [] }) })
 
   // ── Zichtbare ranglijst (na "verberg dit kantoor") ──
+  // ⚠️ `data.ranglijst === null` betekent "RPC nog niet beschikbaar" (migratie
+  // niet toegepast), niet "geen concurrentiedata" — die twee mogen nooit
+  // dezelfde lege staat tonen (anders meldt de pagina "verkopend kantoor
+  // onbekend" terwijl de dataset dat veld wél gevuld heeft, alleen de RPC
+  // nog niet bestaat).
+  const rpcBeschikbaar = data.ranglijst !== null
   const ranglijstZichtbaar: RanglijstRij[] | null = data.ranglijst
     ? data.ranglijst.filter(r => !filter.verborgen.includes(r.kantoor))
     : null
-  const heeftData = !!ranglijstZichtbaar?.some(r => r.kantoor !== ONS && r.kantoor !== 'Onbekend')
+  const heeftData = rpcBeschikbaar && !!ranglijstZichtbaar?.some(r => r.kantoor !== ONS && r.kantoor !== 'Onbekend')
   const nTotaal = ranglijstZichtbaar?.reduce((s, r) => s + r.aantal, 0) ?? 0
-  const weinigData = nTotaal > 0 && nTotaal < MIN_N_BETROUWBAAR
+  const weinigData = rpcBeschikbaar && nTotaal > 0 && nTotaal < MIN_N_BETROUWBAAR
 
   const eigenRij = ranglijstZichtbaar?.find(r => r.kantoor === ONS) ?? null
   const positie = ranglijstZichtbaar ? ranglijstZichtbaar.findIndex(r => r.kantoor === ONS) + 1 : 0
@@ -170,7 +176,8 @@ export function ConcurrentieExplorer({
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', color: colors.text, margin: 0 }}>Concurrentie</h1>
         <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
-          Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nTotaal)} transacties in de selectie
+          Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b>
+          {rpcBeschikbaar ? ` · ${nlNL.format(nTotaal)} transacties in de selectie` : ''}
         </Badge>
       </div>
 
@@ -234,7 +241,7 @@ export function ConcurrentieExplorer({
         </button>
       </FilterBar>
 
-      {!heeftData && !laden ? (
+      {rpcBeschikbaar && !heeftData && !laden ? (
         <EmptyState
           titel="Verkopend kantoor onbekend in deze export"
           beschrijving={
@@ -258,14 +265,15 @@ export function ConcurrentieExplorer({
                   label="Marktaandeel eigen kantoor"
                   waarde={eigenRij?.aandeelPct ?? undefined}
                   opmaak={n => `${(n / 10).toFixed(1)}%`}
-                  bijschrift={`n = ${nlNL.format(nTotaal)} · data t/m ${datum(dataTotEnMet)}`}
-                  waarschuwing={weinigData ? `Te weinig verkopen (${nTotaal}) voor een betrouwbaar cijfer.` : undefined}
+                  bijschrift={rpcBeschikbaar ? `n = ${nlNL.format(nTotaal)} · data t/m ${datum(dataTotEnMet)}` : undefined}
+                  waarschuwing={!rpcBeschikbaar ? 'Nog niet beschikbaar.' : weinigData ? `Te weinig verkopen (${nTotaal}) voor een betrouwbaar cijfer.` : undefined}
                 />
                 <StatTile
                   label="Positie in de ranglijst"
                   waarde={positie || undefined}
                   opmaak={n => `#${n}`}
                   bijschrift={ranglijstZichtbaar ? `van ${ranglijstZichtbaar.length} kantoren · n = ${nlNL.format(nTotaal)}` : undefined}
+                  waarschuwing={!rpcBeschikbaar ? 'Nog niet beschikbaar.' : undefined}
                 />
                 <StatTile
                   label="Gem. looptijd (wij)"
