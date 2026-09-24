@@ -404,6 +404,9 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 24 sep 2026 — PR `feat/fase-6` (parallelle Sonnet-agents, Opus-review):
+  **6.1, 6.2, 6.3, 7.1, 8.1, 9.1, 10.3, 10.4, 10.6, 12.4, 13.1**; zeven migraties
+  toegepast na back-up; kantoorkleuren in portals, CSP voor Plausible.
 - 23 sep 2026 — bugfix: profielmenu in de topbar viel weg achter de pagina
   door `overflow: hidden` op de topbar-rij; direct live (PR #26).
 - 19 sep 2026 — item **6.0**: Radix-primitives (`Sheet`, `Popover`, `Slider`,
