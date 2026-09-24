@@ -186,7 +186,7 @@ export function VerkoopkaartExplorerV2({
           {geenData || !dataTotEnMet ? (
             <Badge color={colors.muted} bg={colors.borderSoft}>Nog geen transacties</Badge>
           ) : (
-            <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+            <Badge dot color="var(--merk-accent)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
               Alleen eigen verkopen · data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(transacties.length)} verkopen
             </Badge>
           )}
@@ -315,7 +315,7 @@ export function VerkoopkaartExplorerV2({
                   width: 36, height: 36, borderRadius: '50%', flex: 'none',
                   background: 'linear-gradient(180deg, #0A8AD2, var(--merk-hover))', color: '#fff',
                   display: 'grid', placeItems: 'center', border: 'none', cursor: 'pointer',
-                  boxShadow: '0 4px 12px -4px rgba(var(--merk-rgb, 0,128,200),.6)',
+                  boxShadow: '0 4px 12px -4px rgba(var(--merk-rgb),.6)',
                 }}
               >
                 {speelt ? (
@@ -387,8 +387,8 @@ export function VerkoopkaartExplorerV2({
                   }}
                 >
                   <svg viewBox="0 0 26 32" width={16} height={20} style={{ overflow: 'visible' }}>
-                    <path d="M13 3 23 13 13 23 3 13Z" fill="none" stroke="var(--merk-accent, #C61E45)" strokeWidth={2} />
-                    <path d="M13 7 19 13 13 19 7 13Z" fill="var(--merk, #0080C8)" />
+                    <path d="M13 3 23 13 13 23 3 13Z" fill="none" stroke="var(--merk-accent)" strokeWidth={2} />
+                    <path d="M13 7 19 13 13 19 7 13Z" fill="var(--merk)" />
                     <circle cx={13} cy={13} r={2} fill="#fff" />
                   </svg>
                   Verkocht door je kantoor · klik voor details
