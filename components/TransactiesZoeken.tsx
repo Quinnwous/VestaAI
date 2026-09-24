@@ -190,11 +190,19 @@ export function TransactiesZoeken({
   if (filter.zoek) pillen.push({ label: 'Zoekterm', waarde: filter.zoek, onVerwijder: () => { setZoekInput(''); zetFilterDeel({ zoek: '' }) } })
 
   // ── Sticky tabelkop volgt de hoogte van de sticky filterbalk (incl. pillenrij) ──
+  // ⚠️ Bewust GEEN React-state voor de gemeten waarde: een her-render van
+  // <DataTable> met een nieuwe `stickyTop`-prop terwijl er al gescrold is,
+  // maakt de sticky kolomkop stuk (leek TanStack's kolom-/rijmodel opnieuw op
+  // te bouwen — zie het commentaar bij `DataTable`'s `stickyTop`-prop). Zet de
+  // gemeten hoogte daarom als CSS-variabele buiten React om, zoals
+  // docs/ontwerp/transacties.html (`--tabel-kop-top`) al deed.
   const filterBarWrapRef = useRef<HTMLDivElement>(null)
-  const [tabelKopTop, setTabelKopTop] = useState(178)
   useEffect(() => {
     function ververs() {
-      if (filterBarWrapRef.current) setTabelKopTop(Math.round(filterBarWrapRef.current.getBoundingClientRect().bottom) + 8)
+      if (filterBarWrapRef.current) {
+        const top = Math.round(filterBarWrapRef.current.getBoundingClientRect().bottom) + 8
+        document.documentElement.style.setProperty('--transacties-tabel-kop-top', `${top}px`)
+      }
     }
     ververs()
     window.addEventListener('resize', ververs)
@@ -592,7 +600,7 @@ export function TransactiesZoeken({
               onSorteerKlik={sorteerKlik}
               onRijKlik={r => setSheetRij(r)}
               laden={laden}
-              stickyTop={tabelKopTop}
+              stickyTop="var(--transacties-tabel-kop-top, 178px)"
               paginatie={{
                 pagina: filter.pagina,
                 totaal: resultaat.totaal,

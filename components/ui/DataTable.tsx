@@ -49,7 +49,20 @@ export type DataTablePaginatie = {
   onVolgende: () => void
 }
 
-const RIJ_HOVER_STYLE = '.vui-datatable-rij:hover td { background: var(--merk-zacht); } .vui-datatable-th-sorteerbaar:hover { color: var(--merk); }'
+// ⚠️ `overflow-x: auto` op de wrapper maakt die zelf het "scroll-anker" i.p.v. de pagina,
+// wat de sticky kolomkoppen stukmaakt (zelfde valkuil als docs/ontwerp/transacties.html
+// § `.tabel-wrap`-commentaar: "maakt zelf een scroll-anker, wat de sticky kop stuk maakt").
+// Daarom: geen horizontale scroll op brede schermen (de tabel past dan binnen `minBreedte`);
+// pas onder 1040 px (waar de tabel breder is dan het scherm) schakelt de wrapper over op
+// overflow-x:auto én valt de sticky kop terug op position:static — exact het prototype-gedrag.
+const DATATABLE_STYLE = `
+  .vui-datatable-rij:hover td { background: var(--merk-zacht); }
+  .vui-datatable-th-sorteerbaar:hover { color: var(--merk); }
+  @media (max-width: 1040px) {
+    .vui-datatable-wrap { overflow-x: auto; }
+    .vui-datatable-th { position: static !important; }
+  }
+`
 
 export function DataTable<T extends RowData>({
   columns,
@@ -75,16 +88,26 @@ export function DataTable<T extends RowData>({
   /** Getoond onder de tabel als `data` leeg is en er niet geladen wordt. */
   leeg?: ReactNode
   paginatie?: DataTablePaginatie
-  /** Sticky-offset (px) — volgt de hoogte van de sticky filterbalk erboven. */
-  stickyTop?: number
+  /**
+   * Sticky-offset — volgt de hoogte van de sticky filterbalk erboven. Geef
+   * een `var(--iets, 178px)`-string mee (i.p.v. een React-state-getal) als de
+   * waarde bij scrollen/pillen-wijziging verandert: een her-render van deze
+   * tabel (nieuwe `stickyTop`-prop) maakt de sticky kop stuk zodra hij een
+   * groter getal krijgt terwijl er al gescrold is — vermoedelijk omdat
+   * TanStack dan zijn kolom-/rijmodel opnieuw opbouwt tijdens het scrollen
+   * (zie `docs/besluiten.md`, item 6.2). Een CSS-variabele die je zelf buiten
+   * React om bijwerkt (`element.style.setProperty(...)`) omzeilt dat, net als
+   * `docs/ontwerp/transacties.html` (`--tabel-kop-top`) al deed.
+   */
+  stickyTop?: number | string
   minBreedte?: number
 }) {
   const table = useTable({ features: dataTableFeatures, columns, data, getRowId })
 
   return (
     <div>
-      <style>{RIJ_HOVER_STYLE}</style>
-      <div style={{ overflowX: 'auto' }}>
+      <style>{DATATABLE_STYLE}</style>
+      <div className="vui-datatable-wrap">
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12.5, tableLayout: 'fixed', minWidth: minBreedte }}>
           <thead>
             {table.getHeaderGroups().map(groep => (
@@ -98,7 +121,7 @@ export function DataTable<T extends RowData>({
                       key={header.id}
                       onClick={sorteerbaar ? () => onSorteerKlik(kolomId) : undefined}
                       aria-sort={actief ? (sortering?.dir === 'asc' ? 'ascending' : 'descending') : undefined}
-                      className={sorteerbaar ? 'vui-datatable-th-sorteerbaar' : undefined}
+                      className={`vui-datatable-th${sorteerbaar ? ' vui-datatable-th-sorteerbaar' : ''}`}
                       style={{
                         position: 'sticky',
                         top: stickyTop,
