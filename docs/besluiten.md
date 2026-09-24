@@ -6,6 +6,16 @@
 
 ---
 
+### 24 sep 2026 (sessie Opus als regisseur + drie Sonnet-agents) — Buurt & data vóór de demo
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| WOZ per woning niet gekoppeld | Oorzaak "kon niet worden opgehaald": `api.wozwaardeloket.nl` bestaat niet meer (DNS). Het loket draait nu op `api.kadaster.nl/lvwoz/wozwaardeloket-api/v1`, maar dat is de interne backend van een publieke site die geautomatiseerde bevraging niet toestaat — daar bouwen we niet op. `fetchWoz` geeft `niet_gekoppeld` (nieuwe `FetchStatus`), zonder netwerkaanroep; `haalWozIjkpunt` → `null` (waarderingspaneel verbergt het ijkpunt). UI toont het **CBS-buurtgemiddelde** klein en expliciet als "niet de waarde van deze woning". Een betaalde bron kiezen is Quinns beslissing (roadmap § 8) — één functie + vlag `WOZ_GEKOPPELD` | Opus |
+| Overpass: wisselvallig, niet stuk | Meting 24 sep (12 aanroepen, 4 publieke instances): 504/429/timeouts, 3 van 12 geslaagd. Lokaal en met User-Agent werkt het wél — het is overbelasting. Daarom: terugval-mirror `z.overpass-api.de` na `lz4` (timeout 9 s per poging), 429 telt als `mislukt` i.p.v. `leeg`, en bij mislukken de CBS-"Nabijheid voorzieningen" (supermarkt/huisarts/school/kinderopvang, gemiddeld per buurt) in UI én contentprompt | Opus |
+| Uitval zichtbaar maken | `fetchVerrijking` logt een mislukte bron met reden (`[verrijking] voorzieningen mislukt (Wassenaar): …`), zonder adres (persoonsgegeven). Vóór deze fix was een uitval op Vercel nergens te zien — de reden dat de oorzaak op 23 sep niet gevonden werd | Opus |
+| Verouderde verrijkingsrijen | Rijen zonder `bronnen` of zonder `cbs.nabijheid` worden bij het openen van de tab één keer ververst (zelfde actie als Ververs); tot dan telt ontbrekende WOZ als niet gekoppeld en ontbrekende voorzieningen als mislukt — de oude code vouwde fouten stil op tot "leeg" ("Geen voorzieningen binnen 1,5 km" bij een villa in Wassenaar) | Opus |
+| Opruimen na PR #28 | PR #28 staat op `main`, productie-deploy READY; enige runtime-error in 24 u is een onbestaande Server Action `"x"` op `/` (bot/scanner, geen appfout). Worktrees waren al weg; vijf gemergde lokale branches verwijderd | Opus |
+
 ### 23 sep 2026 (sessie Opus als regisseur + Sonnet-agents parallel) — 9.1, 13.1 en meer
 
 | Onderwerp | Besluit | Door |

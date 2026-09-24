@@ -35,10 +35,11 @@
   tekstsjabloon-model · **10.1/10.2** woningen- en dossierheader v2. Deze zijn
   grotendeels onafhankelijk → weer parallel te verdelen (6.4 en 8.2 raken allebei
   `lib/claude.ts`: niet tegelijk).
-- **Eerst oppakken (open na sessie 23-24 sep):** WOZ-loket en Overpass geven
-  "kon niet worden opgehaald" in Buurt & data — oorzaak zoeken vóór de demo
-  (backlog-top, § 9). *(PR #28 staat op `main`, productie-deploy READY en zonder
-  echte runtime-errors; worktrees en gemergde branches opgeruimd — check 24 sep.)*
+- **Buurt & data (24 sep, opgelost op `feat/sessie-24sep`):** Overpass is
+  overbelast, niet stuk → terugval-mirror + CBS-buurtafstanden; WOZ per woning
+  is **niet gekoppeld** (loket heeft geen toegestane API) → CBS-buurtgemiddelde
+  als ijkpunt. Scène 4 ("BAG/WOZ vullen voor", "WOZ ernaast") hangt af van
+  Quinns keuze voor een WOZ-bron (§ 8, punt 14). Details: `docs/besluiten.md`.
 - **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
   concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
@@ -52,7 +53,8 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
+- **Open vragen voor Quinn:** WOZ-bron voor scène 4 (§ 8, punt 14)? ·
+  blinde evaluatieronde content (8.1) draaien? ·
   pastelkleuren van de nieuwe kaart goed (`?kaart=v2`)?
 
 ---
@@ -911,6 +913,13 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
     pusht, merget en zet live bij "rond af" (besluit 17 sep, CLAUDE.md).
     Wel daarna: Search Console (punt 6).
+14. **WOZ per woning (scène 4):** kiezen tussen (a) een betaalde WOZ-API — o.a.
+    Altum AI (al in gebruik bij Dealwijs; prijs per call en voorwaarden voor
+    gebruik in een klantplatform nog te checken) of woz-api.nl; (b) de makelaar
+    vult de WOZ uit de beschikking van de verkoper in bij de intake (gratis,
+    één veld); (c) zo laten: CBS-buurtgemiddelde. Advies Claude: (b) nu, (a)
+    alleen als i4housing het automatisch wil. Bouwen = `fetchWoz` in
+    `lib/verrijking.ts` + `WOZ_GEKOPPELD`.
 12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
     bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
     Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
@@ -918,10 +927,7 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ## 9. Backlog & geparkeerd
 
-**Vóór de demo oppakken (uit de sessie van 23-24 sep):** WOZ-loket en
-Overpass geven in "Buurt & data" "kon niet worden opgehaald" voor een
-Wassenaars adres — oorzaak zoeken (endpoint gewijzigd? timeout? coördinaten?)
-vóór scène 4 · omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
+**Vóór de demo oppakken (uit de sessie van 23-24 sep):** omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
 minikaart in de transactie-sheet op `BasisKaart` (7.2) · gedeelde kop
 "Zoeken in de markt" in `app/(app)/marktanalyse/layout.tsx` weg zodra alle
 vier verkenners een eigen kop hebben (kop-op-kop) · pastelkleuren van de kaart
