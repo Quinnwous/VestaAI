@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking } from '@/lib/verrijking'
 import { naarVerrijkingOpslag } from '@/lib/verrijkingOpslag'
-import { marktanalyseSamenvatting } from '@/lib/transactiesQuery'
+import { dataTotEnMet, marktanalyseSamenvatting } from '@/lib/transactiesQuery'
 import { PropertyInputSchema, type MarktEigenData } from '@/lib/schemas'
 import { meldFout } from '@/lib/fouten'
 
@@ -65,18 +65,21 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   let marktEigen: MarktEigenData | null = null
   if (plaats) {
     try {
-      const nu = new Date()
-      const twaalfMaandenGeleden = new Date(nu)
-      twaalfMaandenGeleden.setFullYear(twaalfMaandenGeleden.getFullYear() - 1)
+      // Periode verankerd aan de laatste verkoopdatum, net als /marktanalyse —
+      // anders zegt "data t/m" vandaag terwijl de dataset eerder ophoudt.
+      const { laatsteVerkoopdatum } = await dataTotEnMet(supabase)
+      const tot = laatsteVerkoopdatum ? new Date(laatsteVerkoopdatum) : new Date()
+      const twaalfMaandenEerder = new Date(tot)
+      twaalfMaandenEerder.setUTCFullYear(twaalfMaandenEerder.getUTCFullYear() - 1)
       const samenvatting = await marktanalyseSamenvatting(supabase, {
         plaatsen: [plaats],
-        datum_van: twaalfMaandenGeleden.toISOString().slice(0, 10),
-        datum_tot: nu.toISOString().slice(0, 10),
+        datum_van: twaalfMaandenEerder.toISOString().slice(0, 10),
+        datum_tot: tot.toISOString().slice(0, 10),
       })
       marktEigen = {
         plaats,
         periodeVan: samenvatting.huidig.van,
-        periodeTot: samenvatting.huidig.tot,
+        periodeTot: laatsteVerkoopdatum ?? samenvatting.huidig.tot,
         n: samenvatting.huidig.n,
         mediaanPrijs: samenvatting.huidig.mediaanPrijs,
         mediaanM2: samenvatting.huidig.mediaanM2,

@@ -65,7 +65,8 @@ describe('lib/opmaak', () => {
   })
 
   it('datumTijd geeft datum + tijd, en "—" bij een ongeldige tijdstempel', () => {
-    expect(datumTijd('2026-09-23T14:32:00.000Z')).toBe('23 sep 2026 om 14:32')
+    expect(datumTijd('2026-09-23T14:32:00.000Z')).toBe('23 sep 2026 om 16:32') // zomertijd: UTC+2
+    expect(datumTijd('2026-12-31T23:30:00.000Z')).toBe('1 jan 2027 om 00:30') // wintertijd, over de jaargrens
     expect(datumTijd('niet-een-datum')).toBe('—')
     expect(datumTijd(null)).toBe('—')
   })

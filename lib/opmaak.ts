@@ -67,19 +67,23 @@ export function afstand(waarde: number | null | undefined): string {
   return nlNL.format(Math.round(waarde)) + ' m'
 }
 
+const AMSTERDAM = new Intl.DateTimeFormat('nl-NL', {
+  timeZone: 'Europe/Amsterdam',
+  year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+})
+
 /**
- * `23 sep 2026 om 14:32` — datum + tijd (bv. "opgehaald op"-tijdstempels).
- * Leest de UTC-componenten uit net als `datum()` hierboven — zelfde
- * hydratie-afweging (server en client komen altijd op dezelfde weergave uit,
- * ongeacht hun eigen tijdzone), consistent gehouden binnen deze module.
+ * `23 sep 2026 om 14:32` — datum + tijd (bv. "opgehaald op"-tijdstempels), in
+ * **Amsterdamse tijd**. Een tijdstip is voor de makelaar wandkloktijd; UTC
+ * toonde 's zomers twee uur te vroeg. Hydratieveilig: de tijdzone staat vast,
+ * dus server (UTC) en browser rekenen exact dezelfde tekst uit.
  */
 export function datumTijd(waarde: string | Date | null | undefined): string {
   if (waarde == null) return '—'
   const d = typeof waarde === 'string' ? new Date(waarde) : waarde
   if (Number.isNaN(d.getTime())) return '—'
-  const uur = String(d.getUTCHours()).padStart(2, '0')
-  const minuut = String(d.getUTCMinutes()).padStart(2, '0')
-  return `${datum(d)} om ${uur}:${minuut}`
+  const deel = Object.fromEntries(AMSTERDAM.formatToParts(d).map((p) => [p.type, p.value]))
+  return `${Number(deel.day)} ${MAAND_KORT[Number(deel.month) - 1]} ${deel.year} om ${deel.hour}:${deel.minute}`
 }
 
 /** `"2026-Q1"` → `"Q1 2026"` — leesbare kwartaallabel voor de x-as en tooltips. */
