@@ -24,7 +24,7 @@ import {
   StatTile, ChartCard, Legenda, DumbbellStat, Sheet,
   type FilterPil,
 } from '@/components/ui'
-import { colors } from '@/components/ui/tokens'
+import { colors, radius } from '@/components/ui/tokens'
 import { useFilterState } from '@/hooks/useFilterState'
 import {
   ConcurrentieFilterSchema, standaardConcurrentieFilter,
@@ -293,7 +293,7 @@ export function ConcurrentieExplorer({
           </section>
 
           {/* ── Wij vs. markt ── */}
-          <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: 18, padding: '16px 18px', marginBottom: 14 }}>
+          <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: radius.cardLg, padding: '16px 18px', marginBottom: 14 }}>
             <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: '0 0 2px', color: colors.text }}>Wij vs. markt</h2>
             <div style={{ fontSize: 12, color: colors.muted, marginBottom: 10 }}>medianen/gemiddelden binnen de huidige selectie</div>
             {laden ? (
@@ -302,17 +302,17 @@ export function ConcurrentieExplorer({
               <Onbeschikbaar />
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 12 }}>
-                <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>Looptijd</div>
                   <DumbbellStat wij={data.wijVsMarkt.looptijdWij} markt={data.wijVsMarkt.looptijdMarkt} fmt={dagen} gunstig={-1}
                     deltaFmt={dl => `${dl > 0 ? '+' : ''}${Math.round(dl)} dgn t.o.v. de markt`} />
                 </div>
-                <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>T.o.v. vraagprijs</div>
                   <DumbbellStat wij={data.wijVsMarkt.ratioWij} markt={data.wijVsMarkt.ratioMarkt} fmt={v => procent(v)} gunstig={1}
                     deltaFmt={dl => `${dl > 0 ? '+' : ''}${dl.toFixed(1)} pt t.o.v. de markt`} />
                 </div>
-                <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '12px 14px' }}>
+                <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>€ per m²</div>
                   <DumbbellStat wij={data.wijVsMarkt.m2Wij} markt={data.wijVsMarkt.m2Markt} fmt={euro} gunstig={0}
                     deltaFmt={dl => `${dl >= 0 ? '+' : '−'}${euro(Math.abs(dl))} t.o.v. de markt/m²`} />
@@ -339,7 +339,7 @@ export function ConcurrentieExplorer({
 
           {/* ── Matrix + Ranglijst ── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)', gap: 12 }} className="concurrentie-matrix-ranglijst">
-            <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: 18, padding: '16px 18px', minWidth: 0 }}>
+            <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: radius.cardLg, padding: '16px 18px', minWidth: 0 }}>
               <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: '0 0 2px', color: colors.text }}>Wie wint waar</h2>
               <div style={{ fontSize: 12, color: colors.muted, marginBottom: 10 }}>
                 {opWijkniveau ? 'top-kantoor per wijk × woningtype' : 'top-kantoor per plaats × woningtype'}
@@ -354,7 +354,7 @@ export function ConcurrentieExplorer({
               <p style={{ fontSize: 11.5, color: colors.muted, margin: '10px 0 0' }}>Hover voor de top 3, klik op een cel voor het concurrentprofiel.</p>
             </div>
 
-            <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: 18, padding: '16px 18px', minWidth: 0 }}>
+            <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: radius.cardLg, padding: '16px 18px', minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
                 <div>
                   <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: 0, color: colors.text }}>Kantoren in dit segment</h2>
@@ -431,7 +431,7 @@ function PlaatsWijkKiezer({
         placeholder="Zoek plaats of wijk…"
         aria-label="Zoek plaats of wijk"
         className="vui-input"
-        style={{ width: '100%', height: 34, borderRadius: 8, border: `1px solid ${colors.borderStrong}`, padding: '0 10px', marginBottom: 8, background: colors.surfaceAlt, fontSize: 13 }}
+        style={{ width: '100%', height: 34, borderRadius: radius.sm, border: `1px solid ${colors.borderStrong}`, padding: '0 10px', marginBottom: 8, background: colors.surfaceAlt, fontSize: 13 }}
       />
       {plaatsen
         .filter(p => !t || p.label.toLowerCase().includes(t) || p.wijken.some(w => w.label.toLowerCase().includes(t)))
@@ -531,7 +531,7 @@ function TrendGrafiek({ series }: { series: TrendSerie[] }) {
 function TrendTooltip({ active, payload, label, series }: { active?: boolean; payload?: { dataKey: string; value: number | null }[]; label?: string; series: TrendSerie[] }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', border: `1px solid ${colors.border}`, borderRadius: 12, padding: '10px 12px', fontSize: 12, minWidth: 180 }}>
+    <div style={{ background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', border: `1px solid ${colors.border}`, borderRadius: radius.md, padding: '10px 12px', fontSize: 12, minWidth: 180 }}>
       <div style={{ fontWeight: 800, color: colors.text, marginBottom: 5 }}>{label}</div>
       {series.map(s => {
         const punt = payload.find(p => p.dataKey === s.key)
@@ -577,7 +577,7 @@ function WieWintWaarMatrix({ matrix, onKies }: { matrix: MatrixCel[]; onKies: (k
             </div>
             {groepen.map(g => {
               const c = cel(rijSleutel, g)
-              if (!c) return <div key={`${rijSleutel}-${g}`} style={{ borderRadius: 8, border: `1px dashed ${colors.borderStrong}`, minHeight: 52, display: 'grid', placeItems: 'center', fontSize: 11.5, color: colors.muted }}>geen data</div>
+              if (!c) return <div key={`${rijSleutel}-${g}`} style={{ borderRadius: radius.sm, border: `1px dashed ${colors.borderStrong}`, minHeight: 52, display: 'grid', placeItems: 'center', fontSize: 11.5, color: colors.muted }}>geen data</div>
               const top = c.top3[0]
               const wij = top?.kantoor === ONS
               const titel = c.top3.map(t => `${t.kantoor}: ${t.aandeelPct.toFixed(0)}% (n=${t.aantal})`).join('\n')
@@ -588,7 +588,7 @@ function WieWintWaarMatrix({ matrix, onKies }: { matrix: MatrixCel[]; onKies: (k
                   title={titel}
                   onClick={() => top && onKies(top.kantoor)}
                   style={{
-                    textAlign: 'left', borderRadius: 8, padding: '9px 11px', minHeight: 52,
+                    textAlign: 'left', borderRadius: radius.sm, padding: '9px 11px', minHeight: 52,
                     background: wij ? 'var(--merk-zacht)' : colors.surfaceAlt,
                     border: `1px solid ${wij ? 'var(--merk-rand)' : colors.border}`,
                     cursor: top ? 'pointer' : 'default',
@@ -639,8 +639,8 @@ function Ranglijst({ rijen, sort, onKies }: { rijen: RanglijstRij[]; sort: Concu
           <span style={{ fontSize: 12.5, fontWeight: r.kantoor === ONS ? 800 : 500, color: r.kantoor === ONS ? 'var(--merk-diep)' : colors.bodyStrong, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {r.kantoor}
           </span>
-          <span style={{ height: 8, background: colors.borderSoft, borderRadius: 999, overflow: 'hidden', display: 'block' }}>
-            <span style={{ display: 'block', height: '100%', width: `${(r.aandeelPct / maxAandeel) * 100}%`, background: r.kantoor === ONS ? 'var(--merk)' : colors.bodyStrong, borderRadius: 999 }} />
+          <span style={{ height: 8, background: colors.borderSoft, borderRadius: radius.pill, overflow: 'hidden', display: 'block' }}>
+            <span style={{ display: 'block', height: '100%', width: `${(r.aandeelPct / maxAandeel) * 100}%`, background: r.kantoor === ONS ? 'var(--merk)' : colors.bodyStrong, borderRadius: radius.pill }} />
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: colors.bodyStrong, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
             {r.aandeelPct.toFixed(1)}% <small style={{ fontWeight: 500, color: colors.muted }}>· n={r.aantal} · {dagen(r.mediaanLooptijd)}</small>
@@ -656,19 +656,19 @@ function ConcurrentDrawerInhoud({ profiel, magSchrappen, onSchrap }: { profiel: 
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
-        <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
+        <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
           <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Verkopen</span>
           <span style={{ fontSize: 17, fontWeight: 800 }}>{nlNL.format(profiel.n)}</span>
         </div>
-        <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
+        <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
           <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Aandeel</span>
           <span style={{ fontSize: 17, fontWeight: 800 }}>{profiel.aandeelPct == null ? '—' : `${profiel.aandeelPct.toFixed(1)}%`}</span>
         </div>
-        <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
+        <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
           <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>Gem. looptijd</span>
           <span style={{ fontSize: 17, fontWeight: 800 }}>{dagen(profiel.mediaanLooptijd)}</span>
         </div>
-        <div style={{ background: colors.surfaceAlt, borderRadius: 12, padding: '10px 12px' }}>
+        <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '10px 12px' }}>
           <span style={{ display: 'block', fontSize: 11.5, color: colors.muted, fontWeight: 600, marginBottom: 2 }}>T.o.v. vraagprijs</span>
           <span style={{ fontSize: 17, fontWeight: 800 }}>{procent(profiel.gemRatio)}</span>
         </div>
@@ -679,8 +679,8 @@ function ConcurrentDrawerInhoud({ profiel, magSchrappen, onSchrap }: { profiel: 
         {profiel.verdeling.map(v => (
           <div key={v.woningtypeGroep} style={{ display: 'grid', gridTemplateColumns: '112px 1fr 38px', alignItems: 'center', gap: 8, margin: '6px 0', fontSize: 12 }}>
             <span>{typegroepLabel(v.woningtypeGroep as Typegroep) || v.woningtypeGroep}</span>
-            <span style={{ height: 8, background: colors.borderSoft, borderRadius: 999, overflow: 'hidden' }}>
-              <span style={{ display: 'block', height: '100%', width: `${(v.n / totVerdeling) * 100}%`, background: 'var(--merk)', borderRadius: 999 }} />
+            <span style={{ height: 8, background: colors.borderSoft, borderRadius: radius.pill, overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', width: `${(v.n / totVerdeling) * 100}%`, background: 'var(--merk)', borderRadius: radius.pill }} />
             </span>
             <span style={{ textAlign: 'right', fontWeight: 700 }}>{Math.round((v.n / totVerdeling) * 100)}%</span>
           </div>
@@ -703,7 +703,7 @@ function ConcurrentDrawerInhoud({ profiel, magSchrappen, onSchrap }: { profiel: 
         <button
           type="button"
           onClick={onSchrap}
-          style={{ marginTop: 4, padding: '8px 14px', borderRadius: 999, background: 'none', border: '1px solid var(--merk-accent-rand)', color: 'var(--merk-accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+          style={{ marginTop: 4, padding: '8px 14px', borderRadius: radius.pill, background: 'none', border: '1px solid var(--merk-accent-rand)', color: 'var(--merk-accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
         >
           Verberg dit kantoor
         </button>
