@@ -17,43 +17,41 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 6 — Marktinzichten v2. Fases 0 t/m 4 ✅, fase 5 geblokkeerd op de
-  exports. Plan v2 van kracht sinds 17 sep 2026. De opleverdetails per fase
-  staan in `docs/besluiten.md`, niet hier — dit blok blijft kort.
-- **Laatst opgeleverd (23 sep):** bugfix — het profielmenu in de topbar viel
-  weg achter de pagina doordat de topbar-rij `overflow: hidden` had en zo het
-  (absoluut gepositioneerde) menu clipte; nav-pillen scrollen al zelf via hun
-  eigen `overflowX: auto`, dus de clip op de hele rij kon weg. Los van de
-  hydratiebug op dezelfde component uit de vorige sessie (19 sep). Fix in
-  `components/AppTopbar.tsx`, direct gemerged naar `main` (PR #26).
-- **Daarvoor (19 sep):** **6.0** Radix-primitives (`Sheet`, `Popover`,
-  `Slider`, `Tooltip`, `SelectMenu`, `Tabs`) + TanStack Table, gethemed via
-  `tokens.ts`/`var(--merk*)` — bewust **zónder** de shadcn-classlaag (motivatie
-  bij het item en in `docs/besluiten.md`). Bewijs in productie: de drawer van
-  4.4 draait erop. Daarnaast het welkomstblok op de startpagina herbouwd naar
-  het prototype (verloop + raster + glans, geen foto) en een hydratiebug
-  gerepareerd die het profielmenu in de topbar onbruikbaar maakte.
-- **Volgende item:** **6.1** Marktanalyse-explorer v2 (port van
-  `docs/ontwerp/marktanalyse.html`). Bouwt onderweg `FilterBar`, `ChartCard`,
-  `useFilterState`, `lib/opmaak.ts` en `lib/grafiekThema.ts` — die vier zijn
-  ook de basis voor 6.2 en 6.3, dus 6.1 is bewust het eerste echte item.
-- **Prestatielat voor fase 6** (gemeten op productie 18-19 sep): `/marktanalyse`
-  ~6 s, `/marktanalyse/transacties` ~6-7 s, `/marktanalyse/concurrentie` ~5,5 s.
-  Dat is de tussenfase die nog de hele dataset ophaalt; fase 6 moet dit onder
-  ~1,5 s brengen. Dossier ~2,0 s, dashboard ~2,9 s (koude start).
+- **Fase:** 6 grotendeels af (6.1-6.3 ✅, 6.4 kwartaalbericht open); uit 7, 8, 9,
+  10, 12 en 13 zijn losse items vooruit gebouwd door parallelle Sonnet-agents
+  (werkwijze: CLAUDE.md § Parallel met agents). Fase 5 geblokkeerd op de exports.
+  Opleverdetails staan in `docs/besluiten.md`, niet hier.
+- **Laatst opgeleverd (23-24 sep, PR `feat/fase-6`):** 6.1 marktanalyse v2
+  (~6 s → ~1,2 s), 6.2 transacties v2, 6.3 concurrentie v2, 7.1 `BasisKaart`
+  (MapLibre, proef achter `/marktanalyse/kaart?kaart=v2`), 8.1 `lib/aiModellen.ts`
+  + prompt caching + evaluatieset (nog niet gedraaid), 9.1 inloggen in
+  kantoorstijl (`/login/i4housing`), 10.3 Buurt & data, 10.4 Recent bekeken,
+  10.6 stijl-leren vindbaar, 12.4 feedbackknop, 13.1 publieke copy. Plus: CSP liet
+  Plausible nooit toe (gerepareerd), kantoorkleuren ontbraken in alle
+  Radix-portals (gerepareerd via `brandingRootCss()`). Zeven migraties toegepast
+  (alle additief of achterwaarts compatibel, na back-up).
+- **Volgende items:** **6.4** kwartaalbericht (gebruikt `lib/aiModellen.ts`) ·
+  **7.2** verkoopkaart-explorer v2 op `BasisKaart` (daarna 7.3, 7.4) · **8.2**
+  tekstsjabloon-model · **10.1/10.2** woningen- en dossierheader v2. Deze zijn
+  grotendeels onafhankelijk → weer parallel te verdelen (6.4 en 8.2 raken allebei
+  `lib/claude.ts`: niet tegelijk).
+- **Eerst oppakken (backlog-top, § 9):** WOZ-loket en Overpass geven "kon niet
+  worden opgehaald" in Buurt & data — oorzaak zoeken vóór de demo.
+- **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
+  concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
-- **Blokkades (geen van alle blokkeert fase 1-4):**
+- **Blokkades (geen van alle blokkeert het bouwen):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
-  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1).
+  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; status 23 sep).
   - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
     regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
   - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
-  - Vercel-team staat op **Hobby** (gecontroleerd 17 sep via de Vercel-MCP):
-    vóór de demo naar Pro, zie § 8.
-- **Open vragen:** geen. (Vier vragen beantwoord op 17 sep — `docs/besluiten.md`.)
+  - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
+  pastelkleuren van de nieuwe kaart goed (`?kaart=v2`)?
 
 ---
 
@@ -670,7 +668,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
   referentie" (4.4), CSV-export uitsluitend eigen verkopen (client-side uit
   `haalEigenVerkopen`). URL-state.
-- [ ] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
+- [x] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
   `docs/ontwerp/concurrentie.html`, § 3.8)* — marktaandeel per plaats/typegroep/prijsklasse
   met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
   wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
