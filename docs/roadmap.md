@@ -636,7 +636,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   Escape, scroll-lock, focus-herstel, botsingscorrectie, toetsenbordnavigatie)
   is volledig binnen. Bewijs in productie: de drawer "Referentie toevoegen"
   (4.4) draait nu op `Sheet`, met de handmatige Escape-listener eruit.
-- [ ] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
+- [x] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
   — bouwt daarbij `FilterBar`, `ChartCard`, `useFilterState`, `lib/opmaak.ts`,
   `lib/grafiekThema.ts`)*
   *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
@@ -692,7 +692,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 7 — Kaart (4 sessies)
 
-- [ ] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
+- [x] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
   PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
   `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
   (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
@@ -762,16 +762,16 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 - [ ] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
   merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
   (pdf, content, fase).
-- [ ] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
+- [x] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
   CBS-buurtcijfers, voorzieningen (uit `lib/verrijking.ts`, al opgehaald bij
   de intake; opslaan in `objecten.verrijking_json` via migratie).
-- [ ] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
+- [x] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
   `gebruik_events` (kantoor_id, makelaar_id, object_id, type, created_at; RLS),
   `lib/gebruik.ts` `logGebruik()`, `RecentBekeken` op `/dashboard`;
   dossiertijdlijn (schrapbaar).
 - [ ] **10.5 Intake tweekoloms** (schrapbaar) — wizard links, `WoningdataPanel`
   rechts, `AppPagina` volle breedte op `object/new`.
-- [ ] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
+- [x] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
   teller "3 bewerkingen wachten op je oordeel".
 - **Klaar als:** dossier leest als één verhaal; fase in één oogopslag.
 
@@ -799,7 +799,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 - [ ] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
   (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
   op echte data gelogd in `docs/data/performance.md`.
-- [ ] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
+- [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
 - [ ] **12.5 Demo-voorbereiding** — `docs/demoscript.md` (§ 2 uitgewerkt tot
   klik-voor-klik, met terugvalplan per scène), drie demo-dossiers uit echte
@@ -917,6 +917,15 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
     doen in een sessie zonder auto-mode.
 
 ## 9. Backlog & geparkeerd
+
+**Vóór de demo oppakken (uit de sessie van 23-24 sep):** WOZ-loket en
+Overpass geven in "Buurt & data" "kon niet worden opgehaald" voor een
+Wassenaars adres — oorzaak zoeken (endpoint gewijzigd? timeout? coördinaten?)
+vóór scène 4 · SQL-fix `20260924_fix_marktanalyse_samenvatting_vorige_periode.sql`
+toepassen en de omweg `vorigePeriodeFilter()` weghalen (12.3) · gedeelde kop
+"Zoeken in de markt" in `app/(app)/marktanalyse/layout.tsx` weg zodra alle
+vier verkenners een eigen kop hebben (kop-op-kop) · pastelkleuren van de kaart
+laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
 content naar de UI (nu: timer + skeletons) · statische kaart in de
