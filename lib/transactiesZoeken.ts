@@ -258,7 +258,8 @@ export function verkochtDoorLabel(
   eigenKantoorNaam: string,
 ): string {
   if (rij.eigen_verkoop) return eigenKantoorNaam
-  return rij.verkopend_kantoor_norm ?? rij.verkopend_kantoor ?? 'Onbekend'
+  // Toon de ruwe naam ('Wassenaar Makelaars'); _norm is de kleine-letter-groeperingssleutel.
+  return rij.verkopend_kantoor ?? rij.verkopend_kantoor_norm ?? 'Onbekend'
 }
 
 // ─────────────────────────────────────────────────────────────────────────

@@ -184,11 +184,11 @@ describe('verkochtDoorLabel', () => {
     expect(verkochtDoorLabel(rij({ eigen_verkoop: true, verkopend_kantoor_norm: null, verkopend_kantoor: null }), 'i4 Housing')).toBe('i4 Housing')
   })
 
-  it('toont de genormaliseerde kantoornaam bij een externe verkoop', () => {
-    expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: 'Huys & Partners', verkopend_kantoor: 'huys partners makelaardij' }), 'i4 Housing')).toBe('Huys & Partners')
+  it('toont de leesbare kantoornaam (niet de kleine-letter-sleutel) bij een externe verkoop', () => {
+    expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: 'huys partners', verkopend_kantoor: 'Huys & Partners' }), 'i4 Housing')).toBe('Huys & Partners')
   })
 
-  it('valt terug op de ruwe kantoornaam, dan op "Onbekend"', () => {
+  it('zonder genormaliseerde sleutel: de ruwe naam, anders "Onbekend"', () => {
     expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: null, verkopend_kantoor: 'Ten Holt' }), 'i4 Housing')).toBe('Ten Holt')
     expect(verkochtDoorLabel(rij({ eigen_verkoop: false, verkopend_kantoor_norm: null, verkopend_kantoor: null }), 'i4 Housing')).toBe('Onbekend')
   })
