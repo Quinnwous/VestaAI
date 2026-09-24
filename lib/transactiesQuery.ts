@@ -363,6 +363,18 @@ export type Sortering =
   | 'verkoopdatum_desc' | 'verkoopdatum_asc'
   | 'prijs_desc' | 'prijs_asc'
   | 'looptijd_desc' | 'looptijd_asc'
+  // Item 6.2 ("Transacties opzoeken v2"): extra kolomsortering voor de
+  // DataTable — vereist de additieve migratie
+  // supabase/migrations/20260923180000_transacties_zoeken_v2.sql (nog niet
+  // toegepast). Tot dan valt de RPC voor deze sleutels stil terug op
+  // ongesorteerd (`id asc`) i.p.v. een fout te geven — zie dat bestand.
+  | 'adres_asc' | 'adres_desc'
+  | 'plaats_asc' | 'plaats_desc'
+  | 'type_asc' | 'type_desc'
+  | 'opp_asc' | 'opp_desc'
+  | 'm2_asc' | 'm2_desc'
+  | 'ratio_asc' | 'ratio_desc'
+  | 'verkochtdoor_asc' | 'verkochtdoor_desc'
 
 export type ZoekTransactiesResultaat = { rijen: TransactieRow[]; totaal: number }
 

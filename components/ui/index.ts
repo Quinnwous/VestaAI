@@ -40,3 +40,9 @@ export { FilterPills } from './FilterPills'
 export type { FilterPil } from './FilterPills'
 export { RangeSlider } from './RangeSlider'
 export { ChartCard, Legenda } from './ChartCard'
+
+// Item 6.2 (Transacties opzoeken v2, roadmap § 3.8): TanStack Table-primitive
+// voor server-gepagineerde datatabellen — herbruikbaar door latere lijst-
+// schermen (bv. fase 10 dossierlijst).
+export { DataTable, dataTableFeatures } from './DataTable'
+export type { DataTableKolom, DataTableSortering, DataTablePaginatie } from './DataTable'
