@@ -13,6 +13,8 @@ import { AppPagina } from '@/components/ui'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, PropertyInput } from '@/lib/schemas'
 import { migreerWaarderingJson } from '@/lib/waardering'
 import { verwerkOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
+import { bepaalWeergaveWaarde } from '@/lib/dossierHeader'
+import { dagenInFaseAantal } from '@/lib/utils'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const getCachedObject = unstable_cache(
@@ -43,7 +45,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [object, makelaar, verrijkingRuw] = await Promise.all([
+  const [object, makelaar, verrijkingRuw, eersteFoto] = await Promise.all([
     getCachedObject(params.id),
     supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single().then(r => r.data),
     // Item 10.3: losse, ongecachete query t.o.v. getCachedObject hierboven —
@@ -57,6 +59,23 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         return { data: r.data, error: r.error }
       } catch {
         return { data: null, error: null }
+      }
+    })(),
+    // Item 10.2: oudste foto uit de bibliotheek voor de dossierheader-thumbnail
+    // (zonder foto's valt de header terug op een merkverloop) — losse,
+    // ongecachete query, faalt gracieus zolang er nog geen tabel/rij is.
+    (async () => {
+      try {
+        const r = await createServiceSupabaseClient()
+          .from('object_fotos')
+          .select('url')
+          .eq('object_id', params.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+        return r.data
+      } catch {
+        return null
       }
     })(),
   ])
@@ -102,10 +121,15 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         objectId={object.id}
         address={object.address}
         fase={fase}
-        faseSinds={object.fase_sinds}
+        dagenInFaseAantal={dagenInFaseAantal(object.fase_sinds, new Date())}
         invoer={invoer}
         status={(object.status ?? 'draft') as 'draft' | 'published' | 'onder_bod' | 'verkocht'}
         aangemaaktOp={object.created_at}
+        fotoUrl={eersteFoto?.url ?? null}
+        waarde={bepaalWeergaveWaarde(waarderingUitkomst, waarderingCorrectie)}
+        waardeWeinigData={waarderingUitkomst?.weinigData ?? false}
+        vraagprijs={invoer.vraagprijs ?? null}
+        contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}
         acties={
           <>
             <RegenereerButton invoer={object.input_json as PropertyInput} />

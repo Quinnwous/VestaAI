@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
@@ -129,7 +130,13 @@ export function ObjectWorkspace({
    * nog niet is toegepast (graceful, zie lib/verrijkingOpslag.ts). */
   verrijkingInitieel?: VerrijkingOpslag | null
 }) {
-  const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
+  // Item 10.2: de dossierheader linkt met `?tab=content` naar de contenttab
+  // (bv. de "Content"-knop in de acties) — alleen als startwaarde gelezen,
+  // geen voortdurende sync nodig.
+  const searchParams = useSearchParams()
+  const [active, setActive] = useState<SectionId>(
+    searchParams.get('tab') === 'content' ? 'content' : (CONTENT_VERGRENDELD ? 'waardering' : 'content'),
+  )
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
 

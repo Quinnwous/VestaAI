@@ -29,13 +29,25 @@ export function formatDatum(iso: string): string {
 }
 
 /**
+ * Aantal kalenderdagen (middernacht-grenzen in de lokale tijdzone, niet
+ * afgeronde 24-uursblokken) sinds `faseSinds`. `nu` is verplicht (geen
+ * default `new Date()`): item 10.2 (docs/roadmap.md § Fase 10) rekent dit
+ * altijd server-side uit en geeft het getal door als prop — nooit
+ * `new Date()` in een client component (hydratiemismatch, zie CLAUDE.md).
+ * Nooit negatief (een fase-overgang "net" gezet kan door kloktijd-afronding
+ * anders -0 dagen geven).
+ */
+export function dagenInFaseAantal(faseSinds: string, nu: Date): number {
+  const middernacht = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  return Math.max(0, Math.round((middernacht(nu) - middernacht(new Date(faseSinds))) / 86400_000))
+}
+
+/**
  * "X dagen in <fase>" voor de fasestepper in DossierHeader.tsx (item 3.4,
- * docs/roadmap.md § Fase 3). Telt kalenderdagen (middernacht-grenzen in de
- * lokale tijdzone), niet afgeronde 24-uursblokken.
+ * docs/roadmap.md § Fase 3).
  */
 export function dagenInFase(faseSinds: string, nu: Date = new Date()): string {
-  const middernacht = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-  const dagen = Math.round((middernacht(nu) - middernacht(new Date(faseSinds))) / 86400_000)
+  const dagen = dagenInFaseAantal(faseSinds, nu)
   if (dagen <= 0) return 'vandaag'
   if (dagen === 1) return '1 dag'
   return `${dagen} dagen`
