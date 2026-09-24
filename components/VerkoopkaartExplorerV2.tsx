@@ -313,7 +313,7 @@ export function VerkoopkaartExplorerV2({
                 aria-label={speelt ? 'Pauzeren' : 'Afspelen door de tijd'}
                 style={{
                   width: 36, height: 36, borderRadius: '50%', flex: 'none',
-                  background: 'linear-gradient(180deg, #0A8AD2, var(--merk-hover))', color: '#fff',
+                  background: 'linear-gradient(180deg, var(--merk), var(--merk-hover))', color: 'var(--merk-op)',
                   display: 'grid', placeItems: 'center', border: 'none', cursor: 'pointer',
                   boxShadow: '0 4px 12px -4px rgba(var(--merk-rgb),.6)',
                 }}
@@ -438,7 +438,7 @@ export function VerkoopkaartExplorerV2({
                         boxShadow: v.id === geselecteerdId ? 'inset 0 0 0 1.5px var(--merk-rand)' : undefined,
                       }}
                     >
-                      <span style={{ width: 38, height: 38, borderRadius: radius.sm, background: 'linear-gradient(135deg, var(--merk-zacht), #D6EAF6)', color: 'var(--merk-diep, var(--merk))', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 12 }} title={v.woningtype_sub ?? undefined}>
+                      <span style={{ width: 38, height: 38, borderRadius: radius.sm, background: 'linear-gradient(135deg, var(--merk-zacht), var(--merk-rand))', color: 'var(--merk-diep, var(--merk))', display: 'grid', placeItems: 'center', fontWeight: 800, fontSize: 12 }} title={v.woningtype_sub ?? undefined}>
                         {(v.woningtype_groep ?? '?').charAt(0).toUpperCase()}
                       </span>
                       <span style={{ minWidth: 0 }}>
