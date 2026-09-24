@@ -240,6 +240,13 @@ export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
   // verkoop gaat.
   prijsverwachting_verkoper: z.number().int().min(1).optional(),
   courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
+  // WOZ-waarde, door de makelaar ingevuld uit de WOZ-beschikking van de
+  // verkoper of het WOZ-waardeloket (besluit 24 sep 2026: er is geen gratis,
+  // toegestane WOZ-API — zie lib/verrijking.ts fetchWoz). Alleen een ijkpunt
+  // náást de waarde, nooit invoer voor de berekening. Peiljaar = het jaar van
+  // de waardepeildatum (1 januari), dus één lager dan het belastingjaar.
+  woz_waarde: z.number().int().min(1000).max(100_000_000).optional(),
+  woz_peiljaar: z.number().int().min(2000).max(2100).optional(),
   // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze
   // willen genereren, zodat ze alleen krijgen wat ze willen"). Ontbreekt dit
   // veld (bestaande dossiers van vóór deze uitbreiding), dan blijft het oude

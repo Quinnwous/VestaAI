@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { EmptyState, Skeleton } from '@/components/ui'
+import { WozKaart } from '@/components/WozKaart'
 import type { CbsNiveau, FetchStatus, VerrijkingOpslag } from '@/lib/schemas'
 import { euro, procent, dagen, datum, datumTijd, afstand, nlNL } from '@/lib/opmaak'
 
@@ -37,7 +38,16 @@ function isVerouderd(d: VerrijkingOpslag | null): boolean {
   return !d || !d.bronnen || (d.cbs != null && !d.cbs.nabijheid)
 }
 
-export function BuurtDataTab({ objectId, initieel }: { objectId: string; initieel: VerrijkingOpslag | null }) {
+export function BuurtDataTab({
+  objectId,
+  initieel,
+  wozHandmatig = null,
+}: {
+  objectId: string
+  initieel: VerrijkingOpslag | null
+  /** WOZ die de makelaar zelf invulde (`input_json.woz_waarde`/`woz_peiljaar`, lib/woz.ts). */
+  wozHandmatig?: { waarde: number; peiljaar: number } | null
+}) {
   const [data, setData] = useState<VerrijkingOpslag | null>(initieel)
   const [laden, setLaden] = useState(isVerouderd(initieel))
   const [fout, setFout] = useState('')
@@ -127,49 +137,14 @@ export function BuurtDataTab({ objectId, initieel }: { objectId: string; initiee
 
       {fout && <p style={{ fontSize: 12.5, color: '#DC2626', margin: 0 }}>{fout}</p>}
 
-      {/* WOZ-waarde */}
-      <div style={cardStyle}>
-        <p style={blokLabel}>WOZ-waarde</p>
-        {statusWoz === 'ok' && woz && woz.waarden.length > 0 ? (
-          <div style={cijferGrid}>
-            <div>
-              <div style={cijferGroot}>{euro(woz.waarden[0].waarde)}</div>
-              <p style={bronStijl}>Peildatum {woz.waarden[0].peildatum} · belastingjaar {woz.waarden[0].belastingjaar}</p>
-            </div>
-            {woz.stijging_pct && (
-              <div>
-                <div style={cijferKlein}>{woz.stijging_pct}</div>
-                <p style={bronStijl}>Ontwikkeling</p>
-              </div>
-            )}
-            {woz.per_m2 != null && (
-              <div>
-                <div style={cijferKlein}>{euro(woz.per_m2)} / m²</div>
-                <p style={bronStijl}>Per vierkante meter</p>
-              </div>
-            )}
-          </div>
-        ) : statusWoz === 'ok' || statusWoz === 'leeg' ? (
-          <BronMelding status={statusWoz} leeg="Geen WOZ-gegevens gevonden voor dit adres." />
-        ) : (
-          // WOZ per woning is niet gekoppeld (lib/verrijking.ts fetchWoz). Oudere
-          // rijen staan nog op 'mislukt' van de dode WOZ-aanroep — zelfde verhaal,
-          // want Ververs levert daar nooit iets op.
-          <div>
-            {cbs?.woz_gem ? (
-              <>
-                <div style={cijferKlein}>{euro(cbs.woz_gem.waarde)}</div>
-                <p style={bronStijl}>Gemiddelde WOZ-waarde van woningen in {cbs.woz_gem.niveau === 'nederland' ? 'Nederland' : `de ${NIVEAU_LABEL[cbs.woz_gem.niveau]}`} — niet de waarde van deze woning</p>
-              </>
-            ) : (
-              <p style={legeTekst}>Geen WOZ-gegevens beschikbaar voor dit adres.</p>
-            )}
-          </div>
-        )}
-        <p style={bronStijl}>
-          {statusWoz === 'ok' || statusWoz === 'leeg' ? 'Bron: WOZ-waardeloket' : `WOZ per woning is nog niet gekoppeld${cbs?.woz_gem ? ` · bron: ${cbs.bron ?? 'CBS Kerncijfers wijken en buurten'}` : ''}`}
-        </p>
-      </div>
+      {/* WOZ-waarde — zelf ingevuld of het buurtgemiddelde (components/WozKaart.tsx) */}
+      <WozKaart
+        objectId={objectId}
+        handmatigInitieel={wozHandmatig}
+        automatisch={statusWoz === 'ok' ? woz : null}
+        buurtGemiddelde={cbs?.woz_gem ?? null}
+        cbsBron={cbs?.bron ?? null}
+      />
 
       {/* CBS-buurtcijfers */}
       <div style={cardStyle}>
@@ -289,7 +264,6 @@ const blokLabel: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: '
 const bronStijl: React.CSSProperties = { fontSize: 11.5, color: '#98A0A6', margin: '10px 0 0' }
 const legeTekst: React.CSSProperties = { fontSize: 13, color: '#98A0A6', margin: 0 }
 const cijferGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }
-const cijferGroot: React.CSSProperties = { fontSize: 24, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const badgeStijl: React.CSSProperties = {
   fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)',
