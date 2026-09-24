@@ -43,14 +43,27 @@ export function KwartaalberichtModal({
     return () => { geannuleerd.current = true }
   }, [])
 
+  // `components/ui/Modal.tsx` sluit zelf al bij een klik buiten het paneel,
+  // maar heeft (nog) geen Escape-listener — die vult deze modal lokaal aan,
+  // conform docs/ontwerpprincipes.md § Interactie ("elk paneel/elke modal
+  // sluit met Escape"). Zie het eindrapport: dit is een gat in de gedeelde
+  // primitive, hier bewust lokaal opgelost i.p.v. in components/ui/ zelf.
   useEffect(() => {
-    if (resultaten[taal] || laden) return
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  // Losse functie i.p.v. alles in de effect-body: "Opnieuw proberen" moet
+  // dezelfde aanroep opnieuw kunnen doen zonder dat `taal` verandert (een
+  // effect met `[taal]` als dependency vuurt anders niet opnieuw).
+  const haalOp = (t: Taal) => {
     setLaden(true)
     setFout(null)
     fetch('/api/kwartaalbericht', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ filter, taal }),
+      body: JSON.stringify({ filter, taal: t }),
     })
       .then(async res => {
         const data = await res.json()
@@ -59,7 +72,7 @@ export function KwartaalberichtModal({
       })
       .then(data => {
         if (geannuleerd.current) return
-        setResultaten(prev => ({ ...prev, [taal]: data }))
+        setResultaten(prev => ({ ...prev, [t]: data }))
       })
       .catch((err: Error) => {
         if (!geannuleerd.current) setFout(err.message || 'Het kwartaalbericht kon niet worden geschreven.')
@@ -67,6 +80,10 @@ export function KwartaalberichtModal({
       .finally(() => {
         if (!geannuleerd.current) setLaden(false)
       })
+  }
+
+  useEffect(() => {
+    if (!resultaten[taal]) haalOp(taal)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taal])
 
@@ -95,16 +112,25 @@ export function KwartaalberichtModal({
   }
 
   const opnieuwProberen = () => {
-    setFout(null)
     setResultaten(prev => {
       const kopie = { ...prev }
       delete kopie[taal]
       return kopie
     })
+    haalOp(taal)
   }
 
+  // Rood accentstreepje vóór de titel zodra het bericht klaar is om te
+  // controleren (poort van `.modal.klaar h2::before` in docs/ontwerp/marktanalyse.html).
+  const titel = actief ? (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
+      <span style={{ width: 3, height: 20, borderRadius: 2, background: 'var(--merk-accent)', flexShrink: 0 }} />
+      Kwartaalbericht
+    </span>
+  ) : 'Kwartaalbericht'
+
   return (
-    <Modal onClose={onClose} title="Kwartaalbericht" maxWidth={640}>
+    <Modal onClose={onClose} title={titel} maxWidth={640}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
         <p style={{ fontSize: 12.5, color: colors.muted, margin: 0 }}>
           {actief
@@ -153,7 +179,7 @@ export function KwartaalberichtModal({
       )}
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
-        <Button variant="ghost" size="sm" onClick={onClose}>Sluiten</Button>
+        <Button variant="secondary" size="sm" onClick={onClose}>Sluiten</Button>
         <Button variant="secondary" size="sm" onClick={download} disabled={!actief}>Download .md</Button>
         <Button variant="primary" size="sm" onClick={kopieer} disabled={!actief}>
           {gekopieerd ? 'Gekopieerd' : 'Kopiëren'}
