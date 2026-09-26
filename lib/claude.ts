@@ -11,6 +11,7 @@ import {
 } from './schemas'
 import { CONTENT, SAMENVATTING } from './aiModellen'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
+import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
@@ -175,6 +176,18 @@ function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
  * stijlprofiel, hooguit één korte voorbeeldtekst) kan het gedeelde blok onder
  * de ondergrens duiken — geen fout, gewoon geen besparing voor dát blok
  * (`cache_creation_input_tokens: 0`).
+ *
+ * **Tekstsjabloon-blok (item 8.2, roadmap § 3.4):** is een kantoor
+ * geconfigureerd met `huisstijl.tekstsjabloon`, dan komt er een derde
+ * cachebare blok bij, ná het taalspecifieke basisblok — bewust laatste
+ * (zwaarst wegende) instructie, omdat dit blok de generieke lengte-/
+ * alinea-eisen van funda_tekst overschrijft. Dit blok is zelf taal-
+ * afhankelijk (NL/EN-koppen verschillen) en dus niet byte-identiek tussen
+ * een NL- en EN-aanroep — dat hoeft ook niet: het gedeelde huisstijlblok
+ * (blok 1) blijft de enige prefix die NL/EN-generaties voor hetzelfde
+ * kantoor delen, exact zoals vóór dit item. Blok 3 krijgt wél zijn eigen
+ * cache-breekpunt, zodat opeenvolgende generaties in dezelfde taal voor
+ * hetzelfde kantoor (ándere dossiers) er samen van profiteren.
  */
 function buildSystemPromptBlokken(huisstijl: HuisstijlConfig | undefined, taal: 'nl' | 'en' = 'nl'): PromptBlok[] {
   const blokken: PromptBlok[] = []
@@ -186,6 +199,11 @@ function buildSystemPromptBlokken(huisstijl: HuisstijlConfig | undefined, taal: 
 
   const taalspecifiek = taal === 'en' ? BASE_SYSTEM_PROMPT_EN : BASE_SYSTEM_PROMPT_NL
   blokken.push({ type: 'text', text: taalspecifiek, cache_control: { type: 'ephemeral' } })
+
+  if (huisstijl?.tekstsjabloon) {
+    const sjabloonBlok = renderTekstsjabloonPrompt(huisstijl.tekstsjabloon, taal)
+    blokken.push({ type: 'text', text: sjabloonBlok, cache_control: { type: 'ephemeral' } })
+  }
 
   return blokken
 }
@@ -394,12 +412,20 @@ export async function generateContent(
     })
   }
 
+  // Sjabloonfouten van een vorige poging (item 8.2) — gebruikt voor de
+  // correctie-instructie bij de herkansing, zie de validatie ná het parsen
+  // hieronder.
+  let sjabloonFouten: string[] | null = null
+
   for (let attempt = 0; attempt < 2; attempt++) {
-    const extra = attempt > 0
+    let extra = attempt > 0
       ? (input.taal === 'en'
         ? '\n\nIMPORTANT: return ONLY the JSON object, no text before or after.'
         : '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.')
       : ''
+    if (attempt > 0 && sjabloonFouten) {
+      extra += bouwSjabloonCorrectie(sjabloonFouten, input.taal ?? 'nl')
+    }
 
     const userText = buildUserMessage(input, verrijkingTekst) + extra
 
@@ -431,7 +457,26 @@ export async function generateContent(
     }
 
     try {
-      return toepassenContentKeuzes(parseClaudeResponse(text), input.content_keuzes)
+      const output = toepassenContentKeuzes(parseClaudeResponse(text), input.content_keuzes)
+
+      // Tekstsjabloon-validatie (item 8.2): alleen relevant als het kantoor
+      // een sjabloon heeft geconfigureerd. Bij afwijking: op de eerste poging
+      // één herkansing met een correctie-instructie (zelfde patroon als de
+      // guardrail in schrijfKwartaalbericht hieronder); ná de herkansing
+      // altijd accepteren met een gelogde waarschuwing — content moet er
+      // komen, dit is geen harde fout.
+      if (huisstijl?.tekstsjabloon) {
+        const controle = valideerTekstsjabloon(output.funda_tekst, huisstijl.tekstsjabloon, input.taal ?? 'nl')
+        if (!controle.ok) {
+          if (attempt === 0) {
+            sjabloonFouten = controle.fouten
+            continue
+          }
+          console.warn(`[tekstsjabloon] funda_tekst volgt na 2 pogingen het sjabloon nog niet (${controle.fouten.join('; ')}) — content wordt alsnog geaccepteerd.`)
+        }
+      }
+
+      return output
     } catch {
       if (attempt === 1) throw new Error('Claude gaf geen valide JSON na 2 pogingen')
     }
