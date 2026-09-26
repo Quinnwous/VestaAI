@@ -30,11 +30,15 @@
 > commit **na elke deelstap** (limietbestendig: bij een op gebruikslimiet gestopte sessie
 > blijft het werk staan en wordt de agent hervat via SendMessage, niet opnieuw gestart).
 >
-> **Push/merge/live (besluit Quinn 17 sep 2026, geldt tot hij anders zegt):** tijdens een
-> sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
-> te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
-> opnieuw toestemming te vragen. Reden: er is nog geen productiedata die verloren kan gaan.
-> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven).
+> **Push/merge/live — automatisch aan het einde van elke ronde (besluit Quinn 17 sep,
+> aangescherpt 26 sep 2026, geldt tot hij anders zegt):** tijdens een ronde alleen lokaal
+> committen. Is een ronde klaar (alle items van die ronde gemerged en gereviewd), dan doet
+> Claude **zelf, zonder dat Quinn "rond af" of `/sessie-afronden` hoeft te zeggen en zonder
+> opnieuw toestemming te vragen**, alle stappen van `.claude/skills/sessie-afronden/SKILL.md`:
+> DoD nalopen, docs bijwerken, committen, featurebranch pushen, PR naar `main` maken en
+> mergen, en controleren dat de Vercel-deploy READY is zonder runtime-errors. Daarna pas de
+> ronde melden. Reden: er is nog geen productiedata die verloren kan gaan. Migraties die
+> échte data raken blijven akkoord-plichtig (vangrails hierboven).
 >
 > ⚠️ **Eén database, twee codeversies (les 17 sep 2026):** productie draait altijd de code
 > van `main`, en er is maar één (productie)database. Een migratie die iets **weghaalt of
@@ -107,6 +111,8 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 ⚠️ **Een Sheet/Dialog die je opent vanuit een menu, mount je búiten dat menu** — les 23 sep 2026 (feedbackknop, 12.4): de sheet stond eerst ín het avatar-/mobiele menu; het sluiten van dat menu bij het openen van de sheet unmountte de sheet meteen weer, dus hij ging op 390 px nooit open. Lift de open-state naar de ouder (`AppTopbar`) en houd de sheet zelf altijd gemount (zie `components/FeedbackKnop.tsx`).
 
 ⚠️ **Radix-portals staan búiten de merk-variabelen** — les 24 sep 2026: `--merk*` stond alleen inline op de layout-div van `app/(app)/layout.tsx`, maar Sheet/Popover/Tooltip/SelectMenu renderen via een portal direct in `<body>` en erfden daar de VestaAI-groene terugval van `:root` uit `globals.css` (het concurrentprofiel was groen bij een zwart kantoor). Sindsdien schrijft de layout de variabelen óók als `:root`-regel (`brandingRootCss()` in `lib/branding.ts`). Zie je groen in een drawer/dropdown: eerst controleren of die regel er staat.
+
+⚠️ **Gratis externe bronnen in `lib/verrijking.ts` zijn onbetrouwbaar, en een stille terugval maakt dat onzichtbaar** — les 24 sep 2026. De publieke Overpass-servers geven onder last 504/429/timeouts (3 van 12 geslaagd in een meting), en het oude WOZ-endpoint bestond al maanden niet meer; beide vielen stil terug op "leeg". Regels: elke bron geeft `ok`/`leeg`/`mislukt`/`niet_gekoppeld` (nooit fouten opvouwen tot leeg), een mislukte bron wordt gelogd (`[verrijking] …`, zonder adres), en voor alles wat in de demo zit bestaat een stabiele terugval (CBS). **WOZ per woning vult de makelaar zelf in** (besluit Quinn 24 sep: alleen gratis, en een gratis toegestane WOZ-API bestaat niet): `input_json.woz_waarde`/`woz_peiljaar`, `lib/woz.ts`, `components/WozKaart.tsx`. De backend van het WOZ-waardeloket (`api.kadaster.nl/lvwoz/…`) is geen toegestane API — niet omheen bouwen.
 
 **Landingspagina** (`components/LandingPageClient.tsx`) — het oorspronkelijke, uitgebreide marketingontwerp. Geen prijzen, geen zelf-aanmelden — CTA's wijzen naar `/contact` (toegang aanvragen) of `/login`. Nieuwe kantoren worden handmatig klaargezet via `/admin`.
 

@@ -22,6 +22,7 @@ import {
 } from '@/lib/waardering'
 import { CBS_INDEX_REEKS, type CbsIndexReeks } from '@/lib/cbsPrijsindex'
 import { haalWozIjkpunt } from '@/lib/verrijking'
+import { wozUitInvoer } from '@/lib/woz'
 import { plaatsUitAdres } from '@/lib/transactieNormalisatie'
 import { plaatsenGelijk } from '@/lib/kerncijfers'
 import { KantoorInstellingenSchema, PropertyInputSchema, WaarderingOpslagSchema, type PropertyInput } from '@/lib/schemas'
@@ -333,7 +334,9 @@ export async function berekenWaardering(
   const [dataTm, handmatigToegevoegd, woz] = await Promise.all([
     dataTotEnMet(supabase),
     bestaandeOpslag.handmatig.toegevoegd.length ? haalTransactiesOpId(supabase, bestaandeOpslag.handmatig.toegevoegd) : Promise.resolve([]),
-    haalWozIjkpunt(object.address).catch(() => null),
+    // Door de makelaar ingevulde WOZ gaat voor (lib/woz.ts); de automatische
+    // opzoeking is niet gekoppeld (lib/verrijking.ts fetchWoz).
+    wozUitInvoer(invoer) ?? haalWozIjkpunt(object.address).catch(() => null),
   ])
 
   const uitkomst = berekenWaarderingV2(subject, kandidaten, {

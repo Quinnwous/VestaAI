@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { InAanbouw } from '@/components/InAanbouw'
 import { TabBar } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
@@ -99,6 +100,7 @@ export function ObjectWorkspace({
   contentStatus = 'klaar',
   contentBezigSinds = null,
   verrijkingInitieel = null,
+  wozHandmatig = null,
 }: {
   objectId: string
   address: string
@@ -128,8 +130,16 @@ export function ObjectWorkspace({
    * zelf eenmalig te verversen. `null` ook zolang de migratie voor deze kolom
    * nog niet is toegepast (graceful, zie lib/verrijkingOpslag.ts). */
   verrijkingInitieel?: VerrijkingOpslag | null
+  /** WOZ die de makelaar zelf invulde (`input_json.woz_waarde`/`woz_peiljaar`, lib/woz.ts). */
+  wozHandmatig?: { waarde: number; peiljaar: number } | null
 }) {
-  const [active, setActive] = useState<SectionId>(CONTENT_VERGRENDELD ? 'waardering' : 'content')
+  // Item 10.2: de dossierheader linkt met `?tab=content` naar de contenttab
+  // (bv. de "Content"-knop in de acties) — alleen als startwaarde gelezen,
+  // geen voortdurende sync nodig.
+  const searchParams = useSearchParams()
+  const [active, setActive] = useState<SectionId>(
+    searchParams.get('tab') === 'content' ? 'content' : (CONTENT_VERGRENDELD ? 'waardering' : 'content'),
+  )
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
 
@@ -153,7 +163,7 @@ export function ObjectWorkspace({
   const buurtDataSectie = (
     <div>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>Buurt & data</p>
-      <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
+      <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
     </div>
   )
 
@@ -188,7 +198,7 @@ export function ObjectWorkspace({
       </div>
 
       <div style={{ display: active === 'buurt' ? 'block' : 'none' }}>
-        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
+        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
       </div>
 
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>

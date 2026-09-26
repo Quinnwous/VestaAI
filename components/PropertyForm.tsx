@@ -10,6 +10,7 @@ import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { WoningdataPanel } from '@/components/WoningdataPanel'
 import type { VerrijkingData } from '@/lib/verrijking'
 import type { BagSuggestie } from '@/app/api/bag/suggest/route'
+import { WOZ_LOKET_URL } from '@/lib/woz'
 
 // Woningtype als groep + subtype i.p.v. de oude platte enum (item 3.2, zie
 // docs/roadmap.md § 5 fase 3.2 en docs/ontwerp/README.md § 5) — pure
@@ -691,6 +692,31 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             type="number" step="0.01" min={0} max={10} disabled={disabled} placeholder="1.25"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />
+        </div>
+      </div>
+
+      {/* WOZ — zelf invullen (lib/woz.ts: er is geen gratis, toegestane WOZ-API) */}
+      <div className="form-grid-2">
+        <div>
+          <label style={labelStyle}>WOZ-waarde (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — kan later)</span></label>
+          <input
+            {...register('woz_waarde', { setValueAs: v => (v === '' || v === null || v === undefined ? undefined : Number(v)) })}
+            type="number" min={1000} disabled={disabled} placeholder="845000"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
+            Van de WOZ-beschikking van de verkoper, of opzoeken in het{' '}
+            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
+          </p>
+        </div>
+        <div>
+          <label style={labelStyle}>Waardepeildatum (jaar) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <input
+            {...register('woz_peiljaar', { setValueAs: v => (v === '' || v === null || v === undefined ? undefined : Number(v)) })}
+            type="number" min={2000} max={2100} disabled={disabled} placeholder="2025"
+            style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
+          />
+          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>Peildatum 1 januari 2025 hoort bij belastingjaar 2026.</p>
         </div>
       </div>
 

@@ -1,7 +1,13 @@
-import type { CSSProperties, ReactNode } from 'react'
+'use client'
+
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { colors, radius, serifFont, shadow } from './tokens'
 
-/** Overlay-modal (design: donkere backdrop, witte kaart, serif-titel + ×). */
+/**
+ * Overlay-modal (design: donkere backdrop, witte kaart, serif-titel + ×).
+ * Sluit bij een klik buiten het paneel én met Escape (docs/ontwerpprincipes.md
+ * § Interactie: elke modal sluit met Escape).
+ */
 export function Modal({
   onClose,
   title,
@@ -15,6 +21,16 @@ export function Modal({
   maxWidth?: number
   bodyStyle?: CSSProperties
 }) {
+  // Ref, zodat een nieuwe onClose-functie per render de listener niet steeds
+  // opnieuw hoeft te registreren.
+  const sluit = useRef(onClose)
+  sluit.current = onClose
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') sluit.current() }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [])
+
   return (
     <div
       onClick={onClose}

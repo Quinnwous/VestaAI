@@ -14,7 +14,7 @@ const FETCH_TIMEOUT = 8000
  * ook wanneer de bron simpelweg niet bereikbaar was — misleidend voor de
  * makelaar, die dan denkt dat er structureel geen data bestaat.
  */
-export type FetchStatus = 'ok' | 'leeg' | 'mislukt'
+export type FetchStatus = 'ok' | 'leeg' | 'mislukt' | 'niet_gekoppeld'
 
 interface FetchPoging<T> {
   status: FetchStatus
@@ -31,8 +31,10 @@ async function fetchMetStatus<T>(url: string, init?: RequestInit, timeoutMs = FE
     })
     if (!res.ok) {
       // 4xx behandelen we als "leeg" (bron bestaat, dit adres/deze id niet);
-      // 5xx is een serverfout bij de bron zelf — dat is 'mislukt'.
-      return { status: res.status >= 500 ? 'mislukt' : 'leeg', data: null, reden: `HTTP ${res.status}` }
+      // 5xx is een serverfout bij de bron zelf en 429 een rate-limit — beide
+      // 'mislukt', want een volgende poging kan wél iets opleveren.
+      const mislukt = res.status >= 500 || res.status === 429
+      return { status: mislukt ? 'mislukt' : 'leeg', data: null, reden: `HTTP ${res.status}` }
     }
     const data = (await res.json()) as T
     return { status: 'ok', data }
@@ -89,16 +91,6 @@ export async function lookupCoordinaten(adres: string): Promise<{ lat: number; l
 
 // ─── WOZ Waardeloket ─────────────────────────────────────────────────────────
 
-interface WozWaarde {
-  peildatum: string   // "YYYY-01-01"
-  vastgesteldeWaarde: number
-}
-
-interface WozObject {
-  aanduiding: { postcode: string; huisnummer: number }
-  wozWaarden: WozWaarde[]
-}
-
 export interface WozData {
   object_id: string | null
   waarden: Array<{ peildatum: string; waarde: number; belastingjaar: number }>
@@ -107,59 +99,28 @@ export interface WozData {
 }
 
 /**
- * ⚠️ Onderzoek 23 sep 2026 (item 10.3-fix): `api.wozwaardeloket.nl` bestaat
- * niet meer — DNS lost het domein niet eens op (`ENOTFOUND`). WOZ Waardeloket
- * is een Angular-website zonder gepubliceerde publieke API en staat expliciet
- * geen geautomatiseerde bevraging toe; een gereverse-engineerde route
- * (`www.wozwaardeloket.nl/wozwaardeloket-api/v1/wozwaarde/nummeraanduiding/…`,
- * gedocumenteerd door derden) gaf bij een echte test alleen de lege Angular-
- * shell terug (waarschijnlijk client-side-only bevraagd of achteraf
- * dichtgezet). Geen betrouwbare gratis vervanger gevonden binnen deze sessie
- * — de enige geverifieerde alternatieven zijn betaald (bv. woz-api.nl) of
- * uitsluitend voor gemeenten (Kadaster Haal Centraal, PKI-certificaat
- * vereist). Beslissing voor Quinn: WOZ blijft tot nader order op 'mislukt'
- * staan (nette "kon niet worden opgehaald"-melding i.p.v. een dode aanroep
- * verbergen) — zie docs/besluiten.md.
+ * ⚠️ WOZ per woning is **niet gekoppeld** (besluit 24 sep 2026, docs/besluiten.md).
+ *
+ * Onderzoek 23-24 sep 2026: het oude `api.wozwaardeloket.nl` bestaat niet
+ * meer (DNS `ENOTFOUND`). Het WOZ-waardeloket bevraagt tegenwoordig
+ * `api.kadaster.nl/lvwoz/wozwaardeloket-api/v1` (zie hun
+ * `assets/endpoints.json`), maar dat is de interne backend van een publieke
+ * website die geautomatiseerde bevraging niet toestaat — daar bouwen we
+ * bewust niet op. Legitieme routes zijn betaald (bv. Altum AI, woz-api.nl) of
+ * alleen voor overheden (Kadaster Haal Centraal). Tot Quinn daarover beslist,
+ * geeft deze bron eerlijk `niet_gekoppeld` terug — geen dode netwerkaanroep
+ * meer en geen "probeer opnieuw" die nooit iets oplevert. De UI toont dan de
+ * gemiddelde WOZ-waarde van de buurt uit CBS (open data) als ijkpunt.
+ *
+ * Een nieuwe WOZ-bron: `WOZ_GEKOPPELD` aan en `fetchWoz` implementeren; de
+ * vorm (`WozData`, nieuwste waarde eerst) en de opslag blijven gelijk.
  */
-async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Promise<FetchPoging<WozData>> {
-  if (!adresseerbaarobjectId) return { status: 'leeg', data: null }
+const WOZ_GEKOPPELD = false
 
-  const poging = await fetchMetStatus<{ _embedded?: { wozObjecten?: WozObject[] }; identificatie?: string }>(
-    `https://api.wozwaardeloket.nl/v1/wozobjecten?adresseerbaarobject=${adresseerbaarobjectId}`,
-    { headers: { Accept: 'application/json' } },
-  )
-  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: poging.reden }
-
-  const objecten = poging.data?._embedded?.wozObjecten
-  if (!objecten?.length) return { status: 'leeg', data: null }
-
-  const obj = objecten[0]
-  const waarden = (obj.wozWaarden ?? [])
-    .map(w => ({
-      peildatum: w.peildatum,
-      waarde: w.vastgesteldeWaarde,
-      belastingjaar: new Date(w.peildatum).getFullYear() + 1,
-    }))
-    .sort((a, b) => b.belastingjaar - a.belastingjaar)
-    .slice(0, 5)
-
-  if (!waarden.length) return { status: 'leeg', data: null }
-
-  const nieuwste = waarden[0].waarde
-  const oudste = waarden[waarden.length - 1].waarde
-  const stijging_pct = waarden.length > 1
-    ? `${(((nieuwste - oudste) / oudste) * 100).toFixed(1)}% over ${waarden.length - 1} jaar`
-    : null
-
-  return {
-    status: 'ok',
-    data: {
-      object_id: poging.data?.identificatie ?? null,
-      waarden,
-      stijging_pct,
-      per_m2: oppervlakM2 ? Math.round(nieuwste / oppervlakM2) : null,
-    },
-  }
+// Een nieuwe bron krijgt hier het adresseerbaarobjectId als invoer en levert
+// de waarden (nieuwste eerst); per_m2 rekent fetchVerrijking zelf uit.
+async function fetchWoz(): Promise<FetchPoging<WozData>> {
+  return { status: 'niet_gekoppeld', data: null }
 }
 
 /**
@@ -171,11 +132,12 @@ async function fetchWoz(adresseerbaarobjectId: string, oppervlakM2?: number): Pr
  * ijkpunt náást de waarde (§ 3.3).
  */
 export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; peildatum: string } | null> {
+  // Zolang WOZ niet gekoppeld is: geen PDOK-opzoeking voor niets.
+  if (!WOZ_GEKOPPELD) return null
   const pdok = await pdokLookup(adres)
   const bagId = pdok?.adresseerbaarobject_id
   if (!bagId) return null
-  const woz = await fetchWoz(bagId)
-  const meestRecent = woz.data?.waarden[0]
+  const meestRecent = (await fetchWoz()).data?.waarden[0]
   return meestRecent ? { waarde: meestRecent.waarde, peildatum: meestRecent.peildatum } : null
 }
 
@@ -221,6 +183,10 @@ interface CbsRij {
   HavoVwoMbo24_68: number | null
   HboWo_69: number | null
   GemiddeldInkomenPerInwoner_78: number | null
+  AfstandTotHuisartsenpraktijk_110: number | null
+  AfstandTotGroteSupermarkt_111: number | null
+  AfstandTotKinderdagverblijf_112: number | null
+  AfstandTotSchool_113: number | null
 }
 
 const CBS_VELDEN: Array<keyof CbsRij> = [
@@ -240,6 +206,10 @@ const CBS_VELDEN: Array<keyof CbsRij> = [
   'HavoVwoMbo24_68',
   'HboWo_69',
   'GemiddeldInkomenPerInwoner_78',
+  'AfstandTotHuisartsenpraktijk_110',
+  'AfstandTotGroteSupermarkt_111',
+  'AfstandTotKinderdagverblijf_112',
+  'AfstandTotSchool_113',
 ]
 
 /** CBS bewaart regiocodes rechts opgevuld tot 10 tekens; zonder padding matcht `eq` niet. */
@@ -280,6 +250,18 @@ export interface CbsData {
    * buurtcijfer, en een dure buurt maakt de gemeente nog niet duur.
    */
   gemeente_niveau: { woz_gem: number | null; dichtheid_per_km2: number | null }
+  /**
+   * Gemiddelde afstand (km, over de weg) van de woningen in de buurt tot een
+   * voorziening — CBS "Nabijheid voorzieningen". Minder precies dan Overpass
+   * (geen afstand vanaf dít adres, geen namen), maar een stabiele bron: de
+   * terugval als de publieke Overpass-servers overbelast zijn (24 sep 2026).
+   */
+  nabijheid: {
+    supermarkt_km: CbsMetriek | null
+    huisarts_km: CbsMetriek | null
+    school_km: CbsMetriek | null
+    kinderdagverblijf_km: CbsMetriek | null
+  }
 }
 
 const NIVEAU_VOLGORDE: CbsNiveau[] = ['buurt', 'wijk', 'gemeente', 'nederland']
@@ -374,6 +356,13 @@ async function fetchCbs(
     r.HuishoudensMetKinderen_32 !== null && r.HuishoudensTotaal_29 ? Math.round((r.HuishoudensMetKinderen_32 / r.HuishoudensTotaal_29) * 100) : null,
   )
 
+  const nabijheid = {
+    supermarkt_km: metriek(rijen, r => r.AfstandTotGroteSupermarkt_111),
+    huisarts_km: metriek(rijen, r => r.AfstandTotHuisartsenpraktijk_110),
+    school_km: metriek(rijen, r => r.AfstandTotSchool_113),
+    kinderdagverblijf_km: metriek(rijen, r => r.AfstandTotKinderdagverblijf_112),
+  }
+
   const nlRij = rijen.nederland ?? null
   const nl = {
     inkomen: nlRij?.GemiddeldInkomenPerInwoner_78 != null ? Math.round(nlRij.GemiddeldInkomenPerInwoner_78 * 1000) : null,
@@ -427,6 +416,7 @@ async function fetchCbs(
         : null,
       dichtheid_per_km2: rijen.gemeente?.Bevolkingsdichtheid_34 ?? null,
     },
+    nabijheid,
   }
 }
 
@@ -492,9 +482,14 @@ function toVoorzieningItems(elements: OverpassElement[], lat: number, lon: numbe
  * dezelfde test 10-15× sneller (<1s) en is nu de primaire URL; de timeout
  * staat iets ruimer (12s) als marge voor drukte.
  */
-const OVERPASS_URL = 'https://lz4.overpass-api.de/api/interpreter'
+// Meting 24 sep 2026 (12 aanroepen, 4 instances): de publieke Overpass-servers
+// zijn overbelast — 504/429/timeouts, maar 3 van de 12 geslaagd. Daarom één
+// terugval-mirror (z., zelfde project) na lz4; meer instances belasten
+// vrijwilligersservers voor weinig winst. Faalt ook die, dan toont de UI de
+// CBS-buurtafstanden (`CbsData.nabijheid`).
+const OVERPASS_URLS = ['https://lz4.overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter']
 const OVERPASS_USER_AGENT = 'VestaAI-platform/1.0 (+https://vestaai.nl; makelaarsplatform, buurtdata-verrijking)'
-const OVERPASS_TIMEOUT = 12000
+const OVERPASS_TIMEOUT = 9000
 
 async function fetchVoorzieningen(lat: number, lon: number, radius = 1500): Promise<FetchPoging<VoorzieningenData>> {
   const query = `[out:json][timeout:15];
@@ -509,12 +504,18 @@ async function fetchVoorzieningen(lat: number, lon: number, radius = 1500): Prom
 );
 out center;`
 
-  const poging = await fetchMetStatus<{ elements: OverpassElement[] }>(OVERPASS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': OVERPASS_USER_AGENT },
-    body: `data=${encodeURIComponent(query)}`,
-  }, OVERPASS_TIMEOUT)
-  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: poging.reden }
+  let poging: FetchPoging<{ elements: OverpassElement[] }> = { status: 'mislukt', data: null }
+  const redenen: string[] = []
+  for (const url of OVERPASS_URLS) {
+    poging = await fetchMetStatus<{ elements: OverpassElement[] }>(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': OVERPASS_USER_AGENT },
+      body: `data=${encodeURIComponent(query)}`,
+    }, OVERPASS_TIMEOUT)
+    if (poging.status !== 'mislukt') break
+    redenen.push(`${new URL(url).hostname}: ${poging.reden ?? 'onbekend'}`)
+  }
+  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: redenen.join('; ') || poging.reden }
   if (!poging.data?.elements?.length) return { status: 'leeg', data: null }
 
   const els = poging.data.elements
@@ -701,10 +702,17 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
   const bagId = pdok?.adresseerbaarobject_id ?? null
 
   const [wozPoging, voorzieningenPoging, cbsRuw] = await Promise.all([
-    bagId ? fetchWoz(bagId, oppervlakM2) : Promise.resolve<FetchPoging<WozData>>({ status: 'leeg', data: null }),
+    !WOZ_GEKOPPELD || bagId ? fetchWoz() : Promise.resolve<FetchPoging<WozData>>({ status: 'leeg', data: null }),
     coord ? fetchVoorzieningen(coord.lat, coord.lon) : Promise.resolve<FetchPoging<VoorzieningenData>>({ status: 'leeg', data: null }),
     fetchCbs(pdok?.buurtcode ?? null, pdok?.wijkcode ?? null, pdok?.gemeentecode ?? null),
   ])
+
+  // Een mislukte bron zie je anders nergens terug (de UI toont alleen de
+  // status): log de reden, zodat een uitval op Vercel te diagnosticeren is.
+  // Bewust zonder adres (persoonsgegeven) — gemeente is genoeg context.
+  for (const [bron, poging] of [['voorzieningen', voorzieningenPoging], ['woz', wozPoging]] as const) {
+    if (poging.status === 'mislukt') console.warn(`[verrijking] ${bron} mislukt (${gemeente ?? 'onbekende gemeente'}): ${poging.reden ?? 'onbekend'}`)
+  }
 
   // PDOK kent de buurt- en wijknaam; CBS levert die niet in bruikbare vorm.
   const cbs: CbsData | null = cbsRuw
@@ -718,8 +726,13 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
 
   const markt = gemeente ? marktProfielOpzoeken(gemeente, cbs) : null
 
+  const nieuwsteWoz = wozPoging.data?.waarden[0]?.waarde
+  const woz = wozPoging.data && nieuwsteWoz && oppervlakM2
+    ? { ...wozPoging.data, per_m2: Math.round(nieuwsteWoz / oppervlakM2) }
+    : wozPoging.data
+
   return {
-    woz: wozPoging.data,
+    woz,
     cbs,
     voorzieningen: voorzieningenPoging.data,
     markt,
@@ -791,6 +804,20 @@ export function verrijkingNaarPrompt(v: VerrijkingData): string {
     if (vz.scholen[0]) items.push(`school op ${vz.scholen[0].afstand_m}m`)
     if (vz.groen[0]) items.push(`park op ${vz.groen[0].afstand_m}m`)
     if (items.length > 0) regels.push(`Nabijheid (${vz.nabijheid_beoordeling}): ${items.join(' · ')}`)
+  } else if (v.cbs?.nabijheid) {
+    // Overpass faalde: de CBS-buurtgemiddelden, uitdrukkelijk als gemiddelde.
+    const nb = v.cbs.nabijheid
+    const km = (m: CbsMetriek | null, wat: string) =>
+      m ? `${wat} gemiddeld ${m.waarde.toLocaleString('nl-NL')} km (${CBS_NIVEAU_LABEL[m.niveau]})` : null
+    const items = [
+      km(nb.supermarkt_km, 'grote supermarkt'),
+      km(nb.huisarts_km, 'huisarts'),
+      km(nb.school_km, 'school'),
+      km(nb.kinderdagverblijf_km, 'kinderopvang'),
+    ].filter((x): x is string => x !== null)
+    if (items.length > 0) {
+      regels.push(`Nabijheid, gemiddelde afstand voor woningen in de buurt — ${v.cbs.bron}: ${items.join(' · ')} (geen afstand vanaf dit adres; noem geen exacte meters)`)
+    }
   }
 
   if (v.markt) {

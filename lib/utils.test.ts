@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { formatEuro, formatM2, relatieveDatum, formatDatum, dagenInFase, clamp, truncate } from './utils'
+import { formatEuro, formatM2, relatieveDatum, formatDatum, dagenInFase, dagenInFaseAantal, clamp, truncate } from './utils'
 
 describe('formatEuro', () => {
   it('formatteert geheel getal als euro', () => {
@@ -98,6 +98,22 @@ describe('dagenInFase', () => {
 
   it('rondt nooit negatief af (toekomstige of net verstreken overgang telt als "vandaag")', () => {
     expect(dagenInFase(nu.toISOString(), nu)).toBe('vandaag')
+  })
+})
+
+describe('dagenInFaseAantal', () => {
+  const nu = new Date('2026-09-17T15:00:00Z')
+
+  it('geeft 0 bij een overgang vandaag', () => {
+    expect(dagenInFaseAantal('2026-09-17T08:00:00Z', nu)).toBe(0)
+  })
+
+  it('geeft het aantal kalenderdagen sinds de overgang', () => {
+    expect(dagenInFaseAantal('2026-09-10T08:00:00Z', nu)).toBe(7)
+  })
+
+  it('is nooit negatief', () => {
+    expect(dagenInFaseAantal(nu.toISOString(), nu)).toBe(0)
   })
 })
 

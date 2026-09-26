@@ -240,6 +240,13 @@ export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
   // verkoop gaat.
   prijsverwachting_verkoper: z.number().int().min(1).optional(),
   courtagevoorstel_percentage: z.number().min(0).max(10).optional(),
+  // WOZ-waarde, door de makelaar ingevuld uit de WOZ-beschikking van de
+  // verkoper of het WOZ-waardeloket (besluit 24 sep 2026: er is geen gratis,
+  // toegestane WOZ-API — zie lib/verrijking.ts fetchWoz). Alleen een ijkpunt
+  // náást de waarde, nooit invoer voor de berekening. Peiljaar = het jaar van
+  // de waardepeildatum (1 januari), dus één lager dan het belastingjaar.
+  woz_waarde: z.number().int().min(1000).max(100_000_000).optional(),
+  woz_peiljaar: z.number().int().min(2000).max(2100).optional(),
   // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze
   // willen genereren, zodat ze alleen krijgen wat ze willen"). Ontbreekt dit
   // veld (bestaande dossiers van vóór deze uitbreiding), dan blijft het oude
@@ -476,7 +483,13 @@ export const CbsDataSchema = z.object({
   gemeente_niveau: z.object({
     woz_gem: z.number().nullable(),
     dichtheid_per_km2: z.number().nullable(),
-  }),
+  }),  // Optioneel: rijen van vóór 24 sep 2026 hebben dit nog niet.
+  nabijheid: z.object({
+    supermarkt_km: CbsMetriekSchema.nullable(),
+    huisarts_km: CbsMetriekSchema.nullable(),
+    school_km: CbsMetriekSchema.nullable(),
+    kinderdagverblijf_km: CbsMetriekSchema.nullable(),
+  }).optional(),
 })
 
 const VoorzieningItemSchema = z.object({
@@ -520,14 +533,15 @@ export const MarktEigenDataSchema = z.object({
 export type MarktEigenData = z.infer<typeof MarktEigenDataSchema>
 
 // Per bron (WOZ/CBS/voorzieningen) of het antwoord 'ok' (data), 'leeg' (bron
-// antwoordde, dit adres levert niets op) of 'mislukt' (netwerkfout/timeout)
+// antwoordde, dit adres levert niets op), 'mislukt' (netwerkfout/timeout) of
+// 'niet_gekoppeld' (de bron is bewust niet aangesloten — WOZ, 24 sep 2026)
 // was — zelfde union als lib/verrijking.ts `FetchStatus` (bewust hier
 // opnieuw gedefinieerd i.p.v. geïmporteerd: lib/schemas.ts is client-safe en
 // mag geen afhankelijkheid krijgen van lib/verrijking.ts se fetch-logica).
 // `.optional()` op het veld zelf omdat rijen van vóór deze fix dit niet
 // hebben; ontbreekt het, dan valt de UI terug op het oude gedrag (afleiden
 // uit de aan-/afwezigheid van data).
-export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt'])
+export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt', 'niet_gekoppeld'])
 export type FetchStatus = z.infer<typeof FetchStatusSchema>
 
 export const VerrijkingOpslagSchema = z.object({

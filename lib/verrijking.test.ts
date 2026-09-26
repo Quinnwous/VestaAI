@@ -217,3 +217,57 @@ describe('marktprofiel-fallback', () => {
     expect(v.markt?.herkomst).toBe('lijst')
   })
 })
+
+describe('bronstatus WOZ en voorzieningen (24 sep 2026)', () => {
+  const overpassOk = { elements: [{ type: 'node', lat: 52.376, lon: 4.884, tags: { shop: 'supermarket', name: 'Albert Heijn' } }] }
+
+  /** Zelfde routering als mockFetch, maar met een eigen antwoord per Overpass-mirror. */
+  function mockMetOverpass(perHost: Record<string, () => Response>) {
+    const basis = mockFetch([cbsRij('BU0363AC02', { AfstandTotGroteSupermarkt_111: 0.4, AfstandTotHuisartsenpraktijk_110: null })])
+    return vi.fn(async (url: string | URL) => {
+      const host = new URL(typeof url === 'string' ? url : url.toString()).hostname
+      return perHost[host] ? perHost[host]() : basis(url as string)
+    })
+  }
+
+  it('meldt WOZ als niet gekoppeld, zonder netwerkaanroep naar een WOZ-bron', async () => {
+    const f = mockFetch([])
+    vi.stubGlobal('fetch', f)
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+    expect(v.bronnen.woz).toBe('niet_gekoppeld')
+    expect(v.woz).toBeNull()
+    expect(f.mock.calls.some(([u]) => String(u).includes('woz'))).toBe(false)
+  })
+
+  it('valt terug op de tweede Overpass-mirror als de eerste overbelast is', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubGlobal('fetch', mockMetOverpass({
+      'lz4.overpass-api.de': () => new Response('Gateway Timeout', { status: 504 }),
+      'z.overpass-api.de': () => new Response(JSON.stringify(overpassOk), { status: 200 }),
+    }))
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+    expect(v.bronnen.voorzieningen).toBe('ok')
+    expect(v.voorzieningen?.supermarkt[0]?.naam).toBe('Albert Heijn')
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+  })
+
+  it('telt een rate-limit (429) als mislukt, niet als "geen voorzieningen", en logt de reden', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.stubGlobal('fetch', mockMetOverpass({
+      'lz4.overpass-api.de': () => new Response('Too Many Requests', { status: 429 }),
+      'z.overpass-api.de': () => new Response('Gateway Timeout', { status: 504 }),
+    }))
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+    expect(v.bronnen.voorzieningen).toBe('mislukt')
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('voorzieningen mislukt (Amsterdam): lz4.overpass-api.de: HTTP 429; z.overpass-api.de: HTTP 504'))
+    warn.mockRestore()
+  })
+
+  it('levert de CBS-buurtafstanden als terugval voor voorzieningen', async () => {
+    vi.stubGlobal('fetch', mockMetOverpass({}))
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+    expect(v.cbs?.nabijheid.supermarkt_km).toEqual({ waarde: 0.4, niveau: 'buurt' })
+    expect(v.cbs?.nabijheid.huisarts_km).toBeNull()
+  })
+})

@@ -30,7 +30,7 @@ chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
      `execute_sql` voor DDL — anders raakt de migratiehistorie los van de
      werkelijke database (zie de aanleiding in
      `supabase/schema-baseline.sql`). Daarna `scripts/controleer-schema.mjs`.
-2. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen**
+2. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen, automatisch aan het einde van elke ronde (Quinn 26 sep)**
    (besluit Quinn 17 sep 2026, zie CLAUDE.md). Commitbericht in het
    Nederlands zoals de rest van de geschiedenis. Push de featurebranch, maak
    of werk de PR naar `main` bij, merge hem, en controleer daarna: deploy

@@ -29,6 +29,12 @@ const VOLLEDIGE_DATA: VerrijkingData = {
     buurtprofiel: 'Premium',
     nl: { inkomen: 32000, pct_koop: 60, woz_gem: 350000, pct_hoog_opgeleid: 35 },
     gemeente_niveau: { woz_gem: 600000, dichtheid_per_km2: 2000 },
+    nabijheid: {
+      supermarkt_km: { waarde: 1.3, niveau: 'buurt' },
+      huisarts_km: { waarde: 2, niveau: 'buurt' },
+      school_km: { waarde: 0.7, niveau: 'buurt' },
+      kinderdagverblijf_km: null,
+    },
   },
   voorzieningen: {
     supermarkt: [{ naam: 'Albert Heijn', afstand_m: 450, looptijd_min: 5.5 }],
