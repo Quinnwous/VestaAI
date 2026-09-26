@@ -306,11 +306,13 @@ export function HuisstijlForm({ kantoor }: Props) {
               <div className="space-y-3">
                 {secties.map((sectie, i) => (
                   <div key={i} className="rounded-lg border border-gray-200 p-3">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-mono text-gray-400 w-5">{i + 1}.</span>
-                      <input type="text" value={sectie.kop} onChange={e => updateSectie(i, 'kop', e.target.value)} maxLength={60} placeholder="Kop (NL), bv. WOONCOMFORT" aria-label={`Kop ${i + 1} (NL)`} className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                      <input type="text" value={sectie.en_kop} onChange={e => updateSectie(i, 'en_kop', e.target.value)} maxLength={60} placeholder="Kop (EN), optioneel" aria-label={`Kop ${i + 1} (EN)`} className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
-                      <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-start gap-2 mb-2">
+                      <span className="text-xs font-mono text-gray-400 w-5 pt-2 shrink-0">{i + 1}.</span>
+                      <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-2">
+                        <input type="text" value={sectie.kop} onChange={e => updateSectie(i, 'kop', e.target.value)} maxLength={60} placeholder="Kop (NL), bv. WOONCOMFORT" aria-label={`Kop ${i + 1} (NL)`} className="w-full sm:flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                        <input type="text" value={sectie.en_kop} onChange={e => updateSectie(i, 'en_kop', e.target.value)} maxLength={60} placeholder="Kop (EN), optioneel" aria-label={`Kop ${i + 1} (EN)`} className="w-full sm:flex-1 min-w-0 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0 pt-2">
                         <button type="button" onClick={() => verplaatsSectie(i, -1)} disabled={i === 0} aria-label={`Sectie ${i + 1} omhoog`} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">↑</button>
                         <button type="button" onClick={() => verplaatsSectie(i, 1)} disabled={i === secties.length - 1} aria-label={`Sectie ${i + 1} omlaag`} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">↓</button>
                         {secties.length > 1 && (
