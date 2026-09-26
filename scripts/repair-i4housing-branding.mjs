@@ -40,6 +40,28 @@ const STIJLPROFIEL = `Vaste opbouw van elke woningtekst:
 
 Toon: informeel (je/jouw, nooit u), warm en sfeervol, beschrijvend met langere zinnen. Terugkerende woordkeus: heerlijk, royale, sfeervol, fijne plek, stijlvol, verrassend ruime, warm thuisgevoel. Geen stapeling van superlatieven en geen uitroeptekens behalve in het 4SALE!/4RENT!-label. Lengte van de Nederlandse tekst: 450-500 woorden.`
 
+/**
+ * Tekstsjabloon (item 8.2, docs/roadmap.md § 3.4): dezelfde 4SALE!-opbouw als
+ * STIJLPROFIEL hierboven, nu als harde structuur i.p.v. alleen een vrije-tekst
+ * beschrijving — lib/tekstsjabloon.ts rendert dit als verplichte promptstructuur
+ * voor funda_tekst en valideert de output erop (koppen + volgorde + slotzin).
+ */
+const TEKSTSJABLOON = {
+  opening_label: '4SALE!',
+  secties: [
+    { kop: 'WOONCOMFORT', instructie: 'Beschrijf de indeling, sfeer en afwerking van de woning. De keuken krijgt hier een eigen alinea.' },
+    { kop: 'BUITENLEVEN', instructie: 'Beschrijf de tuin, het balkon of andere buitenruimte en hoe die te gebruiken is.' },
+    { kop: 'LOCATIE', instructie: 'Beschrijf de buurt, voorzieningen en bereikbaarheid.' },
+    { kop: 'GOED OM TE WETEN', instructie: 'Korte bulletpoints die beginnen met "- " (bouwjaar, oppervlakte, energielabel, oplevering, bijzonderheden).' },
+  ],
+  slotzin: 'Enthousiast over deze woning? Neem contact op met ons kantoor. Wij plannen graag een afspraak met je in.',
+  doel_woorden: 480,
+  engels: {
+    opening_label: '4SALE!',
+    koppen: ['LIVING COMFORT', 'OUTDOOR LIVING', 'LOCATION', 'GOOD TO KNOW'],
+  },
+}
+
 const VOORBEELD_URLS = [
   'https://www.i4housing.nl/woning/wassenaar-jonkerlaan-51/',
   'https://www.i4housing.nl/woning/s-gravenhage-frankenstraat-34/',
@@ -208,11 +230,23 @@ async function main() {
     }
   }
 
+  kop('4b. Tekstsjabloon (item 8.2)')
+  // Alleen seeden als het kantoor nog geen eigen tekstsjabloon heeft — nooit een
+  // handmatig via /admin ingevoerd sjabloon overschrijven.
+  let tekstsjabloonVeld = {}
+  if (huidig.tekstsjabloon) {
+    log('kantoor heeft al een tekstsjabloon — overslaan')
+  } else {
+    tekstsjabloonVeld = { tekstsjabloon: TEKSTSJABLOON }
+    log(`  → 4SALE!-sjabloon: ${TEKSTSJABLOON.secties.map((s) => s.kop).join(' · ')} (${TEKSTSJABLOON.doel_woorden} woorden, EN: ${TEKSTSJABLOON.engels.koppen.join(' · ')})`)
+  }
+
   kop('5. Wegschrijven')
   const nieuweHuisstijl = {
     ...huidig,
     ...MERK,
     ...schrijfstijl,
+    ...tekstsjabloonVeld,
     ...(faviconUrl ? { favicon_url: faviconUrl } : {}),
     ...Object.fromEntries(Object.entries(fotoUrls).filter(([, v]) => v)),
   }
