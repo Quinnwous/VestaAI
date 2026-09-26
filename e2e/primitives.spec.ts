@@ -21,7 +21,14 @@ const AUTH_FILE = path.join(__dirname, '.auth/user.json')
 
 function hasAuth(): boolean {
   try {
-    return fs.existsSync(AUTH_FILE) && fs.statSync(AUTH_FILE).size > 0
+    // Bugfix (item 12.2): `auth.setup.ts` schrijft altijd een niet-lege,
+    // geldige JSON-placeholder ({"cookies":[],"origins":[]}) als
+    // E2E_TEST_EMAIL/Supabase-keys ontbreken — een kale bestandsgrootte-check
+    // zag dat aan voor een geldige sessie en liet deze test dan zonder sessie
+    // los op de pagina lopen (60s timeout i.p.v. een nette skip). Zelfde
+    // cookies-check als de `hasAuth()` in e2e/smoke.spec.ts.
+    const state = JSON.parse(fs.readFileSync(AUTH_FILE, 'utf-8'))
+    return Array.isArray(state.cookies) && state.cookies.length > 0
   } catch {
     return false
   }
