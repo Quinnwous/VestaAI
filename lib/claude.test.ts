@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { PropertyInputSchema, ContentOutputSchema } from './claude'
 import type Anthropic from '@anthropic-ai/sdk'
 import type { HuisstijlConfig } from './schemas'
+import { bouwFeitenblad } from './kwartaalbericht'
 
 const validInput = {
   adres: 'Herengracht 1, Amsterdam',
@@ -374,5 +375,74 @@ describe('cache_control op het systeemprompt (prompt caching, item 8.1)', () => 
     expect(call.system[0].cache_control).toEqual({ type: 'ephemeral' }) // huisstijl
     expect(call.system[1].cache_control).toEqual({ type: 'ephemeral' }) // taalspecifiek
     expect(call.system[2].cache_control).toBeUndefined() // documenten-instructie, per-aanvraag
+  })
+})
+
+describe('schrijfKwartaalbericht (item 6.4)', () => {
+  const feitenblad = bouwFeitenblad({
+    samenvatting: {
+      huidig: { van: '2024-10-01', tot: '2026-09-20', n: 47, mediaanPrijs: 852_000, mediaanM2: 5_430, mediaanLooptijd: 34, pctTovVraag: 2.1 },
+      vorig: { van: '2022-10-01', tot: '2024-09-30', n: 40, mediaanPrijs: 810_000, mediaanM2: 5_100, mediaanLooptijd: 38, pctTovVraag: 1.5 },
+    },
+    dataTotEnMet: '2026-09-20',
+    contextLabel: 'Wassenaar · Vrijstaand · laatste 24 maanden',
+    periodeMaanden: 24,
+    eigenAandeel: { nEigenHuidig: 9, nEigenVorig: 7 },
+  })
+
+  function textResponse(tekst: string) {
+    return { content: [{ type: 'text', text: tekst }] }
+  }
+
+  it('geeft de tekst terug zodra die de guardrail doorstaat (eerste poging)', async () => {
+    const geldigeTekst = 'De mediaan verkoopprijs kwam uit op € 852.000, een stijging van 5,2%. Er werden 47 transacties geregistreerd, waarvan 9 door ons kantoor. De mediaan looptijd was 34 dagen.'
+    const create = vi.fn().mockResolvedValue(textResponse(geldigeTekst))
+    const mockClient = { messages: { create } } as unknown as Anthropic
+
+    const { schrijfKwartaalbericht } = await import('./claude')
+    const result = await schrijfKwartaalbericht(feitenblad, { taal: 'nl' }, mockClient)
+
+    expect(result.tekst).toBe(geldigeTekst)
+    expect(create).toHaveBeenCalledTimes(1)
+  })
+
+  it('probeert één keer opnieuw als de eerste poging een verzonnen getal bevat, en accepteert een geldige herkansing', async () => {
+    const foutieveTekst = 'De mediaan verkoopprijs kwam uit op € 999.999 dit kwartaal.'
+    const geldigeTekst = 'De mediaan verkoopprijs kwam uit op € 852.000 dit kwartaal.'
+    const create = vi.fn()
+      .mockResolvedValueOnce(textResponse(foutieveTekst))
+      .mockResolvedValueOnce(textResponse(geldigeTekst))
+    const mockClient = { messages: { create } } as unknown as Anthropic
+
+    const { schrijfKwartaalbericht } = await import('./claude')
+    const result = await schrijfKwartaalbericht(feitenblad, { taal: 'nl' }, mockClient)
+
+    expect(result.tekst).toBe(geldigeTekst)
+    expect(create).toHaveBeenCalledTimes(2)
+    // De herkansing bevat een correctie-instructie met het verzonnen getal.
+    const tweedeAanroep = create.mock.calls[1][0] as { system: string }
+    expect(tweedeAanroep.system).toContain('999.999')
+  })
+
+  it('geeft een eerlijke foutmelding als ook de herkansing een verzonnen getal bevat', async () => {
+    const foutieveTekst = 'De mediaan verkoopprijs kwam uit op € 999.999 dit kwartaal.'
+    const create = vi.fn().mockResolvedValue(textResponse(foutieveTekst))
+    const mockClient = { messages: { create } } as unknown as Anthropic
+
+    const { schrijfKwartaalbericht } = await import('./claude')
+    await expect(schrijfKwartaalbericht(feitenblad, { taal: 'nl' }, mockClient)).rejects.toThrow(/feitenblad/i)
+    expect(create).toHaveBeenCalledTimes(2)
+  })
+
+  it('stuurt het feitenblad en de kantoornaam mee in de systeemprompt', async () => {
+    const create = vi.fn().mockResolvedValue(textResponse('De mediaan verkoopprijs kwam uit op € 852.000.'))
+    const mockClient = { messages: { create } } as unknown as Anthropic
+
+    const { schrijfKwartaalbericht } = await import('./claude')
+    await schrijfKwartaalbericht(feitenblad, { taal: 'nl', kantoorNaam: 'Makelaardij De Vries' }, mockClient)
+
+    const aanroep = create.mock.calls[0][0] as { system: string }
+    expect(aanroep.system).toContain('Makelaardij De Vries')
+    expect(aanroep.system).toContain(feitenblad.tekst)
   })
 })
