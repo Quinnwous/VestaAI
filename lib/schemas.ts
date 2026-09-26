@@ -33,6 +33,43 @@ export function typegroepLabel(groep: Typegroep): string {
   return TYPEGROEP_LABELS[groep]
 }
 
+// Tekstsjabloon-model (item 8.2, roadmap § 3.4): een kantoor kan de opbouw van
+// funda_tekst hard voorschrijven (i4housing schrijft bv. altijd 4SALE! →
+// WOONCOMFORT → BUITENLEVEN → LOCATIE → GOED OM TE WETEN → vaste slotzin) in
+// plaats van het generieke, vrije format. `lib/tekstsjabloon.ts` rendert dit
+// als harde promptstructuur en valideert de output erop. `engels` overschrijft
+// alleen de kop-labels (opening_label + koppen, parallel aan `secties` in
+// dezelfde volgorde) — de sectie-instructies zelf blijven taalonafhankelijk
+// (Claude past de schrijftaal toe, niet de sturing). Optioneel: oude
+// huisstijl_json zonder dit veld blijft gewoon geldig (backcompat).
+export const TekstsjabloonSchema = z
+  .object({
+    opening_label: z.string().min(1).max(60),
+    secties: z
+      .array(
+        z.object({
+          kop: z.string().min(1).max(60),
+          instructie: z.string().min(1).max(600),
+        }),
+      )
+      .min(1)
+      .max(10),
+    slotzin: z.string().min(1).max(400),
+    doel_woorden: z.number().int().min(100).max(2000),
+    engels: z
+      .object({
+        opening_label: z.string().min(1).max(60),
+        koppen: z.array(z.string().min(1).max(60)).min(1).max(10),
+      })
+      .optional(),
+  })
+  .refine((data) => !data.engels || data.engels.koppen.length === data.secties.length, {
+    message: 'engels.koppen moet evenveel items bevatten als secties, in dezelfde volgorde',
+    path: ['engels', 'koppen'],
+  })
+
+export type TekstsjabloonConfig = z.infer<typeof TekstsjabloonSchema>
+
 export const HuisstijlSchema = z.object({
   schrijftoon: z.enum(['formeel', 'informeel', 'enthousiast']),
   slogan: z.string().max(100),
@@ -81,6 +118,8 @@ export const HuisstijlSchema = z.object({
     stijlprofiel: z.string().max(4000).optional(),
     slot_tekst: z.string().max(600).optional(),
   }).optional(),
+  // Tekstsjabloon voor funda_tekst (item 8.2) — zie TekstsjabloonSchema hierboven.
+  tekstsjabloon: TekstsjabloonSchema.optional(),
 })
 
 export type HuisstijlConfig = z.infer<typeof HuisstijlSchema>

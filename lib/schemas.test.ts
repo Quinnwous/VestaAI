@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { PropertyInputSchema, woningtypeLabel } from './schemas'
+import { PropertyInputSchema, woningtypeLabel, HuisstijlSchema, TekstsjabloonSchema } from './schemas'
 
 const BASIS = {
   adres: 'Herengracht 1, Amsterdam',
@@ -81,5 +81,70 @@ describe('woningtypeLabel', () => {
 
   it('valt terug op het groepslabel zonder subtype', () => {
     expect(woningtypeLabel({ woningtype_groep: 'rijwoning' })).toBe('Rijwoning')
+  })
+})
+
+describe('HuisstijlSchema — tekstsjabloon (item 8.2, backcompat)', () => {
+  const BASIS_HUISSTIJL = {
+    schrijftoon: 'informeel' as const,
+    slogan: 'Wonen met een glimlach',
+    primaire_kleur: '#0080C8',
+    voorbeelden: [],
+  }
+
+  it('parset oude huisstijl_json zonder tekstsjabloon-veld ongewijzigd (backcompat)', () => {
+    const geparsed = HuisstijlSchema.parse(BASIS_HUISSTIJL)
+    expect(geparsed.tekstsjabloon).toBeUndefined()
+  })
+
+  it('accepteert een volledig tekstsjabloon inclusief EN-koppen', () => {
+    const metSjabloon = {
+      ...BASIS_HUISSTIJL,
+      tekstsjabloon: {
+        opening_label: '4SALE!',
+        secties: [
+          { kop: 'WOONCOMFORT', instructie: 'Beschrijf de indeling en de keuken.' },
+          { kop: 'BUITENLEVEN', instructie: 'Beschrijf tuin en buitenruimte.' },
+          { kop: 'LOCATIE', instructie: 'Beschrijf de buurt en bereikbaarheid.' },
+          { kop: 'GOED OM TE WETEN', instructie: 'Korte bulletpoints die beginnen met "- ".' },
+        ],
+        slotzin: 'Enthousiast over deze woning? Neem contact op met ons kantoor. Wij plannen graag een afspraak met je in.',
+        doel_woorden: 480,
+        engels: {
+          opening_label: '4SALE!',
+          koppen: ['LIVING COMFORT', 'OUTDOOR LIVING', 'LOCATION', 'GOOD TO KNOW'],
+        },
+      },
+    }
+    expect(() => HuisstijlSchema.parse(metSjabloon)).not.toThrow()
+    const geparsed = HuisstijlSchema.parse(metSjabloon)
+    expect(geparsed.tekstsjabloon?.secties).toHaveLength(4)
+    expect(geparsed.tekstsjabloon?.engels?.koppen).toHaveLength(4)
+  })
+
+  it('wijst een tekstsjabloon af zonder secties', () => {
+    expect(() =>
+      TekstsjabloonSchema.parse({
+        opening_label: '4SALE!',
+        secties: [],
+        slotzin: 'Tot ziens.',
+        doel_woorden: 480,
+      }),
+    ).toThrow()
+  })
+
+  it('wijst engels.koppen af als het aantal niet overeenkomt met secties', () => {
+    expect(() =>
+      TekstsjabloonSchema.parse({
+        opening_label: '4SALE!',
+        secties: [
+          { kop: 'WOONCOMFORT', instructie: 'Indeling.' },
+          { kop: 'LOCATIE', instructie: 'Buurt.' },
+        ],
+        slotzin: 'Tot ziens.',
+        doel_woorden: 480,
+        engels: { opening_label: '4SALE!', koppen: ['LIVING COMFORT'] },
+      }),
+    ).toThrow()
   })
 })
