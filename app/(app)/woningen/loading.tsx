@@ -1,36 +1,41 @@
-export default function DashboardLoading() {
+import { AppPagina } from '@/components/ui'
+import { Skeleton } from '@/components/ui'
+
+/**
+ * Laadstaat voor `/woningen` v2 (item 10.1) — skeletons, geen spinner
+ * (docs/ontwerpprincipes.md § Data-weergave), in de vorm van de filterbalk +
+ * tabelweergave (de meest gekozen weergave) zodat er geen layoutsprong is
+ * zodra de echte data binnenkomt.
+ */
+export default function WoningenLoading() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div className="h-6 w-24 bg-gray-200 rounded animate-pulse" />
-        <div className="h-9 w-32 bg-gray-200 rounded-lg animate-pulse" />
+    <AppPagina>
+      <div style={{ marginBottom: 30, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16 }}>
+        <div>
+          <Skeleton width={90} height={13} style={{ marginBottom: 10 }} />
+          <Skeleton width={160} height={32} />
+        </div>
+        <Skeleton width={150} height={40} rounded={11} />
       </div>
 
-      {/* Zoekbalk skeleton */}
-      <div className="flex gap-2 mb-6">
-        <div className="flex-1 h-9 bg-gray-200 rounded-lg animate-pulse" />
-        <div className="h-9 w-16 bg-gray-200 rounded-lg animate-pulse" />
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <Skeleton width={70} height={32} rounded={999} />
+        <Skeleton width={110} height={32} rounded={999} />
+        <Skeleton width={90} height={32} rounded={999} />
+        <Skeleton width={80} height={32} rounded={999} />
       </div>
 
-      {/* Count label */}
-      <div className="h-4 w-20 bg-gray-100 rounded animate-pulse mb-3" />
+      <Skeleton width={360} height={38} rounded={11} style={{ marginBottom: 20 }} />
 
-      {/* Object-kaartjes skeletons */}
-      <div className="space-y-2">
+      <div style={{ borderRadius: 18, border: '1px solid #E6E9EC', background: '#fff', padding: 16 }}>
         {Array.from({ length: 8 }).map((_, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-5 py-4"
-            style={{ opacity: 1 - i * 0.1 }}
-          >
-            <div className="space-y-1.5">
-              <div className="h-4 bg-gray-200 rounded animate-pulse" style={{ width: `${140 + (i % 3) * 40}px` }} />
-              <div className="h-3 w-20 bg-gray-100 rounded animate-pulse" />
-            </div>
-            <div className="h-4 w-4 bg-gray-100 rounded animate-pulse" />
+          <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', opacity: 1 - i * 0.08 }}>
+            <Skeleton width={`${220 + (i % 3) * 40}px`} height={14} />
+            <Skeleton width={80} height={20} rounded={999} />
+            <Skeleton width={70} height={12} />
           </div>
         ))}
       </div>
-    </main>
+    </AppPagina>
   )
 }

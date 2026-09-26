@@ -1,31 +1,38 @@
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngelogdeMakelaar'
-import { WoningenClient } from './WoningenClient'
+import { WoningenOverzicht, type WoningRij, type WoningKaartRij } from './WoningenOverzicht'
 import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
-import type { ObjectRow, ObjectFase } from '@/lib/supabase'
+import { sorteerOptieNaarOrderBy, telPerFase, type WoningenSortering } from '@/lib/woningenOverzicht'
+import type { ObjectFase } from '@/lib/supabase'
 
 export const metadata = { title: 'Woningen' }
 
 type FaseFilter = '' | ObjectFase
+type Weergave = 'tabel' | 'kaart'
 
 interface SearchParams {
   search?: string
   page?: string
   fase?: string
+  makelaar?: string
+  weergave?: string
+  sorteer?: string
 }
 
 const PER_PAGE = 20
+const KAART_LIMIET = 500
 
 /**
- * Woningdossier-lijst (masterplan fase 1.6, 16-17 sep 2026, zie
- * docs/roadmap.md): verhuisd van `/dashboard` naar `/woningen`. `/dashboard`
- * is nu de startpagina na inloggen (zie app/(app)/dashboard/page.tsx) —
- * geen automatische landing meer op de portefeuille zelf.
+ * Woningdossier-lijst v2 (item 10.1, docs/roadmap.md § Fase 10): tabel- en
+ * kaartweergave (`BasisKaart`), zoeken, filters op fase/makelaar, alles in de
+ * URL. `PitchScorebord` is vervallen (item 1.9c) — er stond hier al niets
+ * meer van, alleen de knop "Woning toevoegen" in de kop bleef staan.
  *
- * Geen pitch-concept meer (item 1.9c, besluit Quinn 17 sep 2026): het
- * scorebord is vervallen. "Woning toevoegen" staat sindsdien als primaire
- * knop in de kop hier, in plaats van als snelkoppeling op de startpagina.
+ * Filtering/sortering/paginering blijven server-side via Supabase (zoals v1)
+ * — bij een portefeuille van deze schaal is dat de eenvoudigste, meest
+ * betrouwbare route en werkt de tabel- én kaartweergave altijd op dezelfde,
+ * server-gefilterde set (zie lib/woningenOverzicht.ts).
  */
 export default async function WoningenPage({
   searchParams,
@@ -36,35 +43,85 @@ export default async function WoningenPage({
   const makelaar = await haalIngelogdeMakelaarOp()
   if (!makelaar) return <AccountWordtKlaargezet />
 
-  // Toegang is puur admin-beheerd (sinds 15 sep 2026, zie CLAUDE.md): een
-  // account bestaat alleen als de platform-admin het bij een kantoor heeft
-  // gezet. Geen plan- of proefperiode-check meer — intrekken gaat via
-  // "kantoor deactiveren" in /admin (bant de auth-users direct).
-
   const search = searchParams.search ?? ''
   const page = Math.max(1, parseInt(searchParams.page ?? '1', 10))
   const geldigeFases: FaseFilter[] = ['verkoopadvies', 'in_verkoop', 'verkocht']
-  const faseFilter: FaseFilter = geldigeFases.includes(searchParams.fase as FaseFilter) ? searchParams.fase as FaseFilter : ''
-  const from = (page - 1) * PER_PAGE
-  const to = from + PER_PAGE - 1
+  const faseFilter: FaseFilter = geldigeFases.includes(searchParams.fase as FaseFilter) ? (searchParams.fase as FaseFilter) : ''
+  const makelaarFilter = searchParams.makelaar ?? ''
+  const weergave: Weergave = searchParams.weergave === 'kaart' ? 'kaart' : 'tabel'
+  const sorteer: WoningenSortering = ['nieuwste', 'oudste', 'adres'].includes(searchParams.sorteer ?? '')
+    ? (searchParams.sorteer as WoningenSortering)
+    : 'nieuwste'
+  const { column, ascending } = sorteerOptieNaarOrderBy(sorteer)
 
-  let query = supabase
-    .from('objecten')
-    .select('id, address, created_at, status, fase', { count: 'exact' })
+  const makelaarsPromise = supabase
+    .from('makelaars')
+    .select('id, name')
     .eq('kantoor_id', makelaar.kantoorId)
-    .order('created_at', { ascending: false })
-    .range(from, to)
+    .order('name')
 
-  if (search) {
-    query = query.ilike('address', `%${search}%`)
+  let rijen: WoningRij[] = []
+  let kaartRijen: WoningKaartRij[] = []
+  let totalCount = 0
+  let makelaarsLijst: { id: string; name: string }[] = []
+
+  if (weergave === 'kaart') {
+    let query = supabase
+      .from('objecten')
+      .select('id, address, created_at, status, fase, makelaar_id, lat, lng')
+      .eq('kantoor_id', makelaar.kantoorId)
+    if (search) query = query.ilike('address', `%${search}%`)
+    if (faseFilter) query = query.eq('fase', faseFilter)
+    if (makelaarFilter) query = query.eq('makelaar_id', makelaarFilter)
+    query = query.order(column, { ascending }).limit(KAART_LIMIET)
+
+    const [{ data: kaartData }, { data: makelaarsData }] = await Promise.all([query, makelaarsPromise])
+    kaartRijen = (kaartData ?? []) as WoningKaartRij[]
+    totalCount = kaartRijen.length
+    makelaarsLijst = makelaarsData ?? []
+  } else {
+    const from = (page - 1) * PER_PAGE
+    const to = from + PER_PAGE - 1
+    let query = supabase
+      .from('objecten')
+      .select('id, address, created_at, status, fase, makelaar_id', { count: 'exact' })
+      .eq('kantoor_id', makelaar.kantoorId)
+    if (search) query = query.ilike('address', `%${search}%`)
+    if (faseFilter) query = query.eq('fase', faseFilter)
+    if (makelaarFilter) query = query.eq('makelaar_id', makelaarFilter)
+    query = query.order(column, { ascending }).range(from, to)
+
+    const [{ data, count }, { data: makelaarsData }] = await Promise.all([query, makelaarsPromise])
+    rijen = (data ?? []) as WoningRij[]
+    totalCount = count ?? 0
+    makelaarsLijst = makelaarsData ?? []
   }
-  if (faseFilter) {
-    query = query.eq('fase', faseFilter)
+
+  // Aantal per fase voor de tellers op de fase-tabs (negeert de fase-filter
+  // zelf, wél search/makelaar) — in kaartweergave zonder fase-filter is de
+  // al opgehaalde, ongepagineerde set genoeg (lib/woningenOverzicht.ts
+  // telPerFase); anders drie lichte head-count-queries.
+  let faseTelling: Record<ObjectFase, number>
+  if (weergave === 'kaart' && !faseFilter) {
+    faseTelling = telPerFase(kaartRijen)
+  } else {
+    const telQuery = (f: ObjectFase) => {
+      let q = supabase.from('objecten').select('id', { count: 'exact', head: true }).eq('kantoor_id', makelaar.kantoorId).eq('fase', f)
+      if (search) q = q.ilike('address', `%${search}%`)
+      if (makelaarFilter) q = q.eq('makelaar_id', makelaarFilter)
+      return q
+    }
+    const [t1, t2, t3] = await Promise.all([
+      telQuery('verkoopadvies'),
+      telQuery('in_verkoop'),
+      telQuery('verkocht'),
+    ])
+    faseTelling = {
+      verkoopadvies: t1.count ?? 0,
+      in_verkoop: t2.count ?? 0,
+      verkocht: t3.count ?? 0,
+    }
   }
-
-  const { data: objecten, count } = await query
-
-  const totalPages = Math.ceil((count ?? 0) / PER_PAGE)
 
   return (
     <AppPagina>
@@ -81,13 +138,18 @@ export default async function WoningenPage({
         </Link>
       </div>
 
-      <WoningenClient
-        objecten={(objecten ?? []) as Pick<ObjectRow, 'id' | 'address' | 'created_at' | 'status' | 'fase'>[]}
-        totalPages={totalPages}
+      <WoningenOverzicht
+        weergave={weergave}
+        rijen={rijen}
+        kaartRijen={kaartRijen}
         currentPage={page}
         search={search}
         faseFilter={faseFilter}
-        totalCount={count ?? 0}
+        makelaarFilter={makelaarFilter}
+        sorteer={sorteer}
+        totalCount={totalCount}
+        faseTelling={faseTelling}
+        makelaars={makelaarsLijst}
       />
     </AppPagina>
   )
