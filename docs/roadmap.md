@@ -17,7 +17,14 @@
 
 ## 📍 Stand van zaken
 
-- **Fase:** 6 grotendeels af (6.1-6.3 ✅, 6.4 kwartaalbericht open); uit 7, 8, 9,
+- **Sessie 24-26 sep (branch `feat/sessie-24sep`, nog niet gepusht):** 6.4, 7.2,
+  10.1, 10.2 opgeleverd (parallelle Sonnet-agents, review + fixes door Opus),
+  Buurt & data gerepareerd, WOZ zelf invullen, StatTile/Modal/kop-fixes.
+  `dod:screens` 30/30 groen. Volgende: **7.3** straal per woning op `BasisKaart`
+  (daarna 7.4 Leaflet weg) · **8.2** tekstsjabloon-model (nu vrij: 6.4 is gemerged) ·
+  **9.3** consistentiecontrole · **12.2** e2e. Hardening-migratie wacht op
+  toepassen (§ 8 punt 10).
+- **Fase:** 6 af (6.1-6.4 ✅); uit 7, 8, 9,
   10, 12 en 13 zijn losse items vooruit gebouwd door parallelle Sonnet-agents
   (werkwijze: CLAUDE.md § Parallel met agents). Fase 5 geblokkeerd op de exports.
   Opleverdetails staan in `docs/besluiten.md`, niet hier.
@@ -40,8 +47,7 @@
   is **niet gekoppeld** (geen gratis toegestane API) → de makelaar vult hem zelf
   in (intakestap 6 of inline in "Buurt & data", met link naar het loket); anders
   het CBS-buurtgemiddelde. Scène 4: WOZ vooraf invullen in het demo-dossier.
-  Nog open: `wozHandmatig` doorgeven van `object/[id]/page.tsx` via
-  `ObjectWorkspace` naar `BuurtDataTab` (na merge van 10.2). Details: `docs/besluiten.md`.
+  Details: `docs/besluiten.md`.
 - **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
   concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
@@ -759,10 +765,10 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 
 ### Fase 10 — Woningdossier premium (3 sessies)
 
-- [ ] **10.1 `/woningen` v2** — tabel- en kaartweergave (`BasisKaart`), zoeken,
+- [x] **10.1 `/woningen` v2** — tabel- en kaartweergave (`BasisKaart`), zoeken,
   filters fase/makelaar, URL-state, knop "Woning toevoegen" in de kop (sinds
   1.9c); `PitchScorebord` is vervallen.
-- [ ] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
+- [x] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
   merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
   (pdf, content, fase).
 - [x] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
