@@ -699,7 +699,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
   `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
   (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
-- [ ] **7.2 Verkoopkaart-explorer v2** *(port van `docs/ontwerp/verkoopkaart.html`,
+- [x] **7.2 Verkoopkaart-explorer v2** *(port van `docs/ontwerp/verkoopkaart.html`,
   § 3.8; het prototype gebruikt een statische PDOK-achtergrond omdat een
   artifact geen tiles mag laden — in de app is dit MapLibre met live tiles)*
   — eigen verkopen als mini-beeldmerk-pins (blauwe ruit, rode omlijning) op
@@ -926,9 +926,10 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 ## 9. Backlog & geparkeerd
 
 **Vóór de demo oppakken (uit de sessie van 23-24 sep):** omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
-minikaart in de transactie-sheet op `BasisKaart` (7.2) · gedeelde kop
-"Zoeken in de markt" in `app/(app)/marktanalyse/layout.tsx` weg zodra alle
-vier verkenners een eigen kop hebben (kop-op-kop) · pastelkleuren van de kaart
+minikaart in de transactie-sheet op `BasisKaart` (7.2) · filter "Verkocht door"
+op de verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
+`20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
+makelaarsveld in de exports) · pastelkleuren van de kaart
 laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
