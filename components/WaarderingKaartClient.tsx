@@ -2,8 +2,9 @@
 
 import dynamic from 'next/dynamic'
 
-// react-leaflet raakt `window` aan tijdens het eerste render — client-only,
-// zelfde patroon als VerkoopkaartClient.tsx.
+// Client-only, ook al is BasisKaart (die WaarderingKaart zelf gebruikt) al
+// een eigen dynamic(ssr:false) — dit voorkomt dat WaardebepalingPaneel zelf
+// ooit direct hoeft te weten dat de kaartstack canvas/`window` aanraakt.
 export const WaarderingKaartClient = dynamic(
   () => import('./WaarderingKaart').then(m => m.WaarderingKaart),
   {

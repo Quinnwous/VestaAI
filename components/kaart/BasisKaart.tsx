@@ -5,8 +5,7 @@
  * docs/roadmap.md): dynamic import zonder SSR (MapLibre raakt canvas/
  * `window` aan tijdens het eerste render), PDOK BRT-vectortiles in
  * pastelstijl. Geef lagen als children mee — die lezen de kaartinstantie
- * zelf via context (zie `KaartContext.ts`), net als `Verkoopkaart.tsx` dat
- * via react-leaflet deed.
+ * zelf via context (zie `KaartContext.ts`).
  *
  * Gebruik:
  *   <BasisKaart center={[lng, lat]} zoom={13}>
