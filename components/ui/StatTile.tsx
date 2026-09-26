@@ -143,6 +143,8 @@ export function StatTile({
               fontVariantNumeric: 'tabular-nums',
               letterSpacing: '-.02em',
               lineHeight: 1.1,
+              // Een getal breekt nooit over twee regels ("€" los boven "737.000").
+              whiteSpace: 'nowrap',
             }}
           >
             {opmaak ? opmaak(geanimeerd) : geanimeerd.toLocaleString('nl-NL')}

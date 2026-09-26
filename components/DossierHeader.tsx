@@ -150,9 +150,14 @@ export function DossierHeader({
         flexWrap: 'wrap',
       }}
     >
-      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', minWidth: 0 }}>
+      {/* Links krimpt mee (flex 1), rechts heeft een vaste voorkeursbreedte —
+          zoals .dossier-hero-links/-rechts in docs/ontwerp/startpagina.html.
+          Anders duwde een brede stepperrij de rechterkolom naar een nieuwe
+          regel en werden de tegels te smal. */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'flex-start', minWidth: 0, flex: '1 1 380px' }}>
         <DossierFoto url={fotoUrl} />
-        <div style={{ minWidth: 0 }}>
+        {/* flex-basis 220px: op 390 px valt de info onder de foto i.p.v. ernaast te knijpen */}
+        <div style={{ minWidth: 0, flex: '1 1 220px' }}>
           <Eyebrow>Woning</Eyebrow>
           <SerifTitle size={28} accent={stad} style={{ marginBottom: 4 }}>{stad ? `${straat},` : straat}</SerifTitle>
           {kenmerken.length > 0 && (
@@ -173,18 +178,18 @@ export function DossierHeader({
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <FaseStepper huidigeIndex={huidigeIndex} isPending={isPending} onKlik={klikFase} />
             {fase !== 'verkoopadvies' && <StatusToggle objectId={objectId} initialStatus={status} />}
-            {aangemaaktOp && (
-              <span style={{ fontSize: 12.5, color: colors.muted }}>Aangemaakt {formatDatum(aangemaaktOp)}</span>
-            )}
           </div>
+          {aangemaaktOp && (
+            <p style={{ fontSize: 12.5, color: colors.muted, margin: '10px 0 0' }}>Aangemaakt {formatDatum(aangemaaktOp)}</p>
+          )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end', flex: '1 1 340px', maxWidth: 460 }}>
-        {acties && <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{acties}</div>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end', flex: '0 1 500px', minWidth: 0 }}>
+        {acties && <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', whiteSpace: 'nowrap' }}>{acties}</div>}
         {/* auto-fit i.p.v. een vaste 3-koloms grid: op 390 px klapt "€ 733.000"
             anders af tegen de tegelrand (DoD: "op 390 px breekt niets"). */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, width: '100%' }}>
           <StatTile
             label="Waarde"
             waarde={waarde ?? undefined}
