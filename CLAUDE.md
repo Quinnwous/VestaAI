@@ -30,11 +30,15 @@
 > commit **na elke deelstap** (limietbestendig: bij een op gebruikslimiet gestopte sessie
 > blijft het werk staan en wordt de agent hervat via SendMessage, niet opnieuw gestart).
 >
-> **Push/merge/live (besluit Quinn 17 sep 2026, geldt tot hij anders zegt):** tijdens een
-> sessie alleen lokaal committen, niet tussendoor pushen. Zegt Quinn "rond af" (om de chat
-> te clearen), dan in één keer: pushen, PR mergen naar `main` en live zetten — zonder
-> opnieuw toestemming te vragen. Reden: er is nog geen productiedata die verloren kan gaan.
-> Migraties die échte data raken blijven akkoord-plichtig (vangrails hierboven).
+> **Push/merge/live — automatisch aan het einde van elke ronde (besluit Quinn 17 sep,
+> aangescherpt 26 sep 2026, geldt tot hij anders zegt):** tijdens een ronde alleen lokaal
+> committen. Is een ronde klaar (alle items van die ronde gemerged en gereviewd), dan doet
+> Claude **zelf, zonder dat Quinn "rond af" of `/sessie-afronden` hoeft te zeggen en zonder
+> opnieuw toestemming te vragen**, alle stappen van `.claude/skills/sessie-afronden/SKILL.md`:
+> DoD nalopen, docs bijwerken, committen, featurebranch pushen, PR naar `main` maken en
+> mergen, en controleren dat de Vercel-deploy READY is zonder runtime-errors. Daarna pas de
+> ronde melden. Reden: er is nog geen productiedata die verloren kan gaan. Migraties die
+> échte data raken blijven akkoord-plichtig (vangrails hierboven).
 >
 > ⚠️ **Eén database, twee codeversies (les 17 sep 2026):** productie draait altijd de code
 > van `main`, en er is maar één (productie)database. Een migratie die iets **weghaalt of
