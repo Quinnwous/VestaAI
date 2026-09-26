@@ -114,7 +114,7 @@ export function StatTile({
   return (
     <div
       style={{
-        background: hero ? 'linear-gradient(135deg, #0A8AD2 0%, var(--merk-diep) 100%)' : colors.surface,
+        background: hero ? 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)' : colors.surface,
         border: hero ? 'none' : `1px solid ${colors.border}`,
         borderRadius: radius.cardLg,
         boxShadow: hero ? '0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb, 26,107,69),.55)' : shadow.card,
@@ -123,15 +123,15 @@ export function StatTile({
         minWidth: 0,
         position: 'relative',
         overflow: 'hidden',
-        color: hero ? '#fff' : undefined,
+        color: hero ? 'var(--merk-op)' : undefined,
       }}
     >
       <div style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-        <span style={{ fontSize: 12.5, fontWeight: 650, color: hero ? 'rgba(255,255,255,.82)' : colors.muted, letterSpacing: '.01em' }}>{label}</span>
+        <span style={{ fontSize: 12.5, fontWeight: 650, color: hero ? 'color-mix(in srgb, var(--merk-op) 82%, transparent)' : colors.muted, letterSpacing: '.01em' }}>{label}</span>
         {icoon}
       </div>
       {waarschuwing != null ? (
-        <p style={{ position: 'relative', zIndex: 1, fontSize: 13, color: hero ? 'rgba(255,255,255,.85)' : colors.muted, margin: 0, lineHeight: 1.5 }}>{waarschuwing}</p>
+        <p style={{ position: 'relative', zIndex: 1, fontSize: 13, color: hero ? 'color-mix(in srgb, var(--merk-op) 85%, transparent)' : colors.muted, margin: 0, lineHeight: 1.5 }}>{waarschuwing}</p>
       ) : (
         <>
           <div
@@ -139,7 +139,7 @@ export function StatTile({
               position: 'relative', zIndex: 1,
               fontSize: 28,
               fontWeight: 800,
-              color: hero ? '#fff' : colors.text,
+              color: hero ? 'var(--merk-op)' : colors.text,
               fontVariantNumeric: 'tabular-nums',
               letterSpacing: '-.02em',
               lineHeight: 1.1,
@@ -156,21 +156,21 @@ export function StatTile({
                   background: hero
                     ? (delta.richting === 'op' ? 'rgba(255,255,255,.22)' : delta.richting === 'neer' ? 'rgba(198,30,69,.55)' : 'rgba(255,255,255,.16)')
                     : (delta.richting === 'op' ? colors.tint : delta.richting === 'neer' ? '#FEF3E2' : '#F1F3F5'),
-                  color: hero ? '#fff' : (delta.richting === 'op' ? '#1B7F4C' : delta.richting === 'neer' ? '#B45309' : colors.bodyStrong),
+                  color: hero ? 'var(--merk-op)' : (delta.richting === 'op' ? '#1B7F4C' : delta.richting === 'neer' ? '#B45309' : colors.bodyStrong),
                 }}
               >
                 {delta.richting === 'op' ? '▲' : delta.richting === 'neer' ? '▼' : '•'} {delta.tekst}
               </span>
             ) : bijschrift ? (
-              <p style={{ fontSize: 12.5, color: hero ? 'rgba(255,255,255,.78)' : colors.muted, margin: 0 }}>{bijschrift}</p>
+              <p style={{ fontSize: 12.5, color: hero ? 'color-mix(in srgb, var(--merk-op) 78%, transparent)' : colors.muted, margin: 0 }}>{bijschrift}</p>
             ) : null}
             {bijschrift && delta && (
-              <span style={{ fontSize: 12, color: hero ? 'rgba(255,255,255,.7)' : colors.muted }}>{bijschrift}</span>
+              <span style={{ fontSize: 12, color: hero ? 'color-mix(in srgb, var(--merk-op) 70%, transparent)' : colors.muted }}>{bijschrift}</span>
             )}
           </div>
         </>
       )}
-      {sparkline && waarschuwing == null && <Sparkline waarden={sparkline} kleur={hero ? '#fff' : 'var(--merk)'} />}
+      {sparkline && waarschuwing == null && <Sparkline waarden={sparkline} kleur={hero ? 'var(--merk-op)' : 'var(--merk)'} />}
     </div>
   )
 }
