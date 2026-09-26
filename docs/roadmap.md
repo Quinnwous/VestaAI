@@ -681,7 +681,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   `Drawer` (top 8, schrapbaar). Werkt op `verkopend_kantoor_norm`; eerlijke
   lege staat als dat veld leeg is. *Hergebruik:* `lib/concurrentie.ts` als
   referentie-implementatie voor de RPC-tests.
-- [ ] **6.4 Kwartaalbericht** — knop "Schrijf kwartaalbericht" in de
+- [x] **6.4 Kwartaalbericht** — knop "Schrijf kwartaalbericht" in de
   marktanalyse: `lib/kwartaalbericht.ts` bouwt een feitenblad (uitsluitend
   cijfers uit `marktanalyseSamenvatting` + reeks: mediaan prijs, € per m²,
   looptijd, aantal, delta's, eigen aandeel), Claude schrijft 250-350 woorden in
