@@ -43,17 +43,6 @@ export function KwartaalberichtModal({
     return () => { geannuleerd.current = true }
   }, [])
 
-  // `components/ui/Modal.tsx` sluit zelf al bij een klik buiten het paneel,
-  // maar heeft (nog) geen Escape-listener — die vult deze modal lokaal aan,
-  // conform docs/ontwerpprincipes.md § Interactie ("elk paneel/elke modal
-  // sluit met Escape"). Zie het eindrapport: dit is een gat in de gedeelde
-  // primitive, hier bewust lokaal opgelost i.p.v. in components/ui/ zelf.
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
-    document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [onClose])
-
   // Losse functie i.p.v. alles in de effect-body: "Opnieuw proberen" moet
   // dezelfde aanroep opnieuw kunnen doen zonder dat `taal` verandert (een
   // effect met `[taal]` als dependency vuurt anders niet opnieuw).
