@@ -59,6 +59,7 @@ const TEKSTSJABLOON = {
   engels: {
     opening_label: '4SALE!',
     koppen: ['LIVING COMFORT', 'OUTDOOR LIVING', 'LOCATION', 'GOOD TO KNOW'],
+    slotzin: 'Excited about this home? Get in touch with our office. We would be happy to schedule a viewing with you.',
   },
 }
 

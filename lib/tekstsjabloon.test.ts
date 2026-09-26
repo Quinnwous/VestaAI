@@ -37,8 +37,14 @@ describe('renderTekstsjabloonPrompt', () => {
     const prompt = renderTekstsjabloonPrompt(SJABLOON, 'en')
     expect(prompt).toContain('LIVING COMFORT, OUTDOOR LIVING, LOCATION, GOOD TO KNOW')
     expect(prompt).not.toContain('WOONCOMFORT, BUITENLEVEN')
-    // Slotzin blijft de letterlijke (Nederlandse) tekst — het schema kent geen EN-slotzin.
-    expect(prompt).toContain(SJABLOON.slotzin)
+    // Zonder engels.slotzin: de Nederlandse slotzin laten vertalen, niet letterlijk overnemen.
+    expect(prompt).toContain('translation')
+  })
+
+  it('gebruikt de Engelse slotzin letterlijk als die is ingesteld', () => {
+    const metEn: TekstsjabloonConfig = { ...SJABLOON, engels: { ...SJABLOON.engels!, slotzin: 'Excited about this home? Call us.' } }
+    const prompt = renderTekstsjabloonPrompt(metEn, 'en')
+    expect(prompt).toContain('LITERALLY and unchanged: "Excited about this home? Call us."')
   })
 
   it('valt terug op de NL-koppen voor taal en als engels ontbreekt', () => {
@@ -96,6 +102,19 @@ describe('valideerTekstsjabloon', () => {
     const controle = valideerTekstsjabloon(tekst, SJABLOON, 'nl')
     expect(controle.ok).toBe(false)
     expect(controle.fouten.some((f) => f.includes('4SALE!'))).toBe(true)
+  })
+})
+
+describe('valideerTekstsjabloon — Engelse slotzin', () => {
+  const koppenEn = ['LIVING COMFORT', 'OUTDOOR LIVING', 'LOCATION', 'GOOD TO KNOW']
+  it('eist geen Nederlandse slotzin in een Engelse tekst zonder engels.slotzin', () => {
+    const tekst = bouwGeldigeTekst(koppenEn, '4SALE!', 'Excited about this home? Get in touch.')
+    expect(valideerTekstsjabloon(tekst, SJABLOON, 'en').ok).toBe(true)
+  })
+  it('eist de ingestelde Engelse slotzin letterlijk', () => {
+    const metEn: TekstsjabloonConfig = { ...SJABLOON, engels: { ...SJABLOON.engels!, slotzin: 'Call us today.' } }
+    expect(valideerTekstsjabloon(bouwGeldigeTekst(koppenEn, '4SALE!', 'Call us today.'), metEn, 'en').ok).toBe(true)
+    expect(valideerTekstsjabloon(bouwGeldigeTekst(koppenEn, '4SALE!', 'Bel ons.'), metEn, 'en').ok).toBe(false)
   })
 })
 

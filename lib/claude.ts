@@ -189,6 +189,13 @@ function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
  * cache-breekpunt, zodat opeenvolgende generaties in dezelfde taal voor
  * hetzelfde kantoor (ándere dossiers) er samen van profiteren.
  */
+/**
+ * Maximale duur van de eerste poging waarna nog een sjabloon-herkansing mag
+ * (item 8.2). Eén volledige generatie duurt 1-3 min; twee daarvan passen alleen
+ * binnen de 300 s van Vercel als de eerste kort was.
+ */
+export const SJABLOON_HERKANSING_BUDGET_MS = 110_000
+
 function buildSystemPromptBlokken(huisstijl: HuisstijlConfig | undefined, taal: 'nl' | 'en' = 'nl'): PromptBlok[] {
   const blokken: PromptBlok[] = []
 
@@ -416,6 +423,10 @@ export async function generateContent(
   // correctie-instructie bij de herkansing, zie de validatie ná het parsen
   // hieronder.
   let sjabloonFouten: string[] | null = null
+  // Terugval bij een herkansing die zelf mislukt (kapotte JSON): dan liever de
+  // eerste, geldige output mét sjabloonafwijking dan helemaal niets.
+  let eersteOutput: ContentOutput | null = null
+  const start = Date.now()
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let extra = attempt > 0
@@ -468,17 +479,27 @@ export async function generateContent(
       if (huisstijl?.tekstsjabloon) {
         const controle = valideerTekstsjabloon(output.funda_tekst, huisstijl.tekstsjabloon, input.taal ?? 'nl')
         if (!controle.ok) {
-          if (attempt === 0) {
+          // Een herkansing genereert de hele suite opnieuw; alleen doen als de
+          // eerste poging snel genoeg was om samen binnen maxDuration (300 s)
+          // te blijven — anders tikt de functie af en verliezen we alles.
+          if (attempt === 0 && Date.now() - start < SJABLOON_HERKANSING_BUDGET_MS) {
             sjabloonFouten = controle.fouten
+            eersteOutput = output
             continue
           }
-          console.warn(`[tekstsjabloon] funda_tekst volgt na 2 pogingen het sjabloon nog niet (${controle.fouten.join('; ')}) — content wordt alsnog geaccepteerd.`)
+          console.warn(`[tekstsjabloon] funda_tekst volgt het sjabloon niet (${controle.fouten.join('; ')}) na ${attempt + 1} poging(en) — content wordt alsnog geaccepteerd.`)
         }
       }
 
       return output
     } catch {
-      if (attempt === 1) throw new Error('Claude gaf geen valide JSON na 2 pogingen')
+      if (attempt === 1) {
+        if (eersteOutput) {
+          console.warn('[tekstsjabloon] herkansing gaf geen valide JSON — eerste output (met sjabloonafwijking) wordt gebruikt.')
+          return eersteOutput
+        }
+        throw new Error('Claude gaf geen valide JSON na 2 pogingen')
+      }
     }
   }
   throw new Error('Onverwachte fout')

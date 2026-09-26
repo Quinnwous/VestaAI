@@ -60,6 +60,9 @@ export const TekstsjabloonSchema = z
       .object({
         opening_label: z.string().min(1).max(60),
         koppen: z.array(z.string().min(1).max(60)).min(1).max(10),
+        // Engelse slotzin; ontbreekt hij, dan laat de EN-generatie de Nederlandse
+        // slotzin vertalen in plaats van hem letterlijk (in het Nederlands) over te nemen.
+        slotzin: z.string().min(1).max(400).optional(),
       })
       .optional(),
   })

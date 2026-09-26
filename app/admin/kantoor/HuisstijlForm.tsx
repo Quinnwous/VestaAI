@@ -93,6 +93,7 @@ export function HuisstijlForm({ kantoor }: Props) {
       : [{ ...LEGE_SECTIE }],
   )
   const [slotzin, setSlotzin] = useState(bestaandSjabloon?.slotzin ?? '')
+  const [enSlotzin, setEnSlotzin] = useState(bestaandSjabloon?.engels?.slotzin ?? '')
   const [doelWoorden, setDoelWoorden] = useState<number>(bestaandSjabloon?.doel_woorden ?? 480)
 
   const updateSectie = (i: number, veld: keyof SectieVeld, val: string) =>
@@ -123,7 +124,13 @@ export function HuisstijlForm({ kantoor }: Props) {
             slotzin: slotzin.trim(),
             doel_woorden: doelWoorden,
             ...(heeftEngelseKoppen
-              ? { engels: { opening_label: enOpeningLabel.trim(), koppen: gevuldeSecties.map(s => s.en_kop.trim()) } }
+              ? {
+                  engels: {
+                    opening_label: enOpeningLabel.trim(),
+                    koppen: gevuldeSecties.map(s => s.en_kop.trim()),
+                    ...(enSlotzin.trim() ? { slotzin: enSlotzin.trim() } : {}),
+                  },
+                }
               : {}),
           }
         : undefined
@@ -334,6 +341,11 @@ export function HuisstijlForm({ kantoor }: Props) {
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-1">Slotzin <span className="text-gray-400 font-normal">(letterlijk overgenomen door de AI)</span></label>
               <textarea value={slotzin} onChange={e => setSlotzin(e.target.value)} rows={2} maxLength={400} placeholder="Bijv: Enthousiast over deze woning? Neem contact op met ons kantoor." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Slotzin Engels <span className="text-gray-400 font-normal">(optioneel — leeg laten en de AI vertaalt de Nederlandse)</span></label>
+              <textarea value={enSlotzin} onChange={e => setEnSlotzin(e.target.value)} rows={2} maxLength={400} placeholder="E.g.: Excited about this home? Get in touch with our office." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none" />
             </div>
 
             <div>

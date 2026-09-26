@@ -25,6 +25,12 @@ function openingLabelVoorTaal(sjabloon: TekstsjabloonConfig, taal: Taal): string
   return taal === 'en' && sjabloon.engels ? sjabloon.engels.opening_label : sjabloon.opening_label
 }
 
+/** Letterlijk verplichte slotzin in deze taal, of null als EN hem zelf vertaalt. */
+function slotzinVoorTaal(sjabloon: TekstsjabloonConfig, taal: Taal): string | null {
+  if (taal === 'nl') return sjabloon.slotzin
+  return sjabloon.engels?.slotzin ?? null
+}
+
 /**
  * Rendert het tekstsjabloon als verplichte, harde structuur voor funda_tekst
  * (item 8.2, roadmap § 3.4). Pure functie, geen Claude-aanroep — wordt in
@@ -42,11 +48,14 @@ export function renderTekstsjabloonPrompt(sjabloon: TekstsjabloonConfig, taal: T
   const sectieRegels = koppen.map((k, i) => `${i + 1}. ${k.kop} — ${k.instructie}`).join('\n')
 
   if (taal === 'en') {
+    const slotzinEn = slotzinVoorTaal(sjabloon, 'en')
     return `FUNDA_TEKST — MANDATORY OFFICE TEMPLATE (replaces the length and paragraph rules for funda_tekst above; the other rules there — no price mention, no discrimination, no excessive punctuation — still apply):
 - Open with "${openingLabel}" on its own line, followed by a short, summarising introduction sentence.
 - Then use EXACTLY these headings, each on its own line, in EXACTLY this order: ${koppenRegel}.
 ${sectieRegels}
-- Close with this sentence, LITERALLY and unchanged: "${sjabloon.slotzin}"
+${slotzinEn
+  ? `- Close with this sentence, LITERALLY and unchanged: "${slotzinEn}"`
+  : `- Close with a faithful English translation of this office closing line: "${sjabloon.slotzin}"`}
 - Target length: approximately ${sjabloon.doel_woorden} words (reasonable margin — the 700-word minimum above no longer applies).`
   }
 
@@ -91,7 +100,8 @@ export function valideerTekstsjabloon(tekst: string, sjabloon: TekstsjabloonConf
     }
   }
 
-  if (!tekst.includes(sjabloon.slotzin)) {
+  const slotzin = slotzinVoorTaal(sjabloon, taal)
+  if (slotzin !== null && !tekst.includes(slotzin)) {
     fouten.push(
       taal === 'en'
         ? 'The mandatory closing sentence is missing or was not copied literally'

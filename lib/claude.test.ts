@@ -450,6 +450,43 @@ describe('generateContent — tekstsjabloon-validatie en -herkansing (item 8.2)'
     warnSpy.mockRestore()
   })
 
+  it('gebruikt de eerste output als de herkansing geen valide JSON geeft', async () => {
+    const mockStream = vi.fn()
+      .mockReturnValueOnce(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+      .mockReturnValueOnce(streamReturning('dit is geen json'))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+    warnSpy.mockRestore()
+  })
+
+  it('herkanst niet als de eerste poging het tijdsbudget al opmaakte (Vercel-limiet)', async () => {
+    const { generateContent, SJABLOON_HERKANSING_BUDGET_MS } = await import('./claude')
+    const echteNow = Date.now
+    let t = 1_000_000
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => t)
+    const mockStream = vi.fn().mockImplementation(() => {
+      t += SJABLOON_HERKANSING_BUDGET_MS + 1
+      return streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST }))
+    })
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+    expect(warnSpy.mock.calls[0][0]).toContain('[tekstsjabloon]')
+    warnSpy.mockRestore()
+    nowSpy.mockRestore()
+    expect(Date.now).toBe(echteNow)
+  })
+
   it('slaat de validatie over zonder geconfigureerd sjabloon (bestaand gedrag ongewijzigd)', async () => {
     const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
     const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
