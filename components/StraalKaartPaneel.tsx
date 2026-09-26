@@ -18,14 +18,14 @@ function straalLabel(m: number): string {
 
 /**
  * Straal-uitsnede van de verkoopkaart binnen een woningdossier (item 7.3,
- * docs/roadmap.md § Fase 7 — op de MapLibre-stack, voorheen Leaflet via
- * `Verkoopkaart.tsx`): "in de buurt hebben we al verkocht" als onderbouwing
- * in het verkoopadvies. Filtert de eigen-verkoop-transacties van het
- * kantoor op afstand tot dit adres (`lib/straalFilter.ts`, sorteert op
- * afstand) — zie lib/geo.ts voor waarom dit application-side gebeurt i.p.v.
- * via een PostGIS-query. `eigenVerkopen` komt via `lib/transactiesQuery.ts`
- * binnen (zie de pagina die dit dossier rendert) — dit component doet zelf
- * geen databasequery.
+ * docs/roadmap.md § Fase 7 — op de MapLibre-stack `components/kaart/`,
+ * sinds item 7.4 de enige kaartstack in de app): "in de buurt hebben we al
+ * verkocht" als onderbouwing in het verkoopadvies. Filtert de eigen-verkoop-
+ * transacties van het kantoor op afstand tot dit adres
+ * (`lib/straalFilter.ts`, sorteert op afstand) — zie lib/geo.ts voor waarom
+ * dit application-side gebeurt i.p.v. via een PostGIS-query. `eigenVerkopen`
+ * komt via `lib/transactiesQuery.ts` binnen (zie de pagina die dit dossier
+ * rendert) — dit component doet zelf geen databasequery.
  */
 export function StraalKaartPaneel({
   lat,
