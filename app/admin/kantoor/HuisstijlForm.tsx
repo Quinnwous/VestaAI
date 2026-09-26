@@ -2,11 +2,15 @@
 
 import { useState } from 'react'
 import type { Kantoor } from '@/lib/supabase'
-import type { HuisstijlConfig } from '@/lib/schemas'
+import type { HuisstijlConfig, TekstsjabloonConfig } from '@/lib/schemas'
 import { slaHuisstijlOpAlsAdmin } from '../actions'
 import { LogoUpload } from './LogoUpload'
 import { AchtergrondUpload } from './AchtergrondUpload'
 import { FONT_OPTIES, VORM_OPTIES, type LettertypeKeuze, type VormKeuze } from '@/lib/branding'
+
+type SectieVeld = { kop: string; instructie: string; en_kop: string }
+
+const LEGE_SECTIE: SectieVeld = { kop: '', instructie: '', en_kop: '' }
 
 interface Props {
   kantoor: Kantoor
@@ -76,10 +80,54 @@ export function HuisstijlForm({ kantoor }: Props) {
   const addBrochure = () => setBrochureVoorbeelden(prev => (prev.length >= 10 ? prev : [...prev, '']))
   const removeBrochure = (i: number) => setBrochureVoorbeelden(prev => prev.filter((_, idx) => idx !== i))
 
+  // Tekstsjabloon (item 8.2, roadmap § 3.4): schrijft de opbouw van funda_tekst
+  // hard voor (bv. i4housing's 4SALE! → WOONCOMFORT → ... → vaste slotzin).
+  // Optioneel — een kantoor zonder sjabloon houdt het bestaande, vrije format.
+  const bestaandSjabloon = huidig?.tekstsjabloon
+  const [sjabloonAan, setSjabloonAan] = useState(!!bestaandSjabloon)
+  const [openingLabel, setOpeningLabel] = useState(bestaandSjabloon?.opening_label ?? '')
+  const [enOpeningLabel, setEnOpeningLabel] = useState(bestaandSjabloon?.engels?.opening_label ?? '')
+  const [secties, setSecties] = useState<SectieVeld[]>(
+    bestaandSjabloon?.secties?.length
+      ? bestaandSjabloon.secties.map((s, i) => ({ kop: s.kop, instructie: s.instructie, en_kop: bestaandSjabloon.engels?.koppen?.[i] ?? '' }))
+      : [{ ...LEGE_SECTIE }],
+  )
+  const [slotzin, setSlotzin] = useState(bestaandSjabloon?.slotzin ?? '')
+  const [doelWoorden, setDoelWoorden] = useState<number>(bestaandSjabloon?.doel_woorden ?? 480)
+
+  const updateSectie = (i: number, veld: keyof SectieVeld, val: string) =>
+    setSecties(prev => { const v = [...prev]; v[i] = { ...v[i], [veld]: val }; return v })
+  const addSectie = () => setSecties(prev => (prev.length >= 10 ? prev : [...prev, { ...LEGE_SECTIE }]))
+  const removeSectie = (i: number) => setSecties(prev => (prev.length <= 1 ? prev : prev.filter((_, idx) => idx !== i)))
+  const verplaatsSectie = (i: number, richting: -1 | 1) =>
+    setSecties(prev => {
+      const j = i + richting
+      if (j < 0 || j >= prev.length) return prev
+      const v = [...prev]
+      ;[v[i], v[j]] = [v[j], v[i]]
+      return v
+    })
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('saving')
     const broVb = brochureVoorbeelden.filter(Boolean)
+
+    const gevuldeSecties = secties.filter(s => s.kop.trim() && s.instructie.trim())
+    const heeftEngelseKoppen = enOpeningLabel.trim() && gevuldeSecties.length > 0 && gevuldeSecties.every(s => s.en_kop.trim())
+    const tekstsjabloon: TekstsjabloonConfig | undefined =
+      sjabloonAan && openingLabel.trim() && gevuldeSecties.length > 0 && slotzin.trim() && doelWoorden > 0
+        ? {
+            opening_label: openingLabel.trim(),
+            secties: gevuldeSecties.map(s => ({ kop: s.kop.trim(), instructie: s.instructie.trim() })),
+            slotzin: slotzin.trim(),
+            doel_woorden: doelWoorden,
+            ...(heeftEngelseKoppen
+              ? { engels: { opening_label: enOpeningLabel.trim(), koppen: gevuldeSecties.map(s => s.en_kop.trim()) } }
+              : {}),
+          }
+        : undefined
+
     const result = await slaHuisstijlOpAlsAdmin({
       schrijftoon,
       slogan,
@@ -94,6 +142,7 @@ export function HuisstijlForm({ kantoor }: Props) {
       brochure_stijl: broVb.length || slotTekst.trim()
         ? { voorbeelden: broVb, ...(slotTekst.trim() ? { slot_tekst: slotTekst.trim() } : {}) }
         : undefined,
+      tekstsjabloon,
       kantoor_id: kantoor.id,
     })
     setStatus(result.ok ? 'saved' : 'error')
@@ -223,6 +272,74 @@ export function HuisstijlForm({ kantoor }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1">Kantoorgegevens-slot <span className="text-gray-400 font-normal">(slotpagina in de PDF-export)</span></label>
           <textarea value={slotTekst} onChange={e => setSlotTekst(e.target.value)} rows={3} maxLength={600} placeholder="Bijv: Makelaardij De Sleutel · Dorpsstraat 1, 1234 AB · 020-1234567 · info@desleutel.nl · KvK 12345678" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none" />
         </div>
+      </div>
+
+      <div className="border-t border-gray-100 pt-6">
+        <div className="flex items-center justify-between mb-1">
+          <label className="block text-sm font-medium text-gray-700">Tekstsjabloon <span className="text-gray-400 font-normal">(optioneel)</span></label>
+          <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+            <input type="checkbox" checked={sjabloonAan} onChange={e => setSjabloonAan(e.target.checked)} className="h-4 w-4 rounded border-gray-300" />
+            Sjabloon gebruiken
+          </label>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          Schrijft de opbouw van de Funda-tekst hard voor — bv. i4housing&apos;s eigen 4SALE!-format
+          (opening, vaste tussenkopjes in volgorde, vaste slotzin). Zonder sjabloon blijft het
+          bestaande, vrije format gelden.
+        </p>
+
+        {sjabloonAan && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Openingslabel (NL) <span className="text-gray-400 font-normal">bv. 4SALE!</span></label>
+                <input type="text" value={openingLabel} onChange={e => setOpeningLabel(e.target.value)} maxLength={60} placeholder="4SALE!" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Openingslabel (EN) <span className="text-gray-400 font-normal">optioneel</span></label>
+                <input type="text" value={enOpeningLabel} onChange={e => setEnOpeningLabel(e.target.value)} maxLength={60} placeholder="4SALE!" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">Tussenkopjes, in volgorde <span className="text-gray-400 font-normal">(tot 10)</span></label>
+              <div className="space-y-3">
+                {secties.map((sectie, i) => (
+                  <div key={i} className="rounded-lg border border-gray-200 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-mono text-gray-400 w-5">{i + 1}.</span>
+                      <input type="text" value={sectie.kop} onChange={e => updateSectie(i, 'kop', e.target.value)} maxLength={60} placeholder="Kop (NL), bv. WOONCOMFORT" aria-label={`Kop ${i + 1} (NL)`} className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                      <input type="text" value={sectie.en_kop} onChange={e => updateSectie(i, 'en_kop', e.target.value)} maxLength={60} placeholder="Kop (EN), optioneel" aria-label={`Kop ${i + 1} (EN)`} className="flex-1 rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button type="button" onClick={() => verplaatsSectie(i, -1)} disabled={i === 0} aria-label={`Sectie ${i + 1} omhoog`} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">↑</button>
+                        <button type="button" onClick={() => verplaatsSectie(i, 1)} disabled={i === secties.length - 1} aria-label={`Sectie ${i + 1} omlaag`} className="text-gray-400 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed">↓</button>
+                        {secties.length > 1 && (
+                          <button type="button" onClick={() => removeSectie(i)} aria-label={`Sectie ${i + 1} verwijderen`} className="text-gray-300 hover:text-red-500">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <textarea value={sectie.instructie} onChange={e => updateSectie(i, 'instructie', e.target.value)} rows={2} maxLength={600} placeholder={`Instructie: wat moet er in deze sectie staan? (bv. 'Korte bulletpoints die beginnen met "- "')`} aria-label={`Instructie sectie ${i + 1}`} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none" />
+                  </div>
+                ))}
+              </div>
+              {secties.length < 10 && (
+                <button type="button" onClick={addSectie} className="mt-2 text-sm font-semibold text-gray-700 hover:text-gray-900">+ Sectie toevoegen ({secties.length}/10)</button>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Slotzin <span className="text-gray-400 font-normal">(letterlijk overgenomen door de AI)</span></label>
+              <textarea value={slotzin} onChange={e => setSlotzin(e.target.value)} rows={2} maxLength={400} placeholder="Bijv: Enthousiast over deze woning? Neem contact op met ons kantoor." className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 resize-none" />
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1">Richtlengte (woorden)</label>
+              <input type="number" value={doelWoorden} onChange={e => setDoelWoorden(Math.max(0, Number(e.target.value)))} min={100} max={2000} step={10} className="w-32 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+            </div>
+          </div>
+        )}
       </div>
 
       <button type="submit" disabled={status === 'saving'} className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50 transition-colors">
