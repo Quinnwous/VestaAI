@@ -182,7 +182,9 @@ export function DossierHeader({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-end', flex: '1 1 340px', maxWidth: 460 }}>
         {acties && <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{acties}</div>}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, width: '100%' }}>
+        {/* auto-fit i.p.v. een vaste 3-koloms grid: op 390 px klapt "€ 733.000"
+            anders af tegen de tegelrand (DoD: "op 390 px breekt niets"). */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10, width: '100%' }}>
           <StatTile
             label="Waarde"
             waarde={waarde ?? undefined}

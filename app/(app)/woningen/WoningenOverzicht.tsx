@@ -58,8 +58,8 @@ const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
 function FaseBadge({ fase }: { fase: ObjectFase }) {
   const cfg = FASE_BADGE[fase]
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: radius.pill, border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color }} />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: radius.pill, border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11`, whiteSpace: 'nowrap', flexShrink: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
       {cfg.label}
     </span>
   )
@@ -69,8 +69,8 @@ function StatusBadge({ status }: { status: string }) {
   const cfg = STATUS_LABELS[status]
   if (!cfg || status === 'draft') return null
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: radius.pill, border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11` }}>
-      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color }} />
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, borderRadius: radius.pill, border: `1px solid ${cfg.color}33`, padding: '2px 8px', fontSize: 12, fontWeight: 600, color: cfg.color, background: `${cfg.color}11`, whiteSpace: 'nowrap', flexShrink: 0 }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
       {cfg.label}
     </span>
   )
@@ -376,7 +376,7 @@ function WoningenKaartWeergave({ rijen }: { rijen: WoningKaartRij[] }) {
                   background: gehoveredId === p.id ? 'var(--merk-zacht)' : 'transparent',
                 }}
               >
-                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 700, color: colors.text }}>
+                <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, fontWeight: 700, color: colors.text }}>
                   {p.address}
                 </span>
                 <FaseBadge fase={p.fase} />
