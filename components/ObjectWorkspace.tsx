@@ -100,6 +100,7 @@ export function ObjectWorkspace({
   contentStatus = 'klaar',
   contentBezigSinds = null,
   verrijkingInitieel = null,
+  wozHandmatig = null,
 }: {
   objectId: string
   address: string
@@ -129,6 +130,8 @@ export function ObjectWorkspace({
    * zelf eenmalig te verversen. `null` ook zolang de migratie voor deze kolom
    * nog niet is toegepast (graceful, zie lib/verrijkingOpslag.ts). */
   verrijkingInitieel?: VerrijkingOpslag | null
+  /** WOZ die de makelaar zelf invulde (`input_json.woz_waarde`/`woz_peiljaar`, lib/woz.ts). */
+  wozHandmatig?: { waarde: number; peiljaar: number } | null
 }) {
   // Item 10.2: de dossierheader linkt met `?tab=content` naar de contenttab
   // (bv. de "Content"-knop in de acties) — alleen als startwaarde gelezen,
@@ -160,7 +163,7 @@ export function ObjectWorkspace({
   const buurtDataSectie = (
     <div>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>Buurt & data</p>
-      <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
+      <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
     </div>
   )
 
@@ -195,7 +198,7 @@ export function ObjectWorkspace({
       </div>
 
       <div style={{ display: active === 'buurt' ? 'block' : 'none' }}>
-        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} />
+        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
       </div>
 
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>

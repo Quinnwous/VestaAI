@@ -245,7 +245,7 @@ function DossierFoto({ url }: { url: string | null }) {
     <div
       style={{
         width: 104, height: 96, borderRadius: radius.lg, flex: 'none',
-        background: 'linear-gradient(135deg, #0A8AD2 0%, var(--merk-diep) 100%)',
+        background: 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',
         display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,.85)',
       }}
       aria-hidden="true"

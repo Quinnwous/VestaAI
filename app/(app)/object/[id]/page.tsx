@@ -157,6 +157,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
         contentStatus={(object.content_status ?? 'klaar') as ObjectContentStatus}
         contentBezigSinds={object.content_bezig_sinds ?? null}
         verrijkingInitieel={verrijkingInitieel}
+        wozHandmatig={invoer.woz_waarde && invoer.woz_peiljaar ? { waarde: invoer.woz_waarde, peiljaar: invoer.woz_peiljaar } : null}
       />
     </AppPagina>
   )
