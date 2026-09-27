@@ -5,18 +5,19 @@
  * oppakken") — vervangt de statische `MinikaartPlaceholder` die
  * `TransactiesZoeken.tsx` had staan tot item 7.1/7.3 (`BasisKaart`,
  * MapLibre) gemerged was. Bouwt bewust géén nieuwe kaartlaag: de bestaande
- * `ReferentiesLaag` (components/kaart/, item 7.3) plaatst met een lege
- * `referenties`-lijst precies één merk-gekleurde `SubjectPin` op het adres —
- * exact wat hier nodig is. `direct` staat aan omdat de kaart in de sheet
- * altijd boven de vouw staat zodra de sheet open is (zie BasisKaart.tsx).
- * `scrollZoom={false}` voorkomt dat scrollen door de sheetinhoud de kaart
- * kaapt; slepen en de zoomknoppen blijven werken ("licht interactief").
+ * `ReferentiesLaag` plaatst met een lege `referenties`-lijst precies één
+ * merk-gekleurde `SubjectPin` op het adres — exact wat hier nodig is.
+ * `direct` staat aan omdat de kaart in de sheet altijd boven de vouw staat
+ * zodra de sheet open is (zie BasisKaart.tsx). `scrollZoom={false}`
+ * voorkomt dat scrollen door de sheetinhoud de kaart kaapt; slepen en de
+ * zoomknoppen blijven werken ("licht interactief").
  *
- * Buiten `components/kaart/` gehouden op verzoek (een andere agent werkt
- * daar tegelijk aan iets anders) — kan er later 1-op-1 naartoe, dit bestand
- * importeert alleen de bestaande exports uit `components/kaart/index.ts`.
+ * Verplaatst naar `components/kaart/` op 27 sep 2026 (stond er eerst buiten
+ * om overlap met een andere agent te vermijden) — geëxporteerd via
+ * `components/kaart/index.ts`.
  */
-import { BasisKaart, ReferentiesLaag } from '@/components/kaart'
+import { BasisKaart } from './BasisKaart'
+import { ReferentiesLaag } from './ReferentiesLaag'
 import { colors } from '@/components/ui/tokens'
 
 export type MinikaartStatus = 'laden' | 'ok' | 'onbekend'
