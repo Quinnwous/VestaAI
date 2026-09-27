@@ -146,7 +146,7 @@ export function ObjectWorkspace({
   const straalKaart = geo ? (
     <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid #E6E9EC', background: '#fff', padding: 18 }}>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>In de buurt verkocht</p>
-      <StraalKaartPaneel lat={geo.lat} lng={geo.lng} eigenVerkopen={eigenVerkopen} />
+      <StraalKaartPaneel lat={geo.lat} lng={geo.lng} eigenVerkopen={eigenVerkopen} adres={address} />
     </div>
   ) : null
 

@@ -3,6 +3,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { BasisKaart, StraalLaag, ReferentiesLaag, type ReferentiePunt, type ReferentieHoverInfo } from '@/components/kaart'
 import type { Coord } from '@/lib/kaart'
+import { kaderRondStraal } from '@/lib/geo'
 import type { WaarderingReferentie } from '@/lib/waardering'
 
 function formatEuro(n: number): string {
@@ -59,15 +60,10 @@ export function WaarderingKaart({
   // zelf: bij weinig/geclusterde referenties zou fitten-op-punten de
   // straalcirkel afsnijden. De straal loopt via de verbredingsladder (§ 3.3)
   // op van 750 m tot 5 km, een vaste zoom zou een brede selectie afsnijden.
-  const bounds: [Coord, Coord] = useMemo(() => {
-    const straal = straalM ?? 750
-    const dLat = (straal * 1.3) / 111_320
-    const dLng = dLat / (Math.cos((subject.lat * Math.PI) / 180) || 1)
-    return [
-      [subject.lng - dLng, subject.lat - dLat],
-      [subject.lng + dLng, subject.lat + dLat],
-    ]
-  }, [subject.lat, subject.lng, straalM])
+  const bounds: [Coord, Coord] = useMemo(
+    () => kaderRondStraal(subject.lat, subject.lng, straalM ?? 750),
+    [subject.lat, subject.lng, straalM],
+  )
 
   const hoverReferentie = hover ? referentieById.get(hover.id) : null
   const hoverNummer = hover ? nummerById.get(hover.id) : undefined

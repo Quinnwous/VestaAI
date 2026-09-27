@@ -1,10 +1,11 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BasisKaart, StraalLaag, VerkopenLaag, HoverKaart, type VerkoopHoverInfo } from '@/components/kaart'
+import { BasisKaart, StraalLaag, VerkopenLaag, HoverKaart, KaderLaag, ReferentiesLaag, type VerkoopHoverInfo } from '@/components/kaart'
 import { EmptyState, Slider } from '@/components/ui'
 import { colors, radius } from '@/components/ui/tokens'
 import { filterBinnenStraal } from '@/lib/straalFilter'
+import { kaderRondStraal } from '@/lib/geo'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 const STRAAL_MIN = 100
@@ -31,10 +32,12 @@ export function StraalKaartPaneel({
   lat,
   lng,
   eigenVerkopen,
+  adres = 'dit adres',
 }: {
   lat: number | null
   lng: number | null
   eigenVerkopen: TransactieMetCoordinaten[]
+  adres?: string
 }) {
   const [straal, setStraal] = useState<number>(STRAAL_STANDAARD)
   const [hover, setHover] = useState<VerkoopHoverInfo | null>(null)
@@ -82,9 +85,11 @@ export function StraalKaartPaneel({
       </div>
 
       <div style={{ position: 'relative' }}>
-        <BasisKaart center={[lng, lat]} zoom={15} hoogte={320} scrollZoom={false}>
+        <BasisKaart bounds={kaderRondStraal(lat, lng, straal)} hoogte={320} scrollZoom={false}>
+          <KaderLaag bounds={kaderRondStraal(lat, lng, straal)} />
           <StraalLaag center={[lng, lat]} straalM={straal} />
           <VerkopenLaag transacties={binnenStraal} onHover={setHover} />
+          <ReferentiesLaag subject={{ lat, lng, label: adres }} referenties={[]} />
           <HoverKaart info={hover} />
         </BasisKaart>
         {binnenStraal.length === 0 && (

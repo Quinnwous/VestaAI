@@ -17,3 +17,22 @@ export function afstandMeters(a: [number, number], b: [number, number]): number 
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
   return 2 * R * Math.asin(Math.sqrt(h))
 }
+
+/**
+ * Kaartkader ([[west, zuid], [oost, noord]] in lng/lat) rond een straalcirkel,
+ * met marge — zodat de hele cirkel in beeld staat, ongeacht de straal
+ * (straalpaneel en referentiekaart, item 7.3).
+ */
+export function kaderRondStraal(
+  lat: number,
+  lng: number,
+  straalM: number,
+  marge = 1.3,
+): [[number, number], [number, number]] {
+  const dLat = (straalM * marge) / 111_320
+  const dLng = dLat / (Math.cos((lat * Math.PI) / 180) || 1)
+  return [
+    [lng - dLng, lat - dLat],
+    [lng + dLng, lat + dLat],
+  ]
+}
