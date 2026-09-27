@@ -17,10 +17,21 @@ export default defineConfig({
       name: 'setup',
       testMatch: /auth\.setup\.ts/,
     },
+    // Item 12.2: aparte sessies voor het demo-kantoor (echte wachtwoord-login)
+    // en de platform-admin (sessiecookie) — los van 'setup' hierboven, dat de
+    // generieke E2E_TEST_EMAIL-sessie voor primitives.spec.ts blijft leveren.
+    {
+      name: 'demo-setup',
+      testMatch: /demo\.setup\.ts/,
+    },
+    {
+      name: 'admin-setup',
+      testMatch: /admin\.setup\.ts/,
+    },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      dependencies: ['setup'],
+      dependencies: ['setup', 'demo-setup', 'admin-setup'],
     },
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
