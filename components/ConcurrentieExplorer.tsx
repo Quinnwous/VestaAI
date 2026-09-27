@@ -130,7 +130,7 @@ export function ConcurrentieExplorer({
 
   const pillen: FilterPil[] = []
   if (!bereikGelijk(filter.plaatsen, standaard.plaatsen)) {
-    pillen.push({ label: 'Plaats', waarde: filter.plaatsen.join(', ') || '—', onVerwijder: () => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] }) })
+    pillen.push({ label: 'Plaats', waarde: filter.plaatsen.join(', ') || 'Alle plaatsen', onVerwijder: () => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] }) })
   }
   if (filter.wijken.length) pillen.push({ label: 'Wijken', waarde: filter.wijken.map(w => w.split('|')[1]).join(', '), onVerwijder: () => zetFilterDeel({ wijken: [] }) })
   if (typeSamenvatting) pillen.push({ label: 'Woningtype', waarde: typeSamenvatting, onVerwijder: () => zetFilterDeel({ typen: [] }) })

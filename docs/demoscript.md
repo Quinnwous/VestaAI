@@ -135,12 +135,29 @@ Het script:
 - faalt hard op een `pageerror`, console-error, Next.js-foutoverlay, een lege
   staat waar data verwacht wordt (bv. "Nog geen transacties"), een
   ontbrekend knoplabel of een niet-2xx-navigatie;
+- **scène 4, stap 2 typt écht een adres** (`Langstraat 10 Wassenaar` — een
+  bestaand adres binnen het werkgebied, geen fixture-adres die bestaan niet
+  in de BAG) teken voor teken in `/object/new`, wacht op de listbox
+  (`role="listbox"`/`role="option"`, faalt na 5 s zonder suggestie), kiest de
+  eerste suggestie via het toetsenbord (ArrowDown + Enter — test de
+  combobox-ARIA, niet een muisklik) en pollt daarna `bouwjaar`/`oppervlak_m2`
+  tot de BAG-koppeling ze heeft voorgevuld. Dit is de regressietoets voor de
+  BAG-les van 27 sep 2026: de adres-autocomplete en het bouwjaar/oppervlak-
+  voorvullen deden maandenlang ongemerkt niets omdat een mislukte BAG-call
+  stil tot "leeg" werd opgevouwen — voorheen controleerde deze stap alleen of
+  het adresveld zichtbaar was, wat die regressie nooit had gevangen. Een
+  requestlistener bewaakt tijdens het typen/kiezen dat er geen niet-GET-
+  verzoek naar `/api/` gaat (beide aanroepen, `/api/bag` en `/api/verrijking`,
+  zijn read-only geverifieerd in de routecode). Na de check klikt het script
+  eenmalig "Volgende →" naar wizardstap 2 (Woning) zodat de screenshot de
+  voorvulling ook toont — verder dan die stap, of op "Woning aanmaken", wordt
+  niet geklikt;
 - **voert geen schrijfacties of betaalde AI-aanroepen uit**: maakt geen
-  nieuw dossier (scène 4 gebruikt een bestaand verkoopadvies-dossier van het
-  kantoor) en klikt nooit "Genereer content", "Kwartaalbericht schrijven"
-  (start al bij het ÓPENEN van de modal een Claude-call), "Uitsluiten"/
-  "Vastleggen" bij de waardering (persisteren op de achtergrond naar
-  `objecten.waardering_json`) of de fase-pil "In verkoop" (wijzigt
+  nieuw dossier (scène 4 gebruikt vanaf stap 5 een bestaand verkoopadvies-
+  dossier van het kantoor) en klikt nooit "Genereer content", "Kwartaalbericht
+  schrijven" (start al bij het ÓPENEN van de modal een Claude-call),
+  "Uitsluiten"/"Vastleggen" bij de waardering (persisteren op de achtergrond
+  naar `objecten.waardering_json`) of de fase-pil "In verkoop" (wijzigt
   `objecten.fase` én start automatisch contentgeneratie) — voor die stappen
   wordt alleen gecontroleerd dat de knop bestaat en klikbaar is. De
   waardebepaling- en brochure-pdf zijn wél puur lezend en worden aangeklikt,
@@ -308,7 +325,10 @@ makelaarscorrectie."
   zien.
 - **BAG-lookup bij het adres faalt (stap 2):** velden blijven leeg,
   gewoon handmatig invullen (woningtype/oppervlak/bouwjaar) — het formulier
-  accepteert dat, alleen de auto-vul valt weg.
+  accepteert dat, alleen de auto-vul valt weg. Deze stap heeft sinds 28 sep
+  2026 een échte regressietoets in de automatische repetitie (§ Automatische
+  repetitie hierboven) — een rode `scene4 2/3/4`-regel daar is dus een
+  concreet BAG-signaal, niet alleen een demo-risico.
 
 ---
 

@@ -17,14 +17,14 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (27 sep, PR `feat/sessie-27sep-d`):** 12.5b
-  generale-repetitiescript (`npm run demo:repetitie`: 31 stappen door de zes
-  scènes, alleen lezend, 0 fouten), **BAG-bug** (adres-autocomplete en
-  voorvullen bouwjaar/oppervlakte deden ongemerkt niets → `lib/bag.ts`),
-  **"Wis" op het Plaats-filter** deed niets (`useFilterState`), omweg
-  `vorigePeriodeFilter()` weg (SQL-fix op productie geverifieerd), minikaart naar
-  `components/kaart/`, combobox-ARIA in `AddressAutocomplete`. Eerder op 27 sep:
-  12.5a demoscript, één dossierkaart, 8.3, 8.4, 9.2, 10.5, 12.3, 13.2.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep`, autonoom terwijl Quinn sliep):**
+  statische locatiekaart in de waardebepaling-pdf (PDOK-pastel-tegels via
+  `sharp`, genummerde referenties = #-kolom in de tabel, best-effort: zonder
+  kaart als tegels falen; pdf 2,6 s), repetitie scène 4 typt een echt adres en
+  toetst de BAG-voorvulling (33 stappen), Plaats-pil consistent op marktanalyse,
+  transacties en concurrentie ("Alle plaatsen" na "Wis"). Daarvoor (27 sep,
+  PR `feat/sessie-27sep-d`): 12.5b repetitiescript, BAG-bug, "Wis" op Plaats,
+  omweg vorige periode weg.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -35,15 +35,16 @@
   op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
-- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  **repetitiescript + scène 4** — `scripts/generale-repetitie.mjs` uitbreiden met
-  adres typen op `/object/new` (suggesties verschijnen, BAG vult bouwjaar/
-  oppervlakte voor; níet op "Woning aanmaken" drukken) zodat de BAG-bug nooit
-  meer stil terugkomt · **statische kaart in de waardebepaling-pdf** (§ 9, naar
-  voren gehaald: scène 4 eindigt bij die pdf) · **Plaats als ×-pil** in de
-  filterbalk van marktanalyse/concurrentie (nu de enige filter zonder pil).
+- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):** de
+  bouwbare demo-items zijn op; de rondes pakken nu backlog "na de demo" op die
+  zonder Quinn kan (keuze sessie, 28 sep): **⌘K zoeken** (woningen, adressen,
+  pagina's; binnen het eigen kantoor) · **wijk-/buurtgrenzen op de
+  verkoopkaart** (CBS via PDOK, als schakelbare laag) · **poets**
+  (`plaatsenGelijk()` dubbel in twee explorers → `lib/`, CLAUDE.md-status
+  concurrentie-v2-RPC's nagaan).
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
-  smoke-generatietest met `E2E_GENERATE=1`.
+  smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade
+  (te groot risico zonder overleg vlak voor de demo).
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
   ging over een functie zonder aanroeper. Niet opnieuw oppakken.
@@ -886,7 +887,9 @@ makelaarsveld in de exports) · pastelkleuren van de kaart
 laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
-content naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden · keukentafel-/
+content naar de UI (nu: timer + skeletons) · subject-pin in de pdf-kaart valt
+weg bij een donkere kantoorkleur (demo-kantoor; i4housing-blauw is wél
+duidelijk) · A/B-segmentvergelijking uitbreiden · keukentafel-/
 presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
 Resend-melding — zie v1) · ⌘K zoeken · Next 15-upgrade · jaarlijkse
 CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen

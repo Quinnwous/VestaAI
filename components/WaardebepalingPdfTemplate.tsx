@@ -1,10 +1,26 @@
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image, Svg, Circle, G } from '@react-pdf/renderer'
+import type { ComponentType, ReactNode } from 'react'
 import type { PropertyInput, WaarderingCorrectieSchema } from '@/lib/schemas'
 import { woningtypeLabel } from '@/lib/schemas'
 import type { CorrectieNaam, WaarderingUitkomst } from '@/lib/waardering'
 import type { z } from 'zod'
 
 type Correctie = z.infer<typeof WaarderingCorrectieSchema>
+
+/**
+ * Kant-en-klare locatiekaart, al met tegels samengesteld en pinposities al
+ * omgerekend naar pixels in dat beeld (`lib/statischeKaart.ts`, aangeroepen
+ * vanuit de route — dit template doet zelf geen projectie, puur weergave).
+ * `null`/`undefined` (geen coördinaat, tegels niet op tijd, samenstelfout)
+ * → gewoon geen kaart, de hero-rij valt terug op zijn eerdere 2-koloms vorm.
+ */
+export type KaartVoorPdf = {
+  png: Buffer
+  breedtePx: number
+  hoogtePx: number
+  subject: { x: number; y: number }
+  referenties: { x: number; y: number; nummer: number }[]
+}
 
 interface Props {
   address: string
@@ -14,7 +30,23 @@ interface Props {
   kantoor: { naam: string; logoUrl: string | null; kleur: string }
   makelaarNaam: string
   opgesteldOp: string
+  /** Optioneel — zie KaartVoorPdf. Ontbreekt hij, dan ziet de pdf er precies uit als vóór item 4.7-uitbreiding. */
+  kaart?: KaartVoorPdf | null
 }
+
+// react-pdf's <Text> ondersteunt binnen <Svg> extra props (fontSize, fill,
+// fontWeight) die de renderer rechtstreeks van `instance.props` leest
+// (@react-pdf/layout, getFragments — niet uit `style`, en niet in de
+// SVGTextProps-typing opgenomen, dus hier een lokale, bewust bredere cast).
+const SvgText = Text as unknown as ComponentType<{
+  x: number
+  y: number
+  fontSize: number
+  fill: string
+  fontWeight?: number | string
+  textAnchor?: 'start' | 'middle' | 'end'
+  children?: ReactNode
+}>
 
 // ── Formattering (spec: § 3.3 + item 4.7 — nl-NL, komma-decimalen) ────────
 function euro(n: number | null): string {
@@ -87,13 +119,31 @@ function makeStyles(kleur: string) {
     badgeRij: { flexDirection: 'row', justifyContent: 'space-between', fontSize: 8.5, borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB', paddingBottom: 3 },
     badgeLabel: { color: '#6B7280' },
     badgeWaarde: { fontFamily: 'Helvetica-Bold', color: '#14181B' },
+    // Vast formaat (geen flex) — de raster (breedtePx×hoogtePx uit
+    // lib/statischeKaart.ts, standaard 320×168) heeft exact dezelfde
+    // beeldverhouding als 160×84pt, dus <Image objectFit="fill"> en de
+    // <Svg>-pinlaag erboven schalen 1-op-1 mee zonder bijsnijden dat de
+    // pinposities zou laten afwijken van de kaart.
+    kaartBlok: {
+      width: 160,
+      height: 84,
+      alignSelf: 'flex-start',
+      borderRadius: 6,
+      borderWidth: 0.5,
+      borderColor: '#E5E7EB',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    kaartBeeld: { width: 160, height: 84, objectFit: 'fill' },
+    kaartOverlay: { position: 'absolute', top: 0, left: 0, width: 160, height: 84 },
     sectieTitel: { fontSize: 10.5, fontFamily: 'Helvetica-Bold', color: '#14181B', marginBottom: 5, marginTop: 10 },
     tabel: { borderWidth: 0.5, borderColor: '#E5E7EB', borderRadius: 3 },
     tabelRij: { flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB' },
     tabelRijLaatste: { flexDirection: 'row' },
     tabelKopCel: { fontSize: 6.8, fontFamily: 'Helvetica-Bold', color: '#6B7280', textTransform: 'uppercase', padding: '4 4', backgroundColor: '#F7F8F9' },
     tabelCel: { fontSize: 7.5, color: '#374151', padding: '4 4' },
-    colAdres: { width: '22%' },
+    colNummer: { width: '4%', textAlign: 'center', color: '#9CA3AF' },
+    colAdres: { width: '18%' },
     colAfstand: { width: '9%', textAlign: 'right' },
     colDatum: { width: '11%' },
     colPrijs: { width: '12%', textAlign: 'right' },
@@ -139,7 +189,7 @@ function makeStyles(kleur: string) {
   })
 }
 
-export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie, kantoor, makelaarNaam, opgesteldOp }: Props) {
+export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie, kantoor, makelaarNaam, opgesteldOp, kaart }: Props) {
   const s = makeStyles(kantoor.kleur)
 
   const kenmerken = [
@@ -204,6 +254,21 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
               <View style={s.badgeRij}><Text style={s.badgeLabel}>WOZ-ijkpunt</Text><Text style={s.badgeWaarde}>{euro(uitkomst.woz.waarde)}</Text></View>
             )}
           </View>
+          {kaart && (
+            <View style={s.kaartBlok}>
+              {/* eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image heeft geen alt-prop */}
+              <Image src={{ data: kaart.png, format: 'png' }} style={s.kaartBeeld} />
+              <Svg style={s.kaartOverlay} viewBox={`0 0 ${kaart.breedtePx} ${kaart.hoogtePx}`}>
+                {kaart.referenties.map(r => (
+                  <G key={r.nummer}>
+                    <Circle cx={r.x} cy={r.y} r={9} fill="#14181B" stroke="#fff" strokeWidth={1.6} />
+                    <SvgText x={r.x} y={r.y + 4} fontSize={11} fontWeight={700} fill="#fff" textAnchor="middle">{r.nummer}</SvgText>
+                  </G>
+                ))}
+                <Circle cx={kaart.subject.x} cy={kaart.subject.y} r={10} fill={kantoor.kleur} stroke="#fff" strokeWidth={2} />
+              </Svg>
+            </View>
+          )}
         </View>
 
         {/* Waarschuwingen — zelfde lijst als de kaart "Waarschuwingen" in het paneel.
@@ -217,10 +282,13 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
           </View>
         )}
 
-        {/* Referentietabel — top 6 op gewicht */}
+        {/* Referentietabel — top 6 op gewicht. De #-kolom nummert exact zoals de
+            pins op de locatiekaart hierboven (lib/statischeKaart.ts kaartReferenties
+            neemt dezelfde 1-based volgorde over). */}
         <Text style={s.sectieTitel}>Referenties (top {top6.length} op gewicht)</Text>
         <View style={s.tabel}>
           <View style={s.tabelRij}>
+            <Text style={[s.tabelKopCel, s.colNummer]}>#</Text>
             <Text style={[s.tabelKopCel, s.colAdres]}>Adres</Text>
             <Text style={[s.tabelKopCel, s.colAfstand]}>Afstand</Text>
             <Text style={[s.tabelKopCel, s.colDatum]}>Datum</Text>
@@ -233,6 +301,7 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
           </View>
           {top6.map((r, i) => (
             <View key={r.id} style={i === top6.length - 1 ? s.tabelRijLaatste : s.tabelRij}>
+              <Text style={[s.tabelCel, s.colNummer]}>{i + 1}</Text>
               <Text style={[s.tabelCel, s.colAdres]}>{r.adres}</Text>
               <Text style={[s.tabelCel, s.colAfstand]}>{r.afstand_m == null ? '—' : `${r.afstand_m} m`}</Text>
               <Text style={[s.tabelCel, s.colDatum]}>{datumKort(r.verkoopdatum)}</Text>

@@ -6,6 +6,15 @@
 
 ---
 
+### 28 sep 2026 (vijfde ronde, autonoom — Quinn sliep) — pdf-kaart, repetitie scène 4, filterpillen
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Kaart in waardebepaling-pdf | § 9 naar voren gehaald (scène 4 eindigt bij deze pdf). PDOK BRT heeft geen WMS GetMap → WMTS-tegels `pastel/EPSG:3857`, samengesteld met `sharp` (bestaande dependency; les: `.extract()` niet direct na `.composite()` in één keten). Top-6-op-gewicht genummerd, nieuwe #-kolom in de tabel; kaart 160×84 pt naast de hero; ondergrens 350 m span, nooit uitzoomen voorbij zoom 12. Coördinaten via `haalTransactieCoordinaten()` (batch, query-laag). Tegels 3 s timeout, anders pdf zonder kaart + log. De route rekent niets opnieuw uit | Sonnet |
+| Repetitie scène 4 | Typt "Langstraat 10 Wassenaar", kiest met ArrowDown + Enter, eist bouwjaar + oppervlakte binnen 8 s; bewaakt dat geen niet-GET naar `/api/` gaat. Maakt geen dossier aan | Sonnet |
+| Filterpillen | Plaats-pil zodra de keuze afwijkt van het werkgebied, leeg = "Alle plaatsen", × = terug naar standaard. Marktanalyse had geen pil, Transacties toonde hem juist bij de standaard | Sonnet + Opus |
+| Autonoom doorgaan | Quinn: "doe gelijk de volgende ronde, hou jezelf bezig". Na de demo-items pakken de rondes backlog "na de demo" op die zonder Quinn kan; niets onomkeerbaars | Quinn |
+
 ### 27 sep 2026 (vierde ronde, twee Sonnet-agents + Opus) — 12.5b, BAG, filters, poets
 
 | Onderwerp | Besluit | Door |
@@ -496,6 +505,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep`: kaart in de waardebepaling-pdf, repetitie
+  scène 4 met BAG-toets, Plaats-pil consistent op drie verkenners.
 - 27 sep 2026 — PR `feat/sessie-27sep-d`: **12.5b** repetitiescript, BAG-autocomplete
   en voorvullen gerepareerd, "Wis" op Plaats, omweg vorige periode weg,
   minikaart naar `kaart/`, combobox-ARIA.
