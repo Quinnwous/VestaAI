@@ -41,7 +41,7 @@ const FASE_TABS: { value: FaseFilter; label: string }[] = [
 ]
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Concept', color: '#98A0A6' },
+  draft: { label: 'Concept', color: '#5C6470' },
   published: { label: 'Gepubliceerd', color: 'var(--merk)' },
   onder_bod: { label: 'Onder bod', color: '#D97706' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },

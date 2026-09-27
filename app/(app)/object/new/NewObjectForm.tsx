@@ -132,7 +132,7 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
         <div>
           <Link
             href="/woningen"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#5C6470', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 20 }}
           >
             ← Terug naar woningen
           </Link>
@@ -168,7 +168,7 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
           <div style={{ width: 40, height: 40, margin: '0 auto 18px', border: '3px solid var(--merk-zacht)', borderTopColor: 'var(--merk)', borderRadius: '50%', animation: 'nof-spin .8s linear infinite' }} />
           <style>{'@keyframes nof-spin { to { transform: rotate(360deg); } }'}</style>
           <p style={{ fontSize: 14.5, fontWeight: 600, color: '#14181B', margin: '0 0 4px' }}>Dossier aanmaken…</p>
-          <p style={{ fontSize: 13, color: '#98A0A6', margin: 0 }}>Dit duurt een paar seconden — content genereer je zo dadelijk vanuit het dossier.</p>
+          <p style={{ fontSize: 13, color: '#5C6470', margin: 0 }}>Dit duurt een paar seconden — content genereer je zo dadelijk vanuit het dossier.</p>
         </div>
       )}
 

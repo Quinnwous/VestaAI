@@ -85,12 +85,12 @@ export function HoverKaart({ info }: { info: VerkoopHoverInfo | null }) {
         {euro(t.verkoopprijs)}
       </p>
       {metaEen.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, color: '#98A0A6', marginTop: 4, flexWrap: 'wrap', fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ display: 'flex', gap: 10, color: '#5C6470', marginTop: 4, flexWrap: 'wrap', fontVariantNumeric: 'tabular-nums' }}>
           {metaEen.map((m, i) => <span key={i} style={{ color: '#2C3238', fontWeight: 700 }}>{m}</span>)}
         </div>
       )}
       {metaTwee.length > 0 && (
-        <div style={{ display: 'flex', gap: 10, color: '#98A0A6', marginTop: 4, flexWrap: 'wrap', fontVariantNumeric: 'tabular-nums' }}>
+        <div style={{ display: 'flex', gap: 10, color: '#5C6470', marginTop: 4, flexWrap: 'wrap', fontVariantNumeric: 'tabular-nums' }}>
           {metaTwee.map((m, i) => <span key={i}>{m}</span>)}
         </div>
       )}

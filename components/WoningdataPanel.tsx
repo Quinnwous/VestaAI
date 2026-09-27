@@ -12,7 +12,7 @@ const PROFIEL_KLEUR: Record<string, string> = {
   Premium: 'var(--merk)',
   Bovengemiddeld: '#2E7D5E',
   Gemiddeld: '#5C6470',
-  Ondergemiddeld: '#98A0A6',
+  Ondergemiddeld: '#5C6470',
 }
 
 function Chip({ label, kleur }: { label: string; kleur?: string }) {
@@ -52,7 +52,7 @@ function Sectie({ titel, children }: { titel: string; children: React.ReactNode 
 
 function Toelichting({ children }: { children: React.ReactNode }) {
   return (
-    <p style={{ fontSize: 10, color: '#98A0A6', lineHeight: 1.4, margin: 0 }}>{children}</p>
+    <p style={{ fontSize: 10, color: '#5C6470', lineHeight: 1.4, margin: 0 }}>{children}</p>
   )
 }
 
@@ -68,7 +68,7 @@ function CbsWaarde({ m, toon }: { m: CbsMetriek; toon: (w: number) => string }) 
   return (
     <>
       {toon(m.waarde)}
-      <span style={{ marginLeft: 5, fontSize: 10, fontWeight: 500, color: '#98A0A6' }}>{NIVEAU_LABEL[m.niveau]}</span>
+      <span style={{ marginLeft: 5, fontSize: 10, fontWeight: 500, color: '#5C6470' }}>{NIVEAU_LABEL[m.niveau]}</span>
     </>
   )
 }
@@ -111,7 +111,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
           <span style={{ fontSize: 13, fontWeight: 700, color: '#14181B' }}>Woningdata</span>
-          {bezig && <span style={{ fontSize: 12, color: '#98A0A6' }}>Ophalen…</span>}
+          {bezig && <span style={{ fontSize: 12, color: '#5C6470' }}>Ophalen…</span>}
           {data.gemeente && !bezig && (
             <span style={{ fontSize: 12, color: '#7A8A80' }}>{data.gemeente}</span>
           )}
@@ -121,7 +121,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           height="14"
           viewBox="0 0 24 24"
           fill="none"
-          stroke="#98A0A6"
+          stroke="#5C6470"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"

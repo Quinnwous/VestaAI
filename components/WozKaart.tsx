@@ -152,8 +152,8 @@ const cardStyle: React.CSSProperties = {
   boxShadow: '0 2px 12px rgba(20,24,27,.04)',
 }
 const blokLabel: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: '#14181B', margin: 0 }
-const bronStijl: React.CSSProperties = { fontSize: 11.5, color: '#98A0A6', margin: '10px 0 0' }
-const legeTekst: React.CSSProperties = { fontSize: 13, color: '#98A0A6', margin: 0 }
+const bronStijl: React.CSSProperties = { fontSize: 11.5, color: '#5C6470', margin: '10px 0 0' }
+const legeTekst: React.CSSProperties = { fontSize: 13, color: '#5C6470', margin: 0 }
 const cijferGroot: React.CSSProperties = { fontSize: 24, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const veldLabel: React.CSSProperties = { display: 'grid', gap: 6, fontSize: 12.5, fontWeight: 650, color: '#5C6470' }

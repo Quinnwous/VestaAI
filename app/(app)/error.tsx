@@ -37,7 +37,7 @@ export default function AppError({
           {error.message || 'Onverwachte fout. Probeer het opnieuw.'}
         </p>
         {error.digest && (
-          <p style={{ fontSize: 12, color: '#98A0A6', margin: '0 0 24px' }}>Referentie: {error.digest}</p>
+          <p style={{ fontSize: 12, color: '#5C6470', margin: '0 0 24px' }}>Referentie: {error.digest}</p>
         )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap' }}>
           <button

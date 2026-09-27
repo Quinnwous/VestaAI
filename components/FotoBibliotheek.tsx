@@ -92,7 +92,7 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
       </div>
 
       {geladen && fotos.length === 0 ? (
-        <p style={{ fontSize: 13, color: '#98A0A6' }}>
+        <p style={{ fontSize: 13, color: '#5C6470' }}>
           Nog geen bewaarde foto&apos;s. Upload er een, of gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een gestagede foto.
         </p>
       ) : (

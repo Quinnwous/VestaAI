@@ -158,7 +158,10 @@ export function StatTile({
                   background: hero
                     ? (delta.richting === 'op' ? 'rgba(255,255,255,.22)' : delta.richting === 'neer' ? 'rgba(198,30,69,.55)' : 'rgba(255,255,255,.16)')
                     : (delta.richting === 'op' ? colors.tint : delta.richting === 'neer' ? '#FEF3E2' : '#F1F3F5'),
-                  color: hero ? 'var(--merk-op)' : (delta.richting === 'op' ? '#1B7F4C' : delta.richting === 'neer' ? '#B45309' : colors.bodyStrong),
+                  // #166534/#92400E i.p.v. het vorigere #1B7F4C/#B45309: die
+                  // haalden geen 4.5:1 op hun eigen pil-achtergrond —
+                  // Lighthouse a11y, item 12.3.
+                  color: hero ? 'var(--merk-op)' : (delta.richting === 'op' ? '#166534' : delta.richting === 'neer' ? '#92400E' : colors.bodyStrong),
                 }}
               >
                 {delta.richting === 'op' ? '▲' : delta.richting === 'neer' ? '▼' : '•'} {delta.tekst}
