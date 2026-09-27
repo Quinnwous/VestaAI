@@ -241,7 +241,7 @@ export function LandingPageClient() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 34 }}>
             <div className="vna" style={{ display: 'flex', alignItems: 'center', gap: 30 }}>
               {NAV_LINKS.map(({ href, label, active }) => (
-                <Link key={href + label} href={href} className="vl" style={{ fontSize: 15, fontWeight: active ? 600 : 500, color: active ? '#1A6B45' : '#5A6B61', textDecoration: 'none', transition: 'color .15s' }}>
+                <Link key={href + label} href={href} prefetch={false} className="vl" style={{ fontSize: 15, fontWeight: active ? 600 : 500, color: active ? '#1A6B45' : '#5A6B61', textDecoration: 'none', transition: 'color .15s' }}>
                   {label}
                 </Link>
               ))}
@@ -280,7 +280,7 @@ export function LandingPageClient() {
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 999, padding: '7px 14px 7px 11px', fontSize: 13, fontWeight: 600, color: '#1A6B45' }}>
                 <span style={{ position: 'relative', display: 'inline-flex', width: 8, height: 8 }}>
                   <span style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#4CAF80', animation: 'vping 1.8s cubic-bezier(0,0,.2,1) infinite' }} />
-                  <span style={{ position: 'relative', width: 8, height: 8, borderRadius: 999, background: '#2A8A5C' }} />
+                  <span style={{ position: 'relative', width: 8, height: 8, borderRadius: 999, background: '#1F6B45' }} />
                 </span>
                 Eén platform op úw eigen verkoopdata
               </div>
@@ -301,7 +301,7 @@ export function LandingPageClient() {
                 Al klant? Inloggen →
               </Link>
             </div>
-            <p style={{ fontSize: 13.5, color: '#7C8983', margin: '18px 0 0' }}>Gesloten platform — wij zetten uw kantoor persoonlijk klaar</p>
+            <p style={{ fontSize: 13.5, color: '#5C6862', margin: '18px 0 0' }}>Gesloten platform — wij zetten uw kantoor persoonlijk klaar</p>
           </div>
 
           {/* Waardebepaling snapshot */}
@@ -310,26 +310,26 @@ export function LandingPageClient() {
             <div style={{ position: 'relative', zIndex: 1, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.32)', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2A8A5C' }} />
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13', letterSpacing: '.01em' }}>Waardebepaling</span>
-                  <span style={{ fontSize: 12, color: '#9AA6A0' }}>· voorbeeldwoning</span>
+                  <span style={{ fontSize: 12, color: '#626C67' }}>· voorbeeldwoning</span>
                 </div>
                 <span style={{ fontSize: 11.5, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '4px 9px' }}>Vesta&nbsp;AI</span>
               </div>
               <div style={{ padding: 22 }}>
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 6 }}>Geschatte waarde</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 6 }}>Geschatte waarde</div>
                 <div style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 32, color: '#0E1A13', letterSpacing: '-.01em', marginBottom: 4 }}>
                   € 862.000 – € 895.000
                 </div>
-                <div style={{ fontSize: 12.5, color: '#4A9970', marginBottom: 20 }}>Gebaseerd op 6 vergelijkbare verkopen binnen 1,2 km — een onderbouwde indicatie, geen taxatie</div>
+                <div style={{ fontSize: 12.5, color: '#2F7350', marginBottom: 20 }}>Gebaseerd op 6 vergelijkbare verkopen binnen 1,2 km — een onderbouwde indicatie, geen taxatie</div>
 
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 9 }}>Referentietransacties uit uw eigen data</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 9 }}>Referentietransacties uit uw eigen data</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                   {REFERENTIES.map(r => (
                     <div key={r.adres} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 10, padding: '9px 12px' }}>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600, color: '#1F2D25' }}>{r.adres}</div>
-                        <div style={{ fontSize: 11, color: '#9AA6A0' }}>{r.afstand} · verkocht</div>
+                        <div style={{ fontSize: 11, color: '#626C67' }}>{r.afstand} · verkocht</div>
                       </div>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0E1A13' }}>{r.prijs}</div>
                     </div>
@@ -348,7 +348,7 @@ export function LandingPageClient() {
       {/* TRUST STRIP */}
       <section style={{ borderTop: '1px solid #EEF2EF', borderBottom: '1px solid #EEF2EF', background: '#fff' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#9AA6A0', letterSpacing: '.01em' }}>Gebouwd voor de Nederlandse markt</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#626C67', letterSpacing: '.01em' }}>Gebouwd voor de Nederlandse markt</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
             {TRUST_BADGES.map(t => <span key={t} style={{ fontSize: 15, fontWeight: 700, color: '#3A463F', letterSpacing: '.01em' }}>{t}</span>)}
           </div>
@@ -357,7 +357,7 @@ export function LandingPageClient() {
 
       {/* WAT IS VESTA AI */}
       <section style={{ maxWidth: 980, margin: '0 auto', padding: '96px 28px 72px', textAlign: 'center' }}>
-        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 18 }}>Wat is Vesta&nbsp;AI</div>
+        <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 18 }}>Wat is Vesta&nbsp;AI</div>
         <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 26px', maxWidth: 780 }}>
           Eén werkplek voor de hele weg van verkoopadvies tot verkocht, op <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>úw eigen data.</span>
         </h2>
@@ -369,7 +369,7 @@ export function LandingPageClient() {
       {/* FEATURES GRID */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '24px 28px 96px' }}>
         <div style={{ marginBottom: 40, maxWidth: 640 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Wat wij bieden</div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Wat wij bieden</div>
           <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: 0 }}>
             Eén platform voor waardebepaling, marktinzicht en verkoopklare content.
           </h2>
@@ -393,7 +393,7 @@ export function LandingPageClient() {
       <section style={{ background: '#F1F7F3' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
           <div style={{ textAlign: 'center', marginBottom: 42 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Het woningdossier van dichtbij</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Het woningdossier van dichtbij</div>
             <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 18px', maxWidth: 760 }}>
               Elke tekst die bij de woning hoort, <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in één keer klaar.</span>
             </h2>
@@ -405,9 +405,9 @@ export function LandingPageClient() {
                 <button key={t.key} onClick={() => setActiveTab(t.key)} className={t.key === activeTab ? 'vtab-a' : 'vtab-i'}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
                     <span style={{ fontSize: 15, fontWeight: 700 }}>{t.label}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 600, opacity: .7 }}>{t.meta}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 600, color: '#5C6862' }}>{t.meta}</span>
                   </div>
-                  <div style={{ fontSize: 12.5, fontWeight: 500, opacity: .7, marginTop: 3, textAlign: 'left' }}>{t.sub}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 500, color: '#5C6862', marginTop: 3, textAlign: 'left' }}>{t.sub}</div>
                 </button>
               ))}
             </div>
@@ -417,7 +417,7 @@ export function LandingPageClient() {
                   <span style={{ width: 30, height: 30, borderRadius: 9, background: '#EAF5EE', color: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 13 }}>{activeTabObj.initial}</span>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 700, color: '#0E1A13' }}>{activeTabObj.label}</div>
-                    <div style={{ fontSize: 12, color: '#9AA6A0' }}>{activeTabObj.sub}</div>
+                    <div style={{ fontSize: 12, color: '#626C67' }}>{activeTabObj.sub}</div>
                   </div>
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '5px 11px', cursor: 'default' }}>Kopieer</span>
@@ -434,7 +434,7 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 54, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Automatische woningdata</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Automatische woningdata</div>
             <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
               Adres ingevoerd. De rest vult Vesta.
             </h2>
@@ -453,12 +453,12 @@ export function LandingPageClient() {
           <div>
             <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2A8A5C' }} />
+                <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Nieuw dossier aanmaken</span>
               </div>
               <div style={{ padding: 20 }}>
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 6 }}>Adres</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 6 }}>Adres</div>
                   <div style={{ border: '2px solid #1A6B45', borderRadius: 10, padding: '11px 14px', fontSize: 14.5, color: '#0E1A13', background: '#fff', marginBottom: 16 }}>
                     Lijsterbeslaan 14, 2023 BN Haarlem
                   </div>
@@ -470,9 +470,9 @@ export function LandingPageClient() {
                     { l: 'Energielabel', v: 'B', src: 'BAG' },
                   ].map(f => (
                     <div key={f.l} style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 3 }}>{f.l}</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 3 }}>{f.l}</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', letterSpacing: '-.01em' }}>{f.v}</div>
-                      <div style={{ fontSize: 10.5, color: '#4A9970', marginTop: 3 }}>↗ {f.src}</div>
+                      <div style={{ fontSize: 10.5, color: '#2F7350', marginTop: 3 }}>↗ {f.src}</div>
                     </div>
                   ))}
                 </div>
@@ -489,7 +489,7 @@ export function LandingPageClient() {
       {/* WAAROM */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Waarom Vesta&nbsp;AI</div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Waarom Vesta&nbsp;AI</div>
           <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto', maxWidth: 700 }}>
             Een platform dat de <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>Nederlandse markt verstaat.</span>
           </h2>
@@ -540,7 +540,7 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 54, alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Woningwaardering</div>
+            <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Woningwaardering</div>
             <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
               Onderbouwd advies, <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>geen onderbuikgevoel.</span>
             </h2>
@@ -563,34 +563,34 @@ export function LandingPageClient() {
           <div>
             <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2A8A5C' }} />
+                <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Waardering · Lijsterbeslaan 14</span>
               </div>
               <div style={{ padding: 22 }}>
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 6 }}>Geschatte waarde</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 6 }}>Geschatte waarde</div>
                 <div style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 32, color: '#0E1A13', letterSpacing: '-.01em', marginBottom: 4 }}>
                   € 862.000 – € 895.000
                 </div>
-                <div style={{ fontSize: 12.5, color: '#4A9970', marginBottom: 20 }}>Gebaseerd op 6 vergelijkbare woningen binnen 1,2 km — een onderbouwde indicatie, geen taxatie</div>
+                <div style={{ fontSize: 12.5, color: '#2F7350', marginBottom: 20 }}>Gebaseerd op 6 vergelijkbare woningen binnen 1,2 km — een onderbouwde indicatie, geen taxatie</div>
 
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 9 }}>Correcties per kenmerk</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 9 }}>Correcties per kenmerk</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 20 }}>
                   {WAARDE_VARIABELEN.map(b => (
                     <span key={b.l} style={b.aan
                       ? { fontSize: 12, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 999, padding: '6px 11px', display: 'inline-flex', gap: 6 }
-                      : { fontSize: 12, fontWeight: 600, color: '#9AA6A0', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 999, padding: '6px 11px', display: 'inline-flex', gap: 6 }}>
-                      {b.aan ? '✓' : '+'} {b.l} <span style={{ opacity: .8 }}>{b.v}</span>
+                      : { fontSize: 12, fontWeight: 600, color: '#626C67', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 999, padding: '6px 11px', display: 'inline-flex', gap: 6 }}>
+                      {b.aan ? '✓' : '+'} {b.l} <span>{b.v}</span>
                     </span>
                   ))}
                 </div>
 
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 9 }}>Referentietransacties</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 9 }}>Referentietransacties</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {REFERENTIES.map(r => (
                     <div key={r.adres} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 10, padding: '9px 12px' }}>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: 600, color: '#1F2D25' }}>{r.adres}</div>
-                        <div style={{ fontSize: 11, color: '#9AA6A0' }}>{r.afstand} · verkocht</div>
+                        <div style={{ fontSize: 11, color: '#626C67' }}>{r.afstand} · verkocht</div>
                       </div>
                       <div style={{ fontSize: 13.5, fontWeight: 700, color: '#0E1A13' }}>{r.prijs}</div>
                     </div>
@@ -607,7 +607,7 @@ export function LandingPageClient() {
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
           <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 54, alignItems: 'center' }}>
             <div>
-              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Marktinzichten</div>
+              <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Marktinzichten</div>
               <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
                 Weet wat er speelt <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in uw regio.</span>
               </h2>
@@ -630,25 +630,25 @@ export function LandingPageClient() {
             <div>
               <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
-                  <span style={{ width: 9, height: 9, borderRadius: 999, background: '#2A8A5C' }} />
+                  <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Marktanalyse · voorbeeldregio</span>
                 </div>
                 <div style={{ padding: 22 }}>
-                  <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 10 }}>Gem. verkoopprijs per kwartaal</div>
+                  <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 10 }}>Gem. verkoopprijs per kwartaal</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100, marginBottom: 20 }}>
                     {[54, 61, 58, 70, 76, 84].map((h, i) => (
                       <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#2A8A5C)' : '#D5E8DD' }} />
+                        <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#1F6B45)' : '#D5E8DD' }} />
                       </div>
                     ))}
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
                     <div style={{ background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 3 }}>Gem. doorlooptijd</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 3 }}>Gem. doorlooptijd</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13' }}>18 dagen</div>
                     </div>
                     <div style={{ background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 10, padding: '10px 12px' }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 3 }}>Marktaandeel kantoor</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 3 }}>Marktaandeel kantoor</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13' }}>24%</div>
                     </div>
                   </div>
@@ -713,38 +713,38 @@ export function LandingPageClient() {
               <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 11, textDecoration: 'none', marginBottom: 16 }}>
                 <VestaLogo size={32} />
               </Link>
-              <p style={{ fontSize: 14, color: '#7C8983', lineHeight: 1.6, maxWidth: 300, margin: 0 }}>
+              <p style={{ fontSize: 14, color: '#5C6862', lineHeight: 1.6, maxWidth: 300, margin: 0 }}>
                 Woningwaardering, marktinzicht en een contentsuite voor Nederlandse makelaars — op uw eigen transactiedata, in de huisstijl van uw kantoor.
               </p>
             </div>
             <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Product</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 14 }}>Product</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[{ href: '/#demo', label: 'Waardebepaling' }, { href: '/', label: 'Functies' }, { href: '/contact', label: 'Contact' }].map(({ href, label }) => (
-                  <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
+                  <Link key={label} href={href} prefetch={false} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Bedrijf</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 14 }}>Bedrijf</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[{ href: '/over-ons', label: 'Over ons' }, { href: '/contact', label: 'Contact' }].map(({ href, label }) => (
-                  <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
+                  <Link key={label} href={href} prefetch={false} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>
             </div>
             <div>
-              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#9AA6A0', marginBottom: 14 }}>Juridisch</div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 14 }}>Juridisch</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[{ href: '/vertrouwen', label: 'Vertrouwen & beveiliging' }, { href: '/privacy', label: 'Privacy & AVG' }, { href: '/voorwaarden', label: 'Voorwaarden' }].map(({ href, label }) => (
-                  <Link key={label} href={href} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
+                  <Link key={label} href={href} prefetch={false} style={{ fontSize: 14.5, color: '#5A6B61', textDecoration: 'none' }}>{label}</Link>
                 ))}
               </div>
             </div>
           </div>
           <div style={{ borderTop: '1px solid #EEF2EF', marginTop: 40, paddingTop: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-            <span style={{ fontSize: 13, color: '#9AA6A0' }}>© 2026 Vesta&nbsp;AI · Woningwaardering en marktinzicht voor makelaars</span>
-            <span style={{ fontSize: 13, color: '#9AA6A0' }}>vestaai.nl</span>
+            <span style={{ fontSize: 13, color: '#626C67' }}>© 2026 Vesta&nbsp;AI · Woningwaardering en marktinzicht voor makelaars</span>
+            <span style={{ fontSize: 13, color: '#626C67' }}>vestaai.nl</span>
           </div>
         </div>
       </footer>
