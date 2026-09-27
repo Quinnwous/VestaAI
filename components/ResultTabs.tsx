@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import type { ContentOutput } from '@/lib/schemas'
+import { ContentOutputSchema, type ContentOutput } from '@/lib/schemas'
 import { EXTRA_TYPES, type ExtraType } from '@/lib/contentExtra'
 import { Popover, Skeleton } from '@/components/ui'
 import { TabContent } from './TabContent'
@@ -58,21 +58,37 @@ function tabFromHash(): Tab {
 }
 
 /**
- * Backcompat (item 8.3): dossiers van vóór de outputset-v2 hebben deze velden
- * nog onder hun oude naam of opgesplitst over meerdere varianten
- * (`brochure_kort`/`brochure_lang`, drie Instagram-varianten,
- * `bezichtiging_followup_*`). `ContentOutputSchema` houdt die optioneel zodat
- * ze geldig blijven parsen; hier tonen we het nieuwe veld als dat gevuld is,
- * anders het best passende oude veld — zodat al gegenereerde content na deze
- * wijziging zichtbaar blijft in plaats van "leeg" te lijken.
+ * Backcompat (item 8.3): `outputs_json`/`outputs_json_en` komt ongevalideerd
+ * (een simpele `as ContentOutput`-cast, zie app/(app)/object/[id]/page.tsx)
+ * uit de database — een dossier van vóór de outputset-v2 mist de nieuwe
+ * kernvelden dus écht (geen `undefined` die Zod's `.default('')` toch nog
+ * zou invullen, want dat parsen gebeurt hier nooit). Vandaar eerst een
+ * `safeParse` (vult ontbrekende velden alsnog aan met een lege string en
+ * beschermt `TabContent` tegen een crash op `undefined.trim()`), en dáárna
+ * de eigenlijke backcompat: oude dossiers hebben deze velden nog onder hun
+ * oude naam of opgesplitst over meerdere varianten (`brochure_kort`/
+ * `brochure_lang`, drie Instagram-varianten, `bezichtiging_followup_*`) — dat
+ * tonen we in het nieuwe veld als dat zelf leeg is, zodat al gegenereerde
+ * content na deze wijziging zichtbaar blijft in plaats van "leeg" te lijken.
  */
-function metLegacyFallback(data: ContentOutput): ContentOutput {
+export function metLegacyFallback(data: ContentOutput): ContentOutput {
+  const geparsed = ContentOutputSchema.safeParse(data)
+  const basis = geparsed.success ? geparsed.data : data
   return {
-    ...data,
-    brochure_tekst: data.brochure_tekst || data.brochure_lang || data.brochure_kort || '',
-    instagram: data.instagram || data.instagram_emotioneel || data.instagram_informatief || data.instagram_actie || '',
-    followup_positief: data.followup_positief || data.bezichtiging_followup_positief || '',
-    followup_negatief: data.followup_negatief || data.bezichtiging_followup_negatief || '',
+    ...basis,
+    funda_tekst: basis.funda_tekst || '',
+    brochure_tekst: basis.brochure_tekst || basis.brochure_lang || basis.brochure_kort || '',
+    instagram: basis.instagram || basis.instagram_emotioneel || basis.instagram_informatief || basis.instagram_actie || '',
+    linkedin_kantoor: basis.linkedin_kantoor || '',
+    sneak_preview: basis.sneak_preview || '',
+    koper_email: basis.koper_email || '',
+    buurtomschrijving: basis.buurtomschrijving || '',
+    open_huis: basis.open_huis || '',
+    followup_positief: basis.followup_positief || basis.bezichtiging_followup_positief || '',
+    followup_negatief: basis.followup_negatief || basis.bezichtiging_followup_negatief || '',
+    video_script: basis.video_script || '',
+    energie_advies: basis.energie_advies || '',
+    kopersvragen_faq: basis.kopersvragen_faq || '',
   }
 }
 
