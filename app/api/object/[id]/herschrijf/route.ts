@@ -9,24 +9,25 @@ import { HERSCHRIJF } from '@/lib/aiModellen'
 
 export const maxDuration = 60
 
+// Outputset v2 (item 8.3, roadmap § 3.4) — kern + extra-veldnamen. Oude
+// sleutels (brochure_kort/brochure_lang, instagram_emotioneel/informatief/
+// actie, linkedin_makelaar, bezichtiging_followup_*, marktanalyse) staan hier
+// bewust niet meer: ze worden niet meer gegenereerd en `ResultTabs` toont er
+// dus ook geen herschrijfknop meer voor.
 const SLEUTEL_CONTEXT: Record<string, { nl: string; en: string; maxTokens: number }> = {
   funda_tekst: { nl: 'Funda-advertentietekst (600–800 woorden)', en: 'Funda listing description (600–800 words)', maxTokens: 2000 },
-  brochure_kort: { nl: 'korte brochure (~200 woorden)', en: 'short brochure (~200 words)', maxTokens: 600 },
-  brochure_lang: { nl: 'lange brochure (500+ woorden)', en: 'long brochure (500+ words)', maxTokens: 1500 },
-  instagram_emotioneel: { nl: 'emotionele Instagram-post (max 2.200 tekens)', en: 'emotional Instagram post (max 2,200 chars)', maxTokens: 600 },
-  instagram_informatief: { nl: 'informatieve Instagram-post (max 2.200 tekens)', en: 'informative Instagram post (max 2,200 chars)', maxTokens: 600 },
-  instagram_actie: { nl: 'Instagram-post met call-to-action (max 2.200 tekens)', en: 'Instagram post with call to action (max 2,200 chars)', maxTokens: 600 },
+  brochure_tekst: { nl: 'brochuretekst (350–450 woorden)', en: 'brochure text (350–450 words)', maxTokens: 1200 },
+  instagram: { nl: 'Instagram-post (max 2.200 tekens)', en: 'Instagram post (max 2,200 chars)', maxTokens: 600 },
   linkedin_kantoor: { nl: 'LinkedIn-post voor het kantoor (max 3.000 tekens)', en: 'LinkedIn post for the agency (max 3,000 chars)', maxTokens: 800 },
-  linkedin_makelaar: { nl: 'LinkedIn-post voor de makelaar persoonlijk (max 3.000 tekens)', en: 'LinkedIn post for the individual agent (max 3,000 chars)', maxTokens: 800 },
+  sneak_preview: { nl: 'WhatsApp-bericht (max 600 tekens)', en: 'WhatsApp message (max 600 chars)', maxTokens: 400 },
   koper_email: { nl: 'e-mail aan potentiële kopers', en: 'email to potential buyers', maxTokens: 800 },
   buurtomschrijving: { nl: 'buurtomschrijving', en: 'neighbourhood description', maxTokens: 600 },
   open_huis: { nl: 'open huis-aankondiging voor social media (~150 woorden)', en: 'open house announcement for social media (~150 words)', maxTokens: 500 },
-  bezichtiging_followup_positief: { nl: 'opvolgmail voor geïnteresseerde koper (~200 woorden)', en: 'follow-up email for interested buyer (~200 words)', maxTokens: 600 },
-  bezichtiging_followup_negatief: { nl: 'opvolgmail voor niet-geïnteresseerde koper (~150 woorden)', en: 'follow-up email for non-interested buyer (~150 words)', maxTokens: 500 },
+  followup_positief: { nl: 'opvolgmail voor geïnteresseerde koper (~200 woorden)', en: 'follow-up email for interested buyer (~200 words)', maxTokens: 600 },
+  followup_negatief: { nl: 'opvolgmail voor niet-geïnteresseerde koper (~150 woorden)', en: 'follow-up email for non-interested buyer (~150 words)', maxTokens: 500 },
   video_script: { nl: 'voice-over script voor woningvideo (~60 seconden)', en: 'voice-over script for property video (~60 seconds)', maxTokens: 500 },
   energie_advies: { nl: 'energieadvies met subsidies (~400 woorden)', en: 'energy advice with subsidies (~400 words)', maxTokens: 1200 },
   kopersvragen_faq: { nl: 'kopersvragen FAQ (8–10 vragen)', en: 'buyer FAQ (8–10 questions)', maxTokens: 1500 },
-  marktanalyse: { nl: 'marktanalyse en verkoopstrategie (~300 woorden)', en: 'market analysis and sales strategy (~300 words)', maxTokens: 900 },
 }
 
 function buildHerschrijfPrompt(

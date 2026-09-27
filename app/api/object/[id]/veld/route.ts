@@ -2,12 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
+// Outputset v2 (item 8.3, roadmap § 3.4) — alleen de veldnamen die
+// `ResultTabs` nog daadwerkelijk toont/bewerkt. Oude sleutels van vóór 8.3
+// blijven leesbaar in `outputs_json` (backcompat-schema) maar zijn hier niet
+// meer opgenomen: ze zijn niet meer bewerkbaar via deze route.
 const TOEGESTANE_SLEUTELS = new Set([
-  'funda_tekst', 'brochure_kort', 'brochure_lang',
-  'instagram_emotioneel', 'instagram_informatief', 'instagram_actie',
-  'linkedin_kantoor', 'linkedin_makelaar', 'koper_email', 'buurtomschrijving',
-  'open_huis', 'bezichtiging_followup_positief', 'bezichtiging_followup_negatief',
-  'video_script', 'energie_advies', 'kopersvragen_faq', 'marktanalyse',
+  'funda_tekst', 'brochure_tekst', 'instagram', 'linkedin_kantoor', 'sneak_preview',
+  'koper_email', 'buurtomschrijving',
+  'open_huis', 'followup_positief', 'followup_negatief',
+  'video_script', 'energie_advies', 'kopersvragen_faq',
 ])
 
 export async function PATCH(

@@ -133,23 +133,34 @@ function makeStyles(kleur: string) {
   })
 }
 
+// Outputset v2 (item 8.3, roadmap § 3.4). De kern staat bovenaan (nooit
+// optioneel — brochure_tekst/instagram/sneak_preview zijn wel `optioneel:
+// true` omdat ze pas sinds 8.3 bestaan: een dossier van vóór die datum heeft
+// ze leeg totdat de content opnieuw gegenereerd wordt). Ná de kern volgen de
+// extra's (op knopdruk) en, alleen voor backcompat, de vervallen sleutels van
+// vóór 8.3 — die worden niet meer gegenereerd maar mogen nog in een ouder
+// dossier staan.
 const ALLE_SECTIES: { badge: string; titel: string; key: keyof ContentOutput; optioneel?: boolean }[] = [
   { badge: 'Funda', titel: 'Funda-tekst', key: 'funda_tekst' },
-  { badge: 'Brochure', titel: 'Brochure (lang)', key: 'brochure_lang' },
-  { badge: 'Brochure', titel: 'Brochure (kort)', key: 'brochure_kort' },
-  { badge: 'Instagram', titel: 'Instagram — Emotioneel', key: 'instagram_emotioneel' },
-  { badge: 'Instagram', titel: 'Instagram — Informatief', key: 'instagram_informatief' },
-  { badge: 'Instagram', titel: 'Instagram — Actie', key: 'instagram_actie' },
+  { badge: 'Brochure', titel: 'Brochuretekst', key: 'brochure_tekst', optioneel: true },
+  { badge: 'Instagram', titel: 'Instagram', key: 'instagram', optioneel: true },
   { badge: 'LinkedIn', titel: 'LinkedIn — Kantoor', key: 'linkedin_kantoor' },
-  { badge: 'LinkedIn', titel: 'LinkedIn — Makelaar', key: 'linkedin_makelaar' },
+  { badge: 'WhatsApp', titel: 'Sneak preview (WhatsApp)', key: 'sneak_preview', optioneel: true },
   { badge: 'E-mail', titel: 'Koper-e-mail', key: 'koper_email' },
   { badge: 'Buurt', titel: 'Buurtomschrijving', key: 'buurtomschrijving' },
   { badge: 'Open huis', titel: 'Open huis-aankondiging', key: 'open_huis', optioneel: true },
-  { badge: 'Follow-up', titel: 'Follow-up — Geïnteresseerd', key: 'bezichtiging_followup_positief', optioneel: true },
-  { badge: 'Follow-up', titel: 'Follow-up — Niet geïnteresseerd', key: 'bezichtiging_followup_negatief', optioneel: true },
+  { badge: 'Follow-up', titel: 'Follow-up — Geïnteresseerd', key: 'followup_positief', optioneel: true },
+  { badge: 'Follow-up', titel: 'Follow-up — Niet geïnteresseerd', key: 'followup_negatief', optioneel: true },
   { badge: 'Video', titel: 'Video script', key: 'video_script', optioneel: true },
   { badge: 'Energieadvies', titel: 'Energieadvies & subsidies', key: 'energie_advies', optioneel: true },
   { badge: 'Kopersvragen', titel: 'Veelgestelde vragen kopers', key: 'kopersvragen_faq', optioneel: true },
+  // Vervallen sleutels (vóór item 8.3) — alleen zichtbaar als een ouder dossier ze nog heeft.
+  { badge: 'Brochure', titel: 'Brochure (lang)', key: 'brochure_lang', optioneel: true },
+  { badge: 'Brochure', titel: 'Brochure (kort)', key: 'brochure_kort', optioneel: true },
+  { badge: 'Instagram', titel: 'Instagram — Emotioneel', key: 'instagram_emotioneel', optioneel: true },
+  { badge: 'Instagram', titel: 'Instagram — Informatief', key: 'instagram_informatief', optioneel: true },
+  { badge: 'Instagram', titel: 'Instagram — Actie', key: 'instagram_actie', optioneel: true },
+  { badge: 'LinkedIn', titel: 'LinkedIn — Makelaar', key: 'linkedin_makelaar', optioneel: true },
   { badge: 'Marktanalyse', titel: 'Marktanalyse & verkoopstrategie', key: 'marktanalyse', optioneel: true },
 ]
 

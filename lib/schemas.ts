@@ -298,25 +298,42 @@ export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>
 
+// Outputset v2 (item 8.3, docs/roadmap.md § 3.4): kleinere kern-call + extra's
+// op knopdruk. Kern (altijd gegenereerd, één call — `generateContent` in
+// lib/claude.ts): funda_tekst, brochure_tekst, instagram, linkedin_kantoor,
+// sneak_preview (NL-only, WhatsApp), koper_email, buurtomschrijving. Extra
+// (aparte, kleine call via POST /api/object/[id]/extra?type=, op knopdruk):
+// open_huis, followup_positief/negatief, video_script, kopersvragen_faq,
+// energie_advies. Oude sleutels (vóór 8.3) blijven optioneel zodat bestaande
+// dossiers (`objecten.outputs_json`/`outputs_json_en`) geldig blijven parsen
+// — ze worden niet meer gegenereerd, maar `ResultTabs`/`PdfTemplate` tonen ze
+// nog als een ouder dossier ze nog heeft.
 export const ContentOutputSchema = z.object({
+  // Kern
   funda_tekst: z.string(),
-  brochure_kort: z.string(),
-  brochure_lang: z.string(),
-  instagram_emotioneel: z.string(),
-  instagram_informatief: z.string(),
-  instagram_actie: z.string(),
+  brochure_tekst: z.string().default(''),
+  instagram: z.string().default(''),
   linkedin_kantoor: z.string(),
-  linkedin_makelaar: z.string(),
+  sneak_preview: z.string().default(''),
   koper_email: z.string(),
   buurtomschrijving: z.string(),
-  // Optionele secties — standaard lege string als Claude ze weglaat
+  // Extra (op knopdruk)
   open_huis: z.string().default(''),
-  bezichtiging_followup_positief: z.string().default(''),
-  bezichtiging_followup_negatief: z.string().default(''),
+  followup_positief: z.string().default(''),
+  followup_negatief: z.string().default(''),
   video_script: z.string().default(''),
   energie_advies: z.string().default(''),
   kopersvragen_faq: z.string().default(''),
-  marktanalyse: z.string().default(''),
+  // Vervallen sleutels (vóór item 8.3) — optioneel, alleen voor backcompat.
+  brochure_kort: z.string().optional(),
+  brochure_lang: z.string().optional(),
+  instagram_emotioneel: z.string().optional(),
+  instagram_informatief: z.string().optional(),
+  instagram_actie: z.string().optional(),
+  linkedin_makelaar: z.string().optional(),
+  bezichtiging_followup_positief: z.string().optional(),
+  bezichtiging_followup_negatief: z.string().optional(),
+  marktanalyse: z.string().optional(),
 })
 
 export type ContentOutput = z.infer<typeof ContentOutputSchema>
@@ -334,22 +351,18 @@ export type ObjectContentStatus = z.infer<typeof ObjectContentStatusSchema>
 // afweging tegenover nullable maken.
 export const LEEG_CONTENT_OUTPUT: ContentOutput = {
   funda_tekst: '',
-  brochure_kort: '',
-  brochure_lang: '',
-  instagram_emotioneel: '',
-  instagram_informatief: '',
-  instagram_actie: '',
+  brochure_tekst: '',
+  instagram: '',
   linkedin_kantoor: '',
-  linkedin_makelaar: '',
+  sneak_preview: '',
   koper_email: '',
   buurtomschrijving: '',
   open_huis: '',
-  bezichtiging_followup_positief: '',
-  bezichtiging_followup_negatief: '',
+  followup_positief: '',
+  followup_negatief: '',
   video_script: '',
   energie_advies: '',
   kopersvragen_faq: '',
-  marktanalyse: '',
 }
 
 // Schema voor prijswijziging-content (apart van de hoofd-output)
