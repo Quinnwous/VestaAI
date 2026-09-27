@@ -7,7 +7,7 @@
 -- velden/sorteersleutels zijn optioneel en vallen terug op het oude gedrag
 -- als ze ontbreken.
 --
--- ⚠️ Nog NIET toegepast — zie de opleverrapportage van item 6.2. Zonder deze
+-- Toegepast op productie (geverifieerd 27 sep 2026 via pg_get_functiondef). Oorspronkelijk: zonder deze
 -- migratie werkt de DataTable in `components/TransactiesZoeken.tsx` gewoon
 -- (sorteren op verkoopdatum/prijs/looptijd, zoeken via het zoekveld doet dan
 -- niets), maar de extra kolomsorteringen (adres, plaats/wijk, type, m²,

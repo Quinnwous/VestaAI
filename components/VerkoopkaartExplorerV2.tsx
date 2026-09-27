@@ -367,7 +367,7 @@ export function VerkoopkaartExplorerV2({
                 <p style={{ fontSize: 12, color: colors.muted, margin: '2px 0 0' }}>eigen verkopen · sleep om te pannen, scroll om te zoomen</p>
               </div>
               <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
-                <BasisKaart bounds={bounds} hoogte={WERKBLAD_HOOGTE - 68}>
+                <BasisKaart direct bounds={bounds} hoogte={WERKBLAD_HOOGTE - 68}>
                   <VerkopenLaag
                     transacties={gefilterd}
                     geselecteerdId={geselecteerdId}

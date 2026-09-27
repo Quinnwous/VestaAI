@@ -224,6 +224,34 @@
   }
 }
 
+/* Intake tweekoloms (item 10.5, docs/roadmap.md § 5 fase 10): onder 1280px
+   blijft de wizard gestapeld zoals voorheen (het "Deze woning"-zijpaneel
+   verschijnt dan niet — geen extra scroll voor iets dat op een telefoon of
+   tablet toch niet naast de wizard past), vanaf 1280px staat het rechts en
+   blijft het sticky onder de topbar (66px, zie AppTopbar.tsx) mee scrollen. */
+.intake-layout {
+  display: block;
+}
+
+.intake-zijpaneel {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .intake-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+    gap: 32px;
+  }
+
+  .intake-zijpaneel {
+    display: block;
+    position: sticky;
+    top: 90px;
+  }
+}
+
 /* Print styles — Ctrl/Cmd+P vanuit de result-pagina */
 @media print {
   /* Verberg navigatie en knoppen */

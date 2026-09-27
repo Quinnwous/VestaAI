@@ -17,29 +17,33 @@
 
 ## 📍 Stand van zaken
 
-- **Sessie 27 sep (branch `feat/sessie-27sep`, PR → `main`):** 8.3, 9.2, 12.3,
-  13.2 opgeleverd (vier parallelle Sonnet-agents, review + fixes door Opus).
-  **Fase 9 en 13 zijn af.** i4housing-tekstsjabloon staat in de database (na
-  back-up, alléén dat veld). typecheck/test (641)/build groen, `dod:screens`
-  groen op 390/1280/1920, e2e 22 passed / 5 skipped. Daarvoor (26-27 sep):
-  7.3, 7.4, 8.2, 9.3, 12.2 — fase 7 af.
-- **Fase:** 6, 7, 9 en 13 af; fase 8 op 8.4/8.5 na, fase 10 op 10.5 na, fase 12
-  op 12.1/12.5 na. Fase 5 geblokkeerd op de exports, fase 11 op het
-  voorbeeld-verkoopadvies. Opleverdetails in `docs/besluiten.md`.
-- **Volgende items:** **8.4** brochure-pdf in kantoorstijl (nu vrij: 8.3 is
-  gemerged) · **intake stap 5 opruimen** (`content_keuzes` in `PropertyForm.tsx`
-  filtert sinds 8.3 niets meer — weghalen of ombouwen tot "extra's alvast
-  genereren") · **transacties-RPC** (`/marktanalyse/transacties` 866 ms
-  server-side, zie `docs/data/performance.md`) · **kaart in het dossier pas laden
-  in beeld** (mobiele performance dossier 56-75) · **8.5** staging-modelcheck ·
-  **12.5** demo-voorbereiding. **12.1** wacht op Quinn (§ 8 punt 5).
-- **Performance (12.3, `docs/data/performance.md`):** a11y 100 op dashboard,
-  marktanalyse en dossier; performance desktop 96-100, mobiel dashboard 88-90,
-  marktanalyse ~80, dossier 56-75 (meting op deze machine instabiel — herhalen via
-  PSI op de productie-URL). First Load JS dossier 547 → 269 kB.
-- ⚠️ NL+EN-contentgeneratie duurde ~3 min tegen de Vercel-limiet van 300 s; sinds
-  8.3 is de kern-call kleiner (max_tokens 16.000 → 6.000, 7 i.p.v. 17 velden) —
-  echte duur nog niet gemeten (eerste generatie na deploy timen).
+- **Laatste ronde (27 sep, PR `feat/sessie-27sep-b`):** 8.4 brochure-pdf in
+  kantoorstijl, intake stap 5 opgeruimd + 10.5 intake tweekoloms (**fase 10 af**),
+  kaarten in het dossier laden pas in beeld (−48 % bytes, LCP ~2 s sneller op
+  mobiel), `zoekTransacties()` met terugval. typecheck/test (666)/build groen,
+  `dod:screens` groen, e2e 22 passed / 5 skipped. Eerder op 27 sep: 8.3, 9.2, 12.3,
+  13.2 (fase 9 en 13 af) en het i4housing-tekstsjabloon in de database.
+- **Fase:** 6, 7, 9, 10 en 13 af. Open: 8.5 (staging-modelcheck), 12.1
+  (team-accounts, wacht op Quinn), 12.5 (demo-voorbereiding). Geblokkeerd: fase 5
+  (exports), fase 11 (voorbeeld-verkoopadvies).
+- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
+  **12.5a demoscript** — `docs/demoscript.md` klik-voor-klik per scène (§ 2) met
+  terugvalplan; demo-dossiers alleen in het demo-kantoor · **backlog-poets**
+  (§ 9 "Uit de sessies van 26-27 sep"): documenten ook naar de extra's
+  (`genereerExtraContent`), footers publieke pagina's op de nieuwe tagline,
+  `/vertrouwen` naar "u", `StatTile`-kleurfallback weg, huisstijl-hook-regex
+  (radius ≠ kleur), verouderde generatie-smoketest, MapLibre-zoomknoppen met
+  Nederlandse `aria-label` · **twee kaarten in het dossier samenvoegen** (referenties
+  + eigen verkopen als lagen van één kaart) · **minikaart in de transactie-sheet**.
+  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie.
+- **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
+  de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
+  ging over een functie zonder aanroeper. Niet opnieuw oppakken.
+- **Performance:** a11y 100; mobiel dossier ~73 (bytes gehalveerd, maar de score
+  haalt 85 nog niet — rest zit in de Next 14-runtime en render-blocking CSS);
+  meting op deze machine instabiel → PSI op de productie-URL.
+- ⚠️ Contentgeneratie: kern-call sinds 8.3 kleiner (6.000 max_tokens); echte duur
+  nog niet gemeten — eerste generatie na deploy timen.
 - **Blokkades (geen van alle blokkeert het bouwen):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -709,7 +713,7 @@ MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart 
   optioneel), `sneak_preview`, extra's via `POST /api/object/[id]/extra?type=`,
   `ResultTabs`: kern-tabs + "Meer…"-menu voor extra's, timer + skeleton per tab
   (3.1), Funda-tekst NL en EN náást elkaar op ≥ 1280 px, kopieerknop per veld.
-- [ ] **8.4 Brochure-pdf in kantoorstijl** — logo, kleuren, lettertype, foto's
+- [x] **8.4 Brochure-pdf in kantoorstijl** — logo, kleuren, lettertype, foto's
   uit `FotoBibliotheek`, kenmerkentabel uit de intake, `brochure_stijl.slot_tekst`;
   vergelijk naast een echte i4housing-brochure (uit `seed-i4housing-content.mjs`).
 - [ ] **8.5 Virtual staging model-check** (schrapbaar) — `gemini-2.0-flash-exp`
@@ -721,26 +725,8 @@ MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart 
 ### Fase 9 — White-label-wow ✅ (27 sep 2026)
 Kantoorlogin `/login/<slug>`, reset-mail in kantoorstijl, consistentiecontrole (huisstijlcheck incl. tabs, portals, pdf's). Details: `docs/besluiten.md`.
 
-### Fase 10 — Woningdossier premium (3 sessies)
-
-- [x] **10.1 `/woningen` v2** — tabel- en kaartweergave (`BasisKaart`), zoeken,
-  filters fase/makelaar, URL-state, knop "Woning toevoegen" in de kop (sinds
-  1.9c); `PitchScorebord` is vervallen.
-- [x] **10.2 Dossierheader v2** — foto (eerste uit `FotoBibliotheek` of
-  merkverloop), waarde/vraagprijs/dagen-in-fase als `StatTile`s, acties
-  (pdf, content, fase).
-- [x] **10.3 Verrijkingsdata in het dossier** — tab "Buurt & data": WOZ,
-  CBS-buurtcijfers, voorzieningen (uit `lib/verrijking.ts`, al opgehaald bij
-  de intake; opslaan in `objecten.verrijking_json` via migratie).
-- [x] **10.4 `gebruik_events` + Recent bekeken + tijdlijn** — tabel
-  `gebruik_events` (kantoor_id, makelaar_id, object_id, type, created_at; RLS),
-  `lib/gebruik.ts` `logGebruik()`, `RecentBekeken` op `/dashboard`;
-  dossiertijdlijn (schrapbaar).
-- [ ] **10.5 Intake tweekoloms** (schrapbaar) — wizard links, `WoningdataPanel`
-  rechts, `AppPagina` volle breedte op `object/new`.
-- [x] **10.6 `StijlLerenPaneel` vindbaar** — vaste plek onder de teksten met
-  teller "3 bewerkingen wachten op je oordeel".
-- **Klaar als:** dossier leest als één verhaal; fase in één oogopslag.
+### Fase 10 — Woningdossier premium ✅ (27 sep 2026)
+`/woningen` v2 (tabel + kaart), dossierheader v2, Buurt & data, Recent bekeken, stijl-leren vindbaar, intake tweekoloms met live "Deze woning"-paneel. Details: `docs/besluiten.md`.
 
 ### Fase 11 — Verkoopadvies (2-3 sessies; **geblokkeerd** tot Quinns voorbeeld er is)
 

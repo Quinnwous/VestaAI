@@ -6,6 +6,18 @@
 
 ---
 
+### 27 sep 2026 (tweede ronde, vier Sonnet-agents) — 8.4, intake, kaarten lazy, transacties
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 8.4 brochure-pdf | `GET /api/pdf/brochure` + `BrochurePdfTemplate`: cover (hoofdfoto of merkvlak, adres, vraagprijs k.k., logo), intro (`brochure_tekst`, terugval `funda_tekst`), max 8 foto's (4 per pagina), kenmerkentabel (`lib/brochureKenmerken.ts`), slotpagina (`brochure_stijl.slot_tekst` of kantoorcontact). Geen AI, elke foto-/logo-URL vooraf gecontroleerd. Helvetica (geen lokaal kantoorlettertype beschikbaar zonder nieuwe dependency). Les: een absolute full-bleed `<Image>` met broertjes schoof in react-pdf een lege pagina in → `fixed` op de achtergrondafbeelding | Sonnet |
+| 8.4 testfoto's | De agent uploadde tegen zijn opdracht in tijdelijk twee foto's naar een demo-dossier om de cover te testen en verwijderde ze daarna; gecontroleerd: 0 foto-rijen, geen restbestanden gevonden. Alleen demo-kantoor | Opus |
+| Intake | Stap 5-vinkjes weg (`content_keuzes` deprecated, blijft optioneel voor oude dossiers) → hint naar "Meer…". 10.5: ≥ 1280 px wizard + sticky "Deze woning"-paneel (`components/DezeWoningPaneel.tsx`, live via `useWatch`), content begrensd op 1.180 px | Sonnet |
+| Kaarten lazy | `BasisKaart` mount pas binnen 200 px van de viewport (`IntersectionObserver`, skelet op de juiste hoogte); prop `direct` op `/marktanalyse/kaart` en `/woningen`-kaart. Dossier mobiel: bytes 2.244 → 1.164 KiB, LCP 7,1 → 5,1 s; score 72 → 73 (mediaan, instabiel) | Sonnet |
+| Transacties | Opdracht bleek al gedaan: de pagina draait sinds 6.2 op RPC `transacties_zoeken` (v2 toegepast, 163 ms). Wél: terugval bij `PGRST202` en verouderde "nog niet toegepast"-notities gecorrigeerd (code, migratie, schema, performance.md) — oorzaak van de dubbele opdracht | Sonnet + Opus |
+| Limiet vóór eerste wijziging | Alle vier de agents stopten op de limiet vóór hun eerste wijziging; worktrees waren al opgeruimd → opnieuw gestart i.p.v. hervat (CLAUDE.md aangevuld) | Opus |
+| Doorlopende rondes | Quinn: na een afgeronde ronde meteen de volgende starten, niet wachten (CLAUDE.md § Parallel met agents) | Quinn |
+
 ### 27 sep 2026 (sessie Opus als regisseur + vier Sonnet-agents) — 8.3, 9.2, 12.3, 13.2
 
 | Onderwerp | Besluit | Door |
@@ -460,6 +472,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 27 sep 2026 — PR `feat/sessie-27sep-b`: **8.4, 10.5** (fase 10 af), intake stap 5
+  opgeruimd, kaarten lazy in het dossier, transacties-terugval.
 - 27 sep 2026 — PR `feat/sessie-27sep`: **8.3, 9.2, 12.3, 13.2** (fase 9 en 13
   af) + i4housing-tekstsjabloon in de database.
 - 27 sep 2026 — PR `feat/sessie-26sep` (parallelle Sonnet-agents, Opus-review):

@@ -350,7 +350,7 @@ function WoningenKaartWeergave({ rijen }: { rijen: WoningKaartRij[] }) {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: 12 }} className="woningen-werkblad">
         <style>{'@media (max-width: 960px) { .woningen-werkblad { grid-template-columns: 1fr !important; } }'}</style>
-        <BasisKaart bounds={bounds} hoogte={560}>
+        <BasisKaart direct bounds={bounds} hoogte={560}>
           <WoningenKaartLaag
             woningen={punten}
             geselecteerdId={gehoveredId}

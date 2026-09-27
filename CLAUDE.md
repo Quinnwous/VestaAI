@@ -32,7 +32,14 @@
 > **Afspraak Quinn (27 sep 2026):** stopt de sessie of een agent op de gebruikslimiet en zegt
 > Quinn daarna "ga door", dan hervat Claude zonder te vragen élke onderbroken agent via
 > SendMessage (zelfde agent, zelfde worktree) en maakt de ronde af — nooit een nieuwe agent
-> starten voor half werk.
+> starten voor half werk. Uitzondering: stopte een agent vóór zijn eerste wijziging, dan is
+> zijn worktree automatisch opgeruimd — hervatten zou hem zonder worktree in de hoofdmap laten
+> werken; dan opnieuw starten met dezelfde opdracht (er gaat niets verloren).
+> **Doorlopende rondes (Quinn 27 sep 2026):** is een ronde afgerond en live, dan start Claude
+> meteen de volgende ronde uit `docs/roadmap.md` § Stand van zaken (volgende items, nul
+> bestandsoverlap, weer met agents) — niet wachten op Quinn. Alleen stoppen bij iets
+> onomkeerbaars (migratie die echte data raakt, verwijderen, betaalde API-rondes) of als
+> er geen bouwbaar item meer is zonder input van Quinn; dat dan in één bericht melden.
 >
 > **Push/merge/live — automatisch aan het einde van elke ronde (besluit Quinn 17 sep,
 > aangescherpt 26 sep 2026, geldt tot hij anders zegt):** tijdens een ronde alleen lokaal
@@ -107,6 +114,10 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 ⚠️ **Nooit `new Date()` (of iets anders dat per omgeving verschilt) in een client component** — les 19 sep 2026. Productie draait op Vercel in **UTC**, de makelaar zit in **Europe/Amsterdam**: de server schreef "Goedemorgen" waar de browser "Goedemiddag" verwachtte. Dat is een hydratiemismatch (React #425/#422), en die breekt niet alleen dát stukje tekst maar laat de **hele pagina half-levend** achter — het profielmenu in de topbar reageerde daardoor nergens meer op, terwijl er niets mis was met de topbar. Reken tijd/datum/willekeur server-side uit (zie `lib/begroeting.ts`) en geef het door als prop. Verdenk bij "knop doet niets" altijd eerst de hydratie: `page.on('pageerror')` in Playwright wijst het binnen een minuut aan, en het is meestal een ándere component op dezelfde pagina. Zelfde categorie: laat een element nooit op `opacity: 0` staan tot een `useEffect` het zichtbaar maakt — faalt de hydratie, dan blijft het onzichtbaar. Gebruik een CSS-animatie.
 
 ⚠️ **Een dynamic import beschermt de kinderen niet** — les 27 sep 2026 (12.3): `BasisKaart` was `dynamic(ssr:false)`, maar de laag-componenten (`VerkopenLaag`, `ReferentiesLaag`, `WoningenKaartLaag`) importeerden zelf `maplibre-gl`, dus 278 kB gzip zat alsnog in de hoofdbundel van elke kaartpagina. Zware libs in een laag: alleen het type statisch importeren, de runtime via `await import()` in het effect. Controleer met `ANALYZE=true npm run build`.
+
+⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
+
+⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026: een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
 
 ⚠️ **Een Next-routebestand (`route.ts`) mag alleen route-exports hebben** (`GET`/`POST`/`maxDuration`/…) — een geëxporteerde hulpfunctie laat `next build` falen terwijl typecheck en tests groen zijn. Hulpfuncties in `lib/`.
 
@@ -199,6 +210,8 @@ VestaAI/
 │   │                           #   avatarmenu rechtsboven (Mijn account · Kantoor · Uitloggen).
 │   │                           #   Verhuur volledig uit de app (was hier "op slot")
 │   ├── ObjectWorkspace.tsx     # woningdossier, fase-afhankelijke weergave
+│   ├── BrochurePdfTemplate.tsx # brochure-pdf in kantoorstijl (8.4, GET /api/pdf/brochure)
+│   ├── DezeWoningPaneel.tsx    # live samenvatting naast de intake (10.5)
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
 │   ├── VerkoopkaartExplorerV2.tsx / StraalKaartPaneel.tsx / WaarderingKaart.tsx   # alle drie op components/kaart/
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
