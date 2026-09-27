@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { meldFout } from '@/lib/fouten'
+import { bagAdressen, bagHeaders, bagLabel, bagUitgebreidUrl, bagZoekUrl, parseUitgebreid } from '@/lib/bag'
 
 // BAG Kadaster API (vereist KADASTER_API_KEY in .env.local)
 // Registreer gratis op: https://www.kadaster.nl/zakelijk/producten/adressen-en-gebouwen/bag-api-individuele-bevragingen
-const BAG_BASE = 'https://api.bag.kadaster.nl/lvbag/individuelebevragingen/v2'
 
 export async function GET(req: NextRequest) {
   // Middleware stuurt niet-ingelogde bezoekers al door naar /login, maar geeft
@@ -27,63 +27,41 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Kadaster API-sleutel niet geconfigureerd' }, { status: 503 })
   }
 
-  // Stap 1: zoek nummeraanduiding op basis van adres
-  const zoekRes = await fetch(
-    `${BAG_BASE}/adressen?zoekresultaat=${encodeURIComponent(adres)}&page=1&pageSize=1`,
-    {
-      headers: {
-        'X-Api-Key': apiKey,
-        Accept: 'application/hal+json',
-      },
-    },
-  )
-
-  if (!zoekRes.ok) {
-    return NextResponse.json({ error: 'Adres niet gevonden in BAG' }, { status: 404 })
+  // Stap 1: zoek het adres (vrije tekst via `q`, zie lib/bag.ts)
+  const headers = bagHeaders(apiKey)
+  const zoekRes = await fetch(bagZoekUrl(adres), { headers }).catch(err => {
+    meldFout('bag', err)
+    return null
+  })
+  if (!zoekRes?.ok) {
+    if (zoekRes) meldFout('bag', new Error(`BAG-zoeken antwoordde HTTP ${zoekRes.status}`))
+    return NextResponse.json({ error: 'BAG niet bereikbaar' }, { status: 502 })
   }
 
-  const zoekData = await zoekRes.json()
-  const adressen = zoekData?._embedded?.adressen ?? []
-  if (!adressen.length) {
+  const adresObject = bagAdressen(await zoekRes.json())[0]
+  if (!adresObject) {
     return NextResponse.json({ error: 'Adres niet gevonden' }, { status: 404 })
   }
-
-  const adresObject = adressen[0]
-  const nummeraanduidingId: string | undefined = adresObject?.nummeraanduidingIdentificatie
-
+  const nummeraanduidingId = adresObject.nummeraanduidingIdentificatie
   if (!nummeraanduidingId) {
     return NextResponse.json({ error: 'Geen nummeraanduiding-ID gevonden' }, { status: 404 })
   }
 
-  // Stap 2: verblijfsobject ophalen voor bouwjaar en oppervlakte
-  const vboRes = await fetch(
-    `${BAG_BASE}/verblijfsobjecten?nummeraanduidingIdentificatie=${nummeraanduidingId}&page=1&pageSize=1`,
-    {
-      headers: {
-        'X-Api-Key': apiKey,
-        Accept: 'application/hal+json',
-      },
-    },
-  )
-
-  if (!vboRes.ok) {
-    return NextResponse.json({ error: 'Verblijfsobject niet gevonden' }, { status: 404 })
+  // Stap 2: bouwjaar (van het pand) en oppervlakte (van het verblijfsobject) in één call
+  const uitgebreidRes = await fetch(bagUitgebreidUrl(nummeraanduidingId), { headers }).catch(err => {
+    meldFout('bag', err)
+    return null
+  })
+  if (!uitgebreidRes?.ok) {
+    if (uitgebreidRes) meldFout('bag', new Error(`BAG-adressenuitgebreid antwoordde HTTP ${uitgebreidRes.status}`))
+    return NextResponse.json({ error: 'Woninggegevens niet gevonden in BAG' }, { status: 502 })
   }
-
-  const vboData = await vboRes.json()
-  const vbos = vboData?._embedded?.verblijfsobjecten ?? []
-  if (!vbos.length) {
-    return NextResponse.json({ error: 'Geen verblijfsobject gevonden' }, { status: 404 })
-  }
-
-  const vbo = vbos[0]
-  const oppervlakte: number | undefined = vbo?.oppervlakte
-  const bouwjaar: number | undefined = vbo?.oorspronkelijkBouwjaar
+  const { bouwjaar, oppervlak_m2 } = parseUitgebreid(await uitgebreidRes.json())
 
   // Stap 3: energielabel ophalen via publieke EP-Online API (geen API-key nodig)
   let energielabel: string | null = null
-  const postcode: string | undefined = adresObject?.postcode
-  const huisnummer: string | number | undefined = adresObject?.huisnummer
+  const postcode = adresObject.postcode ?? undefined
+  const huisnummer = adresObject.huisnummer
   if (postcode && huisnummer) {
     try {
       const epRes = await fetch(
@@ -96,16 +74,14 @@ export async function GET(req: NextRequest) {
       }
     } catch (error) {
       // EP-Online is optioneel — stille fallback naar null
-      meldFout('bag:ep-online', error, { adres })
+      meldFout('bag:ep-online', error)
     }
   }
 
   return NextResponse.json({
-    bouwjaar: bouwjaar ?? null,
-    oppervlak_m2: oppervlakte ?? null,
+    bouwjaar,
+    oppervlak_m2,
     energielabel: energielabel ?? null,
-    adres_volledig: adresObject?.openbareRuimteNaam
-      ? `${adresObject.openbareRuimteNaam} ${adresObject.huisnummer}${adresObject.huisletter ?? ''}, ${adresObject.woonplaatsNaam}`
-      : null,
+    adres_volledig: adresObject.openbareRuimteNaam ? bagLabel(adresObject) : null,
   })
 }

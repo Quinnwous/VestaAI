@@ -54,7 +54,7 @@ import { haalTransactiesData } from '@/app/(app)/marktanalyse/transacties/action
 import { lijstEigenDossiers, type DossierOptie } from '@/app/(app)/marktanalyse/transacties/dossier-actions'
 import { haalTransactieCoordinaatActie } from '@/app/(app)/marktanalyse/transacties/coordinaat-actions'
 import { voegReferentiesToe } from '@/app/(app)/object/[id]/waardering-actions'
-import { TransactieMinikaart, type MinikaartStatus } from '@/components/TransactieMinikaart'
+import { TransactieMinikaart, type MinikaartStatus } from '@/components/kaart'
 
 const ENERGIELABELS = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
 const MIN_N_VERGELIJKING = 6

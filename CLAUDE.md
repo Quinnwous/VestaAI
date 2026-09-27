@@ -117,6 +117,8 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
 
+⚠️ **BAG-API (Kadaster): vrije tekst via `q`, `pageSize` ≥ 10** — les 27 sep 2026: de adres-autocomplete en het voorvullen van bouwjaar/oppervlakte deden ongemerkt niets (hoe lang precies is niet nagegaan), omdat `/adressen?zoekresultaat=…` een 400 gaf en de routes dat stil tot "leeg" opvouwden. Alles loopt nu via `lib/bag.ts` (`q`, `adressenuitgebreid` voor bouwjaar + oppervlakte in één call, header `Accept-Crs: epsg:28992`); een mislukte call wordt gelogd. Zelfde les als bij de verrijking: een externe bron die faalt mag nooit ongemerkt als "geen resultaat" doorgaan.
+
 ⚠️ **Eigen overlays op een MapLibre-kaart nooit rechtsboven** — les 27 sep 2026: daar zit `NavigationControl` (de zoomknoppen). Bedieningselementen (laagschakelaar, straal-pillen) in de kaartkop, niet óp de kaart. Alleen zichtbaar op een screenshot, niet in typecheck/tests.
 
 ⚠️ **Een standaardkeuze die eenmalig in een `useEffect` wordt gezet, wacht op de écht geladen data** — les 27 sep 2026: de dossierkaart koos "Eigen verkopen" bij een dossier met 17 referenties, omdat het effect al vuurde op een memo die vóór de fetch een waarde had (opgeslagen uitkomst) terwijl de coördinaten nog leeg waren. Gate op de fetch-resultaten (`serverData`), niet op een placeholder.
@@ -217,7 +219,7 @@ VestaAI/
 │   ├── BrochurePdfTemplate.tsx # brochure-pdf in kantoorstijl (8.4, GET /api/pdf/brochure)
 │   ├── DezeWoningPaneel.tsx    # live samenvatting naast de intake (10.5)
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
-│   ├── VerkoopkaartExplorerV2.tsx / WaarderingKaart.tsx / TransactieMinikaart.tsx   # alle op components/kaart/
+│   ├── VerkoopkaartExplorerV2.tsx / WaarderingKaart.tsx   # op components/kaart/ (TransactieMinikaart staat ín kaart/)
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
@@ -242,6 +244,7 @@ VestaAI/
 │   ├── opmaak.ts                # nl-NL-opmaak voor élk getal/datum (Amsterdamse tijd)
 │   ├── gebruik.ts               # logGebruik() → gebruik_events (Recent bekeken, 10.4)
 │   ├── verrijking.ts            # WOZ/CBS/Overpass/PDOK-verrijking (incl. coördinaat)
+│   ├── bag.ts                   # BAG-API: adres zoeken (q) + bouwjaar/oppervlakte (adressenuitgebreid)
 │   ├── ensureMakelaar.ts        # vangnet: koppelt uitgenodigd account aan zijn kantoor
 │   └── supabase.ts · email.ts
 ├── docs/
@@ -289,4 +292,5 @@ VestaAI/
 - `npm run typecheck` — TypeScript check
 - `npm run build` — productie-build
 - `npm run e2e` — Playwright-suite in `e2e/` (zie `e2e/README.md`): kantoorlogin, dossier < 5 s, waardering + pdf, kaart zonder CSP-fout, admin, RLS-isolatie tussen kantoren. Content-tests alleen met `E2E_GENERATE=1` (kost API-geld). Maakt en verwijdert één testdossier, uitsluitend in het demo-kantoor.
+- `npm run demo:repetitie` — generale repetitie van `docs/demoscript.md`: loopt de zes scènes af met Playwright (demo-kantoor, 1920×1080), screenshots naar `screenshots/repetitie/`, exit 1 bij `pageerror`/lege staat/ontbrekend knoplabel. Alleen lezend: klikt niets aan dat schrijft of geld kost. Zelfde inlog en `.env.local`-eisen als `dod:screens` (hieronder).
 - `npm run dod:screens` — DoD-visueel: huisstijlcheck (VestaAI-groen, foutstaat, `pageerror`) op 390/1280/1920 px + screenshots van alle ingelogde routes naar `screenshots/`; exit 1 bij een fout. Gebruikt een draaiende server op `DOD_PORT` (standaard 3000) of start zelf `next dev`. Vereist in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (plus de gewone app-variabelen); optioneel `DOD_EMAIL` (standaard `demo@vestaai.nl`, het demo-kantoor met data; i4 Housing via `DOD_EMAIL=quinn.berkouwer@icloud.com`). Logt in via een sessiecookie (`scripts/lib/dodSessie.mjs`), niet via de magic-link-redirect — die wijst naar productie. Alleen lezend, maar ⚠️ `.env.local` wijst naar de productiedatabase.

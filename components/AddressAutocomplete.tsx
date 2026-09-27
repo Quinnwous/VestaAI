@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { BagSuggestie } from '@/app/api/bag/suggest/route'
 
 interface Props {
@@ -18,6 +18,8 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
   const [bezig, setBezig] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const listboxId = useId()
+  const optionId = (i: number) => `${listboxId}-optie-${i}`
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -104,8 +106,12 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
           placeholder={placeholder ?? 'Herengracht 1, Amsterdam'}
           style={inputStyle}
           autoComplete="off"
+          role="combobox"
           aria-autocomplete="list"
+          aria-haspopup="listbox"
           aria-expanded={open}
+          aria-controls={listboxId}
+          aria-activedescendant={open && actief >= 0 ? optionId(actief) : undefined}
         />
         {bezig && (
           <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
@@ -136,10 +142,12 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
             overflow: 'hidden',
           }}
           role="listbox"
+          id={listboxId}
         >
           {suggesties.map((s, i) => (
             <li
               key={i}
+              id={optionId(i)}
               role="option"
               aria-selected={i === actief}
               onMouseDown={e => { e.preventDefault(); kies(s) }}

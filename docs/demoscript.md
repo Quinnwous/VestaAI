@@ -113,6 +113,47 @@ elke scène hieronder), en **screenshots van elk scherm** die je erna naast
 elke hapering (trage laadtijd, afwijkende tekst, gebroken layout op het
 gebruikte scherm) en fix of plan een terugval vóórdat de echte demo begint.
 
+### Automatische repetitie
+
+Naast de handmatige generale repetitie hierboven bestaat een geautomatiseerd
+script dat de zes scènes hierboven klik-voor-klik naloopt tegen een lokale
+dev-server (item 12.5b, `scripts/generale-repetitie.mjs`):
+
+```
+npm run demo:repetitie                        # demo-kantoor, 1920×1080, poort 3101
+npm run demo:repetitie -- --kantoor=i4housing
+npm run demo:repetitie -- --breedte=1280 --port=3102
+```
+
+Het script:
+- navigeert/klikt zoals dit document beschrijft, wacht op de verwachte
+  inhoud en maakt een screenshot per stap (`screenshots/repetitie/<scène>--
+  <stap>.png`);
+- meet de laadtijd per stap en waarschuwt bij > 3 s — opvallend op het grote
+  scherm van de echte demo, ook al is dat in lokale dev-mode vaak vooral de
+  eerste (cold-compile) keer dat een route wordt bezocht;
+- faalt hard op een `pageerror`, console-error, Next.js-foutoverlay, een lege
+  staat waar data verwacht wordt (bv. "Nog geen transacties"), een
+  ontbrekend knoplabel of een niet-2xx-navigatie;
+- **voert geen schrijfacties of betaalde AI-aanroepen uit**: maakt geen
+  nieuw dossier (scène 4 gebruikt een bestaand verkoopadvies-dossier van het
+  kantoor) en klikt nooit "Genereer content", "Kwartaalbericht schrijven"
+  (start al bij het ÓPENEN van de modal een Claude-call), "Uitsluiten"/
+  "Vastleggen" bij de waardering (persisteren op de achtergrond naar
+  `objecten.waardering_json`) of de fase-pil "In verkoop" (wijzigt
+  `objecten.fase` én start automatisch contentgeneratie) — voor die stappen
+  wordt alleen gecontroleerd dat de knop bestaat en klikbaar is. De
+  waardebepaling- en brochure-pdf zijn wél puur lezend en worden aangeklikt,
+  met een duurmeting (belofte < 10 s voor de waardebepaling-pdf);
+- eindigt met een rapporttabel (scène · stap · status · duur) en het totaal.
+
+Bekende beperking: hoveren over een kaartpin (scène 6, stap 3) is
+canvas-gerenderd door MapLibre en wordt bewust overgeslagen — niet
+betrouwbaar te automatiseren met een vaste selector.
+
+Draai het vóór de handmatige generale repetitie én vóór de echte demo; een
+rode regel in de tabel is een concreet punt om te fixen, geen giswerk.
+
 ---
 
 ## De zes scènes
@@ -162,8 +203,8 @@ opzichte van de rest van [plaats]."
 | # | Klik / actie | Wat ze zien |
 |---|---|---|
 | 1 | Topbar → **Marktanalyse** (`/marktanalyse`) | Eyebrow "Marktinzichten", titel "Marktanalyse", filterbalk bovenaan, badge "Data t/m [datum] · N transacties in de selectie" |
-| 2 | Filterdropdown **Plaats** → kies "Wassenaar" | Filterpil "Plaats: Wassenaar" verschijnt, cijfers herberekenen (< 100 ms, client-side) |
-| 3 | Filterdropdown **Woningtype** → vink "Vrijstaand" aan | Filterpil "Type: Vrijstaand", cijfers filteren verder |
+| 2 | Filterdropdown **Plaats** → alle vijf werkgebiedplaatsen staan standaard al aan; "Wis" en dan "Wassenaar" aanvinken (of de andere vier uitvinken) zodat alleen "Wassenaar" overblijft ⚠️ *niet* zelf op "Wassenaar" klikken — die staat al aan, dus dat vinkt 'm juist uít | Filterknop toont nu "Plaats Wassenaar" (geen losse ×-pil onder de balk — dat krijgen alleen Type/Prijs/Wijken e.d., zie hieronder), cijfers herberekenen (< 100 ms, client-side) |
+| 3 | Filterdropdown **Woningtype** → vink "Vrijstaand" aan | Filterpil "Type: Vrijstaand" verschijnt onder de filterbalk, cijfers filteren verder |
 | 4 | Gesegmenteerde periodeknop → **"24 mnd"** | 5 tegels met delta t.o.v. de vorige periode: *Mediaan verkoopprijs* (hero) · *Mediaan prijs per m²* · *Mediaan looptijd* · *Verkocht t.o.v. vraagprijs* · *Verkopen in de selectie* |
 | 5 | — | Twee grafiekkaarten naast elkaar: prijs & € per m² per kwartaal, looptijd per kwartaal — lijnen "Wij" (merkkleur) vs. "Markt" (neutraal donker) |
 | 6 | Schuif naar beneden | Verdeling naar prijsklasse (staven, klikbaar = crossfilter) en typegroep |
@@ -186,9 +227,11 @@ die je hier ook echt ziet staan."
   resultaten zijn; bij een serverfout gewoon doorpraten over de grafieken en
   de knop later los laten zien — er wordt niets opgeslagen, dus niets om op
   terug te vallen buiten "nog een keer proberen".
-- **Grafieken tonen niets bij een te smalle filtercombinatie:** klik
-  "Herstel" (rechts in de filterbalk) om terug te gaan naar het standaard-
-  werkgebiedfilter.
+- **Grafieken tonen niets bij een te smalle filtercombinatie:** klik "Wis
+  alles" (verschijnt zodra er ≥ 2 filterpillen actief zijn, onder de
+  filterbalk) om alle filters terug te zetten. De "Wis"-knop *binnen* de
+  Plaats-dropdown maakt de plaatskeuze leeg (= alle plaatsen); tot 27 sep deed
+  hij niets, gefixt in `hooks/useFilterState.ts`.
 
 ---
 

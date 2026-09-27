@@ -6,6 +6,17 @@
 
 ---
 
+### 27 sep 2026 (vierde ronde, twee Sonnet-agents + Opus) — 12.5b, BAG, filters, poets
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 12.5b repetitiescript | `scripts/generale-repetitie.mjs` / `npm run demo:repetitie`: loopt de zes scènes af op het demo-kantoor (1920×1080), screenshot per stap naar `screenshots/repetitie/`, faalt op `pageerror`, console-error, overlay, lege staat, ontbrekend knoplabel, niet-2xx; > 3 s = waarschuwing. Klikt niets aan dat schrijft of geld kost (dossier aanmaken, content, kwartaalbericht, uitsluiten/vastleggen, fase-pil); pdf's wél (alleen lezend, 0,4-0,9 s) | Sonnet |
+| BAG-bug | `/adressen?zoekresultaat=` bestaat niet (400), `pageSize` min. 10, bouwjaar staat op het pand. Beide routes vouwden de fout stil tot "leeg" → autocomplete en voorvullen deden niets (hoe lang precies niet nagegaan). Nu `lib/bag.ts`: `q` + `adressenuitgebreid` (bouwjaar + oppervlakte in één call, `Accept-Crs`), fouten gelogd zonder adres. Getest tegen de echte API | Opus |
+| "Wis" op Plaats | `serialiseerFilterState` liet een lege lijst uit de URL, parsen vulde de niet-lege standaard (werkgebied) weer in. Leeg bij niet-lege standaard wordt nu `plaatsen=`; leeg = alle plaatsen in de rekenlogica | Opus |
+| Omweg vorige periode | `vorigePeriodeFilter()` en de tweede RPC-aanroep weg na verificatie met `pg_get_functiondef` dat de SQL-fix live staat; kwartaalbericht gebruikt `samenvatting.vorig.van/.tot` | Sonnet |
+| Adres-autocomplete | ARIA 1.2-combobox (`role="combobox"`, `aria-controls`, `aria-activedescendant`); build-waarschuwing weg | Sonnet |
+| Hervatten na limiet | Beide agents stopten op de limiet mét ongecommit werk in hun worktree → hervat via SendMessage (afspraak 27 sep) | Opus |
+
 ### 27 sep 2026 (derde ronde, vier Sonnet-agents) — 12.5a, één dossierkaart, minikaart, backlog-poets
 
 | Onderwerp | Besluit | Door |
@@ -485,6 +496,9 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 27 sep 2026 — PR `feat/sessie-27sep-d`: **12.5b** repetitiescript, BAG-autocomplete
+  en voorvullen gerepareerd, "Wis" op Plaats, omweg vorige periode weg,
+  minikaart naar `kaart/`, combobox-ARIA.
 - 27 sep 2026 — PR `feat/sessie-27sep-c`: **12.5a** demoscript, één dossierkaart
   (referenties + eigen verkopen als lagen), minikaart in de transactie-sheet,
   backlog-poets (extra's met documenten, publieke footer, hook-regex, smoke-e2e).
