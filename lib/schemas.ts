@@ -289,10 +289,12 @@ export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
   // de waardepeildatum (1 januari), dus één lager dan het belastingjaar.
   woz_waarde: z.number().int().min(1000).max(100_000_000).optional(),
   woz_peiljaar: z.number().int().min(2000).max(2100).optional(),
-  // Keuzevinkjes (F8, besluit 16 sep 2026: "ze vinken contentvorm aan die ze
-  // willen genereren, zodat ze alleen krijgen wat ze willen"). Ontbreekt dit
-  // veld (bestaande dossiers van vóór deze uitbreiding), dan blijft het oude
-  // gedrag gelden: alle optionele content die Claude relevant acht.
+  // Keuzevinkjes (F8, besluit 16 sep 2026) — deprecated sinds 8.3: de kern-call
+  // (item 8.3, outputset v2) heeft geen optionele contentvormen meer om aan te
+  // vinken, dus `toepassenContentKeuzes()` is verwijderd en niets leest of
+  // schrijft dit veld nog (de intake-checkboxen zijn eruit, zie
+  // docs/besluiten.md 27 sep). Blijft optioneel zodat oude `objecten.input_json`
+  // (van vóór 8.3) geldig blijft parsen.
   content_keuzes: z.array(z.enum(['followup', 'video', 'energieadvies', 'kopersvragen', 'marktanalyse'])).optional(),
 }))
 

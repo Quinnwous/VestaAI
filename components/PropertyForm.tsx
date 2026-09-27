@@ -8,6 +8,7 @@ import { PropertyInputSchema, migreerOudWoningtype, type PropertyInput } from '@
 import { bouwWoningtypeOptieGroepen, woningtypeOptieWaarde, ontleedWoningtypeOptieWaarde } from '@/lib/woningtypeOpties'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { WoningdataPanel } from '@/components/WoningdataPanel'
+import { DezeWoningPaneel } from '@/components/DezeWoningPaneel'
 import type { VerrijkingData } from '@/lib/verrijking'
 import type { BagSuggestie } from '@/app/api/bag/suggest/route'
 import { WOZ_LOKET_URL } from '@/lib/woz'
@@ -28,16 +29,6 @@ const LIGGING_OPTIES = ['hoekwoning', 'tussenwoning', 'vrijstaand', 'twee_onder_
 const ORIENTATIE_OPTIES = ['noord', 'noordoost', 'oost', 'zuidoost', 'zuid', 'zuidwest', 'west', 'noordwest'] as const
 const PARKEREN_OPTIES = ['garage', 'carport', 'oprit', 'openbaar', 'geen'] as const
 const BIJZONDERE_LIGGING_OPTIES = ['water', 'park', 'drukke_weg'] as const
-
-// Keuzevinkjes voor extra content (F8, besluit 16 sep 2026) — standaard allemaal
-// aangevinkt, zodat bestaand gedrag (alles genereren) de default blijft.
-const CONTENT_KEUZE_OPTIES = [
-  { value: 'followup', label: 'Follow-up na bezichtiging' },
-  { value: 'video', label: 'Video script' },
-  { value: 'energieadvies', label: 'Energieadvies' },
-  { value: 'kopersvragen', label: 'Kopersvragen FAQ' },
-  { value: 'marktanalyse', label: 'Marktanalyse-tekst' },
-] as const
 
 const STAPPEN = [
   { id: 1, label: 'Adres' },
@@ -223,6 +214,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   }
 
   return (
+    <div className="intake-layout">
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <input type="hidden" {...register('taal')} />
 
@@ -650,20 +642,14 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         }
       </div>
 
-      {/* Keuzevinkjes (F8, besluit 16 sep 2026): alleen de aangevinkte extra content komt straks
-          in het dossier terecht — de kernteksten (Funda/brochure/social/e-mail/buurt) staan hier
-          los van, die worden altijd gegenereerd. */}
-      <div>
-        <label style={labelStyle}>Extra content <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel, naast de kernteksten)</span></label>
-        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-          {CONTENT_KEUZE_OPTIES.map(optie => (
-            <label key={optie.value} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
-              <input type="checkbox" value={optie.value} disabled={disabled} defaultChecked {...register('content_keuzes')} />
-              {optie.label}
-            </label>
-          ))}
-        </div>
-      </div>
+      {/* Extra content (open huis, follow-ups, videoscript, energieadvies, FAQ)
+          maak je pas in het dossier zelf, op knopdruk via "Meer…" — sinds
+          item 8.3 filteren deze vinkjes niets meer, dus die zijn hier weg
+          (opruimitem ná 8.3, zie docs/besluiten.md). */}
+      <p style={{ fontSize: 12.5, color: '#5C6470', lineHeight: 1.5, margin: 0 }}>
+        Extra teksten zoals een open-huis-aankondiging, follow-ups, een videoscript, energieadvies
+        of een kopers-FAQ maak je straks in het dossier zelf, via &ldquo;Meer…&rdquo;.
+      </p>
       </div>
 
       {/* Stap 6 — Commercieel (Verkoopadvies-fase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
@@ -810,5 +796,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         )}
       </div>
     </form>
+
+    {/* Sticky rechterpaneel (item 10.5) — alleen op brede schermen (≥1280px,
+        zie .intake-layout in app/globals.css), op smallere schermen blijft de
+        wizard gestapeld zoals voorheen en verschijnt dit paneel niet. */}
+    <aside className="intake-zijpaneel">
+      <DezeWoningPaneel control={control} />
+    </aside>
+    </div>
   )
 }

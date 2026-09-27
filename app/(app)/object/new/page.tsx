@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import type { KantoorInstellingen } from '@/lib/schemas'
+import { AppPagina } from '@/components/ui'
 import { NewObjectForm } from './NewObjectForm'
 
 export const metadata = { title: 'Woning toevoegen' }
@@ -34,11 +35,15 @@ export default async function NewObjectPage() {
   // trok van de contentgeneratie (POST /api/object doet geen Claude-call).
   // Toegang is puur admin-beheerd (geen plan-/proefcheck meer) — elk
   // account met een makelaar-record mag hier komen.
+  //
+  // Item 10.5: `AppPagina` i.p.v. de losse `maxWidth: 900`-wrapper die hier
+  // eerder stond — dat was de laatste pagina met zijn eigen afwijkende
+  // waarde (zie AppPagina.tsx). Volle breedte laat de intake vanaf 1280px
+  // ruimte over voor het sticky "Deze woning"-paneel naast de wizard
+  // (components/PropertyForm.tsx, .intake-layout in app/globals.css).
   return (
-    <main style={{ minHeight: '100vh' }}>
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '44px 40px 80px' }}>
-        <NewObjectForm toonDemoKnop={toonDemoKnop} />
-      </div>
-    </main>
+    <AppPagina>
+      <NewObjectForm toonDemoKnop={toonDemoKnop} />
+    </AppPagina>
   )
 }
