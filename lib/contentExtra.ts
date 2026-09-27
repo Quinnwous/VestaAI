@@ -88,3 +88,20 @@ Doelgroep: ${input.doelgroep ?? ''}${openHuisRegel}${toonRegel}
 
 Geef ALLEEN de tekst terug, verder niets. Geen uitleg, geen labels, geen JSON, geen aanhalingstekens.`
 }
+
+/**
+ * Extra's die al gegenereerd waren, blijven staan als de kern opnieuw wordt
+ * gegenereerd (de kern-call levert ze niet meer, item 8.3) — anders wist
+ * "Genereer content" stilletjes elke open-huis-tekst of FAQ.
+ */
+export function behoudExtras<T extends Record<string, unknown>>(oud: Record<string, unknown> | null | undefined, nieuw: T): T {
+  if (!oud) return nieuw
+  const behouden: Record<string, unknown> = {}
+  for (const type of EXTRA_TYPES) {
+    const oudeWaarde = oud[type]
+    const nieuweWaarde = nieuw[type]
+    const nieuwLeeg = nieuweWaarde === undefined || nieuweWaarde === null || nieuweWaarde === ''
+    if (nieuwLeeg && typeof oudeWaarde === 'string' && oudeWaarde.trim() !== '') behouden[type] = oudeWaarde
+  }
+  return { ...nieuw, ...behouden }
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { EXTRA_TYPES, isExtraType, bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } from './contentExtra'
+import { EXTRA_TYPES, isExtraType, bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType, behoudExtras } from './contentExtra'
 import type { PropertyInput } from './schemas'
 
 const inputBasis: PropertyInput = {
@@ -89,5 +89,19 @@ describe('EXTRA_MAX_TOKENS', () => {
     for (const type of EXTRA_TYPES) {
       expect(EXTRA_MAX_TOKENS[type]).toBeGreaterThan(0)
     }
+  })
+})
+
+describe('behoudExtras', () => {
+  it('houdt eerder gegenereerde extra\'s bij een nieuwe kern', () => {
+    const r = behoudExtras({ funda_tekst: 'oud', open_huis: 'Open huis zaterdag' }, { funda_tekst: 'nieuw', open_huis: '' })
+    expect(r).toEqual({ funda_tekst: 'nieuw', open_huis: 'Open huis zaterdag' })
+  })
+  it('overschrijft een extra niet als de nieuwe output er zelf een heeft', () => {
+    expect(behoudExtras({ open_huis: 'oud' }, { open_huis: 'nieuw' }).open_huis).toBe('nieuw')
+  })
+  it('laat kernvelden en lege oude waarden met rust', () => {
+    expect(behoudExtras({ funda_tekst: 'oud', video_script: '' }, { funda_tekst: 'nieuw' })).toEqual({ funda_tekst: 'nieuw' })
+    expect(behoudExtras(null, { funda_tekst: 'x' })).toEqual({ funda_tekst: 'x' })
   })
 })

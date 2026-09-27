@@ -3,6 +3,7 @@ import { generateContentBeideTalen } from '@/lib/claude'
 import { createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
 import { meldFout } from '@/lib/fouten'
+import { behoudExtras } from '@/lib/contentExtra'
 import type { HuisstijlConfig, PropertyInput } from '@/lib/schemas'
 
 /** Lock-verlooptijd voor `content_status = 'bezig'` (item 3.1, docs/roadmap.md
@@ -81,10 +82,14 @@ export async function genereerContentVoorObject(objectId: string, kantoorId: str
     // ~gelijk aan één generatie, begrensd door de traagste van de twee.
     const { nl, en } = await generateContentBeideTalen(input, huisstijl, verrijkingTekst)
 
+    // Extra's (op knopdruk, item 8.3) zitten niet in de kern-call: bewaar ze.
+    const { data: huidig } = await service.from('objecten').select('outputs_json').eq('id', objectId).single()
+    const nlMetExtras = behoudExtras(huidig?.outputs_json as Record<string, unknown> | null, nl)
+
     await service
       .from('objecten')
       .update({
-        outputs_json: nl,
+        outputs_json: nlMetExtras,
         outputs_json_en: en,
         content_status: 'klaar',
         content_gegenereerd_op: new Date().toISOString(),

@@ -140,4 +140,11 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
     expect(res.status).toBe(500)
     expect(data.ref).toBe('ref123')
   })
+
+  it('geeft 409 zolang de kern-generatie loopt (anders overschrijft die de extra)', async () => {
+    objectSingle.mockResolvedValue({ data: { input_json: {}, outputs_json: {}, content_status: 'bezig' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    expect(res.status).toBe(409)
+    expect(genereerExtraContent).not.toHaveBeenCalled()
+  })
 })

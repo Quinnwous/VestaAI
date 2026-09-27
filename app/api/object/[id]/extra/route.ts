@@ -41,11 +41,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const serviceClient = createServiceSupabaseClient()
   const { data: object } = await serviceClient
     .from('objecten')
-    .select('input_json, outputs_json')
+    .select('input_json, outputs_json, content_status')
     .eq('id', params.id)
     .eq('kantoor_id', makelaar.kantoor_id)
     .single()
   if (!object) return NextResponse.json({ error: 'Woning niet gevonden' }, { status: 404 })
+  // Loopt de kern-generatie nog, dan zou die bij afronden deze extra overschrijven.
+  if (object.content_status === 'bezig') {
+    return NextResponse.json({ error: 'Wacht tot de teksten klaar zijn en probeer het dan opnieuw.' }, { status: 409 })
+  }
 
   const { data: kantoor } = await serviceClient
     .from('kantoren')
@@ -55,10 +59,12 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const huisstijl = (kantoor?.huisstijl_json as HuisstijlConfig | null) ?? undefined
 
   const input = object.input_json as PropertyInput
-  const outputs = object.outputs_json as ContentOutput
-
   try {
     const tekst = await genereerExtraContent(type, input, huisstijl)
+    // Vlak voor het schrijven opnieuw lezen: tijdens de generatie kan een ander
+    // veld (bewerking, andere extra) zijn opgeslagen.
+    const { data: vers } = await serviceClient.from('objecten').select('outputs_json').eq('id', params.id).single()
+    const outputs = (vers?.outputs_json ?? object.outputs_json) as ContentOutput
     const nieuweOutputs = { ...outputs, [type]: tekst }
     await serviceClient
       .from('objecten')
