@@ -16,38 +16,32 @@
 import type { ContentOutput, ObjectFase, PropertyInput } from './schemas'
 
 /** Lege content-staat: alle verplichte strings leeg — zelfde vorm als een vers
- * aangemaakt dossier vóór content-generatie (geen halve/verzonnen output). */
+ * aangemaakt dossier vóór content-generatie (geen halve/verzonnen output).
+ * Outputset v2 (item 8.3): kern + extra's, geen vervallen sleutels meer. */
 const LEGE_OUTPUTS: ContentOutput = {
   funda_tekst: '',
-  brochure_kort: '',
-  brochure_lang: '',
-  instagram_emotioneel: '',
-  instagram_informatief: '',
-  instagram_actie: '',
+  brochure_tekst: '',
+  instagram: '',
   linkedin_kantoor: '',
-  linkedin_makelaar: '',
+  sneak_preview: '',
   koper_email: '',
   buurtomschrijving: '',
   open_huis: '',
-  bezichtiging_followup_positief: '',
-  bezichtiging_followup_negatief: '',
+  followup_positief: '',
+  followup_negatief: '',
   video_script: '',
   energie_advies: '',
   kopersvragen_faq: '',
-  marktanalyse: '',
 }
 
 function bouwContent(adres: string, buurtomschrijving: string, usp: string): ContentOutput {
   return {
     ...LEGE_OUTPUTS,
     funda_tekst: `Op een fraaie locatie aan de ${adres} bieden wij deze sfeervolle woning te koop aan. ${usp} Een bezichtiging is de beste manier om de kwaliteit van deze woning te ervaren.`,
-    brochure_kort: `${adres} — ${usp}`,
-    brochure_lang: `Deze woning aan de ${adres} combineert ruimte, licht en een uitstekende ligging. ${usp} Neem contact op voor een bezichtiging.`,
-    instagram_emotioneel: `Thuiskomen op je mooiste plek 🏡 ${adres} — ${usp}`,
-    instagram_informatief: `Nieuw te koop: ${adres}. ${usp}`,
-    instagram_actie: `Bezichtiging inplannen voor ${adres}? Stuur ons een bericht.`,
+    brochure_tekst: `Deze woning aan de ${adres} combineert ruimte, licht en een uitstekende ligging. ${usp} Neem contact op voor een bezichtiging.`,
+    instagram: `Thuiskomen op je mooiste plek 🏡 ${adres} — ${usp}`,
     linkedin_kantoor: `Trots om ${adres} te mogen aanbieden. ${usp}`,
-    linkedin_makelaar: `Nieuwe woning onder mijn hoede: ${adres}. ${usp}`,
+    sneak_preview: `Nieuw: ${adres}. ${usp} Interesse? Stuur ons een bericht voor meer info of een bezichtiging.`,
     koper_email: `Beste geïnteresseerde,\n\nBedankt voor je interesse in ${adres}. ${usp}\n\nMet vriendelijke groet,\nDemo Makelaardij`,
     buurtomschrijving,
   }

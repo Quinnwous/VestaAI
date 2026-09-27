@@ -12,9 +12,18 @@ import {
 import { CONTENT, SAMENVATTING } from './aiModellen'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
+import { bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } from './contentExtra'
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
+// Kern-only sinds item 8.3 (Outputset v2, roadmap § 3.4): de kern-call
+// genereert nog maar 7 velden (was 17) — de zes "extra" velden (open_huis,
+// followup_positief/negatief, video_script, kopersvragen_faq, energie_advies)
+// verhuisden naar losse, kleine calls op knopdruk (`genereerExtraContent`
+// hieronder, prompts in lib/contentExtra.ts). Dat is de daadwerkelijke
+// snelheidswinst: minder te schrijven tekst in dezelfde stream, dus minder
+// wandkloktijd tegen de 300s Vercel-limiet (zie KERN_MAX_TOKENS hieronder
+// voor de tokenschatting).
 const BASE_SYSTEM_PROMPT_NL = `Je bent een Nederlandse vastgoedcopywriter gespecialiseerd in woningomschrijvingen voor Funda en social media.
 
 FUNDA-TEKST (funda_tekst) — verplichte regels:
@@ -30,43 +39,28 @@ FUNDA-TEKST (funda_tekst) — verplichte regels:
 - Verplicht: minstens één alinea over duurzaamheid — energielabel concreet uitgelegd (wat betekent het, vergelijking met gemiddelde woning), eventuele zonnepanelen, warmtepomp of extra isolatie uitgelicht
 - Sluit af met een concrete call-to-action (bezichtiging of contact)
 
-INSTAGRAM-VARIANTEN (elk 200–270 woorden, inclusief emoji's en hashtags):
-- instagram_emotioneel: lifestyle-focus, aspirationeel gevoel, weinig feitjes — spreekt het hart aan
-- instagram_informatief: kernfeiten compact en helder, praktisch en to-the-point
-- instagram_actie: urgente CTA centraal, schaarste of momentum benadrukken, eindigt met duidelijke actie
+BROCHURETEKST (brochure_tekst): 350–450 woorden, geschikt voor zowel een gedrukte als een digitale brochure — kernpunten helder per alinea, geen prijsvermelding, geen ik-vorm.
 
-LINKEDIN-VARIANTEN:
-- linkedin_kantoor: 220–280 woorden, wij-vorm, professionele kantoorpresentatie voor bedrijfspagina
-- linkedin_makelaar: 200–260 woorden, persoonlijk perspectief van de individuele makelaar, netwerk-aanspreken stijl
+INSTAGRAM (instagram): één post van 200–270 woorden inclusief emoji's en relevante hashtags — combineer het gevoel (lifestyle), de kernfeiten en een duidelijke call-to-action in één tekst (niet drie losse varianten).
 
-OVERIGE KERNFORMATS:
-- brochure_kort: 200–240 woorden, printoptimaal, kernpunten helder per alinea
-- brochure_lang: 480–560 woorden, volledig verkoopverhaal met alle features uitgebreid toegelicht
-- koper_email: 220–280 woorden, professionele opvolgmail ná de bezichtiging — de verkopende makelaar schrijft aan iemand die de woning al heeft bezichtigd; warm en persoonlijk, geen uitnodiging voor een eerste bezichtiging (die heeft al plaatsgevonden), wél een concrete vervolgstap (vragen beantwoorden, tweede bezichtiging of biedprocedure toelichten)
-- buurtomschrijving: minimaal 130 woorden (streef naar 130–170), feitelijk en positief, geen sociale of demografische kwalificaties, geen vergelijkingen met andere wijken
+LINKEDIN (linkedin_kantoor): 220–280 woorden, wij-vorm, professionele kantoorpresentatie voor de bedrijfspagina.
 
-EXTRA VELDEN:
-- open_huis: aankondigingstekst voor social (±150 woorden) met datum en tijd als opgegeven; lege string als geen datum bekend.
-- bezichtiging_followup_positief: opvolgmail na bezichtiging voor geïnteresseerde koper (±200 woorden, warm en uitnodigend).
-- bezichtiging_followup_negatief: opvolgmail na bezichtiging voor niet-geïnteresseerde koper (±150 woorden, bedankend en netwerk-vriendelijk).
-- video_script: voice-over script voor woningvideo ±60 seconden (±120 woorden), verdeeld in korte scènes.
-- energie_advies: altijd invullen. Structuur: (1) Huidige situatie — wat betekent dit label, vergelijking met gemiddelde woning; (2) Verbetermaatregelen — top 3 maatregelen met geschatte kosten en terugverdientijd; (3) Subsidies — ISDE, SEEH, Nationaal Warmtefonds, gemeente-subsidies; (4) Advies voor makelaar — hoe het label te communiceren in de verkoop. In "u"-vorm, ±400 woorden.
-- kopersvragen_faq: altijd invullen. 8–10 realistische kopervragen specifiek voor déze woning (adres, type, bouwjaar, prijs, energielabel, USP's). Format: "V: [vraag]\nA: [antwoord]".
-- marktanalyse: altijd invullen. (1) Marktsegment en concurrentiepositie; (2) Doelgroepanalyse; (3) Verkoopstrategie; (4) Timing. ±300 woorden.
+SNEAK PREVIEW (sneak_preview): kort WhatsApp-bericht van maximaal 600 tekens, ALTIJD in het Nederlands (ook als de rest van de output in het Engels is) — pakkende opening, 2–3 kernfeiten, eindigt met een uitnodiging om te reageren voor meer info of een bezichtiging.
+
+KOPER-E-MAIL (koper_email): 220–280 woorden, professionele opvolgmail ná de bezichtiging — de verkopende makelaar schrijft aan iemand die de woning al heeft bezichtigd; warm en persoonlijk, geen uitnodiging voor een eerste bezichtiging (die heeft al plaatsgevonden), wél een concrete vervolgstap (vragen beantwoorden, tweede bezichtiging of biedprocedure toelichten).
+
+BUURTOMSCHRIJVING (buurtomschrijving): minimaal 130 woorden (streef naar 130–170), feitelijk en positief, geen sociale of demografische kwalificaties, geen vergelijkingen met andere wijken.
 
 Output: geldig JSON-object met precies deze sleutels:
-{ "funda_tekst", "brochure_kort", "brochure_lang", "instagram_emotioneel",
-  "instagram_informatief", "instagram_actie", "linkedin_kantoor",
-  "linkedin_makelaar", "koper_email", "buurtomschrijving",
-  "open_huis", "bezichtiging_followup_positief", "bezichtiging_followup_negatief",
-  "video_script", "energie_advies", "kopersvragen_faq", "marktanalyse" }
+{ "funda_tekst", "brochure_tekst", "instagram", "linkedin_kantoor",
+  "sneak_preview", "koper_email", "buurtomschrijving" }
 
 Geen tekst buiten het JSON-object.`
 
 const BASE_SYSTEM_PROMPT_EN = `You are a real estate copywriter specialised in Dutch property listings.
 
-Rules:
-- LENGTH: at least 700 words for the main description — a hard minimum, not a target. If you fall short, expand with more detail per room, on the finish, and on the neighbourhood. Spread it over at least 6 paragraphs: (1) compelling opening, (2) layout and rooms, (3) technical condition, (4) sustainability/energy, (5) neighbourhood and location, (6) closing with a call-to-action.
+Rules for the main description (funda_tekst):
+- LENGTH: at least 700 words — a hard minimum, not a target. If you fall short, expand with more detail per room, on the finish, and on the neighbourhood. Spread it over at least 6 paragraphs: (1) compelling opening, (2) layout and rooms, (3) technical condition, (4) sustainability/energy, (5) neighbourhood and location, (6) closing with a call-to-action.
 - Opening sentence must be unique and compelling; NEVER start with the address, street name, "This", "The property" or the property type
 - No superlatives without evidence
 - No discriminatory neighbourhood descriptions
@@ -75,21 +69,19 @@ Rules:
 - Mandatory: at least one paragraph on sustainability — explain the energy label concretely (what it means, comparison with average home), highlight solar panels, heat pump, or extra insulation if present
 - End with a concrete call-to-action (viewing or contact)
 
-Output: valid JSON object with exactly these keys:
-{ "funda_tekst", "brochure_kort", "brochure_lang", "instagram_emotioneel",
-  "instagram_informatief", "instagram_actie", "linkedin_kantoor",
-  "linkedin_makelaar", "koper_email", "buurtomschrijving",
-  "open_huis", "bezichtiging_followup_positief", "bezichtiging_followup_negatief",
-  "video_script", "energie_advies", "kopersvragen_faq", "marktanalyse" }
+BROCHURE TEXT (brochure_tekst): 350–450 words, suitable for both a printed and a digital brochure — clear key points per paragraph, no price mention.
 
-Guidelines per extra field:
-- open_huis: open house announcement for Instagram/social (±150 words) with date and time if provided; empty string if unknown.
-- bezichtiging_followup_positief: follow-up email after viewing for an interested buyer (±200 words, warm and inviting).
-- bezichtiging_followup_negatief: follow-up email after viewing for a non-interested buyer (±150 words, appreciative and network-friendly).
-- video_script: voice-over script for a property video of ±60 seconds (±120 words), divided into short scenes.
-- energie_advies: concrete energy advice based on the energy label. Always fill in. Structure: (1) Current situation — what this label means, comparison with average home; (2) Improvement measures — top 3 measures with estimated costs and payback period; (3) Subsidies — relevant Dutch subsidies applicable; (4) Advice for agent — how to communicate the energy label in the sale. ±400 words.
-- kopersvragen_faq: realistic frequently asked questions from buyers about this specific property. Provide 8–10 questions with full answers. Format per item: "Q: [question]\nA: [answer]". Always fill in.
-- marktanalyse: brief market analysis for this property. Structure: (1) Market segment; (2) Target audience analysis; (3) Sales strategy recommendations; (4) Timing. ±300 words. Always fill in.
+INSTAGRAM (instagram): one post of 200–270 words including emojis and relevant hashtags — combine the emotional angle, the key facts and a clear call-to-action in one post.
+
+LINKEDIN (linkedin_kantoor): 220–280 words, "we"-voice, professional agency presentation for the company page.
+
+BUYER EMAIL (koper_email): 220–280 words, professional follow-up email after the viewing — the selling agent writes to someone who already viewed the property; warm and personal, no invitation for a first viewing (that already took place), but a concrete next step.
+
+NEIGHBOURHOOD (buurtomschrijving): at least 130 words, factual and positive, no social or demographic qualifications, no comparisons with other neighbourhoods.
+
+Output: valid JSON object with exactly these keys:
+{ "funda_tekst", "brochure_tekst", "instagram", "linkedin_kantoor",
+  "koper_email", "buurtomschrijving" }
 
 No text outside the JSON object.`
 
@@ -190,9 +182,13 @@ function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
  * hetzelfde kantoor (ándere dossiers) er samen van profiteren.
  */
 /**
- * Maximale duur van de eerste poging waarna nog een sjabloon-herkansing mag
- * (item 8.2). Eén volledige generatie duurt 1-3 min; twee daarvan passen alleen
- * binnen de 300 s van Vercel als de eerste kort was.
+ * Maximale duur van de kern-call waarna nog een sjabloon-herkansing mag
+ * (item 8.2, drempel ongewijzigd in 8.3). Sinds 8.3 is de herkansing zelf
+ * klein en gericht (alleen funda_tekst, zie herschrijfFundaTekstMetSjabloon
+ * hieronder — een kwestie van seconden, niet 1-3 min zoals de oude "hele
+ * suite opnieuw"-herkansing), dus deze drempel is nu vooral een vangrail
+ * tegen een kern-call die zelf al ongewoon lang duurde, niet een strakke
+ * begroting van twee volle generaties binnen 300 s.
  */
 export const SJABLOON_HERKANSING_BUDGET_MS = 110_000
 
@@ -347,32 +343,71 @@ function parseClaudeResponse(text: string): ContentOutput {
   return ContentOutputSchema.parse(JSON.parse(cleaned))
 }
 
-const OPTIONELE_VELD_PER_KEUZE = {
-  followup: ['bezichtiging_followup_positief', 'bezichtiging_followup_negatief'],
-  video: ['video_script'],
-  energieadvies: ['energie_advies'],
-  kopersvragen: ['kopersvragen_faq'],
-  marktanalyse: ['marktanalyse'],
-} as const satisfies Record<string, (keyof ContentOutput)[]>
+/**
+ * max_tokens voor de kern-call (item 8.3): vóór dit item genereerde één call
+ * alle 17 velden op max_tokens 16000. De kern is nu 7 velden; geschat
+ * outputvolume (bij de langste toegestane lengtes): funda_tekst ~1000
+ * tokens (700+ woorden), brochure_tekst ~650 tokens (450 woorden),
+ * instagram ~400 tokens, linkedin_kantoor ~400 tokens, sneak_preview ~180
+ * tokens (600 tekens), koper_email ~400 tokens, buurtomschrijving ~250
+ * tokens — samen ~3300 tokens content + JSON-overhead. 6000 geeft daar nog
+ * een ruime marge boven (~1,8×) zonder de oude, veel te royale 16000 te
+ * behouden. Minder te schrijven tekst in dezelfde stream betekent minder
+ * wandkloktijd tegen de 300s Vercel-limiet — dát is de daadwerkelijke
+ * snelheidswinst, niet een modelwissel.
+ */
+const KERN_MAX_TOKENS = 6000
 
 /**
- * Past de keuzevinkjes toe (F8, besluit 16 sep 2026): Claude genereert altijd
- * de volledige set, maar alleen de door de makelaar aangevinkte optionele
- * content blijft staan — de rest wordt leeggemaakt. `open_huis` loopt via
- * zijn eigen aan/uit-veld in de intake (open_huis_datum), niet via
- * content_keuzes. Ontbreekt `content_keuzes` (oudere dossiers), dan blijft
- * alles staan zoals Claude het aanleverde.
+ * max_tokens voor de gerichte sjabloon-herkansing hieronder — alléén
+ * funda_tekst, niet de hele kern-set.
  */
-function toepassenContentKeuzes(output: ContentOutput, keuzes?: PropertyInput['content_keuzes']): ContentOutput {
-  if (!keuzes) return output
-  const geselecteerdeVelden = new Set(keuzes.flatMap(k => OPTIONELE_VELD_PER_KEUZE[k]))
-  const resultaat = { ...output }
-  for (const velden of Object.values(OPTIONELE_VELD_PER_KEUZE)) {
-    for (const veld of velden) {
-      if (!geselecteerdeVelden.has(veld)) (resultaat as Record<string, string>)[veld] = ''
-    }
-  }
-  return resultaat
+const HERKANSING_MAX_TOKENS = 3000
+
+/**
+ * Gerichte sjabloon-herkansing (item 8.3, vervangt de "hele suite opnieuw"-
+ * herkansing van item 8.2 — zie docs/besluiten.md 26-27 sep 2026: "Beter
+ * (8.3): alleen funda_tekst opnieuw laten schrijven"). Kleine, snelle call
+ * die alléén funda_tekst herschrijft volgens het sjabloon; het antwoord is
+ * platte tekst, geen JSON — dus geen JSON-parseerfout meer mogelijk in de
+ * herkansing zelf (een robuustheidswinst bovenop de snelheidswinst).
+ *
+ * Modelkeuze: CONTENT, niet HERSCHRIJF (Haiku). funda_tekst blijft het
+ * creatieve hoofdwerk van de hele suite — een exacte koppenvolgorde plus een
+ * letterlijke, verplichte slotzin volgen is een striktere eis dan de vrije
+ * herschrijfinstructies van `/api/object/[id]/herschrijf` (waar Haiku wél
+ * volstaat). Die kwaliteit willen we niet inruilen voor snelheid; de winst
+ * zit in de omvang (1 veld i.p.v. alle zeven kernvelden, max_tokens 3000
+ * i.p.v. 6000/16000), niet in een goedkoper model.
+ */
+async function herschrijfFundaTekstMetSjabloon(
+  input: PropertyInput,
+  huisstijl: HuisstijlConfig,
+  origineleTekst: string,
+  fouten: string[],
+  client: Anthropic,
+): Promise<string> {
+  const taal = input.taal ?? 'nl'
+  const sjabloon = huisstijl.tekstsjabloon!
+  const systemBlokken: PromptBlok[] = []
+  const huisstijlBlok = buildHuisstijlBlok(huisstijl)
+  if (huisstijlBlok) systemBlokken.push({ type: 'text', text: huisstijlBlok })
+  systemBlokken.push({ type: 'text', text: renderTekstsjabloonPrompt(sjabloon, taal) })
+
+  const correctie = bouwSjabloonCorrectie(fouten, taal)
+  const kenmerken = `${input.adres}, ${woningtypeLabel(input)}, ${input.kamers} ${taal === 'en' ? 'rooms' : 'kamers'}, ${input.oppervlak_m2} m², ${taal === 'en' ? 'built' : 'bouwjaar'} ${input.bouwjaar}, ${taal === 'en' ? 'energy label' : 'energielabel'} ${input.energielabel}.`
+
+  const userText = taal === 'en'
+    ? `Property: ${kenmerken}\n\nCurrent funda_tekst:\n${origineleTekst}${correctie}\n\nReturn ONLY the corrected funda_tekst as plain text — no JSON, no labels, no quotes.`
+    : `Woning: ${kenmerken}\n\nHuidige funda_tekst:\n${origineleTekst}${correctie}\n\nGeef ALLEEN de gecorrigeerde funda_tekst terug als platte tekst — geen JSON, geen labels, geen aanhalingstekens.`
+
+  const message = await client.messages.create({
+    model: CONTENT,
+    max_tokens: HERKANSING_MAX_TOKENS,
+    system: systemBlokken,
+    messages: [{ role: 'user', content: userText }],
+  })
+  return message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
 }
 
 export async function generateContent(
@@ -396,9 +431,10 @@ export async function generateContent(
     client = huisstijlOrClient as unknown as Anthropic
   } else {
     huisstijl = huisstijlOrClient as HuisstijlConfig | undefined
-    // maxRetries laag: een volledige suite duurt al 2–4 min; een SDK-retry (bij 429/5xx)
-    // zou de wandkloktijd verdubbelen en de Vercel-functie (maxDuration) alsnog laten
-    // aftikken. timeout ruim binnen maxDuration=300s.
+    // maxRetries laag: de kern-call kan bij drukte alsnog een halve minuut of
+    // meer duren; een SDK-retry (bij 429/5xx) zou de wandkloktijd verdubbelen
+    // en de Vercel-functie (maxDuration) alsnog laten aftikken. timeout ruim
+    // binnen maxDuration=300s.
     client = clientArg ?? new Anthropic({ maxRetries: 1, timeout: 280_000 })
   }
   // Twee cachebare blokken (huisstijl gedeeld tussen NL/EN + taalspecifieke basisregels) —
@@ -414,35 +450,29 @@ export async function generateContent(
     systemBlokken.push({
       type: 'text',
       text: input.taal === 'en'
-        ? `ATTACHED DOCUMENTS: one or more documents are attached (e.g. a survey, structural inspection or valuation). Use the factual data from them — exact floor areas, structural condition, defects found, installations and particularities — in the texts, especially funda_tekst (technical condition), brochure_lang, energie_advies and kopersvragen_faq. Only use what is actually stated in the documents; never invent facts.`
-        : `BIJGEVOEGDE DOCUMENTEN: er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — in de teksten, met name in funda_tekst (technische staat), brochure_lang, energie_advies en kopersvragen_faq. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.`,
+        ? `ATTACHED DOCUMENTS: one or more documents are attached (e.g. a survey, structural inspection or valuation). Use the factual data from them — exact floor areas, structural condition, defects found, installations and particularities — in the texts, especially funda_tekst (technical condition) and brochure_tekst. Only use what is actually stated in the documents; never invent facts.`
+        : `BIJGEVOEGDE DOCUMENTEN: er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — in de teksten, met name in funda_tekst (technische staat) en brochure_tekst. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.`,
     })
   }
 
-  // Sjabloonfouten van een vorige poging (item 8.2) — gebruikt voor de
-  // correctie-instructie bij de herkansing, zie de validatie ná het parsen
-  // hieronder.
-  let sjabloonFouten: string[] | null = null
-  // Terugval bij een herkansing die zelf mislukt (kapotte JSON): dan liever de
-  // eerste, geldige output mét sjabloonafwijking dan helemaal niets.
-  let eersteOutput: ContentOutput | null = null
   const start = Date.now()
+  let output: ContentOutput | null = null
 
+  // Twee pogingen voor een parseerbaar JSON-antwoord (ongewijzigd patroon,
+  // los van de sjabloon-herkansing hieronder — dat is nu een aparte, gerichte
+  // stap ná een geslaagde parse, niet meer verweven met deze retry-lus).
   for (let attempt = 0; attempt < 2; attempt++) {
-    let extra = attempt > 0
+    const extra = attempt > 0
       ? (input.taal === 'en'
         ? '\n\nIMPORTANT: return ONLY the JSON object, no text before or after.'
         : '\n\nBelangrijk: geef ALLEEN het JSON-object terug, geen tekst ervoor of erna.')
       : ''
-    if (attempt > 0 && sjabloonFouten) {
-      extra += bouwSjabloonCorrectie(sjabloonFouten, input.taal ?? 'nl')
-    }
 
     const userText = buildUserMessage(input, verrijkingTekst) + extra
 
-    // Streamen i.p.v. één lange non-streaming call: bij max_tokens 16000 duurt de
-    // generatie minuten; streaming houdt de verbinding warm (geen idle-timeout/504)
-    // en is de door Anthropic aanbevolen aanpak voor hoge max_tokens.
+    // Streamen i.p.v. één lange non-streaming call: houdt de verbinding warm
+    // (geen idle-timeout/504) en is de door Anthropic aanbevolen aanpak voor
+    // hoge max_tokens — nog steeds relevant bij KERN_MAX_TOKENS.
     let text = ''
     const model = modelOverride ?? CONTENT
     if (docIds.length > 0) {
@@ -450,7 +480,7 @@ export async function generateContent(
       const docBlocks = docIds.map(id => ({ type: 'document', source: { type: 'file', file_id: id } }))
       const stream = (client.beta.messages.stream as unknown as (p: Record<string, unknown>) => { finalMessage: () => Promise<Anthropic.Beta.Messages.BetaMessage> })({
         model,
-        max_tokens: 16000,
+        max_tokens: KERN_MAX_TOKENS,
         system: systemBlokken,
         messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
         betas: ['files-api-2025-04-14'],
@@ -460,7 +490,7 @@ export async function generateContent(
     } else {
       const message = await client.messages.stream({
         model,
-        max_tokens: 16000,
+        max_tokens: KERN_MAX_TOKENS,
         system: systemBlokken,
         messages: [{ role: 'user', content: userText }],
       }).finalMessage()
@@ -468,41 +498,76 @@ export async function generateContent(
     }
 
     try {
-      const output = toepassenContentKeuzes(parseClaudeResponse(text), input.content_keuzes)
-
-      // Tekstsjabloon-validatie (item 8.2): alleen relevant als het kantoor
-      // een sjabloon heeft geconfigureerd. Bij afwijking: op de eerste poging
-      // één herkansing met een correctie-instructie (zelfde patroon als de
-      // guardrail in schrijfKwartaalbericht hieronder); ná de herkansing
-      // altijd accepteren met een gelogde waarschuwing — content moet er
-      // komen, dit is geen harde fout.
-      if (huisstijl?.tekstsjabloon) {
-        const controle = valideerTekstsjabloon(output.funda_tekst, huisstijl.tekstsjabloon, input.taal ?? 'nl')
-        if (!controle.ok) {
-          // Een herkansing genereert de hele suite opnieuw; alleen doen als de
-          // eerste poging snel genoeg was om samen binnen maxDuration (300 s)
-          // te blijven — anders tikt de functie af en verliezen we alles.
-          if (attempt === 0 && Date.now() - start < SJABLOON_HERKANSING_BUDGET_MS) {
-            sjabloonFouten = controle.fouten
-            eersteOutput = output
-            continue
-          }
-          console.warn(`[tekstsjabloon] funda_tekst volgt het sjabloon niet (${controle.fouten.join('; ')}) na ${attempt + 1} poging(en) — content wordt alsnog geaccepteerd.`)
-        }
-      }
-
-      return output
+      output = parseClaudeResponse(text)
+      break
     } catch {
-      if (attempt === 1) {
-        if (eersteOutput) {
-          console.warn('[tekstsjabloon] herkansing gaf geen valide JSON — eerste output (met sjabloonafwijking) wordt gebruikt.')
-          return eersteOutput
+      if (attempt === 1) throw new Error('Claude gaf geen valide JSON na 2 pogingen')
+    }
+  }
+  if (!output) throw new Error('Onverwachte fout')
+
+  // Tekstsjabloon-validatie + gerichte herkansing (item 8.2/8.3): alleen
+  // relevant als het kantoor een sjabloon heeft geconfigureerd. Bij afwijking
+  // en genoeg tijdsbudget over: één kleine, gerichte herkansing die alléén
+  // funda_tekst herschrijft (zie herschrijfFundaTekstMetSjabloon hierboven) —
+  // niet meer de hele kern-set opnieuw. Lukt de herkansing niet (fout of lege
+  // tekst), dan blijft de oorspronkelijke funda_tekst staan met een
+  // waarschuwing; content moet er komen, dit is geen harde fout.
+  if (huisstijl?.tekstsjabloon) {
+    const controle = valideerTekstsjabloon(output.funda_tekst, huisstijl.tekstsjabloon, input.taal ?? 'nl')
+    if (!controle.ok) {
+      if (Date.now() - start < SJABLOON_HERKANSING_BUDGET_MS) {
+        try {
+          const herschreven = await herschrijfFundaTekstMetSjabloon(input, huisstijl, output.funda_tekst, controle.fouten, client)
+          if (herschreven) {
+            output = { ...output, funda_tekst: herschreven }
+            const herkeuring = valideerTekstsjabloon(herschreven, huisstijl.tekstsjabloon, input.taal ?? 'nl')
+            if (!herkeuring.ok) {
+              console.warn(`[tekstsjabloon] gerichte herkansing volgt het sjabloon nog niet volledig (${herkeuring.fouten.join('; ')}) — tekst wordt alsnog gebruikt.`)
+            }
+          } else {
+            console.warn('[tekstsjabloon] gerichte herkansing gaf geen tekst terug — oorspronkelijke funda_tekst blijft staan.')
+          }
+        } catch (err) {
+          console.warn(`[tekstsjabloon] gerichte herkansing mislukte (${err instanceof Error ? err.message : 'onbekende fout'}) — oorspronkelijke funda_tekst blijft staan.`)
         }
-        throw new Error('Claude gaf geen valide JSON na 2 pogingen')
+      } else {
+        console.warn(`[tekstsjabloon] funda_tekst volgt het sjabloon niet (${controle.fouten.join('; ')}) — kern-call duurde al te lang voor een herkansing binnen 300s, content wordt alsnog geaccepteerd.`)
       }
     }
   }
-  throw new Error('Onverwachte fout')
+
+  return output
+}
+
+/**
+ * Genereert één "extra" contentveld op knopdruk (item 8.3, roadmap § 3.4
+ * Outputset v2): `POST /api/object/[id]/extra?type=` roept dit aan. Los van
+ * de kern-call — kleine, snelle, platte-tekst-call (geen JSON) per veld.
+ * NL-only voor nu; EN is een latere uitbreiding (zie lib/contentExtra.ts).
+ *
+ * Modelkeuze: CONTENT, niet HERSCHRIJF (Haiku) — dit is nieuwe, klantgerichte
+ * eindcontent (open huis-aankondiging, opvolgmail, energieadvies, kopers-
+ * FAQ), niet een mechanische herschrijving van bestaande tekst zoals
+ * `/api/object/[id]/herschrijf`. Dezelfde kwaliteitsbalk als de kern-call,
+ * maar dan voor één veld — vandaar de veel kleinere `EXTRA_MAX_TOKENS` per
+ * type in plaats van een goedkoper model.
+ */
+export async function genereerExtraContent(
+  type: ExtraType,
+  input: PropertyInput,
+  huisstijl?: HuisstijlConfig,
+  client?: Anthropic,
+): Promise<string> {
+  const c = client ?? new Anthropic()
+  const prompt = bouwExtraPrompt(type, input, schrijftoonLabel(huisstijl?.schrijftoon))
+
+  const message = await c.messages.create({
+    model: CONTENT,
+    max_tokens: EXTRA_MAX_TOKENS[type],
+    messages: [{ role: 'user', content: prompt }],
+  })
+  return message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
 }
 
 /**
