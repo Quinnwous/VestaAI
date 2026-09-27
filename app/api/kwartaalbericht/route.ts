@@ -13,7 +13,6 @@ import {
   filterStateNaarTransactieFilter,
   filterStateNaarEigenFilter,
   filterEigenRijen,
-  vorigePeriodeFilter,
 } from '@/lib/marktanalyse'
 import { bouwFeitenblad, bouwContextLabel } from '@/lib/kwartaalbericht'
 import { schrijfKwartaalbericht } from '@/lib/claude'
@@ -70,31 +69,28 @@ export async function POST(req: NextRequest) {
 
     const dataTot = await dataTotEnMet(supabase)
     const rpcFilter = filterStateNaarTransactieFilter(body.filter, { datumTot: dataTot.laatsteVerkoopdatum })
-    // Zelfde werk-around als de marktanalyse-explorer (`app/(app)/marktanalyse/actions.ts`)
-    // voor de "vorige periode"-bug in de RPC — zie de uitleg bij `vorigePeriodeFilter`.
-    const vorigeFilter = vorigePeriodeFilter(rpcFilter)
 
-    const [samenvattingHuidig, samenvattingVorigRuw, eigenVerkopen] = await Promise.all([
+    // De RPC-bug die `vorig.n` op 0 hield zodra `rpcFilter` een datum_van/datum_tot
+    // had, is gefixt en toegepast (`20260924_fix_marktanalyse_samenvatting_vorige_periode.sql`,
+    // geverifieerd tegen productie 27 sep 2026) — één aanroep levert nu zowel
+    // `.huidig` als een kloppende `.vorig` op (incl. `.van`/`.tot` voor het eigen
+    // aandeel hieronder).
+    const [samenvatting, eigenVerkopen] = await Promise.all([
       marktanalyseSamenvatting(supabase, rpcFilter),
-      vorigeFilter ? marktanalyseSamenvatting(supabase, vorigeFilter) : Promise.resolve(null),
       haalEigenVerkopen<TransactieRow>(supabase, EIGEN_VERKOOP_KOLOMMEN),
     ])
-    const samenvatting = {
-      huidig: samenvattingHuidig.huidig,
-      vorig: samenvattingVorigRuw ? samenvattingVorigRuw.huidig : samenvattingHuidig.vorig,
-    }
 
     if (samenvatting.huidig.n === 0) {
       return NextResponse.json({ error: 'Geen transacties in de huidige selectie — pas de filters aan.' }, { status: 400 })
     }
 
     // Eigen aandeel: zelfde eigen-filter als de explorer (`filterEigenRijen`), voor
-    // de vorige periode de datums van `vorigeFilter` overnemen (rest van het filter
-    // — plaats/type/prijs/etc. — verandert niet tussen de twee periodes).
+    // de vorige periode de datums uit `samenvatting.vorig` overnemen (rest van het
+    // filter — plaats/type/prijs/etc. — verandert niet tussen de twee periodes).
     const eigenFilterHuidig = filterStateNaarEigenFilter(body.filter, { datumTot: dataTot.laatsteVerkoopdatum })
     const nEigenHuidig = filterEigenRijen(eigenVerkopen, eigenFilterHuidig).length
-    const nEigenVorig = vorigeFilter
-      ? filterEigenRijen(eigenVerkopen, { ...eigenFilterHuidig, datumVan: vorigeFilter.datum_van, datumTot: vorigeFilter.datum_tot }).length
+    const nEigenVorig = samenvatting.vorig.van && samenvatting.vorig.tot
+      ? filterEigenRijen(eigenVerkopen, { ...eigenFilterHuidig, datumVan: samenvatting.vorig.van, datumTot: samenvatting.vorig.tot }).length
       : null
 
     const feitenblad = bouwFeitenblad({
