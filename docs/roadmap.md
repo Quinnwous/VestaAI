@@ -17,27 +17,33 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (27 sep, PR `feat/sessie-27sep-c`):** 12.5a demoscript
-  (`docs/demoscript.md`), één kaart in het dossier (referenties + eigen verkopen
-  als lagen, `StraalKaartPaneel` weg), minikaart in de transactie-sheet,
-  NL-zoomknoppen, backlog-poets (extra's krijgen documenten, `PublicFooter`,
-  `/vertrouwen` in "u", `StatTile`-fallback weg, hook-regex, smoke-e2e bij).
-  typecheck/test (679)/build groen. Eerder op 27 sep: 8.3, 8.4, 9.2, 10.5, 12.3, 13.2.
-- **Fase:** 6, 7, 9, 10 en 13 af. Open: 8.5 (staging-modelcheck, betaald), 12.1
-  (team-accounts, wacht op Quinn), 12.5 rest (demo-dossiers, freeze, repetitie).
-  Geblokkeerd: fase 5 (exports), fase 11 (voorbeeld-verkoopadvies).
+- **Laatste ronde (27 sep, PR `feat/sessie-27sep-d`):** 12.5b
+  generale-repetitiescript (`npm run demo:repetitie`: 31 stappen door de zes
+  scènes, alleen lezend, 0 fouten), **BAG-bug** (adres-autocomplete en
+  voorvullen bouwjaar/oppervlakte deden ongemerkt niets → `lib/bag.ts`),
+  **"Wis" op het Plaats-filter** deed niets (`useFilterState`), omweg
+  `vorigePeriodeFilter()` weg (SQL-fix op productie geverifieerd), minikaart naar
+  `components/kaart/`, combobox-ARIA in `AddressAutocomplete`. Eerder op 27 sep:
+  12.5a demoscript, één dossierkaart, 8.3, 8.4, 9.2, 10.5, 12.3, 13.2.
+- **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
+  (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
+  (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
+  (exports), fase 11 (voorbeeld-verkoopadvies).
 - ⚠️ **Demo-realiteit (uit 12.5a):** het i4housing-kantoor heeft nul transacties
   tot fase 5 — marktinzichten, kerncijfers en waardering tonen daar de lege
   staat. Repetitie gebeurt op `/login/demo`; zonder de exports is er geen demo
-  op eigen data.
+  op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
+  demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
+  december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  **12.5b generale-repetitiescript** — `scripts/generale-repetitie.mjs` loopt
-  `docs/demoscript.md` scène voor scène af met Playwright (demo-kantoor, alleen
-  lezend, geen contentgeneratie), screenshot per stap, faalt op lege/foutstaat,
-  `pageerror` of een knoplabel dat niet meer bestaat · **poets** — omweg
-  `vorigePeriodeFilter()` weg (§ 9), `TransactieMinikaart` naar
-  `components/kaart/`, a11y-waarschuwing `AddressAutocomplete.tsx`.
-  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie.
+  **repetitiescript + scène 4** — `scripts/generale-repetitie.mjs` uitbreiden met
+  adres typen op `/object/new` (suggesties verschijnen, BAG vult bouwjaar/
+  oppervlakte voor; níet op "Woning aanmaken" drukken) zodat de BAG-bug nooit
+  meer stil terugkomt · **statische kaart in de waardebepaling-pdf** (§ 9, naar
+  voren gehaald: scène 4 eindigt bij die pdf) · **Plaats als ×-pil** in de
+  filterbalk van marktanalyse/concurrentie (nu de enige filter zonder pil).
+  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
+  smoke-generatietest met `E2E_GENERATE=1`.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
   ging over een functie zonder aanroeper. Niet opnieuw oppakken.
@@ -757,7 +763,8 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
 - [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/demoscript.md` (§ 2 uitgewerkt tot
-  klik-voor-klik, met terugvalplan per scène; 27 sep). Rest: drie demo-dossiers uit echte
+  klik-voor-klik, met terugvalplan per scène; 27 sep) · ✅ 12.5b
+  `npm run demo:repetitie` (27 sep). Rest: drie demo-dossiers uit echte
   recente adressen (één per fase), Vercel Pro actief, Supabase-check de dag
   ervoor, demo-freeze (branch `demo`, 48 uur geen deploys), generale repetitie
   met screenshots.
@@ -872,16 +879,14 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ## 9. Backlog & geparkeerd
 
-**Vóór de demo oppakken (uit de sessie van 23-24 sep):** omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
-filter "Verkocht door"
+**Vóór de demo oppakken (uit de sessie van 23-24 sep):** filter "Verkocht door"
 op de verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
 `20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
 makelaarsveld in de exports) · pastelkleuren van de kaart
 laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
-content naar de UI (nu: timer + skeletons) · statische kaart in de
-waardebepaling-pdf · A/B-segmentvergelijking uitbreiden · keukentafel-/
+content naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden · keukentafel-/
 presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
 Resend-melding — zie v1) · ⌘K zoeken · Next 15-upgrade · jaarlijkse
 CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
@@ -897,9 +902,7 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 `PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
 
 **Uit de sessie van 27 sep:** kantoor-reset rate-limit is
-in-memory per instance (zachte rem; tabel als het ooit nodig is) · `components/TransactieMinikaart.tsx`
-naar `components/kaart/` verhuizen (stond erbuiten om overlap te vermijden) ·
-build-waarschuwing a11y in `AddressAutocomplete.tsx` · smoke-generatietest
+in-memory per instance (zachte rem; tabel als het ooit nodig is) · smoke-generatietest
 (nieuwe flow, 27 sep) één keer echt draaien met `E2E_GENERATE=1` · CLAUDE.md-status van de
 concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
 
