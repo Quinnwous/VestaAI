@@ -19,8 +19,33 @@ test('dossier aanmaken en laden binnen 5 s (demo-kantoor)', async ({ page, reque
   test.skip(!heeftDemoAuth(), 'Geen demo-sessie — DEMO_PASSWORD ontbreekt')
 
   const demoKantoorId = await kantoorIdVoorSlug('demo')
-  const start = Date.now()
   let objectId: string | null = null
+  let opwarmId: string | null = null
+
+  // Eenmalige, ongemeten opwarming van de `/object/[id]`-route mét een écht
+  // bestaand dossier: in `next dev` compileert een dynamische route pas bij
+  // de eerste hit (kan een paar seconden kosten, en een dossierpagina laadt
+  // zelf ook nog client components — kaart, waarderingspaneel — die pas
+  // module-compileren zodra er écht data is, dus een 404-hit warmt die niet
+  // voor). Dit is een dev-servereigenaardigheid, geen onderdeel van de
+  // "< 5s"-belofte uit app/api/object/route.ts (die gaat over de
+  // productie-runtime, waar niets meer hoeft te compileren).
+  try {
+    const opwarmInvoer = minimalePropertyInput()
+    const opwarmRes = await request.post('/api/object', { data: opwarmInvoer })
+    if (opwarmRes.ok()) {
+      opwarmId = ((await opwarmRes.json()) as { id: string }).id
+      await page.goto(`/object/${opwarmId}`)
+      await expect(page.getByText(/verkoopadvies/i).first()).toBeVisible()
+    }
+  } finally {
+    if (opwarmId) {
+      await assertKantoorIsDemo(demoKantoorId)
+      await serviceClient().from('objecten').delete().eq('id', opwarmId).eq('kantoor_id', demoKantoorId)
+    }
+  }
+
+  const start = Date.now()
 
   try {
     const invoer = minimalePropertyInput()
