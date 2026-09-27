@@ -32,7 +32,9 @@
 > **Afspraak Quinn (27 sep 2026):** stopt de sessie of een agent op de gebruikslimiet en zegt
 > Quinn daarna "ga door", dan hervat Claude zonder te vragen élke onderbroken agent via
 > SendMessage (zelfde agent, zelfde worktree) en maakt de ronde af — nooit een nieuwe agent
-> starten voor half werk.
+> starten voor half werk. Uitzondering: stopte een agent vóór zijn eerste wijziging, dan is
+> zijn worktree automatisch opgeruimd — hervatten zou hem zonder worktree in de hoofdmap laten
+> werken; dan opnieuw starten met dezelfde opdracht (er gaat niets verloren).
 > **Doorlopende rondes (Quinn 27 sep 2026):** is een ronde afgerond en live, dan start Claude
 > meteen de volgende ronde uit `docs/roadmap.md` § Stand van zaken (volgende items, nul
 > bestandsoverlap, weer met agents) — niet wachten op Quinn. Alleen stoppen bij iets
