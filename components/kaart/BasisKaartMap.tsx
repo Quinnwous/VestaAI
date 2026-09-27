@@ -53,6 +53,14 @@ export function BasisKaartMap({
       zoom,
       attributionControl: false,
       scrollZoom,
+      // Nederlandse besturingslabels (item "MapLibre-zoomknoppen NL",
+      // roadmap § Stand van zaken 27 sep) — MapLibre's eigen `locale`-optie
+      // op de Map, geen custom control nodig.
+      locale: {
+        'NavigationControl.ZoomIn': 'Inzoomen',
+        'NavigationControl.ZoomOut': 'Uitzoomen',
+        'NavigationControl.ResetBearing': 'Noorden boven',
+      },
     })
     map.addControl(new maplibregl.AttributionControl({ compact: true }))
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')

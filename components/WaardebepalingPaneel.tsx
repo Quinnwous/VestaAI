@@ -27,6 +27,14 @@ import { Badge, EmptyState, Sheet, Skeleton } from '@/components/ui'
 import { colors, radius, shadow } from '@/components/ui/tokens'
 import { WaarderingKaartClient } from '@/components/WaarderingKaartClient'
 import { WaardebepalingPdfButton } from '@/components/WaardebepalingPdfButton'
+import {
+  bepaalStandaardLaag,
+  straalLabel as verkoopStraalLabel,
+  VERKOOP_STRAAL_OPTIES,
+  VERKOOP_STRAAL_STANDAARD,
+  type DossierKaartLaag,
+} from '@/lib/dossierKaart'
+import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 function formatEuro(n: number | null): string {
   return n !== null ? `€ ${Math.round(n).toLocaleString('nl-NL')}` : '—'
@@ -66,7 +74,10 @@ function chipStyle(variant: 'uit' | 'neutraal' | 'toegepast'): React.CSSProperti
   }
   if (variant === 'uit') return { ...base, color: colors.muted }
   if (variant === 'neutraal') return { ...base, background: '#EEF1F5' }
-  return { ...base, background: 'var(--merk)', borderColor: 'var(--merk)', color: 'var(--merk-op)' }
+  // `border` (shorthand) i.p.v. alleen `borderColor` overschrijven — React
+  // waarschuwt (en kan verkeerd renderen) als je bij eenzelfde element tussen
+  // shorthand en longhand wisselt voor dezelfde eigenschap.
+  return { ...base, background: 'var(--merk)', border: '1px solid var(--merk)', color: 'var(--merk-op)' }
 }
 
 const RESPONSIVE_CSS = `
@@ -157,11 +168,16 @@ export function WaardebepalingPaneel({
   address,
   opgeslagenUitkomst,
   opgeslagenCorrectie,
+  eigenVerkopen = [],
 }: {
   objectId: string
   address?: string
   opgeslagenUitkomst: WaarderingUitkomst | null
   opgeslagenCorrectie: Correctie | null
+  /** Eigen verkopen van het kantoor mét coördinaten — voedt de laag "Eigen
+   * verkopen" op de dossierkaart (voorheen het losse StraalKaartPaneel,
+   * roadmap § 9 "Twee kaarten in het dossier samenvoegen"). */
+  eigenVerkopen?: TransactieMetCoordinaten[]
 }) {
   const [serverData, setServerData] = useState<ServerData | null>(null)
   const [laden, setLaden] = useState(true)
@@ -192,6 +208,14 @@ export function WaardebepalingPaneel({
     window.clearTimeout(toastTimer.current)
     toastTimer.current = window.setTimeout(() => setToast(null), 2200)
   }
+
+  // Dossierkaart (voorheen twee losse kaarten, roadmap § 9): welke laag
+  // toont, en de straal voor "Eigen verkopen". `laagStandaardGezet` zorgt dat
+  // de éénmalige standaardkeuze (bepaalStandaardLaag) de gebruiker daarna
+  // nooit terugzet als die zelf al geschakeld heeft.
+  const [laag, setLaag] = useState<DossierKaartLaag>('referenties')
+  const [verkoopStraal, setVerkoopStraal] = useState<number>(VERKOOP_STRAAL_STANDAARD)
+  const laagStandaardGezet = useRef(false)
 
   useEffect(() => {
     let actief = true
@@ -267,6 +291,18 @@ export function WaardebepalingPaneel({
       .map(r => { const c = coordsById.get(r.id); return c ? { ...r, lat: c.lat, lng: c.lng } : null })
       .filter((r): r is WaarderingReferentie & { lat: number; lng: number } => r !== null)
   }, [uitkomst, coordsById])
+
+  // Standaardlaag pas zodra `serverData` (dus ook `coordsById`/
+  // `kaartReferenties`) écht binnen is — niet op het eerste render met alleen
+  // `opgeslagenUitkomst`, want dan is coordsById nog leeg en klopt
+  // kaartReferenties.length (nog) niet. Daarna nooit meer overschrijven, ook
+  // niet als de referentieselectie nadien op 0 uitkomt door handmatig
+  // uitsluiten.
+  useEffect(() => {
+    if (laagStandaardGezet.current || !serverData) return
+    laagStandaardGezet.current = true
+    setLaag(bepaalStandaardLaag(kaartReferenties.length, eigenVerkopen.length))
+  }, [serverData, kaartReferenties, eigenVerkopen])
 
   const gewogenTween = useTweenGetal(uitkomst?.waarde ?? null)
 
@@ -350,6 +386,81 @@ export function WaardebepalingPaneel({
     : 50
   const leegStaat = uitkomst.n === 0 && toegevoegdActief.length === 0
 
+  // Dossierkaart (item "Twee kaarten in het dossier samenvoegen", roadmap §
+  // 9): referenties (deze waardering) en eigen verkopen (ex-StraalKaartPaneel)
+  // als lagen van één kaart, met een pil-schakelaar. Altijd gerenderd, ook bij
+  // leegStaat — anders zou "eigen verkopen" onzichtbaar worden zodra deze
+  // woning nog geen referenties heeft, terwijl die laag zijn eigen data heeft.
+  const kaartCard = (
+    <div style={card}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 10, flexWrap: 'wrap' }}>
+        <div>
+          <p style={titelStijl}>Kaart</p>
+          <p style={mutedStijl}>
+            {laag === 'referenties'
+              ? (uitkomst.methode === 'plaats' ? 'locatie onbekend' : `± straal ${straalLabel ?? ''} rond het subject`)
+              : `eigen verkopen binnen ${verkoopStraalLabel(verkoopStraal)}`}
+          </p>
+        </div>
+        {laag === 'referenties' && (
+          <button type="button" onClick={() => setDrawerOpen(true)} style={{ height: 32, padding: '0 12px', fontSize: 12.5, fontWeight: 700, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: 'pointer' }}>
+            Referentie toevoegen
+          </button>
+        )}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          <button type="button" aria-pressed={laag === 'referenties'} onClick={() => setLaag('referenties')} style={chipStyle(laag === 'referenties' ? 'toegepast' : 'neutraal')}>
+            Referenties{kaartReferenties.length > 0 ? ` (${kaartReferenties.length})` : ''}
+          </button>
+          <button type="button" aria-pressed={laag === 'verkopen'} onClick={() => setLaag('verkopen')} style={chipStyle(laag === 'verkopen' ? 'toegepast' : 'neutraal')}>
+            Eigen verkopen{eigenVerkopen.length > 0 ? ` (${eigenVerkopen.length})` : ''}
+          </button>
+        </div>
+        {laag === 'verkopen' && (
+          <div style={{ display: 'flex', gap: 4 }}>
+            {VERKOOP_STRAAL_OPTIES.map((optie) => (
+              <button
+                key={optie}
+                type="button"
+                aria-pressed={verkoopStraal === optie}
+                onClick={() => setVerkoopStraal(optie)}
+                style={{
+                  height: 26, padding: '0 10px', fontSize: 11.5, fontWeight: 700,
+                  borderRadius: radius.pill,
+                  border: verkoopStraal === optie ? '1px solid var(--merk)' : `1px solid ${colors.borderStrong}`,
+                  background: verkoopStraal === optie ? 'var(--merk)' : colors.surface,
+                  color: verkoopStraal === optie ? 'var(--merk-op)' : colors.bodyStrong,
+                  cursor: 'pointer',
+                }}
+              >
+                {verkoopStraalLabel(optie)}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="wb-kaart-vlak" style={{ position: 'relative', borderRadius: radius.md, overflow: 'hidden', background: '#F4EFE5', height: 440 }}>
+        {serverData?.subject.lat != null && serverData?.subject.lng != null ? (
+          <WaarderingKaartClient
+            subject={{ lat: serverData.subject.lat, lng: serverData.subject.lng, adres: address ?? 'Dit adres' }}
+            straalM={uitkomst.straal_m}
+            referenties={kaartReferenties}
+            uitgeslotenIds={uitgeslotenIds}
+            eigenVerkopen={eigenVerkopen}
+            laag={laag}
+            verkoopStraal={verkoopStraal}
+          />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: 24, color: colors.body }}>
+            <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: colors.text }}>Geen locatiegegevens</p>
+            <p style={{ margin: 0, maxWidth: '34ch', fontSize: 12.5 }}>De adresverrijking is niet gelukt. Referenties zijn gekozen op plaats en woningtype, niet op afstand.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
   return (
     <div style={{ minWidth: 0 }}>
       <style>{RESPONSIVE_CSS}</style>
@@ -368,15 +479,18 @@ export function WaardebepalingPaneel({
       </div>
 
       {leegStaat ? (
-        <EmptyState
-          titel="Nog geen referenties binnen 5 km"
-          beschrijving="Er zijn nog geen vergelijkbare verkopen gevonden om deze woning te waarderen. Voeg handmatig een referentie toe om te beginnen."
-          actie={
-            <button type="button" onClick={() => setDrawerOpen(true)} style={{ fontSize: 13, fontWeight: 700, color: 'var(--merk-op)', background: 'var(--merk)', border: 'none', borderRadius: radius.md, padding: '9px 16px', cursor: 'pointer' }}>
-              Referentie toevoegen
-            </button>
-          }
-        />
+        <>
+          <EmptyState
+            titel="Nog geen referenties binnen 5 km"
+            beschrijving="Er zijn nog geen vergelijkbare verkopen gevonden om deze woning te waarderen. Voeg handmatig een referentie toe om te beginnen."
+            actie={
+              <button type="button" onClick={() => setDrawerOpen(true)} style={{ fontSize: 13, fontWeight: 700, color: 'var(--merk-op)', background: 'var(--merk)', border: 'none', borderRadius: radius.md, padding: '9px 16px', cursor: 'pointer' }}>
+                Referentie toevoegen
+              </button>
+            }
+          />
+          <div style={{ marginTop: 16 }}>{kaartCard}</div>
+        </>
       ) : (
         <>
           <div className="wb-grid">
@@ -466,34 +580,7 @@ export function WaardebepalingPaneel({
               </p>
             </div>
 
-            <div>
-              <div style={card}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-                  <div>
-                    <p style={titelStijl}>Referentiekaart</p>
-                    <p style={mutedStijl}>{uitkomst.methode === 'plaats' ? 'locatie onbekend' : `± straal ${straalLabel ?? ''} rond het subject`}</p>
-                  </div>
-                  <button type="button" onClick={() => setDrawerOpen(true)} style={{ height: 32, padding: '0 12px', fontSize: 12.5, fontWeight: 700, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: 'pointer' }}>
-                    Referentie toevoegen
-                  </button>
-                </div>
-                <div className="wb-kaart-vlak" style={{ position: 'relative', borderRadius: radius.md, overflow: 'hidden', background: '#F4EFE5', height: 440 }}>
-                  {serverData?.subject.lat != null && serverData?.subject.lng != null ? (
-                    <WaarderingKaartClient
-                      subject={{ lat: serverData.subject.lat, lng: serverData.subject.lng, adres: address ?? 'Dit adres' }}
-                      straalM={uitkomst.straal_m}
-                      referenties={kaartReferenties}
-                      uitgeslotenIds={uitgeslotenIds}
-                    />
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', padding: 24, color: colors.body }}>
-                      <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 800, color: colors.text }}>Geen locatiegegevens</p>
-                      <p style={{ margin: 0, maxWidth: '34ch', fontSize: 12.5 }}>De adresverrijking is niet gelukt. Referenties zijn gekozen op plaats en woningtype, niet op afstand.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <div>{kaartCard}</div>
           </div>
 
           {/* Referentietabel */}

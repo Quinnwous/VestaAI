@@ -20,9 +20,10 @@ vi.mock('@/lib/supabase', () => ({
   })),
 }))
 
-/** Per test overschrijfbaar: objecten-select, kantoren-select en de update-chain. */
+/** Per test overschrijfbaar: objecten-select, kantoren-select, object_documenten-select en de update-chain. */
 const objectSingle = vi.fn()
 const kantoorSingle = vi.fn()
+const documentenLijst = vi.fn()
 let updateMock = vi.fn().mockReturnThis()
 
 function serviceFromImpl(tabel: string) {
@@ -39,6 +40,14 @@ function serviceFromImpl(tabel: string) {
       select: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       single: kantoorSingle,
+    }
+  }
+  if (tabel === 'object_documenten') {
+    return {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      not: vi.fn().mockReturnThis(),
+      limit: documentenLijst,
     }
   }
   throw new Error(`onverwachte tabel in test: ${tabel}`)
@@ -72,6 +81,7 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
       },
     })
     kantoorSingle.mockResolvedValue({ data: { huisstijl_json: null } })
+    documentenLijst.mockResolvedValue({ data: [] })
     updateMock = vi.fn().mockReturnThis()
     genereerExtraContent.mockResolvedValue('Gegenereerde tekst.')
   })
@@ -126,9 +136,41 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
       'video_script',
       expect.objectContaining({ adres: 'Herengracht 1, Amsterdam' }),
       expect.objectContaining({ schrijftoon: 'informeel' }),
+      undefined,
+      [],
     )
     expect(updateMock).toHaveBeenCalledWith(
       expect.objectContaining({ outputs_json: expect.objectContaining({ video_script: 'Gegenereerde tekst.', funda_tekst: 'bestaande tekst' }) }),
+    )
+  })
+
+  it('geeft de anthropic_file_id\'s van bijgevoegde documenten door aan genereerExtraContent (energie_advies)', async () => {
+    documentenLijst.mockResolvedValue({ data: [{ anthropic_file_id: 'file-abc' }, { anthropic_file_id: 'file-def' }, { anthropic_file_id: null }] })
+
+    const res = await POST(makeRequest('energie_advies') as never, { params: { id: 'object-1' } })
+
+    expect(res.status).toBe(200)
+    expect(genereerExtraContent).toHaveBeenCalledWith(
+      'energie_advies',
+      expect.objectContaining({ adres: 'Herengracht 1, Amsterdam' }),
+      undefined,
+      undefined,
+      ['file-abc', 'file-def'],
+    )
+  })
+
+  it('geeft de anthropic_file_id\'s van bijgevoegde documenten door aan genereerExtraContent (kopersvragen_faq)', async () => {
+    documentenLijst.mockResolvedValue({ data: [{ anthropic_file_id: 'file-abc' }] })
+
+    const res = await POST(makeRequest('kopersvragen_faq') as never, { params: { id: 'object-1' } })
+
+    expect(res.status).toBe(200)
+    expect(genereerExtraContent).toHaveBeenCalledWith(
+      'kopersvragen_faq',
+      expect.objectContaining({ adres: 'Herengracht 1, Amsterdam' }),
+      undefined,
+      undefined,
+      ['file-abc'],
     )
   })
 

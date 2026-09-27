@@ -58,9 +58,21 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .single()
   const huisstijl = (kantoor?.huisstijl_json as HuisstijlConfig | null) ?? undefined
 
+  // Bijgevoegde documenten (meetrapport, keuring, taxatie) ook aan de extra's
+  // meegeven — zelfde patroon als de kern-call en /api/object/[id]/hergenereer.
+  const { data: docs } = await serviceClient
+    .from('object_documenten')
+    .select('anthropic_file_id')
+    .eq('object_id', params.id)
+    .not('anthropic_file_id', 'is', null)
+    .limit(3)
+  const docIds = (docs ?? [])
+    .map(d => d.anthropic_file_id)
+    .filter((id): id is string => !!id)
+
   const input = object.input_json as PropertyInput
   try {
-    const tekst = await genereerExtraContent(type, input, huisstijl)
+    const tekst = await genereerExtraContent(type, input, huisstijl, undefined, docIds)
     // Vlak voor het schrijven opnieuw lezen: tijdens de generatie kan een ander
     // veld (bewerking, andere extra) zijn opgeslagen.
     const { data: vers } = await serviceClient.from('objecten').select('outputs_json').eq('id', params.id).single()

@@ -15,7 +15,6 @@ import { FotoBibliotheek } from '@/components/FotoBibliotheek'
 import { EmailPdfButton } from '@/components/EmailPdfButton'
 import { RealworksExportButton } from '@/components/RealworksExportButton'
 import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
-import { StraalKaartPaneel } from '@/components/StraalKaartPaneel'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, VerrijkingOpslag } from '@/lib/schemas'
@@ -62,13 +61,17 @@ const card: React.CSSProperties = {
 }
 
 function WaarderingSectie({
-  objectId, address, waarderingUitkomst, correctie, uspsInitieel,
+  objectId, address, waarderingUitkomst, correctie, uspsInitieel, eigenVerkopen,
 }: {
   objectId: string
   address: string
   waarderingUitkomst: WaarderingUitkomst | null
   correctie: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel: string[]
+  /** Eigen verkopen van het kantoor mét coördinaten — voedt de laag "Eigen
+   * verkopen" op de dossierkaart in WaardebepalingPaneel (voorheen het losse
+   * StraalKaartPaneel, roadmap § 9 "Twee kaarten in het dossier samenvoegen"). */
+  eigenVerkopen: TransactieMetCoordinaten[]
 }) {
   return (
     <div style={{ display: 'grid', gap: 16 }}>
@@ -77,6 +80,7 @@ function WaarderingSectie({
         address={address}
         opgeslagenUitkomst={waarderingUitkomst}
         opgeslagenCorrectie={correctie}
+        eigenVerkopen={eigenVerkopen}
       />
       <UspExtractorPaneel objectId={objectId} initieleUsps={uspsInitieel} />
     </div>
@@ -92,7 +96,6 @@ export function ObjectWorkspace({
   vraagprijs,
   notitie,
   userEmail,
-  geo,
   eigenVerkopen = [],
   waarderingUitkomst = null,
   waarderingCorrectie = null,
@@ -111,7 +114,12 @@ export function ObjectWorkspace({
   vraagprijs: number
   notitie: string | null
   userEmail?: string
-  /** Coördinaat van dit adres (uit lib/verrijking.ts) — voedt de straal-uitsnede hieronder. */
+  /** Coördinaat van dit adres (uit lib/verrijking.ts). Sinds "Twee kaarten in
+   * het dossier samenvoegen" (roadmap § 9) leest de dossierkaart zijn
+   * coördinaat uit de waarderingsuitkomst zelf (`serverData.subject`), niet
+   * meer uit deze prop — bewust nog in de signature zodat de aanroeper
+   * (`app/(app)/object/[id]/page.tsx`, niet dit worktree-bestand) niets hoeft
+   * te wijzigen. */
   geo?: { lat: number; lng: number } | null
   eigenVerkopen?: TransactieMetCoordinaten[]
   /** Laatst opgeslagen waarderingsuitkomst v2 (item 4.3) — het paneel haalt bij mount zelf een
@@ -143,13 +151,10 @@ export function ObjectWorkspace({
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
 
-  const straalKaart = geo ? (
-    <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid #E6E9EC', background: '#fff', padding: 18 }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 12px' }}>In de buurt verkocht</p>
-      <StraalKaartPaneel lat={geo.lat} lng={geo.lng} eigenVerkopen={eigenVerkopen} adres={address} />
-    </div>
-  ) : null
-
+  // "In de buurt verkocht" (ex-StraalKaartPaneel) is sinds "Twee kaarten in
+  // het dossier samenvoegen" (roadmap § 9) een laag van de dossierkaart in
+  // WaardebepalingPaneel — geen los kaartblok meer hier, en dus ook geen
+  // tweede MapLibre-instantie op deze pagina.
   const waarderingSectie = (
     <WaarderingSectie
       objectId={objectId}
@@ -157,6 +162,7 @@ export function ObjectWorkspace({
       waarderingUitkomst={waarderingUitkomst}
       correctie={waarderingCorrectie}
       uspsInitieel={uspsInitieel}
+      eigenVerkopen={eigenVerkopen}
     />
   )
 
@@ -169,13 +175,11 @@ export function ObjectWorkspace({
 
   // Verkoopadvies-fase: er zijn nog geen foto's of een vaste vraagprijs —
   // alleen waardebepaling, verkoopadvies en buurtdata zijn relevant, geen
-  // tabbalk nodig (item 10.3: "Buurt & data" is hier gestapeld i.p.v. een tab,
-  // net als de straal-kaart hieronder).
+  // tabbalk nodig (item 10.3: "Buurt & data" is hier gestapeld i.p.v. een tab).
   if (fase === 'verkoopadvies') {
     return (
       <div style={{ display: 'grid', gap: 16, marginTop: 24 }}>
         {waarderingSectie}
-        {straalKaart}
         {buurtDataSectie}
       </div>
     )
@@ -193,7 +197,6 @@ export function ObjectWorkspace({
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
         <div style={{ display: 'grid', gap: 16 }}>
           {waarderingSectie}
-          {straalKaart}
         </div>
       </div>
 

@@ -23,7 +23,7 @@
  * (6.1-6.3, 23-24 sep) heeft de verkenners al op de RPC's aangesloten:
  * `MarktanalyseExplorer`/`ConcurrentieExplorer`/`TransactiesZoeken` gebruiken
  * uitsluitend patroon 2 (RPC's, incl. `zoekTransacties`) voor hun hoofddata;
- * `VerkoopkaartExplorerV2`/`StraalKaartPaneel` gebruiken patroon 1
+ * `VerkoopkaartExplorerV2`/de dossierkaart (`WaarderingKaart`) gebruiken patroon 1
  * (`haalEigenVerkopen`, want de kaart toont alléén eigen verkopen). Geen
  * levende aanroeper gebruikt `haalTransactiesVoorVerkenner` nog — die blijft
  * staan als referentie-implementatie voor `lib/transactiesQuery.rpc.test.ts`
@@ -204,6 +204,33 @@ export async function haalTransactiesOpId(client: SessieClient, ids: string[]): 
     .is('uitgesloten_reden', null)
   if (error) throw new Error(`haalTransactiesOpId: ${error.message}`)
   return (data ?? []) as unknown as Kandidaat[]
+}
+
+export type TransactieCoordinaat = { lat: number; lng: number } | null
+
+/**
+ * Coördinaat van precies één transactie (minikaart in de transactie-sheet,
+ * docs/roadmap.md § 9 "Vóór de demo oppakken") — losse lookup op de view
+ * `transacties_met_coordinaten`, alleen voor de rij die open staat in
+ * `components/TransactiesZoeken.tsx`. `zoekTransacties()`/de RPC
+ * `transacties_zoeken` zelf leveren geen lat/lng (die selecteert `t.*` op de
+ * kale tabel `transacties`, die geen coördinaatkolommen heeft) — dat
+ * uitbreiden zou de RPC wijzigen (migratie). Deze functie blijft binnen
+ * `lib/transactiesQuery.ts` zonder schema-/RPC-wijziging: gewoon een
+ * `select` op de bestaande, al toegepaste view, gefilterd op één id. `null`
+ * als de transactie niet bestaat, niet geocodeerd is (`geocode_status`), of
+ * buiten het eigen kantoor valt (RLS regelt dat vanzelf).
+ */
+export async function haalTransactieCoordinaat(client: SessieClient, id: string): Promise<TransactieCoordinaat> {
+  const { data, error } = await client
+    .from('transacties_met_coordinaten')
+    .select('lat, lng')
+    .eq('id', id)
+    .maybeSingle()
+  if (error) throw new Error(`haalTransactieCoordinaat: ${error.message}`)
+  const rij = data as { lat: number | null; lng: number | null } | null
+  if (!rij || rij.lat == null || rij.lng == null) return null
+  return { lat: rij.lat, lng: rij.lng }
 }
 
 export type DataTotEnMet = {

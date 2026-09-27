@@ -626,6 +626,59 @@ describe('genereerExtraContent (item 8.3, outputset v2)', () => {
     const aanroep = create.mock.calls[0][0] as { messages: { content: string }[] }
     expect(aanroep.messages[0].content).toContain('Enthousiast en uitnodigend')
   })
+
+  it('geeft bijgevoegde documenten mee via de Files API-beta en zet de documenteninstructie in de prompt (energie_advies)', async () => {
+    const betaCreate = vi.fn().mockResolvedValue({ content: [{ type: 'text', text: 'Energieadvies-tekst.' }] })
+    const mockClient = { messages: { create: vi.fn() }, beta: { messages: { create: betaCreate } } } as unknown as Anthropic
+
+    const { genereerExtraContent } = await import('./claude')
+    const tekst = await genereerExtraContent('energie_advies', inputBasis, undefined, mockClient, ['file-abc', 'file-def'])
+
+    expect(tekst).toBe('Energieadvies-tekst.')
+    expect(betaCreate).toHaveBeenCalledTimes(1)
+    const aanroep = betaCreate.mock.calls[0][0] as {
+      model: string
+      betas: string[]
+      messages: { content: { type: string; source?: { file_id: string }; text?: string }[] }[]
+    }
+    expect(aanroep.model).toBe(CONTENT)
+    expect(aanroep.betas).toContain('files-api-2025-04-14')
+    const blokken = aanroep.messages[0].content
+    // Documentblokken vóór de tekst, één per file-id.
+    expect(blokken[0]).toEqual({ type: 'document', source: { type: 'file', file_id: 'file-abc' } })
+    expect(blokken[1]).toEqual({ type: 'document', source: { type: 'file', file_id: 'file-def' } })
+    const tekstBlok = blokken[blokken.length - 1]
+    expect(tekstBlok.type).toBe('text')
+    // De documenteninstructie ("gebruik de feitelijke gegevens…") zit in de prompttekst.
+    expect(tekstBlok.text).toContain('documenten bijgevoegd')
+    expect(tekstBlok.text).toContain('verzin niets')
+    expect(tekstBlok.text).toContain(inputBasis.adres)
+  })
+
+  it('geeft bijgevoegde documenten mee via de Files API-beta en zet de documenteninstructie in de prompt (kopersvragen_faq)', async () => {
+    const betaCreate = vi.fn().mockResolvedValue({ content: [{ type: 'text', text: 'V: ...\nA: ...' }] })
+    const mockClient = { messages: { create: vi.fn() }, beta: { messages: { create: betaCreate } } } as unknown as Anthropic
+
+    const { genereerExtraContent } = await import('./claude')
+    await genereerExtraContent('kopersvragen_faq', inputBasis, undefined, mockClient, ['file-xyz'])
+
+    expect(betaCreate).toHaveBeenCalledTimes(1)
+    const aanroep = betaCreate.mock.calls[0][0] as { messages: { content: { type: string; text?: string }[] }[] }
+    const tekstBlok = aanroep.messages[0].content.find(b => b.type === 'text')
+    expect(tekstBlok?.text).toContain('documenten bijgevoegd')
+  })
+
+  it('gaat via het gewone create-pad (geen Files API) als er geen documenten zijn', async () => {
+    const create = vi.fn().mockResolvedValue({ content: [{ type: 'text', text: 'tekst' }] })
+    const betaCreate = vi.fn()
+    const mockClient = { messages: { create }, beta: { messages: { create: betaCreate } } } as unknown as Anthropic
+
+    const { genereerExtraContent } = await import('./claude')
+    await genereerExtraContent('open_huis', inputBasis, undefined, mockClient, [])
+
+    expect(create).toHaveBeenCalledTimes(1)
+    expect(betaCreate).not.toHaveBeenCalled()
+  })
 })
 
 describe('schrijfKwartaalbericht (item 6.4)', () => {

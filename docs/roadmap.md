@@ -17,24 +17,26 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (27 sep, PR `feat/sessie-27sep-b`):** 8.4 brochure-pdf in
-  kantoorstijl, intake stap 5 opgeruimd + 10.5 intake tweekoloms (**fase 10 af**),
-  kaarten in het dossier laden pas in beeld (−48 % bytes, LCP ~2 s sneller op
-  mobiel), `zoekTransacties()` met terugval. typecheck/test (666)/build groen,
-  `dod:screens` groen, e2e 22 passed / 5 skipped. Eerder op 27 sep: 8.3, 9.2, 12.3,
-  13.2 (fase 9 en 13 af) en het i4housing-tekstsjabloon in de database.
-- **Fase:** 6, 7, 9, 10 en 13 af. Open: 8.5 (staging-modelcheck), 12.1
-  (team-accounts, wacht op Quinn), 12.5 (demo-voorbereiding). Geblokkeerd: fase 5
-  (exports), fase 11 (voorbeeld-verkoopadvies).
+- **Laatste ronde (27 sep, PR `feat/sessie-27sep-c`):** 12.5a demoscript
+  (`docs/demoscript.md`), één kaart in het dossier (referenties + eigen verkopen
+  als lagen, `StraalKaartPaneel` weg), minikaart in de transactie-sheet,
+  NL-zoomknoppen, backlog-poets (extra's krijgen documenten, `PublicFooter`,
+  `/vertrouwen` in "u", `StatTile`-fallback weg, hook-regex, smoke-e2e bij).
+  typecheck/test (679)/build groen. Eerder op 27 sep: 8.3, 8.4, 9.2, 10.5, 12.3, 13.2.
+- **Fase:** 6, 7, 9, 10 en 13 af. Open: 8.5 (staging-modelcheck, betaald), 12.1
+  (team-accounts, wacht op Quinn), 12.5 rest (demo-dossiers, freeze, repetitie).
+  Geblokkeerd: fase 5 (exports), fase 11 (voorbeeld-verkoopadvies).
+- ⚠️ **Demo-realiteit (uit 12.5a):** het i4housing-kantoor heeft nul transacties
+  tot fase 5 — marktinzichten, kerncijfers en waardering tonen daar de lege
+  staat. Repetitie gebeurt op `/login/demo`; zonder de exports is er geen demo
+  op eigen data.
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  **12.5a demoscript** — `docs/demoscript.md` klik-voor-klik per scène (§ 2) met
-  terugvalplan; demo-dossiers alleen in het demo-kantoor · **backlog-poets**
-  (§ 9 "Uit de sessies van 26-27 sep"): documenten ook naar de extra's
-  (`genereerExtraContent`), footers publieke pagina's op de nieuwe tagline,
-  `/vertrouwen` naar "u", `StatTile`-kleurfallback weg, huisstijl-hook-regex
-  (radius ≠ kleur), verouderde generatie-smoketest, MapLibre-zoomknoppen met
-  Nederlandse `aria-label` · **twee kaarten in het dossier samenvoegen** (referenties
-  + eigen verkopen als lagen van één kaart) · **minikaart in de transactie-sheet**.
+  **12.5b generale-repetitiescript** — `scripts/generale-repetitie.mjs` loopt
+  `docs/demoscript.md` scène voor scène af met Playwright (demo-kantoor, alleen
+  lezend, geen contentgeneratie), screenshot per stap, faalt op lege/foutstaat,
+  `pageerror` of een knoplabel dat niet meer bestaat · **poets** — omweg
+  `vorigePeriodeFilter()` weg (§ 9), `TransactieMinikaart` naar
+  `components/kaart/`, a11y-waarschuwing `AddressAutocomplete.tsx`.
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
@@ -98,8 +100,8 @@ eigen data. ±25 minuten. Elke scène noemt de items die hem dragen.
 
 | # | Scène | Wat ze zien | Belofte | Gedragen door |
 |---|---|---|---|---|
-| 1 | **"Dit is óns platform"** (2 min) | `/login/i4housing` in hun stijl → startpagina "Goedemorgen Marc" met teamfoto, kerncijfers uit hún data (verkocht 12 mnd, gem. looptijd, marktaandeel Wassenaar, prijs t.o.v. vraagprijs), recent bekeken, deze week — geen snelkoppelingen (besluit 17 sep) | Het is hun platform | 1.9 · 1.10 · 2.5 · 9.1 · 10.4 · 12.1 |
-| 2 | **"Eindelijk snappen we onze data"** (5 min) | Marktinzichten → filters (Wassenaar · vrijstaand · 24 mnd) → kerncijfers met delta t.o.v. vorige periode, grafieken prijs/€ per m²/looptijd, segment A vs B → knop **Kwartaalbericht** → Claude schrijft hun Q3-marktupdate in hun toon met de echte cijfers | Inzicht + uren bespaard | 2.2 · 6.1 · 6.4 |
+| 1 | **"Dit is óns platform"** (2 min) | `/login/i4housing` in hun stijl → startpagina "Goedemorgen Marc" met teamfoto (tot 12.1: merkverloop), kerncijfers uit hún data (verkocht 12 mnd, gem. looptijd, marktaandeel Wassenaar, prijs t.o.v. vraagprijs), recent bekeken ("deze week" geschrapt onder 10.4) — geen snelkoppelingen (besluit 17 sep) | Het is hun platform | 1.9 · 1.10 · 2.5 · 9.1 · 10.4 · 12.1 |
+| 2 | **"Eindelijk snappen we onze data"** (5 min) | Marktinzichten → filters (Wassenaar · vrijstaand · 24 mnd) → kerncijfers met delta t.o.v. vorige periode, grafieken prijs/€ per m²/looptijd, segment A vs B → knop **Kwartaalbericht schrijven** → Claude schrijft hun Q3-marktupdate in hun toon met de echte cijfers | Inzicht + uren bespaard | 2.2 · 6.1 · 6.4 |
 | 3 | **"Wie wint waar"** (3 min) | Concurrentie → marktaandeel in Wassenaar, wie wint vrijstaand > € 1 mln, i4housing vs. markt op looptijd en prijs t.o.v. vraagprijs, profiel van één concurrent | Positie in de regio | 6.3 (vereist verkopend kantoor in Brainbay) |
 | 4 | **"Hiermee zetten we het verkoopadvies op papier"** (7 min) | Nieuw dossier: adres typen → BAG/WOZ vullen voor → dossier staat er *direct* → waardering: referenties op de kaart binnen de straal, tabel met correcties (tijd · m² · afstand), bandbreedte, WOZ ernaast, wat-als (garage/tuin/label), één referentie uitsluiten → waarde verandert live → makelaarscorrectie met motivatie → **Waardebepaling (pdf)** in hun stijl in < 10 s → makelaar zet het dossier door naar In verkoop | Het verkoopadvies staat, de opdracht volgt | 3.1-3.4 · 4.1-4.8 · 7.3 |
 | 5 | **"Dit scheelt ons uren"** (5 min) | In het dossier: **Genereer content** → timer en skeletons → Funda-tekst in 4SALE!-format NL en EN naast elkaar, brochure-pdf in hun stijl, Instagram, LinkedIn, sneak-preview-WhatsApp-bericht, koper-e-mail → inline bewerken → "stijl leren" | Uren bespaard | 8.1-8.4 |
@@ -754,8 +756,8 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   op echte data gelogd in `docs/data/performance.md`.
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
-- [ ] **12.5 Demo-voorbereiding** — `docs/demoscript.md` (§ 2 uitgewerkt tot
-  klik-voor-klik, met terugvalplan per scène), drie demo-dossiers uit echte
+- [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/demoscript.md` (§ 2 uitgewerkt tot
+  klik-voor-klik, met terugvalplan per scène; 27 sep). Rest: drie demo-dossiers uit echte
   recente adressen (één per fase), Vercel Pro actief, Supabase-check de dag
   ervoor, demo-freeze (branch `demo`, 48 uur geen deploys), generale repetitie
   met screenshots.
@@ -871,7 +873,7 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 ## 9. Backlog & geparkeerd
 
 **Vóór de demo oppakken (uit de sessie van 23-24 sep):** omweg `vorigePeriodeFilter()` weghalen nu de SQL-fix is toegepast (12.3) ·
-minikaart in de transactie-sheet op `BasisKaart` (7.2) · filter "Verkocht door"
+filter "Verkocht door"
 op de verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
 `20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
 makelaarsveld in de exports) · pastelkleuren van de kaart
@@ -891,26 +893,14 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
 
-**Twee kaarten in het dossier (18 sep):** de referentiekaart (4.6) en het
-`StraalKaartPaneel` ("In de buurt verkocht") staan allebei op de waarderingstab.
-Sinds 7.3 op dezelfde stack, maar inhoudelijk nog samen te voegen (referenties
-vs. eigen verkopen als lagen van één kaart).
-
-**Uit de sessie van 26-27 sep:** huisstijl-hook (`.claude/hooks/huisstijl-check.sh`)
-meldt radius-fallbacks (`var(--merk-radius-md, 12px)`) ten onrechte als
-kleur-fallback — regex aanscherpen tot hex/rgb · `e2e/smoke.spec.ts`
-generatietest is verouderd (verwacht `POST /api/generate` bij aanmaken; sinds
-fase 3 niet meer) · EN-kwartaalbericht nog niet tegen de echte API getest ·
+**Uit de sessie van 26-27 sep:** EN-kwartaalbericht nog niet tegen de echte API getest ·
 `PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
 
-**Uit de sessie van 27 sep:** bijgevoegde documenten (meetrapport/keuring) voeden
-sinds 8.3 alleen de kern-call, niet de extra's (`energie_advies`,
-`kopersvragen_faq`) — meegeven aan `genereerExtraContent` · footers van
-`/over-ons`, `/contact`, `/privacy`, `/vertrouwen`, `/voorwaarden` hebben nog de
-oude tagline ("De AI-assistent voor de makelaardij") · `/vertrouwen` gebruikt
-"je" op een publieke pagina (conventie: "u") · kantoor-reset rate-limit is
-in-memory per instance (zachte rem; tabel als het ooit nodig is) · `StatTile.tsx`
-heeft nog een `var(--merk-rgb, 26,107,69)`-fallback · CLAUDE.md-status van de
+**Uit de sessie van 27 sep:** kantoor-reset rate-limit is
+in-memory per instance (zachte rem; tabel als het ooit nodig is) · `components/TransactieMinikaart.tsx`
+naar `components/kaart/` verhuizen (stond erbuiten om overlap te vermijden) ·
+build-waarschuwing a11y in `AddressAutocomplete.tsx` · smoke-generatietest
+(nieuwe flow, 27 sep) één keer echt draaien met `E2E_GENERATE=1` · CLAUDE.md-status van de
 concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
 
 **Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies

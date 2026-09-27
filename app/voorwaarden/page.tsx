@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
+import { PublicFooter } from '@/components/PublicFooter'
 
 export const metadata: Metadata = {
   title: 'Algemene voorwaarden — VestaAI',
@@ -68,16 +68,7 @@ export default function VoorwaardenPage() {
         </div>
       </main>
 
-      <footer style={{ borderTop: '1px solid #E4EAE6', background: '#fff' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto', padding: '32px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontSize: 13, color: '#9AA6A0' }}>© 2026 Vesta&nbsp;AI · De AI-assistent voor de makelaardij</span>
-          <div style={{ display: 'flex', gap: 20 }}>
-            {[{ href: '/', label: 'Home' }, { href: '/privacy', label: 'Privacy' }, { href: '/contact', label: 'Contact' }].map(({ href, label }) => (
-              <Link key={label} href={href} style={{ fontSize: 13, color: '#9AA6A0', textDecoration: 'none' }}>{label}</Link>
-            ))}
-          </div>
-        </div>
-      </footer>
+      <PublicFooter links={[{ href: '/', label: 'Home' }, { href: '/privacy', label: 'Privacy' }, { href: '/contact', label: 'Contact' }]} />
     </div>
   )
 }

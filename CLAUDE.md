@@ -90,7 +90,7 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten
   - **Waardering (Module B)** — `lib/waardering.ts` + `components/WaardebepalingPaneel.tsx`: vergelijkbare-verkopen-methode (geen regressie — bij deze dataset-schaal te schijnzeker) op de tabel `transacties`, met modulaire aan/uit-blokken (garage/tuin) via vergelijkbare-paren, een bandbreedte die verbreedt bij weinig referenties, en een makelaar-correctie met verplichte motivatie (`waardering-actions.ts`, kolom `objecten.waardering_json`). Puur een onderbouwde indicatie voor het verkoopadvies — geen NWWI-taxatie. **Pdf van één pagina** (item 4.7): `GET /api/pdf/waardebepaling?object_id=…` + `components/WaardebepalingPdfTemplate.tsx`, knop in het paneel. De route **rekent niets opnieuw uit** — hij leest de opgeslagen `waardering_json`, zodat de pdf nooit een ander bedrag toont dan het scherm. ~1 s.
   - **AI USP-extractor** — `lib/claude.ts` `extraheerUsps()` + `/api/object/[id]/usps`: vertaalt de vrije intaketekst naar gestructureerde USP's (`components/UspExtractorPaneel.tsx`, kolom `objecten.usps_structuur`).
   - **Verkoopadvies** — nog te bouwen (`docs/roadmap.md` fase 11, bewust geblokkeerd tot Quinns voorbeelddocument er is; het datacontract staat daar al). Alle onderliggende data (waardering, buurtkaart, kantoorprofiel, courtage) is al beschikbaar.
-  - **Verkoopkaart, straal-uitsnede** (`components/StraalKaartPaneel.tsx`) — 250/500/1000 m rond het adres, alleen eigen verkopen.
+  - **Dossierkaart** (`components/WaarderingKaart.tsx`, in `WaardebepalingPaneel`) — één kaart met twee lagen: "Referenties" (van de waardering) en "Eigen verkopen" binnen 250/500/1000 m (sinds 27 sep 2026; het losse `StraalKaartPaneel` is weg). Standaardlaag en kader: `lib/dossierKaart.ts`.
 - **Marktinzichten** (`app/(app)/marktanalyse/`, los van één woning) — vier interactieve explorers, geen statische dashboards:
   - **Marktanalyse** (`components/MarktanalyseExplorer.tsx` + `lib/marktanalyse.ts`) — filters op type/wijk/periode, segmentvergelijking, recharts-grafieken (prijs, m²-prijs, doorlooptijd).
   - **Transacties opzoeken** (`components/TransactiesZoeken.tsx`) — zoeken/filteren over de dataset; "meenemen als referentie" wacht op verdere waarderings-integratie.
@@ -116,6 +116,10 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 ⚠️ **Een dynamic import beschermt de kinderen niet** — les 27 sep 2026 (12.3): `BasisKaart` was `dynamic(ssr:false)`, maar de laag-componenten (`VerkopenLaag`, `ReferentiesLaag`, `WoningenKaartLaag`) importeerden zelf `maplibre-gl`, dus 278 kB gzip zat alsnog in de hoofdbundel van elke kaartpagina. Zware libs in een laag: alleen het type statisch importeren, de runtime via `await import()` in het effect. Controleer met `ANALYZE=true npm run build`.
 
 ⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
+
+⚠️ **Eigen overlays op een MapLibre-kaart nooit rechtsboven** — les 27 sep 2026: daar zit `NavigationControl` (de zoomknoppen). Bedieningselementen (laagschakelaar, straal-pillen) in de kaartkop, niet óp de kaart. Alleen zichtbaar op een screenshot, niet in typecheck/tests.
+
+⚠️ **Een standaardkeuze die eenmalig in een `useEffect` wordt gezet, wacht op de écht geladen data** — les 27 sep 2026: de dossierkaart koos "Eigen verkopen" bij een dossier met 17 referenties, omdat het effect al vuurde op een memo die vóór de fetch een waarde had (opgeslagen uitkomst) terwijl de coördinaten nog leeg waren. Gate op de fetch-resultaten (`serverData`), niet op een placeholder.
 
 ⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026: een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
 
@@ -213,7 +217,7 @@ VestaAI/
 │   ├── BrochurePdfTemplate.tsx # brochure-pdf in kantoorstijl (8.4, GET /api/pdf/brochure)
 │   ├── DezeWoningPaneel.tsx    # live samenvatting naast de intake (10.5)
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
-│   ├── VerkoopkaartExplorerV2.tsx / StraalKaartPaneel.tsx / WaarderingKaart.tsx   # alle drie op components/kaart/
+│   ├── VerkoopkaartExplorerV2.tsx / WaarderingKaart.tsx / TransactieMinikaart.tsx   # alle op components/kaart/
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
 │   ├── StijlLerenPaneel.tsx    # "leren van bewerkingen", gemount in het woningdossier
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina

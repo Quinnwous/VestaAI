@@ -16,7 +16,7 @@ export const metadata = { title: 'Verkoopkaart' }
  * `VerkoopkaartExplorerV2` (item 7.2, poort van
  * `docs/ontwerp/verkoopkaart.html`) is de enige weergave sinds item 7.4: de
  * oude Leaflet-explorer (`VerkoopkaartExplorer`/`VerkoopkaartClient`, met
- * `?kaart=v1` als terugval) is opgeruimd, net als `StraalKaartPaneel`s
+ * `?kaart=v1` als terugval) is opgeruimd, net als het (inmiddels opgegane) `StraalKaartPaneel`s
  * eigen Leaflet-gebruik — beide draaien nu op `components/kaart/` (MapLibre).
  */
 export default async function VerkoopkaartPage() {
