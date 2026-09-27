@@ -233,6 +233,32 @@ export async function haalTransactieCoordinaat(client: SessieClient, id: string)
   return { lat: rij.lat, lng: rij.lng }
 }
 
+/**
+ * Coördinaten van een set referentie-id's tegelijk (locatiekaart in de
+ * waardebepaling-pdf, item 4.7-uitbreiding § 9) — batchvariant van
+ * `haalTransactieCoordinaat` op dezelfde view. `waardering_json.uitkomst.
+ * referenties[].id` is 1-op-1 het `transacties.id` (zie `lib/waardering.ts`,
+ * `id: r.id` in `berekenWaarderingV2`), dus de pdf-route kan hiermee de
+ * opgeslagen referenties terugkoppelen aan een lat/lng zonder de
+ * waardebepaling opnieuw te berekenen. Ontbrekende/niet-geocodeerde id's
+ * staan simpelweg niet in de teruggegeven Map — de aanroeper laat die
+ * referenties dan van de kaart vallen (`lib/statischeKaart.ts`
+ * `kaartReferenties`).
+ */
+export async function haalTransactieCoordinaten(client: SessieClient, ids: string[]): Promise<Map<string, { lat: number; lng: number }>> {
+  const resultaat = new Map<string, { lat: number; lng: number }>()
+  if (ids.length === 0) return resultaat
+  const { data, error } = await client
+    .from('transacties_met_coordinaten')
+    .select('id, lat, lng')
+    .in('id', ids)
+  if (error) throw new Error(`haalTransactieCoordinaten: ${error.message}`)
+  for (const rij of (data ?? []) as { id: string; lat: number | null; lng: number | null }[]) {
+    if (rij.lat != null && rij.lng != null) resultaat.set(rij.id, { lat: rij.lat, lng: rij.lng })
+  }
+  return resultaat
+}
+
 export type DataTotEnMet = {
   laatsteVerkoopdatum: string | null
   laatsteImportKlaarOp: string | null
