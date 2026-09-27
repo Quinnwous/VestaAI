@@ -97,7 +97,7 @@ export function WaarderingKaart({
   // punten de cirkel afsnijden.
   const bounds = useMemo(
     () => bepaalDossierKaartBounds(subject, laag, straalM, verkoopStraal),
-    [subject.lat, subject.lng, laag, straalM, verkoopStraal],
+    [subject, laag, straalM, verkoopStraal],
   )
 
   const hoverReferentie = refHover ? referentieById.get(refHover.id) : null
