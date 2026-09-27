@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { APP_URL } from '@/lib/appUrl'
 import { PLATFORM_ADMIN_EMAILS } from '@/lib/admin'
+import { bouwKantoorResetMail, type KantoorResetMailInput } from '@/lib/kantoorResetMail'
 
 let _resend: Resend | null = null
 
@@ -160,6 +161,18 @@ export async function sendNieuweKlantMelding(
       ${btn(`${APP_URL}/admin`, 'Bekijk in beheer')}
     `),
   })
+}
+
+/**
+ * Reset-mail in kantoorstijl (item 9.2, docs/roadmap.md § Fase 9): het
+ * sjabloon zelf is een pure functie in `lib/kantoorResetMail.ts` (logo,
+ * kleuren, geen "VestaAI"-vermelding) — hier alleen de verzending, net als
+ * elke andere Resend-mail in dit bestand. De afzender blijft bewust
+ * `noreply@vestaai.nl` (nog geen kantoordomein geverifieerd in Resend).
+ */
+export async function sendKantoorResetEmail(email: string, input: KantoorResetMailInput) {
+  const { subject, html, text } = bouwKantoorResetMail(input)
+  await getResend().emails.send({ from: FROM, to: email, subject, html, text })
 }
 
 /**

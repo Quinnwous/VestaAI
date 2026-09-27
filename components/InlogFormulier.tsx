@@ -110,9 +110,31 @@ export function InlogFormulier({ branding, slug }: Props) {
 
   const handleForgot = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!supabase) return
     setStatus('loading')
     setErrorMsg('')
+
+    // Kantoorlogin (item 9.2): reset-mail in kantoorstijl via een server-route
+    // (logo/kleuren + generateLink met de service role — kan niet met de
+    // gewone client-side resetPasswordForEmail). De generieke /login (geen
+    // slug) blijft ongewijzigd de Supabase-eigen flow gebruiken.
+    if (branding && slug) {
+      try {
+        const res = await fetch('/api/auth/kantoor-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug, email }),
+        })
+        if (!res.ok) throw new Error(`status ${res.status}`)
+        setStatus('success')
+      } catch (err) {
+        console.error('[forgot] kantoor-reset error:', err)
+        setErrorMsg('Er ging iets mis. Probeer het straks opnieuw.')
+        setStatus('error')
+      }
+      return
+    }
+
+    if (!supabase) return
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
