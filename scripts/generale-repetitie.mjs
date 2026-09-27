@@ -17,6 +17,16 @@
  *   het gekozen kantoor (verkoopadvies resp. in_verkoop met content_status
  *   'klaar') via de service-client, en klikken de aanmaak-/genereerknoppen
  *   nooit aan (alleen zichtbaarheid/klikbaarheid).
+ * - Scène 4, stap 2 typt wél een écht adres in de intake (`SCENE4_ADRES`) en
+ *   kiest de eerste BAG-suggestie via het toetsenbord — dit test de
+ *   adres-autocomplete en de BAG-voorvulling van bouwjaar/oppervlak écht
+ *   (regressietoets voor de BAG-les 27 sep 2026, zie CLAUDE.md). Dat roept
+ *   `GET /api/bag` en `GET /api/verrijking` aan (beide alleen lezend,
+ *   geverifieerd in de routecode); een netwerklistener bewaakt dat er tijdens
+ *   die stappen geen niet-GET-verzoek naar `/api/` gaat. Ná de BAG-check
+ *   klikt het script één keer "Volgende →" om de voorvulling zichtbaar te
+ *   maken op wizardstap 2 (Woning) — verder dan die stap, of op "Woning
+ *   aanmaken", wordt niet geklikt.
  * - "Kwartaalbericht schrijven" (scène 2) start bij het ÓPENEN van de modal
  *   al een Claude-call (useEffect in KwartaalberichtModal) — dus nooit
  *   klikken, alleen de knop zelf controleren.
@@ -63,6 +73,14 @@ const BASE_URL = `http://localhost:${POORT}`
 // DOD_EMAIL (env) wint altijd — zelfde gedrag als de andere DoD-scripts.
 const EMAIL = process.env.DOD_EMAIL || (KANTOOR_SLUG === 'i4housing' ? 'quinn.berkouwer@icloud.com' : 'demo@vestaai.nl')
 const TRAAG_MS = 3000
+
+// Scène 4, stap 2 (intake): een écht bestaand adres binnen het BAG — geen
+// fixture-adres (die bestaan niet in de BAG en leveren dus nooit een
+// suggestie op). Zie CLAUDE.md § BAG-les (27 sep 2026): de adres-autocomplete
+// en het bouwjaar/oppervlak-voorvullen deden maandenlang ongemerkt niets
+// omdat een mislukte BAG-call stil tot "leeg" werd opgevouwen — dít is de
+// regressietoets die dat nooit meer onopgemerkt laat gebeuren.
+const SCENE4_ADRES = 'Langstraat 10 Wassenaar'
 
 // ── dev-server: hergebruik een draaiende, of start er zelf één (patroon uit dod-screens.mjs) ──
 async function bereikbaar() {
@@ -165,6 +183,28 @@ async function ga(page, pad, { verwachtIngelogd = true } = {}) {
     throw new Error(`onverwachte redirect: ${pad} → ${huidigPad} (kantoorslug onbekend?)`)
   }
   return res
+}
+
+/**
+ * Pollt een <input>-veld (via `name`-attribuut, ook zichtbaar bij een
+ * ouder-container met `display: none` — PropertyForm.tsx houdt latere
+ * wizardstappen altijd gemount) tot het een niet-lege waarde heeft, of gooit
+ * een duidelijke fout na `timeout`. Gebruikt voor de BAG-voorvulling van
+ * bouwjaar/oppervlak_m2 na het kiezen van een adressuggestie — geen vaste
+ * wachttijd, want de BAG-call (`/api/bag`, twee sequentiële Kadaster-calls +
+ * EP-Online) is een externe netwerkaanroep met wisselende duur.
+ */
+async function wachtOpVeldWaarde(page, selector, { timeout = 8000 } = {}) {
+  const deadline = Date.now() + timeout
+  const veld = page.locator(selector).first()
+  for (;;) {
+    const waarde = await veld.inputValue().catch(() => '')
+    if (waarde && waarde.trim() !== '') return waarde
+    if (Date.now() >= deadline) {
+      throw new Error(`veld "${selector}" bleef leeg na ${timeout}ms — BAG-voorvulling werkt niet (regressie van de BAG-les 27 sep 2026)`)
+    }
+    await page.waitForTimeout(200)
+  }
 }
 
 /** Zoekt een knop/link/tab op zichtbare tekst; gooit een duidelijke fout als niets matcht. */
@@ -393,10 +433,69 @@ async function scene4(page, fouten, dossier) {
     // NIET klikken/aanmaken: rest van deze scène gebruikt een bestaand verkoopadvies-dossier.
   })
 
-  await stap(page, fouten, 'scene4', '2-intake-adresveld-zichtbaar', async () => {
+  // Bewaakt tijdens het typen/kiezen van het adres dat er geen niet-GET-
+  // verzoek naar /api/ gaat — handleAdresSelect (PropertyForm.tsx) roept
+  // /api/bag en /api/verrijking aan; beide zijn geverifieerd read-only
+  // (route-code, zie bestandskop), maar deze listener vangt een toekomstige
+  // regressie op zonder dat iemand de route-code opnieuw moet nalezen.
+  const nietGetVerzoeken = []
+  const bewaakSchrijfacties = (req) => {
+    if (req.method() !== 'GET' && req.url().includes('/api/')) nietGetVerzoeken.push(`${req.method()} ${req.url()}`)
+  }
+  page.on('request', bewaakSchrijfacties)
+
+  await stap(page, fouten, 'scene4', '2-adres-typen-suggestie-verschijnt', async () => {
     await ga(page, '/object/new')
-    await page.getByPlaceholder('Herengracht 1, Amsterdam').first().waitFor({ state: 'visible', timeout: 8000 })
+    const invoer = page.getByPlaceholder('Herengracht 1, Amsterdam').first()
+    await invoer.waitFor({ state: 'visible', timeout: 8000 })
+    await invoer.click()
+    // Teken voor teken typen (geen .fill()) — dat is wat de debounce +
+    // BAG-call in AddressAutocomplete.tsx écht triggert, i.p.v. één instant
+    // onChange die de listener zou kunnen missen.
+    await invoer.pressSequentially(SCENE4_ADRES, { delay: 60 })
+    try {
+      await page.getByRole('listbox').waitFor({ state: 'visible', timeout: 5000 })
+    } catch {
+      throw new Error(
+        `geen BAG-suggestie binnen 5s voor "${SCENE4_ADRES}" — adres-autocomplete/BAG-koppeling (lib/bag.ts, /api/bag/suggest) lijkt stil te falen`,
+      )
+    }
+    const aantalOpties = await page.getByRole('option').count()
+    if (aantalOpties === 0) throw new Error(`listbox verscheen maar toont geen enkele optie voor "${SCENE4_ADRES}"`)
   })
+
+  await stap(page, fouten, 'scene4', '3-suggestie-kiezen-toetsenbord', async () => {
+    const invoer = page.getByPlaceholder('Herengracht 1, Amsterdam').first()
+    const eersteOptie = page.getByRole('option').first()
+    const optieTekst = (await eersteOptie.textContent().catch(() => ''))?.trim() ?? ''
+    if (!optieTekst) throw new Error('eerste BAG-suggestie heeft geen leesbare tekst')
+    // ArrowDown (activeert optie 0, aria-activedescendant) + Enter (kiest
+    // haar) — test zo de combobox-ARIA i.p.v. een muisklik op de <li>.
+    await invoer.press('ArrowDown')
+    await invoer.press('Enter')
+    const huidigeWaarde = await invoer.inputValue()
+    if (!huidigeWaarde.trim()) throw new Error('adresveld is leeg na ArrowDown+Enter — toetsenbordselectie in AddressAutocomplete werkt niet')
+    const expanded = await invoer.getAttribute('aria-expanded')
+    if (expanded !== 'false') throw new Error(`combobox aria-expanded is "${expanded}" na selectie — listbox lijkt niet gesloten`)
+    if (await page.getByRole('listbox').isVisible().catch(() => false)) {
+      throw new Error('listbox staat nog open na het kiezen van een suggestie via het toetsenbord')
+    }
+  })
+
+  await stap(page, fouten, 'scene4', '4-bag-voorvulling-bouwjaar-oppervlak', async () => {
+    const bouwjaar = await wachtOpVeldWaarde(page, 'input[name="bouwjaar"]', { timeout: 8000 })
+    const oppervlak = await wachtOpVeldWaarde(page, 'input[name="oppervlak_m2"]', { timeout: 8000 })
+    console.log(`      (BAG-voorvulling: bouwjaar=${bouwjaar}, oppervlak_m2=${oppervlak})`)
+    if (nietGetVerzoeken.length > 0) {
+      throw new Error(`adres typen/kiezen deed niet-GET-verzoek(en) naar /api/: ${nietGetVerzoeken.join(', ')} — dit hoort puur lezend te zijn`)
+    }
+    // Naar wizardstap 2 (Woning) om de voorvulling ook zichtbaar te maken op
+    // de screenshot — geen schrijfactie, puur lokale stap-state (`setStap`).
+    await page.getByRole('button', { name: 'Volgende', exact: false }).first().click()
+    await page.locator('input[name="bouwjaar"]').waitFor({ state: 'visible', timeout: 5000 })
+  })
+
+  page.off('request', bewaakSchrijfacties)
 
   if (!dossier) {
     console.log('   ⚠️  Geen dossier in fase "Verkoopadvies" gevonden voor dit kantoor — resterende scène 4-stappen overgeslagen')
