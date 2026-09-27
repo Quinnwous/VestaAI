@@ -378,6 +378,140 @@ describe('cache_control op het systeemprompt (prompt caching, item 8.1)', () => 
   })
 })
 
+describe('generateContent — tekstsjabloon-validatie en -herkansing (item 8.2)', () => {
+  const sjabloon: HuisstijlConfig['tekstsjabloon'] = {
+    opening_label: '4SALE!',
+    secties: [
+      { kop: 'WOONCOMFORT', instructie: 'Beschrijf de indeling en de keuken.' },
+      { kop: 'BUITENLEVEN', instructie: 'Beschrijf tuin en buitenruimte.' },
+      { kop: 'LOCATIE', instructie: 'Beschrijf de buurt.' },
+      { kop: 'GOED OM TE WETEN', instructie: 'Korte bulletpoints die beginnen met "- ".' },
+    ],
+    slotzin: 'Enthousiast over deze woning? Neem contact op met ons kantoor. Wij plannen graag een afspraak met je in.',
+    doel_woorden: 480,
+  }
+  const huisstijlMetSjabloon: HuisstijlConfig = {
+    schrijftoon: 'informeel',
+    slogan: '',
+    primaire_kleur: '#0080C8',
+    voorbeelden: [],
+    tekstsjabloon: sjabloon,
+  }
+
+  const inputBasis = {
+    adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement' as const, kamers: 3,
+    oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' as const,
+    vraagprijs: 450000, usps: 'Test', doelgroep: 'Starters',
+  }
+
+  const CONFORME_FUNDA_TEKST = `4SALE!\nEen heerlijke woning.\n\nWOONCOMFORT\nRuime living.\n\nBUITENLEVEN\nZonnige tuin.\n\nLOCATIE\nVlakbij het centrum.\n\nGOED OM TE WETEN\n- Bouwjaar 1920\n\nEnthousiast over deze woning? Neem contact op met ons kantoor. Wij plannen graag een afspraak met je in.`
+  const AFWIJKENDE_FUNDA_TEKST = 'Een heerlijke woning zonder enig sjabloon.'
+
+  it('accepteert direct als funda_tekst het sjabloon al volgt — geen herkansing nodig', async () => {
+    const output = { ...validOutput, funda_tekst: CONFORME_FUNDA_TEKST }
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(output)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    expect(result.funda_tekst).toBe(CONFORME_FUNDA_TEKST)
+  })
+
+  it('herkanst één keer als funda_tekst het sjabloon niet volgt, en accepteert de herstelde versie', async () => {
+    const mockStream = vi.fn()
+      .mockReturnValueOnce(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+      .mockReturnValueOnce(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: CONFORME_FUNDA_TEKST })))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(result.funda_tekst).toBe(CONFORME_FUNDA_TEKST)
+    // De herkansing moet een correctie-instructie mee sturen, geen kale herhaling.
+    const tweedeAanroep = mockStream.mock.calls[1][0] as { messages: { content: string }[] }
+    expect(tweedeAanroep.messages[0].content).toContain('sjabloon')
+  })
+
+  it('accepteert na 2 mislukte pogingen alsnog de output, met een gelogde waarschuwing', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+    expect(warnSpy).toHaveBeenCalledTimes(1)
+    expect(warnSpy.mock.calls[0][0]).toContain('[tekstsjabloon]')
+    warnSpy.mockRestore()
+  })
+
+  it('gebruikt de eerste output als de herkansing geen valide JSON geeft', async () => {
+    const mockStream = vi.fn()
+      .mockReturnValueOnce(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+      .mockReturnValueOnce(streamReturning('dit is geen json'))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(2)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+    warnSpy.mockRestore()
+  })
+
+  it('herkanst niet als de eerste poging het tijdsbudget al opmaakte (Vercel-limiet)', async () => {
+    const { generateContent, SJABLOON_HERKANSING_BUDGET_MS } = await import('./claude')
+    const echteNow = Date.now
+    let t = 1_000_000
+    const nowSpy = vi.spyOn(Date, 'now').mockImplementation(() => t)
+    const mockStream = vi.fn().mockImplementation(() => {
+      t += SJABLOON_HERKANSING_BUDGET_MS + 1
+      return streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST }))
+    })
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const result = await generateContent(inputBasis, huisstijlMetSjabloon, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+    expect(warnSpy.mock.calls[0][0]).toContain('[tekstsjabloon]')
+    warnSpy.mockRestore()
+    nowSpy.mockRestore()
+    expect(Date.now).toBe(echteNow)
+  })
+
+  it('slaat de validatie over zonder geconfigureerd sjabloon (bestaand gedrag ongewijzigd)', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(inputBasis, undefined, mockClient)
+
+    expect(mockStream).toHaveBeenCalledTimes(1)
+    expect(result.funda_tekst).toBe(AFWIJKENDE_FUNDA_TEKST)
+  })
+
+  it('voegt een derde, cachebaar systeemblok toe met de sjabloonstructuur', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: CONFORME_FUNDA_TEKST })))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent({ ...inputBasis, taal: 'nl' }, huisstijlMetSjabloon, mockClient)
+
+    const call = mockStream.mock.calls[0][0] as unknown as GevangenSysteemAanroep
+    expect(call.system).toHaveLength(3)
+    expect(call.system[2].cache_control).toEqual({ type: 'ephemeral' })
+    expect(call.system[2].text).toContain('WOONCOMFORT')
+  })
+})
+
 describe('schrijfKwartaalbericht (item 6.4)', () => {
   const feitenblad = bouwFeitenblad({
     samenvatting: {

@@ -192,7 +192,8 @@ export function InlogFormulier({ branding, slug }: Props) {
       style={{
         ...(branding ? brandingCssVars(branding) : {}),
         minHeight: '100vh',
-        background: '#FBFCFB',
+        // Kantoorlogin: kleurloos grijs (geen groene ondertoon); generiek: VestaAI-basis.
+        background: branding ? '#FAFBFB' : '#FBFCFB',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',

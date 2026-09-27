@@ -6,6 +6,21 @@
 
 ---
 
+### 26-27 sep 2026 (sessie Opus als regisseur + drie Sonnet-agents) — 7.3, 7.4, 8.2, 9.3, 12.2
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 7.3 straal per woning | `StraalKaartPaneel` en de referentiekaart in de waardering op `BasisKaart` (nieuw: `SubjectPin`, `ReferentiePin`, `ReferentiesLaag`, `KaderLaag`; pure filter `lib/straalFilter.ts`). `Slider` kreeg een enkelvoudige modus. Review Opus: vaste zoom 15 sneed de 500 m-cirkel af (op 390 px niet in beeld) en het eigen adres ontbrak → `kaderRondStraal()` in `lib/geo.ts` (gedeeld met de referentiekaart), herkaderen bij schuiven, subjectpin | Sonnet + Opus |
+| 7.4 Leaflet weg | `Verkoopkaart.tsx`, `VerkoopkaartClient.tsx`, `VerkoopkaartExplorer.tsx` (v1) en de `?kaart=v1`-terugval verwijderd; `leaflet`/`react-leaflet`/`@types/leaflet` uit `package.json`. Geen CSP-wijziging nodig (tiles liepen via `img-src https:`). Fase 7 af | Sonnet |
+| 8.2 plaats in de prompt | Het tekstsjabloon is een derde cachebaar systeemblok ná het taalspecifieke basisblok: blok 1 (huisstijl) en 2 (basisprompt) blijven byte-identiek, dus de 8.1-caching blijft intact; als laatste blok weegt de override van de lengte-eisen het zwaarst | Sonnet |
+| 8.2 generiek, geen speciale kop | De bullet-eis bij GOED OM TE WETEN zit in de sectie-instructie van de i4housing-preset, niet hardgecodeerd op die kopnaam — werkt zo voor elk kantoor | Sonnet |
+| 8.2 herkansing met tijdsbudget | Een sjabloonherkansing genereert de hele suite opnieuw (1-3 min). Alleen als de eerste poging < 110 s duurde (`SJABLOON_HERKANSING_BUDGET_MS`), anders accepteren met `[tekstsjabloon]`-waarschuwing — twee volle generaties passen niet in 300 s. Mislukt de herkansing op JSON, dan de eerste output. **Beter (8.3):** alleen `funda_tekst` opnieuw laten schrijven | Opus |
+| 8.2 Engelse slotzin | Nieuw optioneel `engels.slotzin` (admin-veld + i4housing-preset "Excited about this home? …"). Zonder: de EN-generatie vertaalt de Nederlandse slotzin en de validator eist hem niet letterlijk — een Engelse Funda-tekst eindigde anders in het Nederlands | Opus |
+| 8.2 preset nog niet in de database | `repair-i4housing-branding.mjs` alleen dry-run gedraaid (toont het juiste object). Wegschrijven wacht op Quinn | Opus |
+| 9.3 consistentiecontrole | `controleer-huisstijl.mjs` dekt nu dossiers per fase met elke tab, `/woningen` leeg + kaart, accountmenu en feedbacksheet (Radix-portals), `/login/<slug>` en de pdf's (kleuroperatoren in de Flate-streams + metadata, `scripts/lib/vestaGroen.mjs`). Groentinten worden afgeleid uit `tailwind.config.ts`/`tokens.ts`/`globals.css` (tint 90-175°, niet bijna-zwart, ≥ 4/255 spreiding) i.p.v. vijf vaste waarden; ook SVG fill/stroke en verlopen; zichtbare naam "VestaAI" buiten de lockup telt als fout (e-mailadressen niet). Enige vondst: kantoorlogin-achtergrond `#FBFCFB` → `#FAFBFB`. Verder schoon op 390/1280/1920 | Opus |
+| 12.2 e2e | `e2e/`: kantoorlogin (`/login/demo`, `/login/i4housing`), dossier < 5 s via `POST /api/object` (met ongemeten opwarmrun; opruimen alleen na `assertKantoorIsDemo()` en met filter op id + kantoor), waardering n + pdf, kaart zonder CSP-fout, admin-importhistorie, RLS in beide richtingen via REST (transacties + objecten). 22 passed, 5 skipped (content achter `E2E_GENERATE=1`). Geen app-bugs; wel `hasAuth()` in `primitives.spec.ts` en dom-lib in `e2e/tsconfig.json` gerepareerd | Sonnet |
+| Gebruikslimiet midden in een agent | De e2e-agent stopte op de sessielimiet; hervat via SendMessage (werk bleef staan dankzij commit-per-stap). Les: een vastgelopen `next dev` op een vaste worktree-poort overleeft zo'n onderbreking — `lsof -iTCP:<poort>` vóór herstart | Opus |
+
 ### 24 sep 2026 (sessie Opus als regisseur + drie Sonnet-agents) — Buurt & data vóór de demo
 
 | Onderwerp | Besluit | Door |
@@ -422,6 +437,11 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 27 sep 2026 — PR `feat/sessie-26sep` (parallelle Sonnet-agents, Opus-review):
+  **7.3, 7.4 (fase 7 af), 8.2, 9.3, 12.2** — één kaartstack zonder Leaflet,
+  tekstsjabloon-model, uitgebreide huisstijlcheck incl. pdf's, e2e-suite met RLS-test.
+- 26 sep 2026 — PR #29 `feat/sessie-24sep`: **6.4, 7.2, 10.1, 10.2**, Buurt &
+  data gerepareerd, WOZ zelf invullen.
 - 24 sep 2026 — PR `feat/fase-6` (parallelle Sonnet-agents, Opus-review):
   **6.1, 6.2, 6.3, 7.1, 8.1, 9.1, 10.3, 10.4, 10.6, 12.4, 13.1**; zeven migraties
   toegepast na back-up; kantoorkleuren in portals, CSP voor Plausible.

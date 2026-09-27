@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
-import { VerkoopkaartExplorer } from '@/components/VerkoopkaartExplorer'
 import { VerkoopkaartExplorerV2 } from '@/components/VerkoopkaartExplorerV2'
 import { haalEigenVerkopen, dataTotEnMet, MET_COORDINATEN_KOLOMMEN } from '@/lib/transactiesQuery'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
@@ -14,18 +13,13 @@ export const metadata = { title: 'Verkoopkaart' }
  * geïmporteerd (zie /admin/transacties) — geen placeholder meer, gewoon een
  * kaart die zich vult zodra de data er is.
  *
- * Item 7.2: `VerkoopkaartExplorerV2` (poort van `docs/ontwerp/verkoopkaart.html`)
- * is de standaardweergave. `?kaart=v1` houdt de oude Leaflet-explorer
- * (`VerkoopkaartExplorer`/`VerkoopkaartClient`) als terugval — die stack
- * blijft nog even bestaan omdat `StraalKaartPaneel` (item 7.3) 'm nog
- * gebruikt; opruimen is item 7.4. De MapLibre-proof (`VerkoopkaartV2Proof`,
- * item 7.1) is vervallen: overbodig zodra de volledige explorer er is.
+ * `VerkoopkaartExplorerV2` (item 7.2, poort van
+ * `docs/ontwerp/verkoopkaart.html`) is de enige weergave sinds item 7.4: de
+ * oude Leaflet-explorer (`VerkoopkaartExplorer`/`VerkoopkaartClient`, met
+ * `?kaart=v1` als terugval) is opgeruimd, net als `StraalKaartPaneel`s
+ * eigen Leaflet-gebruik — beide draaien nu op `components/kaart/` (MapLibre).
  */
-export default async function VerkoopkaartPage({
-  searchParams,
-}: {
-  searchParams: { kaart?: string }
-}) {
+export default async function VerkoopkaartPage() {
   const supabase = createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
@@ -37,18 +31,6 @@ export default async function VerkoopkaartPage({
     haalEigenVerkopen<TransactieMetCoordinaten>(supabase, MET_COORDINATEN_KOLOMMEN, { metCoordinaten: true }),
     dataTotEnMet(supabase),
   ])
-  const toonV1 = searchParams?.kaart === 'v1'
-
-  if (toonV1) {
-    return (
-      <div>
-        <p style={{ fontSize: 14, color: '#5C6470', margin: '0 0 20px', maxWidth: 620 }}>
-          Eigen verkopen van je kantoor, met live filters op periode, type en prijs.
-        </p>
-        <VerkoopkaartExplorer transacties={transacties} />
-      </div>
-    )
-  }
 
   return <VerkoopkaartExplorerV2 transacties={transacties} dataTotEnMet={dataTot.laatsteVerkoopdatum} />
 }

@@ -20,7 +20,7 @@
  *
  * Tussenfase (bewuste keuze, zie de opleverrapportage van item 2.2): de
  * verkenners (`MarktanalyseExplorer`, `ConcurrentieExplorer`,
- * `TransactiesZoeken`, `VerkoopkaartExplorer`) houden hun bestaande UI/props
+ * `TransactiesZoeken`, `VerkoopkaartExplorerV2`) houden hun bestaande UI/props
  * en krijgen voorlopig de volledige, niet-uitgesloten rijenset via
  * `haalTransactiesVoorVerkenner` — dat lost het PostgREST-plafond van 1.000
  * rijen direct op. De RPC's hierboven zijn gebouwd, getest (vergelijking
