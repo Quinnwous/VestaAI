@@ -203,7 +203,7 @@ opzichte van de rest van [plaats]."
 | # | Klik / actie | Wat ze zien |
 |---|---|---|
 | 1 | Topbar → **Marktanalyse** (`/marktanalyse`) | Eyebrow "Marktinzichten", titel "Marktanalyse", filterbalk bovenaan, badge "Data t/m [datum] · N transacties in de selectie" |
-| 2 | Filterdropdown **Plaats** → alle vijf werkgebiedplaatsen staan standaard al aan; de andere vier uitvinken zodat alleen "Wassenaar" overblijft ⚠️ *niet* zelf op "Wassenaar" klikken — die staat al aan, dus dat vinkt 'm juist uít | Filterknop toont nu "Plaats Wassenaar" (geen losse ×-pil onder de balk — dat krijgen alleen Type/Prijs/Wijken e.d., zie hieronder), cijfers herberekenen (< 100 ms, client-side) |
+| 2 | Filterdropdown **Plaats** → alle vijf werkgebiedplaatsen staan standaard al aan; "Wis" en dan "Wassenaar" aanvinken (of de andere vier uitvinken) zodat alleen "Wassenaar" overblijft ⚠️ *niet* zelf op "Wassenaar" klikken — die staat al aan, dus dat vinkt 'm juist uít | Filterknop toont nu "Plaats Wassenaar" (geen losse ×-pil onder de balk — dat krijgen alleen Type/Prijs/Wijken e.d., zie hieronder), cijfers herberekenen (< 100 ms, client-side) |
 | 3 | Filterdropdown **Woningtype** → vink "Vrijstaand" aan | Filterpil "Type: Vrijstaand" verschijnt onder de filterbalk, cijfers filteren verder |
 | 4 | Gesegmenteerde periodeknop → **"24 mnd"** | 5 tegels met delta t.o.v. de vorige periode: *Mediaan verkoopprijs* (hero) · *Mediaan prijs per m²* · *Mediaan looptijd* · *Verkocht t.o.v. vraagprijs* · *Verkopen in de selectie* |
 | 5 | — | Twee grafiekkaarten naast elkaar: prijs & € per m² per kwartaal, looptijd per kwartaal — lijnen "Wij" (merkkleur) vs. "Markt" (neutraal donker) |
@@ -229,11 +229,9 @@ die je hier ook echt ziet staan."
   terug te vallen buiten "nog een keer proberen".
 - **Grafieken tonen niets bij een te smalle filtercombinatie:** klik "Wis
   alles" (verschijnt zodra er ≥ 2 filterpillen actief zijn, onder de
-  filterbalk) om alle filters terug te zetten. ⚠️ De "Wis"-knop *binnen* de
-  Plaats-dropdown werkt voor dat veld niet (bekende bug, geverifieerd bij de
-  automatische repetitie: leegmaken rondt via de URL af op de niet-lege
-  werkgebied-standaard) — gebruik "Wis alles" of vink de plaatsen handmatig
-  terug aan.
+  filterbalk) om alle filters terug te zetten. De "Wis"-knop *binnen* de
+  Plaats-dropdown maakt de plaatskeuze leeg (= alle plaatsen); tot 27 sep deed
+  hij niets, gefixt in `hooks/useFilterState.ts`.
 
 ---
 

@@ -62,4 +62,15 @@ describe('parseerFilterState', () => {
     // leeg array is geldig voor z.array(z.string()); std blijft anders intact
     expect(parseerFilterState(Schema, DEFAULTS, params).plaatsen).toEqual([])
   })
+
+  it('"Wis" op een multi-select met niet-lege standaard overleeft de round-trip (bug 27 sep: Plaats-filter)', () => {
+    const params = serialiseerFilterState({ ...DEFAULTS, plaatsen: [] }, DEFAULTS)
+    expect(params.has('plaatsen')).toBe(true)
+    expect(parseerFilterState(Schema, DEFAULTS, params).plaatsen).toEqual([])
+  })
+
+  it('een lege multi-select met een lege standaard blijft uit de URL', () => {
+    const leegStd: Filter = { ...DEFAULTS, plaatsen: [] }
+    expect(serialiseerFilterState(leegStd, leegStd).toString()).toBe('')
+  })
 })

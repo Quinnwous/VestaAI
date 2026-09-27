@@ -49,7 +49,10 @@ export function serialiseerFilterState<T extends Record<string, unknown>>(state:
     }
     if (Array.isArray(waarde)) {
       if (Array.isArray(standaard) && arraysGelijk(waarde, standaard)) continue
-      if (waarde.length === 0) continue
+      // Leeg bij een niet-lege standaard ("Wis" op Plaats, standaard = het
+      // werkgebied) moet als `plaatsen=` in de URL, anders vult het parsen de
+      // standaard weer in en doet "Wis" zichtbaar niets (bug 27 sep 2026).
+      if (waarde.length === 0 && !(Array.isArray(standaard) && standaard.length > 0)) continue
       params.set(key, waarde.join(','))
       continue
     }
