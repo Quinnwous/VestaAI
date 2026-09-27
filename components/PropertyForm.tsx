@@ -239,7 +239,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
               borderBottom: `3px solid ${s.id === stap ? 'var(--merk)' : s.id < stap ? 'var(--merk-rand)' : '#E6E9EC'}`,
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#5C6470' : '#5C6470', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#2C3238' : '#5C6470', whiteSpace: 'nowrap' }}>
               {s.id}. {s.label}
               {'kanLater' in s && s.kanLater && (
                 <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#5C6470', textTransform: 'none' }}>
