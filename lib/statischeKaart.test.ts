@@ -171,7 +171,7 @@ describe('haalStatischeKaartAfbeelding', () => {
   it('stelt de tegels samen en snijdt uit op de gevraagde afmetingen', async () => {
     const kader = bepaalKaartKader([SUBJECT, REF_DICHTBIJ], { breedtePx: 320, hoogtePx: 168 })!
     const png = await tegelPng({ r: 240, g: 200, b: 180 })
-    const fetchImpl = vi.fn(async () => new Response(png, { status: 200 })) as unknown as typeof fetch
+    const fetchImpl = vi.fn(async () => new Response(png as unknown as BodyInit, { status: 200 })) as unknown as typeof fetch
 
     const resultaat = await haalStatischeKaartAfbeelding(kader, { fetchImpl })
     expect(resultaat.ok).toBe(true)

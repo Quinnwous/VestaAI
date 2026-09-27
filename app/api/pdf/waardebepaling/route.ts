@@ -2,14 +2,63 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import type * as ReactPDF from '@react-pdf/renderer'
 import React from 'react'
-import { WaardebepalingPdfTemplate } from '@/components/WaardebepalingPdfTemplate'
+import { WaardebepalingPdfTemplate, type KaartVoorPdf } from '@/components/WaardebepalingPdfTemplate'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { bouwBranding, bruikbaarLogo } from '@/lib/branding'
-import { migreerWaarderingJson } from '@/lib/waardering'
+import { migreerWaarderingJson, type WaarderingReferentie } from '@/lib/waardering'
 import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
 import { meldFout } from '@/lib/fouten'
+import { haalTransactieCoordinaten } from '@/lib/transactiesQuery'
+import { bepaalKaartKader, pixelInKader, kaartReferenties, haalStatischeKaartAfbeelding, type Punt } from '@/lib/statischeKaart'
 
 export const runtime = 'nodejs'
+
+/** Zelfde top-6-op-gewicht als de referentietabel in WaardebepalingPdfTemplate.tsx — de
+ * kaart nummert precies die rijen, dus deze selectie moet identiek blijven aan die daar. */
+function top6VanUitkomst(referenties: WaarderingReferentie[]): WaarderingReferentie[] {
+  return [...referenties].sort((a, b) => b.gewicht - a.gewicht).slice(0, 6)
+}
+
+/**
+ * Bouwt de locatiekaart voor de pdf (roadmap § 9, vooruitgehaald voor scène 4
+ * van de demo). Best-effort: elke onderbroken stap (geen coördinaat, tegels
+ * niet op tijd, samenstelfout) geeft `null` terug — nooit de hele pdf laten
+ * falen op de kaart (zelfde robuustheidsregel als CLAUDE.md § verrijking).
+ */
+async function bouwKaartVoorPdf(
+  supabase: ReturnType<typeof createServerSupabaseClient>,
+  subject: { lat: number | null; lng: number | null },
+  top6: WaarderingReferentie[],
+): Promise<KaartVoorPdf | null> {
+  if (subject.lat == null || subject.lng == null) {
+    console.error('[pdf/waardebepaling] kaart: geen coördinaat op het dossier')
+    return null
+  }
+  const subjectPunt: Punt = { lat: subject.lat, lng: subject.lng }
+
+  const coordsById = await haalTransactieCoordinaten(supabase, top6.map(r => r.id))
+  const referenties = kaartReferenties(top6, coordsById)
+
+  const kader = bepaalKaartKader([subjectPunt, ...referenties.map(r => ({ lat: r.lat, lng: r.lng }))])
+  if (!kader) {
+    console.error('[pdf/waardebepaling] kaart: geen kader te bepalen')
+    return null
+  }
+
+  const resultaat = await haalStatischeKaartAfbeelding(kader, { timeoutMs: 3000 })
+  if (!resultaat.ok) {
+    console.error('[pdf/waardebepaling] kaart:', resultaat.reden)
+    return null
+  }
+
+  return {
+    png: resultaat.kaart.png,
+    breedtePx: resultaat.kaart.breedtePx,
+    hoogtePx: resultaat.kaart.hoogtePx,
+    subject: pixelInKader(subjectPunt, kader),
+    referenties: referenties.map(r => ({ ...pixelInKader(r, kader), nummer: r.nummer })),
+  }
+}
 
 /**
  * Waardebepaling-pdf, één pagina (roadmap item 4.7). Rekent niets opnieuw uit —
@@ -46,7 +95,7 @@ export async function GET(req: NextRequest) {
   const service = createServiceSupabaseClient()
   const { data: object } = await service
     .from('objecten')
-    .select('address, input_json, waardering_json, kantoren(name, logo_url, huisstijl_json)')
+    .select('address, lat, lng, input_json, waardering_json, kantoren(name, logo_url, huisstijl_json)')
     .eq('id', objectId)
     .eq('kantoor_id', makelaar.kantoor_id)
     .single()
@@ -66,6 +115,7 @@ export async function GET(req: NextRequest) {
   const kantoorData = object.kantoren as unknown as { name: string; logo_url: string | null; huisstijl_json: Record<string, unknown> | null } | null
   const branding = bouwBranding(kantoorData)
   const logoUrl = await bruikbaarLogo(branding.logoUrl)
+  const kaart = await bouwKaartVoorPdf(supabase, { lat: object.lat, lng: object.lng }, top6VanUitkomst(opslag.uitkomst.referenties))
 
   try {
     const pdf = await renderToBuffer(React.createElement(WaardebepalingPdfTemplate, {
@@ -76,6 +126,7 @@ export async function GET(req: NextRequest) {
       kantoor: { naam: branding.naam, logoUrl, kleur: branding.primair },
       makelaarNaam: makelaar.name,
       opgesteldOp: new Date().toISOString(),
+      kaart,
     }) as React.ReactElement<ReactPDF.DocumentProps>)
 
     const bestandsnaam = `waardebepaling-${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`
