@@ -187,11 +187,61 @@ async function verwachtTekst(page, tekst, { timeout = 8000 } = {}) {
   await page.getByText(tekst).first().waitFor({ state: 'visible', timeout })
 }
 
-/** Opent een FilterDropdown (label = trigger-tekst) en vinkt één item aan, sluit daarna via "Gereed". */
-async function filterAanvinken(page, dropdownLabel, itemLabel) {
+/**
+ * Opent een FilterDropdown (label = trigger-tekst) en vinkt één item aan,
+ * sluit daarna via "Gereed". De checkbox-<input> zelf is visueel verborgen
+ * (`opacity:0`, 0×0 — components/ui/Checkbox.tsx); Playwright ziet 'm dan als
+ * "not stable" en time-out't op een directe klik. De <label> wraps een eigen
+ * <span>{label}</span> zónder het telbadge erbij — dáár klikken (natief
+ * label→input-gedrag) is wél stabiel.
+ *
+ * `overigeUitzetten`: de "Plaats"-filter is niet leeg by default — hij start
+ * met élke plaats uit het werkgebied al aangevinkt (`standaardFilterState`/
+ * `standaardConcurrentieFilter`, plaatsen = werkgebiedPlaatsen). Om écht
+ * alléén `itemLabel` over te houden (zoals het demoscript bedoelt met
+ * "Plaats → kies Wassenaar"), zetten we de genoemde overige plaatsen eerst
+ * uit. **Niet** via de "Wis"-knop: die is voor dit veld kapot (zie het
+ * eindrapport van deze sessie — `hooks/useFilterState.ts` `serialiseerFilterState()`
+ * slaat een leeg array-veld altijd over bij het naar de URL schrijven, dus
+ * `plaatsen: []` wordt nooit in de URL gezet en `parseerFilterState()` valt
+ * bij het ontbrekende param terug op de — niet-lege — standaard; "Wis" doet
+ * voor "Plaats" dus zichtbaar niets). Dit is een reëel app-issue, geen
+ * scriptfout.
+ *
+ * Alle zoekopdrachten binnen de Popover zelf (`.vui-pop`, components/ui/
+ * Popover.tsx), nooit `page.getByText(...)` over de hele pagina: op de
+ * Concurrentie-pagina staat "Vrijstaand" bijvoorbeeld óók als typegroep-
+ * label in de wie-wint-waar-matrix/ranglijst, en die rij is zelf een
+ * klikbaar `role="button"` (opent het concurrentprofiel) — een ongescoopte
+ * klik trof daardoor een matrixcel i.p.v. de checkbox, opende de drawer, en
+ * liet de Popover zelf sluiten (Radix dismisst 'm als "outside interaction"
+ * zodra er een andere overlay opent). `.last()` pakt de meest recent
+ * geopende Popover als er toch meerdere in de DOM zouden staan.
+ */
+async function filterAanvinken(page, dropdownLabel, itemLabel, { overigeUitzetten = [] } = {}) {
   await page.getByRole('button', { name: dropdownLabel, exact: false }).first().click()
-  await page.getByRole('checkbox', { name: itemLabel, exact: false }).first().click()
-  await page.getByRole('button', { name: 'Gereed', exact: true }).first().click()
+  const popover = page.locator('.vui-pop').last()
+  await popover.waitFor({ state: 'visible', timeout: 8000 })
+  for (const overig of overigeUitzetten) {
+    const t = popover.getByText(overig, { exact: true }).first()
+    if ((await t.count()) > 0) await t.click()
+  }
+  const labelTekst = popover.getByText(itemLabel, { exact: true }).first()
+  await labelTekst.waitFor({ state: 'visible', timeout: 8000 })
+  const cb = popover.getByRole('checkbox', { name: itemLabel, exact: false }).first()
+  const staatAlAan = await cb.isChecked().catch(() => false)
+  if (!staatAlAan) await labelTekst.click()
+  await popover.getByRole('button', { name: 'Gereed', exact: true }).first().click()
+}
+
+/** Controleert dat een FilterDropdown-trigger (bv. "Plaats") de verwachte samenvattingstekst toont. */
+async function verwachtFilterSamenvatting(page, dropdownLabel, verwachteTekst) {
+  const knop = page.getByRole('button', { name: dropdownLabel, exact: false }).first()
+  await knop.waitFor({ state: 'visible', timeout: 8000 })
+  const tekst = await knop.innerText()
+  if (!tekst.includes(verwachteTekst)) {
+    throw new Error(`filterknop "${dropdownLabel}" toont niet "${verwachteTekst}" (huidige tekst: ${JSON.stringify(tekst)})`)
+  }
 }
 
 // ── scènes ──
@@ -244,7 +294,7 @@ async function scene1Rest(page, fouten) {
   })
 }
 
-async function scene2(page, fouten) {
+async function scene2(page, fouten, werkgebiedPlaatsen) {
   let heeftData = true
   await stap(page, fouten, 'scene2', '1-naar-marktanalyse', async () => {
     await ga(page, '/marktanalyse')
@@ -265,8 +315,14 @@ async function scene2(page, fouten) {
   if (!heeftData) return
 
   await stap(page, fouten, 'scene2', '2-filter-plaats-wassenaar', async () => {
-    await filterAanvinken(page, 'Plaats', 'Wassenaar')
-    await verwachtTekst(page, 'Plaats: Wassenaar')
+    // "Plaats" krijgt geen losse ×-pil onder de filterbalk (anders dan Type/
+    // Prijs/Wijken e.d.) — de selectie toont alleen inline in de triggerknop
+    // zelf. Demoscript-tekst "Filterpil 'Plaats: Wassenaar' verschijnt" is op
+    // dat punt onnauwkeurig (zie eindrapport) — hier getoetst op de knoptekst.
+    await filterAanvinken(page, 'Plaats', 'Wassenaar', {
+      overigeUitzetten: werkgebiedPlaatsen.filter((p) => p !== 'Wassenaar'),
+    })
+    await verwachtFilterSamenvatting(page, 'Plaats', 'Wassenaar')
   })
   await stap(page, fouten, 'scene2', '3-filter-woningtype-vrijstaand', async () => {
     await filterAanvinken(page, 'Woningtype', 'Vrijstaand')
@@ -312,6 +368,11 @@ async function scene3(page, fouten) {
   if (!heeftMatrix) return
 
   await stap(page, fouten, 'scene3', '2-filter-en-matrix', async () => {
+    // Let op: Concurrentie's "Wis" reset naar `standaardConcurrentieFilter`
+    // (dus wéér het volledige werkgebied, niet leeg zoals bij Marktanalyse —
+    // lib/concurrentie.ts) — isoleert Wassenaar hier dus niet. Geen harde
+    // assertie op "alleen Wassenaar" hieronder; alleen dat filteren zonder
+    // fouten werkt.
     await filterAanvinken(page, 'Plaats', 'Wassenaar')
     await filterAanvinken(page, 'Woningtype', 'Vrijstaand')
     await verwachtTekst(page, /marktaandeel/i)
@@ -442,23 +503,31 @@ async function scene5(page, fouten, dossier) {
   })
 
   await stap(page, fouten, 'scene5', '8-leren-van-bewerkingen', async () => {
-    await page
-      .getByText('Leren van je bewerkingen', { exact: false })
-      .first()
-      .scrollIntoViewIfNeeded()
-      .catch(() => {})
-    const teWeinig = await page
-      .getByText('nog te weinig om te analyseren', { exact: false })
-      .first()
-      .isVisible()
-      .catch(() => false)
-    if (teWeinig) {
-      console.log('   ℹ️  "Leren van je bewerkingen" toont "te weinig om te analyseren" — vooraf gezette bewerkingen ontbreken (zie demoscript-terugvalplan)')
-      return
-    }
+    const kop = page.getByText('Leren van je bewerkingen', { exact: false }).first()
+    await kop.waitFor({ state: 'visible', timeout: 8000 })
+    await kop.scrollIntoViewIfNeeded().catch(() => {})
+    // Drie mogelijke staten (components/StijlLerenPaneel.tsx): 0 bewerkingen
+    // (platte tekst), 1..minimum-1 ("te weinig om te analyseren") of
+    // ≥ minimum (knop "Analyseer N bewerkingen"). Alleen de laatste is
+    // klikbaar — en die klikken we hier niet aan ("Analyseer" kost een
+    // Claude-call). Dit is verwacht/legitiem als het demo-dossier nog geen
+    // vooraf gezette bewerkingen heeft (zie demoscript-voorbereiding); geen
+    // van de drie staten is dus een fout op zichzelf.
     const analyseKnop = page.getByRole('button', { name: /^Analyseer/ })
-    await analyseKnop.first().waitFor({ state: 'visible', timeout: 5000 })
-    // NIET klikken: "Analyseer" kost een Claude-call.
+    if ((await analyseKnop.count()) > 0) {
+      console.log('   ℹ️  "Analyseer N bewerkingen" staat klaar (≥ minimum bewerkingen) — niet aangeklikt, kost een Claude-call')
+    } else {
+      const teWeinig = await page
+        .getByText('nog te weinig om te analyseren', { exact: false })
+        .first()
+        .isVisible()
+        .catch(() => false)
+      console.log(
+        teWeinig
+          ? '   ℹ️  "Leren van je bewerkingen" toont "te weinig om te analyseren" — vooraf gezette bewerkingen ontbreken (zie demoscript-terugvalplan)'
+          : '   ℹ️  "Leren van je bewerkingen" toont 0 bewerkingen — dossier heeft nog geen vooraf gezette tekstbewerkingen',
+      )
+    }
   })
 }
 
@@ -511,9 +580,14 @@ async function main() {
   let foutenAantal = 0
   try {
     const service = serviceClient()
-    const { data: kantoor, error: kantoorFout } = await service.from('kantoren').select('id,name').eq('slug', KANTOOR_SLUG).maybeSingle()
+    const { data: kantoor, error: kantoorFout } = await service
+      .from('kantoren')
+      .select('id,name,instellingen_json')
+      .eq('slug', KANTOOR_SLUG)
+      .maybeSingle()
     if (kantoorFout) throw new Error(`kantoor-lookup mislukt: ${kantoorFout.message}`)
     if (!kantoor) throw new Error(`kantoor met slug "${KANTOOR_SLUG}" niet gevonden`)
+    const werkgebiedPlaatsen = kantoor.instellingen_json?.werkgebied?.plaatsen ?? ['Wassenaar']
 
     async function eersteDossier(fase, extra = {}) {
       let q = service.from('objecten').select('id,address,fase,content_status').eq('kantoor_id', kantoor.id).eq('fase', fase)
@@ -541,7 +615,7 @@ async function main() {
       const fouten = maakFoutentracker(page)
 
       await scene1Rest(page, fouten)
-      await scene2(page, fouten)
+      await scene2(page, fouten, werkgebiedPlaatsen)
       await scene3(page, fouten)
       await scene4(page, fouten, verkoopadviesDossier)
       await scene5(page, fouten, inVerkoopKlaarDossier)
