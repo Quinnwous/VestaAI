@@ -23,7 +23,7 @@
  * (6.1-6.3, 23-24 sep) heeft de verkenners al op de RPC's aangesloten:
  * `MarktanalyseExplorer`/`ConcurrentieExplorer`/`TransactiesZoeken` gebruiken
  * uitsluitend patroon 2 (RPC's, incl. `zoekTransacties`) voor hun hoofddata;
- * `VerkoopkaartExplorerV2`/`StraalKaartPaneel` gebruiken patroon 1
+ * `VerkoopkaartExplorerV2`/de dossierkaart (`WaarderingKaart`) gebruiken patroon 1
  * (`haalEigenVerkopen`, want de kaart toont alléén eigen verkopen). Geen
  * levende aanroeper gebruikt `haalTransactiesVoorVerkenner` nog — die blijft
  * staan als referentie-implementatie voor `lib/transactiesQuery.rpc.test.ts`

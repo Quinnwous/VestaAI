@@ -3,7 +3,7 @@
 /**
  * StraalLaag — cirkel rond een middelpunt (bv. een woningadres) als
  * GeoJSON-vlak/rand-laag op een `<BasisKaart>`, straal in meters
- * (`lib/kaart.ts` `cirkelPolygoon`). Voor item 7.3 (StraalKaartPaneel) en
+ * (`lib/kaart.ts` `cirkelPolygoon`). Voor de laag "Eigen verkopen" van de dossierkaart (`WaarderingKaart`) en
  * de referentiekaart in de waardering.
  *
  * Gebruik: als kind van <BasisKaart>, bv.

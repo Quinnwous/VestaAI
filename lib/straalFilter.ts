@@ -1,6 +1,6 @@
 /**
  * Pure filterlogica voor de straal-uitsnede rond een woningadres (item 7.3,
- * docs/roadmap.md § Fase 7 — `StraalKaartPaneel`, en de referentiekaart in de
+ * docs/roadmap.md § Fase 7 — laag "Eigen verkopen" van de dossierkaart; de referentiekaart in de
  * waardering gebruikt dezelfde afstandsberekening via lib/waardering.ts).
  * Los van React/MapLibre, dus met vitest te testen (lib/straalFilter.test.ts).
  * Transacties zonder coördinaten worden overgeslagen — die kunnen sowieso

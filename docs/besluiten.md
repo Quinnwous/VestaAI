@@ -6,6 +6,19 @@
 
 ---
 
+### 27 sep 2026 (derde ronde, vier Sonnet-agents) — 12.5a, één dossierkaart, minikaart, backlog-poets
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 12.5a demoscript | `docs/demoscript.md`: klik-voor-klik per scène met terugvalplan, labels geverifieerd in de code. Geschreven op `/login/demo` (~8.000 transacties): het i4housing-kantoor heeft nul transacties tot fase 5, dus alle marktinzichten tonen daar de lege staat. Overzetten naar `/login/i4housing` zodra fase 5 live is | Sonnet |
+| § 2 bijgesteld | Scène 1 zonder "deze week" (geschrapt onder 10.4) en met merkverloop i.p.v. teamfoto zolang 12.1 open is; knop heet "Kwartaalbericht schrijven" | Opus |
+| Eén dossierkaart | `StraalKaartPaneel` verwijderd; de kaart in `WaarderingKaart.tsx` (via `WaardebepalingPaneel`) heeft twee lagen: "Referenties (n)" en "Eigen verkopen (n)" met straal 250/500/1000 m in de kaartkop (niet óp de kaart: rechtsboven zitten de zoomknoppen). Standaardlaag via `bepaalStandaardLaag()` (`lib/dossierKaart.ts`): referenties, tenzij die er niet zijn maar eigen verkopen wel. Eén MapLibre-instantie per dossier | Sonnet |
+| NL-zoomknoppen | `locale` op de `maplibregl.Map` ("Inzoomen", "Uitzoomen", "Noorden boven") | Sonnet |
+| Minikaart transactie-sheet | `TransactieMinikaart` (190 px, `direct`, geen scrollzoom) met één pin via `ReferentiesLaag` zonder referenties. Coördinaat per geopende rij via `haalTransactieCoordinaat()` op de view (RPC `transacties_zoeken` levert geen lat/lng; uitbreiden = migratie), gecachet per id | Sonnet |
+| Extra's met documenten | `genereerExtraContent` krijgt de `anthropic_file_id`'s (max 3) mee, zoals kern-call en hergenereer; zonder documenten blijft het gewone (niet-beta) pad | Sonnet |
+| Publieke footer | `components/PublicFooter.tsx` op `/contact`, `/voorwaarden`, `/over-ons`, `/privacy`, `/vertrouwen`: tagline en grijs (`#626C67`) gelijk aan de landing. `/vertrouwen` nu formeel ("u") | Sonnet |
+| Huisstijl-hook | Regex vangt alleen kleur-fallbacks (hex, `rgb(`/`rgba(`/`hsl(`, kale triplet `26,107,69`), geen radius/schaduw/gewicht meer | Sonnet + Opus |
+
 ### 27 sep 2026 (tweede ronde, vier Sonnet-agents) — 8.4, intake, kaarten lazy, transacties
 
 | Onderwerp | Besluit | Door |
@@ -472,6 +485,9 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 27 sep 2026 — PR `feat/sessie-27sep-c`: **12.5a** demoscript, één dossierkaart
+  (referenties + eigen verkopen als lagen), minikaart in de transactie-sheet,
+  backlog-poets (extra's met documenten, publieke footer, hook-regex, smoke-e2e).
 - 27 sep 2026 — PR `feat/sessie-27sep-b`: **8.4, 10.5** (fase 10 af), intake stap 5
   opgeruimd, kaarten lazy in het dossier, transacties-terugval.
 - 27 sep 2026 — PR `feat/sessie-27sep`: **8.3, 9.2, 12.3, 13.2** (fase 9 en 13
