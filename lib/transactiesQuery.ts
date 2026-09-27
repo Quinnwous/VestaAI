@@ -18,14 +18,18 @@
  * Elke functie neemt een sessie-gebonden Supabase-client (`createServerSupabaseClient()`)
  * als parameter, zodat RLS de kantoorscheiding regelt — nooit de service-client.
  *
- * Tussenfase (bewuste keuze, zie de opleverrapportage van item 2.2): de
- * verkenners (`MarktanalyseExplorer`, `ConcurrentieExplorer`,
- * `TransactiesZoeken`, `VerkoopkaartExplorerV2`) houden hun bestaande UI/props
- * en krijgen voorlopig de volledige, niet-uitgesloten rijenset via
- * `haalTransactiesVoorVerkenner` — dat lost het PostgREST-plafond van 1.000
- * rijen direct op. De RPC's hierboven zijn gebouwd, getest (vergelijking
- * tegen de pure functies) en < 300 ms op de fixture, maar worden pas in fase
- * 6 (visuele v2) in de pagina's zelf aangesloten.
+ * ⚠️ Bijgewerkt 27 sep 2026 (item 12.3, performance): de tussenfase hierboven
+ * beschreef de situatie van item 2.2 (17 sep) en was sindsdien stale. Fase 6
+ * (6.1-6.3, 23-24 sep) heeft de verkenners al op de RPC's aangesloten:
+ * `MarktanalyseExplorer`/`ConcurrentieExplorer`/`TransactiesZoeken` gebruiken
+ * uitsluitend patroon 2 (RPC's, incl. `zoekTransacties`) voor hun hoofddata;
+ * `VerkoopkaartExplorerV2`/`StraalKaartPaneel` gebruiken patroon 1
+ * (`haalEigenVerkopen`, want de kaart toont alléén eigen verkopen). Geen
+ * levende aanroeper gebruikt `haalTransactiesVoorVerkenner` nog — die blijft
+ * staan als referentie-implementatie voor `lib/transactiesQuery.rpc.test.ts`
+ * (vergelijkt de RPC's tegen de pure range-lus) én als het fundament van de
+ * in-memory terugval in `zoekTransacties()` hieronder (bij `PGRST202`, de
+ * RPC ontbreekt op een omgeving zonder de migratie).
  */
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { TransactieFilterSchema, type TransactieFilter } from './schemas'
@@ -37,6 +41,7 @@ import type {
   MarktaandeelPunt, SegmentWinnaar,
   RanglijstRij, WijVsMarkt, AandeelJaarRij, MatrixCel, ConcurrentProfielV2,
 } from './concurrentie'
+import { filterEigenRijen, type MarktanalyseFilterV2 } from './marktanalyse'
 
 /** Sessie-gebonden Supabase-client (RLS actief) — nooit de service-client. */
 export type SessieClient = ReturnType<typeof createServerSupabaseClient> | SupabaseClient
@@ -493,10 +498,11 @@ export type Sortering =
   | 'prijs_desc' | 'prijs_asc'
   | 'looptijd_desc' | 'looptijd_asc'
   // Item 6.2 ("Transacties opzoeken v2"): extra kolomsortering voor de
-  // DataTable — vereist de additieve migratie
-  // supabase/migrations/20260923180000_transacties_zoeken_v2.sql (nog niet
-  // toegepast). Tot dan valt de RPC voor deze sleutels stil terug op
-  // ongesorteerd (`id asc`) i.p.v. een fout te geven — zie dat bestand.
+  // DataTable — toegevoegd door de additieve migratie
+  // supabase/migrations/20260923180000_transacties_zoeken_v2.sql, **toegepast**
+  // (geverifieerd 27 sep 2026, item 12.3: `pg_get_functiondef` op de live
+  // database bevat alle sleutels hieronder). Was ooit conditioneel op de
+  // migratie; nu gewoon actief.
   | 'adres_asc' | 'adres_desc'
   | 'plaats_asc' | 'plaats_desc'
   | 'type_asc' | 'type_desc'
@@ -507,7 +513,16 @@ export type Sortering =
 
 export type ZoekTransactiesResultaat = { rijen: TransactieRow[]; totaal: number }
 
-/** RPC `transacties_zoeken` — gepagineerd + gesorteerd, geeft ook het totaal mee (voorbij de PostgREST-limiet van 1.000). */
+/**
+ * RPC `transacties_zoeken` — gepagineerd + gesorteerd, geeft ook het totaal
+ * mee (voorbij de PostgREST-limiet van 1.000). Valt bij `PGRST202` (de
+ * functie ontbreekt — bv. een omgeving waar de migratie nog niet is
+ * toegepast) terug op `zoekTransactiesTerugval()`: dezelfde filter-/sorteer-/
+ * pagina-semantiek, maar client-side op de volledige rijenset (§ 3.1
+ * patroon 1). Zo kan code die op deze functie leunt veilig gemerged worden
+ * vóórdat een migratie live is — precies de situatie die deze functie zelf
+ * ooit was (zie het bestandscommentaar hierboven).
+ */
 export async function zoekTransacties(
   client: SessieClient,
   filters: TransactieFilter | undefined,
@@ -519,9 +534,107 @@ export async function zoekTransacties(
     p_limiet: opties.limiet ?? 50,
     p_offset: opties.offset ?? 0,
   })
-  if (error) throw new Error(`zoekTransacties: ${error.message}`)
+  if (error) {
+    if (error.code === 'PGRST202') return zoekTransactiesTerugval(client, filters, opties)
+    throw new Error(`zoekTransacties: ${error.message}`)
+  }
   const resultaat = (data ?? { totaal: 0, rijen: [] }) as { totaal: number; rijen: TransactieRow[] }
   return { rijen: resultaat.rijen ?? [], totaal: resultaat.totaal ?? 0 }
+}
+
+let zoekTransactiesTerugvalGelogd = false
+
+/** `TransactieFilter` (RPC-vorm) → `MarktanalyseFilterV2` (voor `filterEigenRijen()`, lib/marktanalyse.ts) — dezelfde velden, alleen de naamgeving verschilt. */
+function transactieFilterNaarMarktanalyseFilter(f: TransactieFilter): MarktanalyseFilterV2 {
+  return {
+    plaatsen: f.plaatsen ?? [],
+    wijken: f.wijken ?? [],
+    typen: f.typen ?? [],
+    datumVan: f.datum_van,
+    datumTot: f.datum_tot,
+    prijsMin: f.prijs_min,
+    prijsMax: f.prijs_max,
+    oppMin: f.opp_min,
+    oppMax: f.opp_max,
+    bouwjaarMin: f.bouwjaar_min,
+    bouwjaarMax: f.bouwjaar_max,
+    energielabels: f.energielabels ?? [],
+    kamersMin: f.kamers_min,
+    perceelMin: f.perceel_min,
+    perceelMax: f.perceel_max,
+    tuin: f.tuin,
+    garage: f.garage,
+    tovVraagprijs: f.tov_vraagprijs,
+  }
+}
+
+/** Comparator die de `order by` van de RPC `transacties_zoeken` spiegelt (nulls last, `id asc` als laatste tiebreaker). */
+function terugvalComparator(sortering: Sortering): (a: TransactieRow, b: TransactieRow) => number {
+  const richting = sortering.endsWith('_asc') ? 1 : -1
+  const sleutel: (r: TransactieRow) => string | number | null = sortering.startsWith('prijs')
+    ? r => r.verkoopprijs
+    : sortering.startsWith('looptijd')
+      ? r => r.looptijd_dagen
+      : sortering.startsWith('adres')
+        ? r => r.adres
+        : sortering.startsWith('plaats')
+          ? r => `${r.plaats ?? ''}|${r.wijk ?? ''}`
+          : sortering.startsWith('type')
+            ? r => r.woningtype_sub
+            : sortering.startsWith('opp')
+              ? r => r.woonoppervlak_m2
+              : sortering.startsWith('m2')
+                ? r => r.prijs_m2
+                : sortering.startsWith('ratio')
+                  ? r => (r.verkoopprijs != null && r.vraagprijs != null && r.vraagprijs !== 0 ? ((r.verkoopprijs - r.vraagprijs) / r.vraagprijs) * 100 : null)
+                  : sortering.startsWith('verkochtdoor')
+                    ? r => (r.eigen_verkoop ? '' : (r.verkopend_kantoor_norm ?? r.verkopend_kantoor ?? ''))
+                    : r => r.verkoopdatum
+  return (a, b) => {
+    const av = sleutel(a)
+    const bv = sleutel(b)
+    const idVergelijk = a.id < b.id ? -1 : a.id > b.id ? 1 : 0
+    if (av == null && bv == null) return idVergelijk
+    if (av == null) return 1
+    if (bv == null) return -1
+    if (av < bv) return -1 * richting
+    if (av > bv) return 1 * richting
+    return idVergelijk
+  }
+}
+
+/**
+ * Terugval voor `zoekTransacties()` als de RPC ontbreekt: dezelfde
+ * `transacties_gefilterd`-semantiek client-side via `filterEigenRijen()`
+ * (plaats/wijk/type/datum/prijs/opp/bouwjaar/energielabel/kamers/perceel/
+ * tuin/garage/t.o.v. vraagprijs), plus de velden die `filterEigenRijen` niet
+ * dekt (`alleen_eigen`, `kantoren`, `looptijd_max`, `zoek` — zelfde patroon
+ * als `filtreerEigenVoorExport()` in lib/transactiesZoeken.ts), gesorteerd
+ * met `terugvalComparator()` en client-side gepagineerd. Logt één keer.
+ */
+async function zoekTransactiesTerugval(
+  client: SessieClient,
+  filters: TransactieFilter | undefined,
+  opties: { sortering?: Sortering; limiet?: number; offset?: number },
+): Promise<ZoekTransactiesResultaat> {
+  if (!zoekTransactiesTerugvalGelogd) {
+    zoekTransactiesTerugvalGelogd = true
+    console.warn('[transacties] RPC ontbreekt, terugval')
+  }
+  const f = metFilters(filters)
+  const alle = await haalTransactiesVoorVerkenner<TransactieRow>(client, ALLE_TRANSACTIE_KOLOMMEN)
+  let gefilterd = filterEigenRijen(alle, transactieFilterNaarMarktanalyseFilter(f))
+  if (f.alleen_eigen) gefilterd = gefilterd.filter(r => r.eigen_verkoop)
+  if (f.kantoren?.length) gefilterd = gefilterd.filter(r => r.verkopend_kantoor != null && f.kantoren!.includes(r.verkopend_kantoor))
+  if (f.looptijd_max != null) gefilterd = gefilterd.filter(r => r.looptijd_dagen != null && r.looptijd_dagen <= f.looptijd_max!)
+  if (f.zoek?.trim()) {
+    const q = f.zoek.trim().toLowerCase()
+    gefilterd = gefilterd.filter(r => r.adres.toLowerCase().includes(q))
+  }
+  const gesorteerd = [...gefilterd].sort(terugvalComparator(opties.sortering ?? 'verkoopdatum_desc'))
+  const offset = opties.offset ?? 0
+  const limiet = opties.limiet ?? 50
+  return { rijen: gesorteerd.slice(offset, offset + limiet), totaal: gesorteerd.length }
 }
 
 type PrijsindexRpcRij = { kwartaal: string; n: number; mediaan_m2: number | null }
