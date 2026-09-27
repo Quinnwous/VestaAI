@@ -19,8 +19,6 @@
  * - "Looptijd (maximaal)" is een segmented control (Alle/30/90/180 dgn) i.p.v.
  *   een eenzijdige schuiver — `RangeSlider` is tweezijdig, een losse
  *   eenzijdige variant leek de moeite niet waard voor één filter.
- * - Minikaart in de Sheet is een statische placeholder: de MapLibre-
- *   `BasisKaart` komt uit item 7.1 en is nog niet gemerged.
  * - "Toon op kaart" (prototype) is weggelaten i.p.v. een knop die niets doet
  *   — komt terug zodra 7.1 gemerged is.
  * - "Gebruik als referentie" werkt op de ene transactie die in de Sheet open
@@ -54,7 +52,9 @@ import type { TransactieRow } from '@/lib/supabase'
 import type { PlaatsWijkRij, ZoekTransactiesResultaat, MarktanalyseSamenvatting } from '@/lib/transactiesQuery'
 import { haalTransactiesData } from '@/app/(app)/marktanalyse/transacties/actions'
 import { lijstEigenDossiers, type DossierOptie } from '@/app/(app)/marktanalyse/transacties/dossier-actions'
+import { haalTransactieCoordinaatActie } from '@/app/(app)/marktanalyse/transacties/coordinaat-actions'
 import { voegReferentiesToe } from '@/app/(app)/object/[id]/waardering-actions'
+import { TransactieMinikaart, type MinikaartStatus } from '@/components/TransactieMinikaart'
 
 const ENERGIELABELS = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
 const MIN_N_VERGELIJKING = 6
@@ -290,6 +290,28 @@ export function TransactiesZoeken({
     return () => document.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sheetRij, rijen])
+
+  // ── Minikaart in de Sheet: coördinaat per id, opgehaald zodra de sheet
+  // opent (niet voor de hele pagina — zie coordinaat-actions.ts). Cache per
+  // id zodat op/neer bladeren (blader()) een eerder bezocht adres niet
+  // opnieuw ophaalt. `null` in de cache = wél opgehaald, geen (geldige)
+  // coördinaat gevonden ("Locatie onbekend"), niet "nog aan het laden".
+  const [coordCache, setCoordCache] = useState<Record<string, { lat: number; lng: number } | null>>({})
+  useEffect(() => {
+    if (!sheetRij || sheetRij.id in coordCache) return
+    let geannuleerd = false
+    haalTransactieCoordinaatActie(sheetRij.id)
+      .then(res => { if (!geannuleerd) setCoordCache(c => ({ ...c, [sheetRij.id]: res })) })
+      .catch(() => { if (!geannuleerd) setCoordCache(c => ({ ...c, [sheetRij.id]: null })) })
+    return () => { geannuleerd = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sheetRij?.id])
+  const minikaartStatus: MinikaartStatus = !sheetRij || !(sheetRij.id in coordCache)
+    ? 'laden'
+    : coordCache[sheetRij.id]
+      ? 'ok'
+      : 'onbekend'
+  const minikaartCoordinaat = sheetRij ? (coordCache[sheetRij.id] ?? null) : null
 
   // ── "Gebruik als referentie" (item 4.4) — werkt op de open Sheet-rij ──
   const [dossierModalOpen, setDossierModalOpen] = useState(false)
@@ -632,7 +654,14 @@ export function TransactiesZoeken({
           )
         }
       >
-        {sheetRij && <SheetInhoud rij={sheetRij} kantoorNaam={kantoorNaam} />}
+        {sheetRij && (
+          <SheetInhoud
+            rij={sheetRij}
+            kantoorNaam={kantoorNaam}
+            minikaartStatus={minikaartStatus}
+            minikaartCoordinaat={minikaartCoordinaat}
+          />
+        )}
       </Sheet>
 
       {dossierModalOpen && (
@@ -756,60 +785,22 @@ function SheetSectie({ titel, children }: { titel: string; children: React.React
   )
 }
 
-/** Deterministische pseudo-positie uit het transactie-id — géén echte coördinaat (die staan alleen op `transacties_met_coordinaten`, hier niet opgehaald). Puur voor een levendige placeholder tot 7.1 (`BasisKaart`, MapLibre) gemerged is. */
-function pseudoPositie(id: string): { x: number; y: number } {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) hash = (hash * 31 + id.charCodeAt(i)) >>> 0
-  return { x: 12 + (hash % 76), y: 14 + ((hash >> 8) % 62) }
-}
-
-function MinikaartPlaceholder({ rij }: { rij: TransactieRow }) {
-  const { x, y } = pseudoPositie(rij.id)
-  return (
-    <div
-      title="Kaartweergave volgt zodra item 7.1 (BasisKaart) gemerged is"
-      style={{
-        position: 'relative', height: 118, borderRadius: 'var(--merk-radius-md, 12px)', overflow: 'hidden',
-        border: `1px solid ${colors.border}`,
-        background: 'radial-gradient(140px 100px at 28% 22%, rgba(var(--merk-rgb, 26,107,69),.16), transparent 70%), linear-gradient(135deg, #EAF2F7, #F6FAFC)',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute', inset: 0,
-          backgroundImage:
-            'repeating-linear-gradient(0deg, rgba(20,24,27,.05) 0 1px, transparent 1px 27px), repeating-linear-gradient(90deg, rgba(20,24,27,.05) 0 1px, transparent 1px 27px)',
-        }}
-      />
-      <div style={{ position: 'absolute', left: `${x}%`, top: `${y}%`, width: 22, height: 27, marginLeft: -11, marginTop: -27 }}>
-        <svg viewBox="0 0 26 32" style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 2px 3px rgba(20,24,27,.28))' }}>
-          <circle cx={13} cy={13} r={15} fill="var(--merk)" opacity={0.16} />
-          <path d="M13 2.5 23.5 13 13 23.5 2.5 13Z" fill="none" stroke="var(--merk-accent)" strokeWidth={2} />
-          <path d="M13 6.5 19.5 13 13 19.5 6.5 13Z" fill="var(--merk)" />
-          <circle cx={13} cy={13} r={2.1} fill="#fff" />
-        </svg>
-      </div>
-      {rij.wijk && (
-        <span
-          style={{
-            position: 'absolute', left: 10, bottom: 10, fontSize: 11, fontWeight: 800, color: 'var(--merk-diep)',
-            background: 'rgba(255,255,255,.88)', padding: '3px 10px', borderRadius: 'var(--merk-radius-pill, 9999px)',
-            boxShadow: '0 1px 3px rgba(20,24,27,.12)',
-          }}
-        >
-          {rij.wijk}
-        </span>
-      )}
-    </div>
-  )
-}
-
-function SheetInhoud({ rij, kantoorNaam }: { rij: TransactieRow; kantoorNaam: string }) {
+function SheetInhoud({
+  rij,
+  kantoorNaam,
+  minikaartStatus,
+  minikaartCoordinaat,
+}: {
+  rij: TransactieRow
+  kantoorNaam: string
+  minikaartStatus: MinikaartStatus
+  minikaartCoordinaat: { lat: number; lng: number } | null
+}) {
   const ratio = ratioTovVraagprijs(rij)
   return (
     <div>
       <div style={{ marginBottom: 4 }}>
-        <MinikaartPlaceholder rij={rij} />
+        <TransactieMinikaart status={minikaartStatus} coordinaat={minikaartCoordinaat} adres={rij.adres} />
       </div>
       <SheetSectie titel="Woning">
         {veld('Plaats', rij.plaats ?? '—')}
