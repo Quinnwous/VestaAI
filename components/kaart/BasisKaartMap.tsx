@@ -12,14 +12,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 import { pdokPastelStijl, type Coord } from '@/lib/kaart'
 import { KaartContext } from './KaartContext'
 
-export function BasisKaartMap({
-  center = [4.4025, 52.1443],
-  zoom = 13,
-  bounds,
-  hoogte = 480,
-  scrollZoom = true,
-  children,
-}: {
+export interface BasisKaartMapProps {
   /** [lng, lat] — alleen gebruikt als er geen `bounds` is. */
   center?: Coord
   zoom?: number
@@ -28,7 +21,16 @@ export function BasisKaartMap({
   hoogte?: number | string
   scrollZoom?: boolean
   children?: ReactNode
-}) {
+}
+
+export function BasisKaartMap({
+  center = [4.4025, 52.1443],
+  zoom = 13,
+  bounds,
+  hoogte = 480,
+  scrollZoom = true,
+  children,
+}: BasisKaartMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null)
 
