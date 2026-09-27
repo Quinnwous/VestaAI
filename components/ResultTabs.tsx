@@ -348,7 +348,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             </div>
           )}
           {isEn && (
-            <span style={{ fontSize: 11.5, color: '#98A0A6' }}>
+            <span style={{ fontSize: 11.5, color: '#5C6470' }}>
               Alleen ter inzage — bewerken kan op de NL-versie
             </span>
           )}
@@ -390,7 +390,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                       onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
                     >
                       <span>{item.label}</span>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#98A0A6' : heeftInhoud ? 'var(--merk)' : '#98A0A6' }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#5C6470' : heeftInhoud ? 'var(--merk)' : '#5C6470' }}>
                         {bezig ? 'Bezig…' : heeftInhoud ? '✓ Bekijk' : 'Genereren'}
                       </span>
                     </button>
@@ -439,7 +439,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           )}
           <button
             onClick={handleReset}
-            style={{ fontSize: 14, color: '#98A0A6', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ fontSize: 14, color: '#5C6470', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
             {onResetHref
               ? (isEn ? '← Back to overview' : '← Terug naar overzicht')
@@ -458,7 +458,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
-            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk)' : '#98A0A6', transition: 'all .15s', marginBottom: -1 }}
+            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk)' : '#5C6470', transition: 'all .15s', marginBottom: -1 }}
           >
             {tab.label}
           </button>
