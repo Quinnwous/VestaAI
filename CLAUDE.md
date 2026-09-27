@@ -33,6 +33,11 @@
 > Quinn daarna "ga door", dan hervat Claude zonder te vragen élke onderbroken agent via
 > SendMessage (zelfde agent, zelfde worktree) en maakt de ronde af — nooit een nieuwe agent
 > starten voor half werk.
+> **Doorlopende rondes (Quinn 27 sep 2026):** is een ronde afgerond en live, dan start Claude
+> meteen de volgende ronde uit `docs/roadmap.md` § Stand van zaken (volgende items, nul
+> bestandsoverlap, weer met agents) — niet wachten op Quinn. Alleen stoppen bij iets
+> onomkeerbaars (migratie die echte data raakt, verwijderen, betaalde API-rondes) of als
+> er geen bouwbaar item meer is zonder input van Quinn; dat dan in één bericht melden.
 >
 > **Push/merge/live — automatisch aan het einde van elke ronde (besluit Quinn 17 sep,
 > aangescherpt 26 sep 2026, geldt tot hij anders zegt):** tijdens een ronde alleen lokaal
