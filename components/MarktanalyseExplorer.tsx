@@ -54,6 +54,13 @@ function bereikGelijk(a: [number, number], b: [number, number]) {
   return a[0] === b[0] && a[1] === b[1]
 }
 
+/** Ordervrije vergelijking voor de Plaats-filter (checkbox-toggles kunnen de volgorde wijzigen zonder dat de selectie inhoudelijk afwijkt van de standaard). */
+function plaatsenGelijk(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false
+  const bSet = new Set(b)
+  return a.every(p => bSet.has(p))
+}
+
 /** Voegt markt/wij/(segment B)-kwartaalreeksen samen tot één rij-per-kwartaal-dataset voor recharts. */
 function samenvoegVoorGrafiek(
   markt: ReeksRijV2[],
@@ -210,6 +217,15 @@ export function MarktanalyseExplorer({
 
   // ── Actieve filterpillen ──
   const pillen: FilterPil[] = []
+  if (!plaatsenGelijk(filter.plaatsen, standaard.plaatsen)) {
+    // Leeg = expliciet "alle plaatsen" (via "Wis" in de dropdown, sinds
+    // 27 sep 2026 een geldige, afwijkende staat, geen "—"/lege pil).
+    pillen.push({
+      label: 'Plaats',
+      waarde: filter.plaatsen.length ? filter.plaatsen.join(', ') : 'Alle plaatsen',
+      onVerwijder: () => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] }),
+    })
+  }
   if (filter.klasse) {
     const k = PRIJSKLASSEN.find(k => k.key === filter.klasse)
     if (k) pillen.push({ label: 'Prijsklasse', waarde: k.label, onVerwijder: () => zetFilterDeel({ klasse: '' }) })
