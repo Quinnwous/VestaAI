@@ -31,8 +31,9 @@ $blauw"
 # Alleen kleur-fallbacks matchen (#hex, rgb(/rgba(/hsl( als functie) — een
 # radius- of font-fallback (var(--merk-radius-md, 12px), var(--merk-diep,
 # var(--merk))) is geen kleur en hoort hier niet te matchen (les 27 sep 2026:
-# de eerdere brede regex ([0-9]) zag "12px" aan voor een rgb-triplet).
-fallback=$(grep -nE 'var\(--merk[a-zA-Z-]*[[:space:]]*,[[:space:]]*(#[0-9a-fA-F]|rgba?\(|hsl\()' "$bestand" | head -3)
+# de eerdere brede regex ([0-9]) zag "12px" aan voor een rgb-triplet). Een kale
+# triplet (var(--merk-rgb, 26,107,69)) telt wél als kleur.
+fallback=$(grep -nE 'var\(--merk[a-zA-Z-]*[[:space:]]*,[[:space:]]*(#[0-9a-fA-F]|rgba?\(|hsl\(|[0-9]{1,3}[[:space:]]*,[[:space:]]*[0-9]{1,3}[[:space:]]*,)' "$bestand" | head -3)
 [ -n "$fallback" ] && meld "var(--merk…)-fallback met een ingebakken kleur (hex/rgb/rgba/hsl) verstopt een kapotte kantoor-lookup. Laat de fallback weg — de default staat centraal op :root in app/globals.css:
 $fallback"
 
