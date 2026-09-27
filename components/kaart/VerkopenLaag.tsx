@@ -18,7 +18,11 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import * as maplibregl from 'maplibre-gl'
+// Alléén het type, geen runtime-import — zie WoningenKaartLaag.tsx voor de
+// reden (les 12.3, performance): dit voorkomt dat maplibre-gl in élke
+// pagina belandt die deze laag importeert, ook als <BasisKaart> zelf al
+// dynamic (ssr:false) is.
+import type * as maplibregl from 'maplibre-gl'
 import { useKaartInstance } from './KaartContext'
 import { Pin } from './Pin'
 import { clusterPunten, celGradenVoorZoom, type ClusterPunt } from '@/lib/kaart'
@@ -75,64 +79,70 @@ export function VerkopenLaag({
 
   useEffect(() => {
     if (!map) return
+    let actief = true
 
-    const nieuweMarkers: maplibregl.Marker[] = []
+    import('maplibre-gl').then(({ Marker }) => {
+      if (!actief || !map) return
 
-    const maakPinMarker = (p: Punt) => {
-      const basisVariant = p.id === geselecteerdId ? 'gekozen' : p.id === gemarkeerdId ? 'hover' : 'normaal'
-      const el = document.createElement('div')
-      el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-      el.style.cursor = 'pointer'
-      el.setAttribute(
-        'aria-label',
-        `${p.adres}, ${p.verkoopprijs ? `€${p.verkoopprijs.toLocaleString('nl-NL')}` : 'prijs onbekend'}`,
-      )
+      const nieuweMarkers: maplibregl.Marker[] = []
 
-      el.addEventListener('mouseenter', () => {
-        el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
-        const punt = map.project([p.lng, p.lat])
-        onHover?.({ transactie: p, x: punt.x, y: punt.y })
-      })
-      el.addEventListener('mouseleave', () => {
-        el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-        onHover?.(null)
-      })
-      el.addEventListener('click', () => onSelect?.(p.id))
-
-      return new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat])
-    }
-
-    const toonClusters = punten.length > CLUSTER_DREMPEL
-
-    if (!toonClusters) {
-      for (const p of punten) nieuweMarkers.push(maakPinMarker(p).addTo(map))
-    } else {
-      const invoer: ClusterPunt[] = punten.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng }))
-      const clusters = clusterPunten(invoer, celGradenVoorZoom(zoom))
-      for (const cluster of clusters) {
-        // Een "cluster" van 1 is gewoon een pin — ook diep ingezoomd blijft
-        // hover/klik dan werken, ook al zit het totale kantoor boven 200.
-        if (cluster.aantal === 1) {
-          const enkelPunt = puntenById.get(cluster.ids[0])
-          if (enkelPunt) {
-            nieuweMarkers.push(maakPinMarker(enkelPunt).addTo(map))
-            continue
-          }
-        }
+      const maakPinMarker = (p: Punt) => {
+        const basisVariant = p.id === geselecteerdId ? 'gekozen' : p.id === gemarkeerdId ? 'hover' : 'normaal'
         const el = document.createElement('div')
-        el.innerHTML = renderToStaticMarkup(<Pin variant="cluster" aantal={cluster.aantal} />)
+        el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
         el.style.cursor = 'pointer'
-        nieuweMarkers.push(
-          new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([cluster.lng, cluster.lat]).addTo(map),
+        el.setAttribute(
+          'aria-label',
+          `${p.adres}, ${p.verkoopprijs ? `€${p.verkoopprijs.toLocaleString('nl-NL')}` : 'prijs onbekend'}`,
         )
-      }
-    }
 
-    markersRef.current.forEach((m) => m.remove())
-    markersRef.current = nieuweMarkers
+        el.addEventListener('mouseenter', () => {
+          el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
+          const punt = map.project([p.lng, p.lat])
+          onHover?.({ transactie: p, x: punt.x, y: punt.y })
+        })
+        el.addEventListener('mouseleave', () => {
+          el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
+          onHover?.(null)
+        })
+        el.addEventListener('click', () => onSelect?.(p.id))
+
+        return new Marker({ element: el, anchor: 'bottom' }).setLngLat([p.lng, p.lat])
+      }
+
+      const toonClusters = punten.length > CLUSTER_DREMPEL
+
+      if (!toonClusters) {
+        for (const p of punten) nieuweMarkers.push(maakPinMarker(p).addTo(map))
+      } else {
+        const invoer: ClusterPunt[] = punten.map((p) => ({ id: p.id, lat: p.lat, lng: p.lng }))
+        const clusters = clusterPunten(invoer, celGradenVoorZoom(zoom))
+        for (const cluster of clusters) {
+          // Een "cluster" van 1 is gewoon een pin — ook diep ingezoomd blijft
+          // hover/klik dan werken, ook al zit het totale kantoor boven 200.
+          if (cluster.aantal === 1) {
+            const enkelPunt = puntenById.get(cluster.ids[0])
+            if (enkelPunt) {
+              nieuweMarkers.push(maakPinMarker(enkelPunt).addTo(map))
+              continue
+            }
+          }
+          const el = document.createElement('div')
+          el.innerHTML = renderToStaticMarkup(<Pin variant="cluster" aantal={cluster.aantal} />)
+          el.style.cursor = 'pointer'
+          nieuweMarkers.push(
+            new Marker({ element: el, anchor: 'center' }).setLngLat([cluster.lng, cluster.lat]).addTo(map),
+          )
+        }
+      }
+
+      markersRef.current.forEach((m) => m.remove())
+      markersRef.current = nieuweMarkers
+    })
 
     return () => {
-      nieuweMarkers.forEach((m) => m.remove())
+      actief = false
+      markersRef.current.forEach((m) => m.remove())
       markersRef.current = []
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
