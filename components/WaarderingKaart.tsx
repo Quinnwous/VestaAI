@@ -13,12 +13,7 @@ import {
   type VerkoopHoverInfo,
 } from '@/components/kaart'
 import { filterBinnenStraal } from '@/lib/straalFilter'
-import {
-  bepaalDossierKaartBounds,
-  straalLabel,
-  VERKOOP_STRAAL_OPTIES,
-  type DossierKaartLaag,
-} from '@/lib/dossierKaart'
+import { bepaalDossierKaartBounds, straalLabel, type DossierKaartLaag } from '@/lib/dossierKaart'
 import type { WaarderingReferentie } from '@/lib/waardering'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
@@ -54,7 +49,6 @@ export function WaarderingKaart({
   eigenVerkopen,
   laag,
   verkoopStraal,
-  onVerkoopStraalChange,
   hoogte = 440,
 }: {
   subject: { lat: number; lng: number; adres: string }
@@ -65,8 +59,10 @@ export function WaarderingKaart({
   /** Alle eigen verkopen van het kantoor mét coördinaten — deze kaart filtert zelf op straal. */
   eigenVerkopen: TransactieMetCoordinaten[]
   laag: DossierKaartLaag
+  /** Straal voor de laag "Eigen verkopen" (250/500/1000 m) — de pil-schakelaar
+   * hiervoor leeft in WaardebepalingPaneel.tsx (kaartkop), niet op de kaart
+   * zelf: dat zou MapLibre's eigen zoomknoppen rechtsboven overlappen. */
   verkoopStraal: number
-  onVerkoopStraalChange: (straal: number) => void
   hoogte?: number | string
 }) {
   const [refHover, setRefHover] = useState<ReferentieHoverInfo | null>(null)
@@ -134,33 +130,6 @@ export function WaarderingKaart({
 
         <Legenda laag={laag} straalM={laag === 'verkopen' ? verkoopStraal : straalM} />
       </BasisKaart>
-
-      {laag === 'verkopen' && (
-        <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 5, display: 'flex', gap: 4 }}>
-          {VERKOOP_STRAAL_OPTIES.map((optie) => (
-            <button
-              key={optie}
-              type="button"
-              onClick={() => onVerkoopStraalChange(optie)}
-              aria-pressed={verkoopStraal === optie}
-              style={{
-                height: 26,
-                padding: '0 10px',
-                fontSize: 11.5,
-                fontWeight: 700,
-                borderRadius: 'var(--merk-radius-pill, 9999px)',
-                border: verkoopStraal === optie ? '1px solid var(--merk)' : '1px solid rgba(20,24,27,.12)',
-                background: verkoopStraal === optie ? 'var(--merk)' : 'rgba(255,255,255,.92)',
-                color: verkoopStraal === optie ? 'var(--merk-op)' : '#2C3238',
-                backdropFilter: 'blur(8px)',
-                cursor: 'pointer',
-              }}
-            >
-              {straalLabel(optie)}
-            </button>
-          ))}
-        </div>
-      )}
 
       {laag === 'verkopen' && binnenStraal.length === 0 && (
         <div
