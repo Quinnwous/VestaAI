@@ -6,6 +6,7 @@ import { createServiceSupabaseClient, isSupabaseConfigured } from '@/lib/supabas
 import { bouwBranding, bruikbaarLogo } from '@/lib/branding'
 import { sendKantoorResetEmail } from '@/lib/email'
 import { magResetPoging, bouwRateLimitSleutel } from '@/lib/resetRateLimit'
+import { escapeIlike, wachtTot } from '@/lib/kantoorReset'
 
 /**
  * Wachtwoord-reset vanaf de kantoorlogin (`/login/<slug>`, item 9.2,
@@ -39,27 +40,6 @@ function generiekAntwoord() {
   return NextResponse.json({ ok: true })
 }
 
-/**
- * Minimale duur van elk antwoord: anders verraadt de responstijd of er een
- * account bestaat (generateLink + mail versturen kost merkbaar meer tijd).
- */
-export const MINIMALE_DUUR_MS = 1500
-
-/** Alleen voor tests: de minimale duur uitzetten. */
-let minimaleDuur = MINIMALE_DUUR_MS
-export function _zetMinimaleDuurVoorTest(ms: number) {
-  minimaleDuur = ms
-}
-
-/** `%` en `_` zijn jokertekens in `ilike`; een e-mailadres mag `_` bevatten. */
-export function escapeIlike(waarde: string): string {
-  return waarde.replace(/[\\%_]/g, (t) => `\\${t}`)
-}
-
-async function wachtTot(start: number, minimaal = minimaleDuur) {
-  const rest = minimaal - (Date.now() - start)
-  if (rest > 0) await new Promise((r) => setTimeout(r, rest))
-}
 
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured()) return generiekAntwoord()

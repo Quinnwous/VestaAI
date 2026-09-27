@@ -37,7 +37,8 @@ vi.mock('@/lib/branding', async () => {
   return { ...actual, bruikbaarLogo: (...args: unknown[]) => bruikbaarLogo(...args) }
 })
 
-import { POST, escapeIlike, _zetMinimaleDuurVoorTest, MINIMALE_DUUR_MS } from './route'
+import { POST } from './route'
+import { escapeIlike, _zetMinimaleDuurVoorTest, MINIMALE_DUUR_MS } from '@/lib/kantoorReset'
 import { _resetAlleEmmersVoorTest } from '@/lib/resetRateLimit'
 
 function makeRequest(body: unknown, headers: Record<string, string> = {}) {
