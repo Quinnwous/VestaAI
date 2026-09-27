@@ -117,7 +117,7 @@ export function StatTile({
         background: hero ? 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)' : colors.surface,
         border: hero ? 'none' : `1px solid ${colors.border}`,
         borderRadius: radius.cardLg,
-        boxShadow: hero ? '0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb, 26,107,69),.55)' : shadow.card,
+        boxShadow: hero ? '0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb),.55)' : shadow.card,
         padding: '16px 18px',
         paddingBottom: sparkline ? 40 : 16,
         minWidth: 0,

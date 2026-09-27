@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
+import { PublicFooter } from '@/components/PublicFooter'
 
 export const metadata: Metadata = {
   title: 'Vertrouwen & beveiliging — VestaAI',
   description:
-    'Jouw klant- en objectgegevens zijn veilig en blijven van jou: opslag in de EU, geen verkoop van data, en geen training van AI-modellen op jouw gegevens.',
+    'Uw klant- en objectgegevens zijn veilig en blijven van u: opslag in de EU, geen verkoop van data, en geen training van AI-modellen op uw gegevens.',
   alternates: {
     canonical: '/vertrouwen',
   },
@@ -15,17 +16,17 @@ const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [
   {
     icoon: '🇪🇺',
     titel: 'Data blijft in de EU',
-    tekst: 'Je account-, object- en huisstijlgegevens staan in een beveiligde Europese database (Supabase, regio Frankfurt) — onder de AVG, niet buiten Europa.',
+    tekst: 'Uw account-, object- en huisstijlgegevens staan in een beveiligde Europese database (Supabase, regio Frankfurt) — onder de AVG, niet buiten Europa.',
   },
   {
     icoon: '🔒',
-    titel: 'Geen verkoop van je data',
-    tekst: 'We verkopen of delen je gegevens nooit met derden voor marketing of andere doeleinden. Je data wordt uitsluitend gebruikt om de dienst voor jou te leveren.',
+    titel: 'Geen verkoop van uw data',
+    tekst: 'We verkopen of delen uw gegevens nooit met derden voor marketing of andere doeleinden. Uw data wordt uitsluitend gebruikt om de dienst voor u te leveren.',
   },
   {
     icoon: '🧠',
-    titel: 'Geen AI-training op jouw data',
-    tekst: 'De teksten en woninggegevens die je invoert worden niet gebruikt om AI-modellen te trainen. Ze gaan per opdracht naar Claude (Anthropic) of, voor virtual staging, naar Gemini (Google), en worden daar niet permanent bewaard of hergebruikt.',
+    titel: 'Geen AI-training op uw data',
+    tekst: 'De teksten en woninggegevens die u invoert worden niet gebruikt om AI-modellen te trainen. Ze gaan per opdracht naar Claude (Anthropic) of, voor virtual staging, naar Gemini (Google), en worden daar niet permanent bewaard of hergebruikt.',
   },
   {
     icoon: '🛡️',
@@ -35,7 +36,7 @@ const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [
   {
     icoon: '📄',
     titel: 'Verwerkersovereenkomst',
-    tekst: 'Werk je voor een kantoor of franchise dat een verwerkersovereenkomst (AVG) vereist? Die stellen we op aanvraag beschikbaar.',
+    tekst: 'Werkt u voor een kantoor of franchise dat een verwerkersovereenkomst (AVG) vereist? Die stellen we op aanvraag beschikbaar.',
   },
 ]
 
@@ -59,11 +60,11 @@ export default function VertrouwenPage() {
             Vertrouwen &amp; beveiliging
           </p>
           <h1 style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 800, letterSpacing: '-.02em', color: '#0E1A13', marginBottom: 16 }}>
-            Jouw gegevens zijn veilig — en blijven van jou.
+            Uw gegevens zijn veilig — en blijven van u.
           </h1>
           <p style={{ fontSize: 17, lineHeight: 1.6, color: '#5A6B61' }}>
             Makelaars werken met vertrouwelijke klant- en woninggegevens. Daarom is VestaAI opgebouwd rond
-            een paar simpele beloftes: je data staat in Europa, wordt nooit verkocht, en traint geen AI-modellen.
+            een paar simpele beloftes: uw data staat in Europa, wordt nooit verkocht, en traint geen AI-modellen.
           </p>
         </div>
 
@@ -87,12 +88,12 @@ export default function VertrouwenPage() {
 
         {/* Rechten + contact */}
         <div style={{ ...card, marginTop: 40, padding: '28px 30px' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Jouw AVG-rechten</h2>
+          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Uw AVG-rechten</h2>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: '#5A6B61', marginBottom: 12 }}>
-            Je hebt recht op inzage, correctie, verwijdering en overdracht van je persoonsgegevens. Trekt de
-            platform-admin de toegang van je kantoor in, dan verwijderen we je gegevens binnen 90 dagen (tenzij
+            U heeft recht op inzage, correctie, verwijdering en overdracht van uw persoonsgegevens. Trekt de
+            platform-admin de toegang van uw kantoor in, dan verwijderen we uw gegevens binnen 90 dagen (tenzij
             een wettelijke bewaarplicht een langere termijn vereist).
-            Een verzoek of een verwerkersovereenkomst regel je via{' '}
+            Een verzoek of een verwerkersovereenkomst regelt u via{' '}
             <a href="mailto:quinn.berkouwer@gmail.com" style={{ color: '#1A6B45', fontWeight: 600 }}>quinn.berkouwer@gmail.com</a>.
           </p>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: '#5A6B61' }}>
@@ -102,16 +103,7 @@ export default function VertrouwenPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid #E4EAE6', padding: '28px 0' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: '#9AA6A0' }}>
-          <span>© 2026 VestaAI</span>
-          <div style={{ display: 'flex', gap: 22 }}>
-            <Link href="/" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Home</Link>
-            <Link href="/privacy" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter links={[{ href: '/', label: 'Home' }, { href: '/privacy', label: 'Privacy' }]} />
     </div>
   )
 }

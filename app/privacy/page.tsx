@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { PublicFooter } from '@/components/PublicFooter'
 
 export const metadata: Metadata = {
   title: 'Privacyverklaring — VestaAI',
@@ -165,17 +166,7 @@ export default function PrivacyPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-8 mt-20">
-        <div className="mx-auto max-w-6xl px-6 flex items-center justify-between text-xs text-gray-400">
-          <span>© 2026 VestaAI</span>
-          <div className="flex gap-6">
-            <Link href="/" className="hover:text-gray-600 transition-colors">Home</Link>
-            <Link href="/vertrouwen" className="hover:text-gray-600 transition-colors">Vertrouwen</Link>
-            <Link href="/login" className="hover:text-gray-600 transition-colors">Inloggen</Link>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter links={[{ href: '/', label: 'Home' }, { href: '/vertrouwen', label: 'Vertrouwen' }, { href: '/login', label: 'Inloggen' }]} />
     </div>
   )
 }

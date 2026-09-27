@@ -98,6 +98,14 @@ const TIMEOUT_CODES = [408, 502, 503, 504, 524]
 // Verkoopadvies-fase aanmaakt (interne waarde 'verkoopadvies' sinds item 2.1) en na succes
 // doorstuurt naar /object/[id] — zie components/PropertyForm.tsx en
 // app/(app)/object/new/NewObjectForm.tsx.
+//
+// Sinds fase 3 (docs/roadmap.md § 3.2 "Dossier los van content") zijn aanmaken en content
+// genereren twee losse stappen: `POST /api/object` maakt het dossier zonder Claude aan
+// (content_status='geen', ~1s, geen API-kosten) en stuurt door naar /object/[id] in fase
+// Verkoopadvies. Content komt pas via `POST /api/generate { objectId }` — op knopdruk
+// ("Genereer content") of automatisch, fire-and-forget, bij de fase-overgang naar In
+// verkoop (components/DossierHeader.tsx `klikFase`). Deze test volgt die tweede route (de
+// fase-stepper), zodat hij tegelijk de fase-overgang en de content-generatie dekt.
 test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async ({ browser }) => {
   test.skip(!hasAuth(), 'Geen auth state — stel E2E_TEST_EMAIL + Supabase-keys in om te activeren')
   test.skip(!RUN_GENERATE, 'Kostenbewaking: zet E2E_GENERATE=1 om de echte generatie te draaien')
@@ -126,13 +134,33 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
     if (!huidig) await prijsveld.fill('595000')
   }
 
-  // Vang de /api/generate-respons af om expliciet op een time-out (504) te asserten.
+  // Stap 1: dossier aanmaken — geen Claude, moet ruim binnen enkele seconden 200 geven.
+  const objectResponse = page.waitForResponse(
+    r => r.url().endsWith('/api/object') && r.request().method() === 'POST',
+    { timeout: 20_000 },
+  )
+  await page.getByRole('button', { name: /woning aanmaken/i }).click()
+
+  const objectRes = await objectResponse
+  expect(objectRes.status(), 'verwacht HTTP 200 van POST /api/object').toBe(200)
+
+  // Succesvolle aanmaak stuurt door naar het nieuwe dossier — fase Verkoopadvies, nog
+  // zonder content ("Nog geen content" op de contentknop in DossierHeader).
+  await page.waitForURL(/\/object\/[a-f0-9-]+$/, { timeout: 20_000 })
+  await expect(page.getByText(/verkoopadvies/i).first()).toBeVisible({ timeout: 10_000 })
+
+  // Stap 2: de eigenlijke time-out-verificatie. De fase-stepper naar "In verkoop" triggert
+  // fire-and-forget POST /api/generate (NL+EN, tegen de 300s Vercel-limiet) — vang die
+  // respons af om expliciet op een afkap-status (504 e.d.) te asserten.
   const generateResponse = page.waitForResponse(
-    r => r.url().includes('/api/generate') && r.request().method() === 'POST',
+    r => r.url().endsWith('/api/generate') && r.request().method() === 'POST',
     { timeout: 220_000 },
   )
   const startedAt = Date.now()
-  await page.getByRole('button', { name: /woning aanmaken/i }).click()
+  await page
+    .getByRole('group', { name: /fase van dit dossier/i })
+    .getByRole('button', { name: /^in verkoop$/i })
+    .click()
 
   const res = await generateResponse
   const seconds = Math.round((Date.now() - startedAt) / 1000)
@@ -142,9 +170,9 @@ test('authenticated: volledige generatie-flow (verifieert time-out-fix)', async 
   expect(TIMEOUT_CODES, `/api/generate gaf time-out-status ${res.status()} na ${seconds}s`).not.toContain(res.status())
   expect(res.status(), 'verwacht HTTP 200 van /api/generate').toBe(200)
 
-  // Succesvolle aanmaak stuurt door naar het nieuwe dossier — fase Verkoopadvies.
-  await page.waitForURL(/\/object\/[a-f0-9-]+$/, { timeout: 20_000 })
-  await expect(page.getByText(/verkoopadvies/i).first()).toBeVisible({ timeout: 10_000 })
+  // Fase-overgang zelf is meteen zichtbaar (client-state, niet afhankelijk van de
+  // content-generatie die op de achtergrond nog loopt of net klaar is).
+  await expect(page.getByText(/^in verkoop$/i).first()).toBeVisible({ timeout: 10_000 })
   await expect(page.getByText(/duurde te lang|mislukt/i)).toHaveCount(0)
 
   await ctx.close()
