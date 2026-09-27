@@ -302,7 +302,10 @@ async function scene1Rest(page, fouten) {
     await ga(page, '/dashboard')
   })
   await stap(page, fouten, 'scene1', '3-startbanner', async () => {
-    await verwachtTekst(page, /Goedemorgen|Goedemiddag|Goedenavond/)
+    // lib/begroeting.ts kent vier varianten (< 6 uur is "Goedenacht") — de
+    // regex miste die tot 28 sep 2026, waardoor deze stap na middernacht
+    // ten onrechte faalde (geen app-bug, puur een gat in dit script).
+    await verwachtTekst(page, /Goedemorgen|Goedemiddag|Goedenavond|Goedenacht/)
   })
   await stap(page, fouten, 'scene1', '4-kerncijfers', async () => {
     for (const label of [
