@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
+import { PublicFooter } from '@/components/PublicFooter'
 
 export const metadata: Metadata = {
   title: 'Vertrouwen & beveiliging — VestaAI',
@@ -102,16 +103,7 @@ export default function VertrouwenPage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid #E4EAE6', padding: '28px 0' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, color: '#9AA6A0' }}>
-          <span>© 2026 VestaAI</span>
-          <div style={{ display: 'flex', gap: 22 }}>
-            <Link href="/" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Home</Link>
-            <Link href="/privacy" style={{ color: '#9AA6A0', textDecoration: 'none' }}>Privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <PublicFooter links={[{ href: '/', label: 'Home' }, { href: '/privacy', label: 'Privacy' }]} />
     </div>
   )
 }
