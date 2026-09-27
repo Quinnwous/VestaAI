@@ -39,6 +39,7 @@ import {
   PRIJS_BEREIK, OPP_BEREIK, BOUWJAAR_BEREIK, PERCEEL_BEREIK,
   berekenDelta, richtingVanDelta,
 } from '@/lib/marktanalyse'
+import { bereikGelijk, verzamelingGelijk } from '@/lib/filterVergelijk'
 import {
   TransactiesFilterSchema, standaardTransactiesFilterState, transactiesFilterNaarTransactieFilter,
   filtreerEigenVoorExport, sorteringVoorRpc, volgendeSortering,
@@ -64,17 +65,6 @@ const LOOPTIJD_OPTIES = [
   { value: '90', label: 'tot 90 dgn' },
   { value: '30', label: 'tot 30 dgn' },
 ] as const
-
-function bereikGelijk(a: [number, number], b: [number, number]) {
-  return a[0] === b[0] && a[1] === b[1]
-}
-
-/** Ordervrije vergelijking voor de Plaats-filter (checkbox-toggles kunnen de volgorde wijzigen zonder dat de selectie inhoudelijk afwijkt van de standaard). */
-function plaatsenGelijk(a: string[], b: string[]): boolean {
-  if (a.length !== b.length) return false
-  const bSet = new Set(b)
-  return a.every(p => bSet.has(p))
-}
 
 export function TransactiesZoeken({
   werkgebiedPlaatsen,
@@ -178,7 +168,7 @@ export function TransactiesZoeken({
 
   // ── Actieve filterpillen ──
   const pillen: FilterPil[] = []
-  if (!plaatsenGelijk(filter.plaatsen, standaard.plaatsen)) {
+  if (!verzamelingGelijk(filter.plaatsen, standaard.plaatsen)) {
     // Leeg = expliciet "alle plaatsen" (via "Wis" in de dropdown, sinds
     // 27 sep 2026 een geldige, afwijkende staat, geen "—"/lege pil).
     pillen.push({

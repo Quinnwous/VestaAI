@@ -37,14 +37,11 @@ import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
 import { typegroepLabel, type Typegroep } from '@/lib/schemas'
 import type { PlaatsWijkRij } from '@/lib/transactiesQuery'
 import { haalConcurrentieData, haalConcurrentProfiel, type ConcurrentieData } from '@/app/(app)/marktanalyse/concurrentie/actions'
+import { verzamelingGelijk } from '@/lib/filterVergelijk'
 
 const ONS = 'Eigen kantoor'
 const MIN_N_BETROUWBAAR = 6
 const CONCURRENT_KLEUREN = [colors.bodyStrong, colors.body, colors.muted]
-
-function bereikGelijk<T>(a: T[], b: T[]): boolean {
-  return a.length === b.length && a.every((v, i) => v === b[i])
-}
 
 function kortNaam(naam: string): string {
   const woorden = naam.split(' ')
@@ -129,7 +126,7 @@ export function ConcurrentieExplorer({
     : undefined
 
   const pillen: FilterPil[] = []
-  if (!bereikGelijk(filter.plaatsen, standaard.plaatsen)) {
+  if (!verzamelingGelijk(filter.plaatsen, standaard.plaatsen)) {
     pillen.push({ label: 'Plaats', waarde: filter.plaatsen.join(', ') || 'Alle plaatsen', onVerwijder: () => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] }) })
   }
   if (filter.wijken.length) pillen.push({ label: 'Wijken', waarde: filter.wijken.map(w => w.split('|')[1]).join(', '), onVerwijder: () => zetFilterDeel({ wijken: [] }) })

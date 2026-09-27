@@ -4,6 +4,7 @@ import { gemiddelde } from './utils'
 import { mediaan, kwartaalVan } from './prijsindex'
 import type { TransactieFilter } from './schemas'
 import { woningtypeTaxonomie } from './transactieNormalisatie'
+import { bereikGelijk } from './filterVergelijk'
 
 /**
  * Aggregatielogica voor de interactieve marktanalyse-explorer (F6, besluit 16
@@ -344,10 +345,6 @@ export function standaardFilterState(werkgebiedPlaatsen: string[]): Marktanalyse
     bPlaats: '',
     bGroep: 'alle',
   }
-}
-
-function bereikGelijk(a: [number, number], b: [number, number]): boolean {
-  return a[0] === b[0] && a[1] === b[1]
 }
 
 /** Alle `woningtype_sub`-waarden van een groep, voor segment B ("alle appartementen" e.d.) — bron: `woningtypeTaxonomie()`. */

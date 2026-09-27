@@ -3,6 +3,7 @@ import {
   PRIJS_BEREIK, OPP_BEREIK, BOUWJAAR_BEREIK, PERCEEL_BEREIK,
   periodeNaarDatums, filterEigenRijen, type MarktanalyseFilterV2,
 } from './marktanalyse'
+import { bereikGelijk } from './filterVergelijk'
 import type { TransactieFilter } from './schemas'
 import type { TransactieRow } from './supabase'
 import type { Sortering } from './transactiesQuery'
@@ -80,10 +81,6 @@ export function standaardTransactiesFilterState(werkgebiedPlaatsen: string[]): T
     sortDir: 'desc',
     pagina: 1,
   }
-}
-
-function bereikGelijk(a: [number, number], b: [number, number]): boolean {
-  return a[0] === b[0] && a[1] === b[1]
 }
 
 /**
