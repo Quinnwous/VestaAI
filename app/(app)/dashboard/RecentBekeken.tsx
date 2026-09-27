@@ -20,7 +20,10 @@ import type { ObjectFase } from '@/lib/schemas'
 // Zelfde label/kleurpaar als FASE_BADGE in app/(app)/woningen/WoningenClient.tsx —
 // bewust lokaal gehouden (dat bestand doet dat ook), dit is te klein om te delen.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
-  verkoopadvies: { label: 'Verkoopadvies', color: '#D97706' },
+  // #D97706 haalde met de tekst óp de eigen 7%-achtergrondtint geen 4.5:1
+  // (2.97:1) — Lighthouse a11y, item 12.3. #92400E (amber-800, zelfde tint
+  // als DumbbellStat/StatTile) geeft 6.6:1.
+  verkoopadvies: { label: 'Verkoopadvies', color: '#92400E' },
   in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
