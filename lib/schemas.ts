@@ -661,9 +661,8 @@ export const TransactieFilterSchema = z.object({
   alleen_eigen: z.boolean().optional(),
   /**
    * Vrij zoekveld op adres (item 6.2, "Transacties opzoeken v2") —
-   * case-insensitive substring-match. ⚠️ vereist de additieve migratie
-   * `supabase/migrations/20260923180000_transacties_zoeken_v2.sql` (nog niet
-   * toegepast); tot dan negeert `transacties_gefilterd()` dit veld stilzwijgend.
+   * case-insensitive substring-match, in de RPC `transacties_zoeken` (migratie
+   * `supabase/migrations/20260923180000_transacties_zoeken_v2.sql`, toegepast).
    */
   zoek: z.string().optional(),
 })

@@ -171,6 +171,14 @@ bestaande functie. Niet verder uitgezocht — buiten scope van dit item.)
 
 ### Conclusies
 
+> **Correctie 27 sep 2026 (na deze meting):** de pagina `/marktanalyse/transacties`
+> draait al sinds item 6.2 op de RPC `transacties_zoeken` (v2, toegepast op
+> productie; `EXPLAIN ANALYZE` ongefilterd 7.829 rijen: **163 ms**).
+> `haalTransactiesVoorVerkenner()` (866 ms) had geen levende aanroeper meer —
+> hij is nu alleen de terugval als de RPC ontbreekt (`PGRST202`). De conclusies
+> hieronder over "Transacties opzoeken" zijn daarmee achterhaald; een verouderd
+> bestandscommentaar in `lib/transactiesQuery.ts` had op het verkeerde spoor gezet.
+
 - **Alle RPC's (marktanalyse/concurrentie) zijn snel: 52-129 ms** op de
   echte demo-dataset — precies wat de patroon-2-aggregatiestrategie
   (`docs/roadmap.md` § 3.1) beoogde. Geen actie nodig.
