@@ -552,15 +552,36 @@ export async function generateContent(
  * `/api/object/[id]/herschrijf`. Dezelfde kwaliteitsbalk als de kern-call,
  * maar dan voor één veld — vandaar de veel kleinere `EXTRA_MAX_TOKENS` per
  * type in plaats van een goedkoper model.
+ *
+ * `documentFileIds` (backlog-item "Documenten naar de extra's", 27 sep 2026):
+ * bijgevoegde documenten (meetrapport, bouwkundige keuring, taxatie) voedden
+ * sinds 8.3 alleen de kern-call (`generateContent` hierboven) — niet deze
+ * losse extra-calls, terwijl juist `energie_advies` en `kopersvragen_faq` baat
+ * hebben bij de feitelijke gegevens erin. Zelfde Files API-patroon als de
+ * kern-call en `/api/object/[id]/hergenereer`: bij aanwezige file-id's gaat de
+ * aanroep via `beta.messages.create` met de documentblokken vóór de tekst.
  */
 export async function genereerExtraContent(
   type: ExtraType,
   input: PropertyInput,
   huisstijl?: HuisstijlConfig,
   client?: Anthropic,
+  documentFileIds?: string[],
 ): Promise<string> {
   const c = client ?? new Anthropic()
-  const prompt = bouwExtraPrompt(type, input, schrijftoonLabel(huisstijl?.schrijftoon))
+  const docIds = documentFileIds?.filter(Boolean) ?? []
+  const prompt = bouwExtraPrompt(type, input, schrijftoonLabel(huisstijl?.schrijftoon), docIds.length > 0)
+
+  if (docIds.length > 0) {
+    const docBlocks = docIds.map(id => ({ type: 'document', source: { type: 'file', file_id: id } }))
+    const message = await (c.beta.messages.create as unknown as (params: Record<string, unknown>) => Promise<Anthropic.Beta.Messages.BetaMessage>)({
+      model: CONTENT,
+      max_tokens: EXTRA_MAX_TOKENS[type],
+      messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: prompt }] }],
+      betas: ['files-api-2025-04-14'],
+    })
+    return message.content?.[0]?.type === 'text' ? message.content[0].text.trim() : ''
+  }
 
   const message = await c.messages.create({
     model: CONTENT,

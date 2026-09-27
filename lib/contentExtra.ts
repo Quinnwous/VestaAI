@@ -63,16 +63,28 @@ export function schrijftoonLabel(schrijftoon?: 'formeel' | 'informeel' | 'enthou
 }
 
 /**
+ * Instructieregel voor bijgevoegde documenten (meetrapport, bouwkundige keuring,
+ * taxatie) — inhoudelijk dezelfde redenering als het aparte systeemblok van de
+ * kern-call (`generateContent` in lib/claude.ts), maar hier als losse tekstregel
+ * omdat de extra-call geen system-parameter gebruikt. Vooral relevant voor
+ * `energie_advies` (technische staat, isolatie) en `kopersvragen_faq`
+ * (feitelijke vragen over bouwjaar/oppervlak/gebreken), maar generiek genoeg
+ * om voor elk extra-type te gelden.
+ */
+export const DOCUMENTEN_INSTRUCTIE = 'Er zijn één of meer documenten bijgevoegd (bijvoorbeeld een meetrapport, bouwkundige keuring of taxatie). Gebruik de feitelijke gegevens hieruit — exacte oppervlaktes, bouwkundige staat, geconstateerde gebreken, installaties en bijzonderheden — waar relevant voor deze tekst. Neem uitsluitend over wat er echt in de documenten staat; verzin niets.'
+
+/**
  * Bouwt de volledige gebruikersprompt voor één extra contentveld — platte
  * tekst als antwoord, geen JSON (zelfde, robuustere patroon als
  * `app/api/object/[id]/herschrijf/route.ts`: één veld, één duidelijke
  * instructie, geen JSON-parseerfout mogelijk).
  */
-export function bouwExtraPrompt(type: ExtraType, input: PropertyInput, toon?: string): string {
+export function bouwExtraPrompt(type: ExtraType, input: PropertyInput, toon?: string, documentenAanwezig?: boolean): string {
   const openHuisRegel = input.open_huis_datum
     ? `\nOpen huis: ${input.open_huis_datum}${input.open_huis_tijd ? ` om ${input.open_huis_tijd}` : ''}`
     : ''
   const toonRegel = toon ? `\nSchrijftoon van het kantoor: ${toon}` : ''
+  const documentenRegel = documentenAanwezig ? `\n\n${DOCUMENTEN_INSTRUCTIE}` : ''
   const prijs = input.vraagprijs ?? input.prijsverwachting_verkoper ?? 0
 
   return `Je bent een Nederlandse vastgoedcopywriter. Schrijf ${EXTRA_LABEL[type]} voor deze woning.
@@ -84,7 +96,7 @@ Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}
 Vraagprijs: €${prijs.toLocaleString('nl-NL')}
 USP's: ${input.usps ?? ''}
-Doelgroep: ${input.doelgroep ?? ''}${openHuisRegel}${toonRegel}
+Doelgroep: ${input.doelgroep ?? ''}${openHuisRegel}${toonRegel}${documentenRegel}
 
 Geef ALLEEN de tekst terug, verder niets. Geen uitleg, geen labels, geen JSON, geen aanhalingstekens.`
 }
