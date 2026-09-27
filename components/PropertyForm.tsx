@@ -8,6 +8,7 @@ import { PropertyInputSchema, migreerOudWoningtype, type PropertyInput } from '@
 import { bouwWoningtypeOptieGroepen, woningtypeOptieWaarde, ontleedWoningtypeOptieWaarde } from '@/lib/woningtypeOpties'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { WoningdataPanel } from '@/components/WoningdataPanel'
+import { DezeWoningPaneel } from '@/components/DezeWoningPaneel'
 import type { VerrijkingData } from '@/lib/verrijking'
 import type { BagSuggestie } from '@/app/api/bag/suggest/route'
 import { WOZ_LOKET_URL } from '@/lib/woz'
@@ -213,6 +214,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   }
 
   return (
+    <div className="intake-layout">
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <input type="hidden" {...register('taal')} />
 
@@ -794,5 +796,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         )}
       </div>
     </form>
+
+    {/* Sticky rechterpaneel (item 10.5) — alleen op brede schermen (≥1280px,
+        zie .intake-layout in app/globals.css), op smallere schermen blijft de
+        wizard gestapeld zoals voorheen en verschijnt dit paneel niet. */}
+    <aside className="intake-zijpaneel">
+      <DezeWoningPaneel control={control} />
+    </aside>
+    </div>
   )
 }

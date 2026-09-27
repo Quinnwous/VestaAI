@@ -126,8 +126,13 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
 
   const handleReset = () => setState({ status: 'idle' })
 
+  // Item 10.5: de intake groeit vanaf 1280px naar twee kolommen (wizard +
+  // sticky "Deze woning"-paneel, zie PropertyForm.tsx / .intake-layout in
+  // app/globals.css) — dit binnenste kader begrenst hoe breed dat op een heel
+  // groot scherm mag worden, de intro-tekst blijft op leesbreedte (maxWidth
+  // 640, hetzelfde patroon als StartBanner/InAanbouw).
   return (
-    <>
+    <div style={{ maxWidth: 1180, margin: '0 auto' }}>
       {state.status === 'idle' && (
         <div>
           <Link
@@ -138,7 +143,7 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
           </Link>
           <Eyebrow>Nieuwe woning</Eyebrow>
           <SerifTitle accent="een dossier" size={34} style={{ marginBottom: 8 }}>Start</SerifTitle>
-          <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55 }}>
+          <p style={{ fontSize: 14.5, color: '#5C6470', margin: '0 0 30px', lineHeight: 1.55, maxWidth: 640 }}>
             Eén intake in zes stappen — voedt zowel de waardebepaling als straks de content. Je start in Verkoopadvies; content wordt zichtbaar zodra je de fase naar In verkoop zet.
           </p>
 
@@ -185,6 +190,6 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
