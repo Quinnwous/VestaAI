@@ -637,8 +637,8 @@ export function LandingPageClient() {
                   <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 10 }}>Gem. verkoopprijs per kwartaal</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100, marginBottom: 20 }}>
                     {[54, 61, 58, 70, 76, 84].map((h, i) => (
-                      <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#1F6B45)' : '#D5E8DD' }} />
+                      <div key={i} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
+                        <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#2A8A5C)' : '#D5E8DD' }} />
                       </div>
                     ))}
                   </div>
