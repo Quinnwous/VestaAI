@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { meldFout } from '@/lib/fouten'
+import { bagAdressen, bagHeaders, bagZoekUrl, naarSuggestie, type BagSuggestie } from '@/lib/bag'
 
-const BAG_BASE = 'https://api.bag.kadaster.nl/lvbag/individuelebevragingen/v2'
-
-export interface BagSuggestie {
-  label: string
-  adresseerbaarobject_id: string | null
-  nummeraanduiding_id: string | null
-}
+export type { BagSuggestie }
 
 export async function GET(req: NextRequest) {
   // Zie app/api/bag/route.ts — zelfde reden voor deze check (masterplan fase 0.5).
@@ -26,40 +21,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Kadaster API-sleutel niet geconfigureerd' }, { status: 503 })
   }
 
-  const res = await fetch(
-    `${BAG_BASE}/adressen?zoekresultaat=${encodeURIComponent(q)}&page=1&pageSize=6`,
-    { headers: { 'X-Api-Key': apiKey, Accept: 'application/hal+json' } },
-  ).catch(err => {
-    meldFout('bag/suggest', err, { q })
+  const res = await fetch(bagZoekUrl(q), { headers: bagHeaders(apiKey) }).catch(err => {
+    meldFout('bag/suggest', err)
     return null
   })
+  if (!res) return NextResponse.json([] as BagSuggestie[])
+  if (!res.ok) {
+    // Niet stil opvouwen tot "geen suggesties": een 4xx betekent dat de aanroep
+    // zelf stuk is (zo bleef `zoekresultaat` maandenlang onopgemerkt, lib/bag.ts).
+    meldFout('bag/suggest', new Error(`BAG antwoordde HTTP ${res.status}`))
+    return NextResponse.json([] as BagSuggestie[])
+  }
 
-  if (!res?.ok) return NextResponse.json([] as BagSuggestie[])
-
-  const data = await res.json()
-  const adressen: Record<string, unknown>[] = data?._embedded?.adressen ?? []
-
-  const suggesties: BagSuggestie[] = adressen.map(a => {
-    const straat = a.openbareRuimteNaam as string ?? ''
-    const nr = a.huisnummer as number ?? ''
-    const letter = a.huisletter as string ?? ''
-    const toevoeging = a.huisnummertoevoeging as string ?? ''
-    const postcode = a.postcode as string ?? ''
-    const woonplaats = a.woonplaatsNaam as string ?? ''
-    const label = [
-      `${straat} ${nr}${letter}${toevoeging ? `-${toevoeging}` : ''}`.trim(),
-      postcode,
-      woonplaats,
-    ]
-      .filter(Boolean)
-      .join(', ')
-
-    return {
-      label,
-      adresseerbaarobject_id: (a.adresseerbaarObjectIdentificatie as string) ?? null,
-      nummeraanduiding_id: (a.nummeraanduidingIdentificatie as string) ?? null,
-    }
-  })
-
+  const suggesties = bagAdressen(await res.json()).slice(0, 6).map(naarSuggestie)
   return NextResponse.json(suggesties)
 }
