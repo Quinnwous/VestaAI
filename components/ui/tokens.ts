@@ -26,7 +26,10 @@ export const colors = {
   text: '#14181B',
   body: '#5C6470',
   bodyStrong: '#2C3238',
-  muted: '#98A0A6',
+  // Was #98A0A6 (contrast 2.65:1 op wit — faalde Lighthouse a11y, item 12.3).
+  // #5C6470 = colors.body: al in de palette, ruim boven 4.5:1 op elke
+  // gebruikte achtergrond (wit/#FAFBFB/#EEEFF0).
+  muted: '#5C6470',
   // Randen
   border: '#E6E9EC',
   borderStrong: '#E1E5E9',

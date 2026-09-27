@@ -5,10 +5,10 @@ import { ZodError } from 'zod'
 // waarde al bestaat op het moment dat de mock-factory hieronder draait.
 const { LEGE_OUTPUT } = vi.hoisted(() => ({
   LEGE_OUTPUT: {
-    funda_tekst: '', brochure_kort: '', brochure_lang: '', instagram_emotioneel: '', instagram_informatief: '',
-    instagram_actie: '', linkedin_kantoor: '', linkedin_makelaar: '', koper_email: '', buurtomschrijving: '',
-    open_huis: '', bezichtiging_followup_positief: '', bezichtiging_followup_negatief: '', video_script: '',
-    energie_advies: '', kopersvragen_faq: '', marktanalyse: '',
+    funda_tekst: '', brochure_tekst: '', instagram: '', linkedin_kantoor: '', sneak_preview: '',
+    koper_email: '', buurtomschrijving: '',
+    open_huis: '', followup_positief: '', followup_negatief: '', video_script: '',
+    energie_advies: '', kopersvragen_faq: '',
   },
 }))
 

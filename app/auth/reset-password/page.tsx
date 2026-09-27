@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import type { EmailOtpType } from '@supabase/supabase-js'
+import { normaliseerSlug, isGeldigeSlug } from '@/lib/slug'
 
 // Fasen van de reset-flow. Belangrijk: bij een token_hash/code in de URL
 // verifiëren we NIET automatisch, maar pas nadat de gebruiker op de knop klikt.
@@ -27,6 +28,15 @@ export default function ResetPasswordPage() {
     code: null,
   })
 
+  // Kantoorlogin (item 9.2): een reset-link die via /api/auth/kantoor-reset
+  // is gegenereerd, stuurt hier een `next`-parameter met de kantoor-slug mee
+  // (nooit een volledig pad — dat zou een open-redirect-vangrail nodig maken
+  // die er dan niet is), zodat "Wachtwoord opgeslagen" teruggaat naar
+  // `/login/<slug>` in plaats van naar het generieke /dashboard. Ontbreekt
+  // hij (de bestaande, generieke flow via InlogFormulier op /login), dan
+  // blijft het gedrag exact zoals het was.
+  const nextSlugRef = useRef<string | null>(null)
+
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -36,6 +46,12 @@ export default function ResetPasswordPage() {
     const tokenHash = searchParams.get('token_hash')
     const type = (searchParams.get('type') as EmailOtpType | null) ?? 'recovery'
     const code = searchParams.get('code')
+
+    const next = searchParams.get('next')
+    if (next) {
+      const genormaliseerd = normaliseerSlug(next)
+      nextSlugRef.current = isGeldigeSlug(genormaliseerd) ? genormaliseerd : null
+    }
 
     // Er zit een token/code in de link → wacht op klik van de gebruiker.
     if (tokenHash || code) {
@@ -107,7 +123,8 @@ export default function ResetPasswordPage() {
       setPhase('form')
     } else {
       setPhase('success')
-      setTimeout(() => router.push('/dashboard'), 2000)
+      const bestemming = nextSlugRef.current ? `/login/${nextSlugRef.current}` : '/dashboard'
+      setTimeout(() => router.push(bestemming), 2000)
     }
   }
 
@@ -160,7 +177,7 @@ export default function ResetPasswordPage() {
                 </svg>
               </div>
               <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', marginBottom: 10 }}>Wachtwoord opgeslagen</h2>
-              <p style={{ fontSize: 14, color: '#5A6B61' }}>U wordt doorgestuurd naar uw dashboard…</p>
+              <p style={{ fontSize: 14, color: '#5A6B61' }}>U wordt zo doorgestuurd…</p>
             </div>
 
           ) : phase === 'checking' || phase === 'verifying' ? (

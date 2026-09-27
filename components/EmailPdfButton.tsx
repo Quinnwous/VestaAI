@@ -76,7 +76,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
           ) : (
             <>
               <p style={{ fontSize: 12, fontWeight: 600, color: '#5C6470', marginBottom: 4 }}>Stuur PDF naar jezelf of een collega:</p>
-              <p style={{ fontSize: 11.5, color: '#98A0A6', marginBottom: 8 }}>Alleen intern — niet naar een koper of klant.</p>
+              <p style={{ fontSize: 11.5, color: '#5C6470', marginBottom: 8 }}>Alleen intern — niet naar een koper of klant.</p>
               <input
                 type="email"
                 value={email}

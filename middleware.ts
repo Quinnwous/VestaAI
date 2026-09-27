@@ -12,6 +12,11 @@ const PUBLIC_EXACT = new Set([
 ])
 const PUBLIC_PREFIX = [
   '/auth/reset-password', '/api/me',
+  // Item 9.2: wachtwoord-reset vanaf de kantoorlogin wordt per definitie
+  // uitgevoerd door iemand die nog niet is ingelogd — zonder deze
+  // uitzondering redirect de middleware elke aanvraag naar /login voordat
+  // de route zelf ooit draait.
+  '/api/auth/kantoor-reset',
 ]
 
 export async function middleware(request: NextRequest) {

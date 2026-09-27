@@ -40,4 +40,12 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+// Opt-in bundle-analyse (item 12.3): `ANALYZE=true npm run build` schrijft
+// .next/analyze/*.html met een treemap van elke client-/server-bundel.
+// Nooit actief in een gewone build — alleen devDependency, geen productie-impact.
+import withBundleAnalyzerInit from '@next/bundle-analyzer'
+const withBundleAnalyzer = withBundleAnalyzerInit({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+export default withBundleAnalyzer(nextConfig)

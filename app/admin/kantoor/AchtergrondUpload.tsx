@@ -60,7 +60,7 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center', overflow: 'hidden',
         }}
       >
-        {!preview && <span style={{ fontSize: 12.5, color: '#98A0A6', marginBottom: 42 }}>Nog geen beeld</span>}
+        {!preview && <span style={{ fontSize: 12.5, color: '#5C6470', marginBottom: 42 }}>Nog geen beeld</span>}
       </div>
       <div style={{ fontSize: 12.5, marginTop: 7 }}>
         {status === 'uploading' && <span className="text-gray-700">Uploaden…</span>}
@@ -76,7 +76,7 @@ function Vak({ kantoorId, slot, label, hint, huidigUrl }: {
             >
               {preview ? 'Vervangen' : 'Beeld kiezen'}
             </button>
-            <p style={{ color: '#98A0A6', margin: '2px 0 0', fontSize: 11.5 }}>{hint}</p>
+            <p style={{ color: '#5C6470', margin: '2px 0 0', fontSize: 11.5 }}>{hint}</p>
           </>
         )}
       </div>

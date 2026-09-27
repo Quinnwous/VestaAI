@@ -100,7 +100,7 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
       ) : notitie ? (
         <p style={{ fontSize: 13.5, color: '#5C6470', lineHeight: 1.6, margin: 0, background: '#F7F8F9', borderRadius: 'var(--merk-radius-md, 12px)', padding: '13px 15px', whiteSpace: 'pre-wrap' }}>{notitie}</p>
       ) : (
-        <p style={{ fontSize: 13, color: '#98A0A6', fontStyle: 'italic', margin: 0, background: '#F7F8F9', borderRadius: 'var(--merk-radius-md, 12px)', padding: '13px 15px' }}>Geen notitie — alleen zichtbaar voor je team.</p>
+        <p style={{ fontSize: 13, color: '#5C6470', fontStyle: 'italic', margin: 0, background: '#F7F8F9', borderRadius: 'var(--merk-radius-md, 12px)', padding: '13px 15px' }}>Geen notitie — alleen zichtbaar voor je team.</p>
       )}
     </div>
   )

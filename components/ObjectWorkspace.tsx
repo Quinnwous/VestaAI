@@ -244,12 +244,12 @@ export function ObjectWorkspace({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                 <div style={card}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Virtual staging</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
+                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
                   <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
                 </div>
                 <div style={card}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
+                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
                   <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
                 </div>
               </div>
@@ -265,17 +265,17 @@ export function ObjectWorkspace({
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
                 <div style={card}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar jezelf of een collega</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure intern door — nooit direct naar een koper.</p>
+                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure intern door — nooit direct naar een koper.</p>
                   <EmailPdfButton objectId={objectId} userEmail={userEmail} />
                 </div>
                 <div style={card}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Realworks-export</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de woninggegevens als XML voor Realworks.</p>
+                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de woninggegevens als XML voor Realworks.</p>
                   <RealworksExportButton objectId={objectId} />
                 </div>
                 <div style={{ ...card, gridColumn: 'span 2' }}>
                   <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
-                  <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
+                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
                   <PrijswijzigingModal objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
                 </div>
               </div>

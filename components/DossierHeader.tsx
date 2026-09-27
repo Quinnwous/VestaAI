@@ -7,7 +7,7 @@ import { StatusToggle } from '@/app/(app)/object/[id]/StatusToggle'
 import { colors, radius, shadow, Eyebrow, SerifTitle, StatTile } from '@/components/ui'
 import { WaardebepalingPdfButton } from '@/components/WaardebepalingPdfButton'
 import { formatDatum, formatM2 } from '@/lib/utils'
-import { euro } from '@/lib/opmaak'
+import { euroTegel } from '@/lib/opmaak'
 import { woningtypeLabel, type ObjectContentStatus, type ObjectFase, type PropertyInput } from '@/lib/schemas'
 
 const FASE_ORDE: ObjectFase[] = ['verkoopadvies', 'in_verkoop', 'verkocht']
@@ -193,14 +193,14 @@ export function DossierHeader({
           <StatTile
             label="Waarde"
             waarde={waarde ?? undefined}
-            opmaak={euro}
+            opmaak={euroTegel}
             waarschuwing={waarde == null ? 'Nog geen waardering' : undefined}
             bijschrift={waarde != null && waardeWeinigData ? 'Indicatief — beperkte data' : undefined}
           />
           <StatTile
             label="Vraagprijs"
             waarde={vraagprijs ?? undefined}
-            opmaak={euro}
+            opmaak={euroTegel}
             waarschuwing={
               vraagprijs == null
                 ? (fase === 'verkoopadvies' ? 'Nog niet vastgesteld' : 'Nog geen vraagprijs')

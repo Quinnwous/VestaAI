@@ -24,7 +24,8 @@ import fs from 'fs'
 test('landingspagina laadt en toont CTA', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle(/VestaAI/)
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('AI-assistent')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Waardebepaling')
+  await expect(page.getByRole('link', { name: /toegang aanvragen/i }).first()).toBeVisible()
   // Gesloten platform sinds 15 sep 2026 (geen zelf-aanmelden): CTA's zijn
   // "Inloggen" en "Contact opnemen", geen "gratis starten"/prijzenpagina meer.
   await expect(page.getByRole('link', { name: /inloggen/i }).first()).toBeVisible()

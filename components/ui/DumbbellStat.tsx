@@ -12,8 +12,10 @@
 
 import { colors } from './tokens'
 
-const GOED = '#1B7F4C'
-const AANDACHT = '#B45309'
+// Beide iets donkerder dan de vorige waarden (#1B7F4C/#B45309): die haalden op
+// de tegelachtergrond (#EEEFF0) geen 4.5:1 contrast — Lighthouse a11y, 12.3.
+const GOED = '#166534'
+const AANDACHT = '#92400E'
 
 export function DumbbellStat({
   wij,

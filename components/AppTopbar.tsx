@@ -128,7 +128,7 @@ export function AppTopbar({
       <div style={{ padding: '9px 11px 8px', borderBottom: '1px solid #EEF0F2', marginBottom: 4 }}>
         {gebruiker.naam && <p style={{ fontSize: 13.5, fontWeight: 700, color: '#14181B', margin: 0 }}>{gebruiker.naam}</p>}
         {gebruiker.email && (
-          <p style={{ fontSize: 12, color: '#98A0A6', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <p style={{ fontSize: 12, color: '#5C6470', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {gebruiker.email}
           </p>
         )}
@@ -202,7 +202,7 @@ export function AppTopbar({
               <span style={{ width: 26, height: 26, borderRadius: 7, background: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, letterSpacing: '-.04em' }}>V</span>
               </span>
-              <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.01em', color: '#98A0A6', whiteSpace: 'nowrap' }}>
+              <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-.01em', color: '#5C6470', whiteSpace: 'nowrap' }}>
                 Vesta<span style={{ color: '#1A6B45' }}>AI</span>
               </span>
             </span>
@@ -286,7 +286,7 @@ export function AppTopbar({
             </div>
             <div style={{ borderTop: '1px solid #EBEEF1', marginTop: 8, paddingTop: 8 }}>
               {gebruiker.naam && <p style={{ fontSize: 13, fontWeight: 700, color: '#14181B', margin: '0 0 2px' }}>{gebruiker.naam}</p>}
-              {gebruiker.email && <p style={{ fontSize: 12, color: '#98A0A6', margin: '0 0 8px' }}>{gebruiker.email}</p>}
+              {gebruiker.email && <p style={{ fontSize: 12, color: '#5C6470', margin: '0 0 8px' }}>{gebruiker.email}</p>}
               <Link href="/account" style={{ display: 'block', fontSize: 14, fontWeight: 600, color: '#14181B', padding: '6px 0', textDecoration: 'none' }}>
                 Mijn account
               </Link>

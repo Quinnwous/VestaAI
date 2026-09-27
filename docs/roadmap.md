@@ -17,30 +17,29 @@
 
 ## 📍 Stand van zaken
 
-- **Sessie 26-27 sep (branch `feat/sessie-26sep`, PR → `main`):** 7.3, 7.4, 8.2,
-  9.3 en 12.2 opgeleverd (drie parallelle Sonnet-agents + 9.3 en review door
-  Opus). **Fase 7 is af** (één kaartstack, Leaflet weg). typecheck/test (580)/build
-  groen, `dod:screens` groen op 390/1280/1920, e2e 22 passed / 5 skipped.
-  PR #29 (6.4, 7.2, 10.1, 10.2) stond al op `main`.
-- **Fase:** 6 en 7 af; uit 8, 9, 10, 12 en 13 zijn losse items vooruit gebouwd.
-  Fase 5 geblokkeerd op de exports, fase 11 op het voorbeeld-verkoopadvies.
-  Opleverdetails staan in `docs/besluiten.md`, niet hier.
-- **Volgende items (parallel te verdelen, nul bestandsoverlap):** **8.3**
-  outputset v2 + ervaring (raakt `lib/claude.ts`, `ResultTabs`; hierin ook een
-  gerichte herkansing van alleen `funda_tekst`, zie besluiten 26 sep) ·
-  **12.3** performance (Lighthouse, bundle-analyzer) · **13.2** landingspagina
-  herpositioneren · **9.2** reset-mail in kantoorstijl (schrapbaar) · daarna
-  **8.4** brochure-pdf (na 8.3) en **12.1** team-accounts (wacht op Quinn § 8 punt 5).
-- **Afwijking van CLAUDE.md, gecorrigeerd:** de fase-waarde in code en data is al
-  `verkoopadvies` (niet meer `acquisitie`); platform-admin is lokaal alleen
-  `quinn.berkouwer@gmail.com` (`lib/admin.ts`), het icloud-adres is een gewone
-  i4housing-makelaar (`DOD_EMAIL` voor de kantoorkant).
-- **i4housing-tekstsjabloon (8.2) staat nog niet in de database:** preset zit in
-  `scripts/repair-i4housing-branding.mjs` (dry-run getoond), `--write` wacht op
-  akkoord van Quinn — of zelf invullen via `/admin/kantoor/[id]` → Tekstsjabloon.
-- **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
-  concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
-- ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
+- **Sessie 27 sep (branch `feat/sessie-27sep`, PR → `main`):** 8.3, 9.2, 12.3,
+  13.2 opgeleverd (vier parallelle Sonnet-agents, review + fixes door Opus).
+  **Fase 9 en 13 zijn af.** i4housing-tekstsjabloon staat in de database (na
+  back-up, alléén dat veld). typecheck/test (641)/build groen, `dod:screens`
+  groen op 390/1280/1920, e2e 22 passed / 5 skipped. Daarvoor (26-27 sep):
+  7.3, 7.4, 8.2, 9.3, 12.2 — fase 7 af.
+- **Fase:** 6, 7, 9 en 13 af; fase 8 op 8.4/8.5 na, fase 10 op 10.5 na, fase 12
+  op 12.1/12.5 na. Fase 5 geblokkeerd op de exports, fase 11 op het
+  voorbeeld-verkoopadvies. Opleverdetails in `docs/besluiten.md`.
+- **Volgende items:** **8.4** brochure-pdf in kantoorstijl (nu vrij: 8.3 is
+  gemerged) · **intake stap 5 opruimen** (`content_keuzes` in `PropertyForm.tsx`
+  filtert sinds 8.3 niets meer — weghalen of ombouwen tot "extra's alvast
+  genereren") · **transacties-RPC** (`/marktanalyse/transacties` 866 ms
+  server-side, zie `docs/data/performance.md`) · **kaart in het dossier pas laden
+  in beeld** (mobiele performance dossier 56-75) · **8.5** staging-modelcheck ·
+  **12.5** demo-voorbereiding. **12.1** wacht op Quinn (§ 8 punt 5).
+- **Performance (12.3, `docs/data/performance.md`):** a11y 100 op dashboard,
+  marktanalyse en dossier; performance desktop 96-100, mobiel dashboard 88-90,
+  marktanalyse ~80, dossier 56-75 (meting op deze machine instabiel — herhalen via
+  PSI op de productie-URL). First Load JS dossier 547 → 269 kB.
+- ⚠️ NL+EN-contentgeneratie duurde ~3 min tegen de Vercel-limiet van 300 s; sinds
+  8.3 is de kern-call kleiner (max_tokens 16.000 → 6.000, 7 i.p.v. 17 velden) —
+  echte duur nog niet gemeten (eerste generatie na deploy timen).
 - **Blokkades (geen van alle blokkeert het bouwen):**
   - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
     juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
@@ -51,8 +50,7 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** i4housing-tekstsjabloon wegschrijven (`--write`)? ·
-  blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
   (`/marktanalyse/kaart`, nu de enige kaart)?
 
 ---
@@ -707,7 +705,7 @@ MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart 
   slotzin, doel_woorden, EN-koppen), i4housing-preset via
   `scripts/repair-i4housing-branding.mjs` (uitbreiden; dry-run). Tests op
   promptrender en validator.
-- [ ] **8.3 Outputset v2 + ervaring** — `ContentOutputSchema` v2 (oude sleutels
+- [x] **8.3 Outputset v2 + ervaring** — `ContentOutputSchema` v2 (oude sleutels
   optioneel), `sneak_preview`, extra's via `POST /api/object/[id]/extra?type=`,
   `ResultTabs`: kern-tabs + "Meer…"-menu voor extra's, timer + skeleton per tab
   (3.1), Funda-tekst NL en EN náást elkaar op ≥ 1280 px, kopieerknop per veld.
@@ -720,18 +718,8 @@ MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart 
   sjabloon 1-op-1 in NL en EN; brochure niet te onderscheiden van hun eigen werk;
   scène 5 loopt met timer.
 
-### Fase 9 — White-label-wow (2 sessies)
-
-- [x] **9.1 Inloggen in kantoorstijl** — kolom `kantoren.slug` (migratie),
-  `app/login/[slug]/page.tsx` (logo, kleuren, sfeerbeeld, tabtitel/favicon van
-  het kantoor), middleware laat `/login/` door, na uitloggen terug naar de
-  laatst gebruikte slug (cookie), `/login` zonder slug blijft VestaAI-groen.
-- [ ] **9.2 Reset-mail in kantoorstijl** (schrapbaar) — `generateLink` +
-  Resend-sjabloon met logo/kleuren.
-- [x] **9.3 Consistentiecontrole** — `scripts/controleer-huisstijl.mjs` draaien
-  op alle routes incl. pdf's en lege staten; alles wat groen doorlaat fixen.
-- **Klaar als:** van inloglink tot pdf nergens VestaAI-groen of de naam
-  (behalve de topbar-lockup).
+### Fase 9 — White-label-wow ✅ (27 sep 2026)
+Kantoorlogin `/login/<slug>`, reset-mail in kantoorstijl, consistentiecontrole (huisstijlcheck incl. tabs, portals, pdf's). Details: `docs/besluiten.md`.
 
 ### Fase 10 — Woningdossier premium (3 sessies)
 
@@ -775,7 +763,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   waardering toont n en pdf-knop, kaart laadt zonder CSP-fout, content
   (`E2E_GENERATE=1`), admin-importhistorie, **RLS-test** met twee kantoren
   (fixture + i4housing) via REST: kantoor A ziet 0 rijen van B.
-- [ ] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
+- [x] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
   (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
   op echte data gelogd in `docs/data/performance.md`.
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
@@ -788,13 +776,8 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 - **Klaar als:** alle "klaar als" van fase 1-10 gehaald; generale repetitie
   zonder haperingen; alle checks groen.
 
-### Fase 13 — Publieke site (parallel via subagent, 2-3 sessies; niet kritiek)
-
-Start na de merge van fase 1 (voorkomt conflicten in `app/layout.tsx`).
-- [x] 13.1 Verouderde copy eruit (`over-ons`, `privacy`, metadata/OG).
-- [ ] 13.2 `LandingPageClient.tsx` herpositioneren naar het nieuwe verhaal
-  (data + waardering + content, één klant, geen prijzen).
-- **Klaar als:** geen claim in strijd met het huidige model; Lighthouse > 90/95.
+### Fase 13 — Publieke site ✅ (27 sep 2026)
+Verouderde copy eruit (13.1) en landingspagina herpositioneerd op waardering + marktinzicht, content, white-label en concierge (13.2). Details: `docs/besluiten.md`.
 
 ---
 
@@ -933,6 +916,16 @@ kleur-fallback — regex aanscherpen tot hex/rgb · `e2e/smoke.spec.ts`
 generatietest is verouderd (verwacht `POST /api/generate` bij aanmaken; sinds
 fase 3 niet meer) · EN-kwartaalbericht nog niet tegen de echte API getest ·
 `PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
+
+**Uit de sessie van 27 sep:** bijgevoegde documenten (meetrapport/keuring) voeden
+sinds 8.3 alleen de kern-call, niet de extra's (`energie_advies`,
+`kopersvragen_faq`) — meegeven aan `genereerExtraContent` · footers van
+`/over-ons`, `/contact`, `/privacy`, `/vertrouwen`, `/voorwaarden` hebben nog de
+oude tagline ("De AI-assistent voor de makelaardij") · `/vertrouwen` gebruikt
+"je" op een publieke pagina (conventie: "u") · kantoor-reset rate-limit is
+in-memory per instance (zachte rem; tabel als het ooit nodig is) · `StatTile.tsx`
+heeft nog een `var(--merk-rgb, 26,107,69)`-fallback · CLAUDE.md-status van de
+concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
 
 **Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
 `handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`

@@ -37,7 +37,7 @@ export const VLAK_OPACITY = 0.16
 
 /** Rasterlijnen: dun en licht, nooit dominanter dan de data. */
 export const RASTER_KLEUR = 'rgba(20,24,27,.06)'
-export const AS_KLEUR = '#98A0A6'
+export const AS_KLEUR = '#5C6470'
 
 /** Curve-type voor vloeiende lijnen (Catmull-Rom-achtig gevoel via recharts' monotone-variant). */
 export const LIJN_CURVE = 'monotone' as const

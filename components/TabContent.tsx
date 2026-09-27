@@ -67,19 +67,19 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
     <div style={{ position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 }}>
         {label && (
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#98A0A6', textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: '#5C6470', textTransform: 'uppercase', letterSpacing: '.06em' }}>{label}</span>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto', flexWrap: 'wrap' }}>
           {wordCount && wordLimit && (
-            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: words > wordLimit ? '#DC2626' : words > wordLimit * 0.9 ? '#D97706' : '#98A0A6', fontWeight: words > wordLimit ? 700 : 400 }}>
+            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', color: words > wordLimit ? '#DC2626' : words > wordLimit * 0.9 ? '#D97706' : '#5C6470', fontWeight: words > wordLimit ? 700 : 400 }}>
               {words}/{wordLimit} woorden{words > wordLimit ? ' — te lang!' : ''}
             </span>
           )}
           {wordCount && !wordLimit && (
-            <span style={{ fontSize: 12, color: '#98A0A6' }}>{words} woorden</span>
+            <span style={{ fontSize: 12, color: '#5C6470' }}>{words} woorden</span>
           )}
           {charLimit && (
-            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: overLimit ? '#DC2626' : nearLimit ? '#D97706' : '#98A0A6' }}>
+            <span style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums', fontWeight: 600, color: overLimit ? '#DC2626' : nearLimit ? '#D97706' : '#5C6470' }}>
               {chars.toLocaleString('nl-NL')}/{charLimit.toLocaleString('nl-NL')} tekens{overLimit ? ' — te lang!' : ''}
             </span>
           )}

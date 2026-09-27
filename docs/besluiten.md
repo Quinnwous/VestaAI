@@ -6,6 +6,29 @@
 
 ---
 
+### 27 sep 2026 (sessie Opus als regisseur + vier Sonnet-agents) — 8.3, 9.2, 12.3, 13.2
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 8.3 outputset v2 | Kern-call levert 7 velden (`funda_tekst`, `brochure_tekst`, `instagram`, `linkedin_kantoor`, `sneak_preview` (NL), `koper_email`, `buurtomschrijving`), max_tokens 16.000 → 6.000. Extra's (`open_huis`, twee follow-ups, `video_script`, `energie_advies`, `kopersvragen_faq`) op knopdruk via `POST /api/object/[id]/extra?type=` en een "Meer…"-menu, NL-only. Oude sleutels blijven optioneel; `metLegacyFallback()` parse't eerst, want `outputs_json` komt ongevalideerd uit de database (oude dossiers crashten de Teksten-tab) | Sonnet |
+| 8.3 gerichte herkansing | Sjabloonfout → alleen `funda_tekst` opnieuw (platte tekst, model `CONTENT`, max 3.000 tokens) i.p.v. de hele suite; "herkansing gaf geen valide JSON" kan niet meer | Sonnet |
+| 8.3 review: extra's niet kwijt | "Genereer content" overschreef `outputs_json` en wiste zo elke extra → `behoudExtras()`. De extra-route geeft 409 zolang `content_status = 'bezig'` en leest vlak voor het schrijven opnieuw | Opus |
+| 8.3 intake stap 5 | `content_keuzes` in `PropertyForm.tsx` filtert niets meer (die velden zitten niet meer in de kern). Bewust niet in dit item; volgend item | Sonnet + Opus |
+| 9.2 reset-mail | `/login/<slug>` → `POST /api/auth/kantoor-reset`: service role `generateLink({ type: 'recovery' })` + Resend-mail met logo/kleur/naam van het kantoor. Altijd `{ ok: true }` (geen enumeratie), alleen als de makelaar bij dat kantoor hoort, `redirectTo` uit `APP_URL` + gevalideerde slug, in-memory rate-limit (5/10 min per ip+e-mail). Middleware laat de route door (niet-ingelogd per definitie). Generieke `/login` ongewijzigd | Sonnet |
+| 9.2 review | `ilike` las `_`/`%` als jokerteken (`q_inn@…` vond `quinn@…`) → escapen + exacte vergelijking + link naar het opgeslagen adres. Elk antwoord duurt minimaal 1,5 s (anders verraadt de responstijd een bestaand account). Hulpfuncties in `lib/kantoorReset.ts`: een Next-routebestand mag alleen route-exports hebben (de build faalde) | Opus |
+| 12.3 performance | `maplibre-gl` zat ondanks `dynamic(ssr:false)` in de hoofdbundel: de laag-componenten importeerden hem zelf → runtime via `await import()`, type statisch. First Load JS dossier 547 → 269 kB, `/woningen` 490 → 212 kB. `colors.muted` `#98A0A6` (2,65:1) → `#5C6470`; a11y 100 op alle drie de routes. `@next/bundle-analyzer` opt-in (`ANALYZE=true`). Mobiele performance marktanalyse (~80) en dossier (56-75, instabiele meting) halen 85 niet: kaart/grafieken laden direct — architectuurkeuze, backlog | Sonnet |
+| 12.3 review | Na de kleurvervanging waren afgeronde en toekomstige intakestappen even grijs → afgerond `#2C3238` | Opus |
+| 13.2 landing | Hero = waardebepaling + marktinzicht op eigen data, met "geen taxatie"-disclaimer; content, white-label en concierge als dragende features; staging-sectie, content-hero-demo en "Fortune 500"-taal weg; vier feitelijk onjuiste claims gecorrigeerd (USP's beïnvloeden de waardering niet, alleen vijf kenmerk-correcties, WOZ niet automatisch, geen Funda-API in ontwikkeling). A11y 100, performance ~91 (lokaal) | Sonnet |
+| 13.2 review | Trust strip noemde Funda/NVM/Realworks — leest als koppeling of goedkeuring die er niet is → alleen echte bronnen (eigen verkoopdata, BAG, CBS, PDOK, opslag in de EU, Claude). "Direct plaatsbaar, geen nabewerking" en "700+ woorden" weg; FAQ zegt eerlijk dat er geen Funda-koppeling is | Opus |
+| Dossierheader > € 1 mln | "€ 1.482.000" werd in de tegel afgekapt → `euroTegel()` (`lib/opmaak.ts`): vanaf een miljoen `€ 1,48 mln`; het exacte bedrag staat in het waarderingspaneel | Opus |
+
+### 27 sep 2026 — i4housing-tekstsjabloon live, afspraak "ga door"
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| i4housing-tekstsjabloon | Akkoord Quinn. Na back-up (`backups/2026-09-27T10-18-58-728Z/`) alléén `huisstijl_json.tekstsjabloon` toegevoegd (gerichte update, schema-gevalideerd; overige 14 velden aantoonbaar ongewijzigd). **Niet** via `repair-i4housing-branding.mjs --write`: dat uploadt ook logo/favicon/sfeerbeelden opnieuw en herschrijft de hele huisstijl — meer dan akkoord was gegeven | Quinn + Opus |
+| Limiet → "ga door" | Na een gebruikslimiet betekent "ga door": onderbroken agents hervatten via SendMessage, niet opnieuw starten (CLAUDE.md § Parallel met agents) | Quinn |
+
 ### 26-27 sep 2026 (sessie Opus als regisseur + drie Sonnet-agents) — 7.3, 7.4, 8.2, 9.3, 12.2
 
 | Onderwerp | Besluit | Door |
@@ -437,6 +460,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 27 sep 2026 — PR `feat/sessie-27sep`: **8.3, 9.2, 12.3, 13.2** (fase 9 en 13
+  af) + i4housing-tekstsjabloon in de database.
 - 27 sep 2026 — PR `feat/sessie-26sep` (parallelle Sonnet-agents, Opus-review):
   **7.3, 7.4 (fase 7 af), 8.2, 9.3, 12.2** — één kaartstack zonder Leaflet,
   tekstsjabloon-model, uitgebreide huisstijlcheck incl. pdf's, e2e-suite met RLS-test.

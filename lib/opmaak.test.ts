@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel, afstand, datumTijd } from './opmaak'
+import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel, afstand, datumTijd, euroTegel } from './opmaak'
 
 describe('lib/opmaak', () => {
   it('euro formatteert hele bedragen met duizendtalpunten en geen centen', () => {
@@ -69,5 +69,18 @@ describe('lib/opmaak', () => {
     expect(datumTijd('2026-12-31T23:30:00.000Z')).toBe('1 jan 2027 om 00:30') // wintertijd, over de jaargrens
     expect(datumTijd('niet-een-datum')).toBe('—')
     expect(datumTijd(null)).toBe('—')
+  })
+})
+
+describe('euroTegel', () => {
+  it('toont tot een miljoen het volle bedrag', () => {
+    expect(euroTegel(737000)).toBe('€ 737.000')
+  })
+  it('toont vanaf een miljoen compact met twee decimalen', () => {
+    expect(euroTegel(1_482_000)).toBe('€ 1,48 mln')
+    expect(euroTegel(1_095_000)).toBe('€ 1,10 mln')
+  })
+  it('geeft een streepje zonder waarde', () => {
+    expect(euroTegel(null)).toBe('—')
   })
 })

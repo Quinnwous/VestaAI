@@ -29,7 +29,7 @@ export const BasisKaart = dynamic(() => import('./BasisKaartMap').then((m) => m.
         justifyContent: 'center',
       }}
     >
-      <p style={{ fontSize: 13.5, color: '#98A0A6' }}>Kaart laden…</p>
+      <p style={{ fontSize: 13.5, color: '#5C6470' }}>Kaart laden…</p>
     </div>
   ),
 })

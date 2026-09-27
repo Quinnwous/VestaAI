@@ -112,7 +112,7 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
     <AppPagina>
       <Link
         href="/woningen"
-        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#98A0A6', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#5C6470', fontSize: 13.5, fontWeight: 600, textDecoration: 'none', marginBottom: 18 }}
       >
         ← Terug naar de portefeuille
       </Link>
