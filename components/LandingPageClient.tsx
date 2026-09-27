@@ -30,7 +30,9 @@ const REFERENTIES = [
   { adres: 'Vinkenlaan 8', afstand: '0,9 km', prijs: '€ 858.000' },
 ]
 
-const TRUST_BADGES = ['Funda', 'NVM-richtlijnen', 'Realworks', 'BAG / Kadaster', 'AVG-proof', 'Claude · Anthropic']
+// Alleen bronnen en diensten die het platform echt gebruikt — geen namen die als
+// partnerschap of keurmerk lezen (Funda/NVM: er is geen koppeling of goedkeuring).
+const TRUST_BADGES = ['Uw eigen verkoopdata', 'BAG / Kadaster', 'CBS-buurtcijfers', 'PDOK-kaarten', 'Opslag in de EU', 'Claude · Anthropic']
 
 const FEATURES = [
   { icon: 'value', titel: 'Woningwaardering', tekst: 'Een onderbouwde bandbreedte op vergelijkbare verkopen uit uw eigen transactiedata, met correcties per kenmerk en het aantal referenties altijd zichtbaar — geen taxatie, wel een sterk verhaal voor de verkoper.' },
@@ -42,7 +44,7 @@ const FEATURES = [
 ]
 
 const TABS_DATA = [
-  { key: 'funda', label: 'Funda-tekst', meta: '700+ wrd', sub: 'Funda-regelset ingebakken', initial: 'F' },
+  { key: 'funda', label: 'Funda-tekst', meta: 'uw format', sub: 'volgens de Funda-richtlijnen', initial: 'F' },
   { key: 'brochure', label: 'Brochure', meta: 'kort + lang', sub: '200 én 500+ woorden', initial: 'B' },
   { key: 'instagram', label: 'Instagram', meta: '3 varianten', sub: 'Emotioneel · informatief · actie', initial: 'I' },
   { key: 'linkedin', label: 'LinkedIn', meta: '2 varianten', sub: 'Kantoor én makelaar', initial: 'L' },
@@ -94,7 +96,7 @@ const REDENEN = [
   { nr: 'a', titel: 'Onderbouwd, niet onderbuik', tekst: 'De waardebepaling steunt op echte referentietransacties uit uw eigen data, met het aantal referenties er altijd bij — geen zwarte doos en geen schijnzeker getal.' },
   { nr: 'b', titel: 'Klinkt als uw kantoor, niet als een generieke chatbot', tekst: 'Het huisstijlgeheugen leert uw schrijftoon. Geen generieke output die u alsnog moet herschrijven.' },
   { nr: 'c', titel: 'Eén login in plaats van tien tools', tekst: 'Waardering, marktinzicht, verkoopkaart en content op één plek — die ook nog eens met elkaar samenwerken.' },
-  { nr: 'd', titel: 'Direct plaatsbaar, geen nabewerking', tekst: 'Output voldoet aan de Funda-regels en is meteen te plaatsen, exporteren of met één klik te herschrijven.' },
+  { nr: 'd', titel: 'Direct bruikbaar', tekst: 'Teksten volgen de Funda-richtlijnen en de vaste opbouw van uw kantoor. U controleert, past aan of herschrijft met één klik, en kopieert ze naar Funda of uw CRM.' },
   { nr: 'e', titel: 'Uw data blijft in Europa', tekst: 'Versleuteld opgeslagen binnen de EU, volledig AVG-proof. Wij verkopen geen data, trainen er geen AI-modellen op en gebruiken uw gegevens alleen voor u.' },
   { nr: 'f', titel: 'Nederlands én Engels, automatisch', tekst: 'Elke contentgeneratie komt automatisch ook in het Engels beschikbaar, klaar om naast de Nederlandse tekst te zetten.' },
 ]
@@ -116,7 +118,7 @@ const FAQS = [
   { v: 'Wat kan VestaAI precies?', a: 'VestaAI berekent een onderbouwde woningwaardering op uw eigen verkoopdata, geeft marktinzicht en concurrentieanalyse in uw regio, en genereert de volledige contentsuite voor een woning — Funda-tekst, brochure, social en koper-e-mail, in het Nederlands en Engels.' },
   { v: 'Is de waardebepaling een taxatie?', a: 'Nee. Het is een onderbouwde indicatie op basis van vergelijkbare verkopen uit uw eigen transactiedata, met het aantal onderliggende referenties er altijd bij — geen taxatie in de zin van het NRVT. Voor een formele taxatie schakelt u een erkend taxateur in.' },
   { v: 'Waar komt de data vandaan?', a: 'Uit de eigen verkoopdata van uw kantoor. Wij importeren en verversen die periodiek voor u — uw kantoor hoeft zelf niets te importeren.' },
-  { v: 'Werkt dit met Funda?', a: 'De teksten voldoen aan de Funda-richtlijnen (lengte, structuur, verboden woorden) en zijn direct te plaatsen op Funda of in uw eigen CRM.' },
+  { v: 'Werkt dit met Funda?', a: 'Er is geen directe koppeling met Funda: u kopieert de tekst naar Funda of uw CRM. De teksten volgen de Funda-richtlijnen (geen prijsvermelding, geen discriminerende taal) en de vaste opbouw van uw kantoor.' },
   { v: 'Hoe zit het met de privacy van mijn data?', a: 'Alle data staat versleuteld opgeslagen binnen de EU en is strikt per kantoor afgeschermd. Wij verkopen geen data en gebruiken uw gegevens nooit om AI-modellen te trainen.' },
   { v: 'Hoe kom ik aan toegang?', a: 'VestaAI is een gesloten platform: nieuwe kantoren worden persoonlijk aangesloten. Neem contact op via de knop hierboven en we plannen een kennismaking.' },
 ]
