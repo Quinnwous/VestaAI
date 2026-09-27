@@ -74,6 +74,23 @@ describe('PropertyInputSchema — usps/doelgroep optioneel (item 3.2, verkoopadv
   })
 })
 
+describe('PropertyInputSchema — content_keuzes deprecated sinds 8.3 (opruimitem ná 8.3)', () => {
+  const MET_GROEP = { ...BASIS, woningtype_groep: 'appartement' as const }
+
+  it('een oud dossier met content_keuzes blijft geldig parsen (backcompat)', () => {
+    const geparsed = PropertyInputSchema.parse({
+      ...MET_GROEP,
+      content_keuzes: ['followup', 'video'],
+    })
+    expect(geparsed.content_keuzes).toEqual(['followup', 'video'])
+  })
+
+  it('een nieuwe intake zonder content_keuzes (de wizard schrijft dit veld niet meer) parset zonder het veld', () => {
+    const geparsed = PropertyInputSchema.parse(MET_GROEP)
+    expect(geparsed.content_keuzes).toBeUndefined()
+  })
+})
+
 describe('woningtypeLabel', () => {
   it('geeft het subtype als dat er is', () => {
     expect(woningtypeLabel({ woningtype_groep: 'vrijstaand', woningtype_sub: 'Villa' })).toBe('Villa')
