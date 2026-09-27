@@ -37,7 +37,7 @@ vi.mock('@/lib/branding', async () => {
   return { ...actual, bruikbaarLogo: (...args: unknown[]) => bruikbaarLogo(...args) }
 })
 
-import { POST } from './route'
+import { POST, escapeIlike, _zetMinimaleDuurVoorTest, MINIMALE_DUUR_MS } from './route'
 import { _resetAlleEmmersVoorTest } from '@/lib/resetRateLimit'
 
 function makeRequest(body: unknown, headers: Record<string, string> = {}) {
@@ -51,6 +51,7 @@ function makeRequest(body: unknown, headers: Record<string, string> = {}) {
 describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    _zetMinimaleDuurVoorTest(0)
     _resetAlleEmmersVoorTest()
     kantoorMaybeSingle.mockResolvedValue({ data: null })
     makelaarMaybeSingle.mockResolvedValue({ data: null })
@@ -100,7 +101,7 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     kantoorMaybeSingle.mockResolvedValue({
       data: { id: 'kantoor-1', name: 'i4 Housing', logo_url: null, huisstijl_json: { primaire_kleur: '#0080C8' } },
     })
-    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1' } })
+    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1', email: 'makelaar@i4housing.nl' } })
 
     const res = await POST(makeRequest({ slug: 'i4housing', email: 'makelaar@i4housing.nl' }) as never)
     const data = await res.json()
@@ -126,7 +127,7 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     kantoorMaybeSingle.mockResolvedValue({
       data: { id: 'kantoor-1', name: 'i4 Housing', logo_url: null, huisstijl_json: {} },
     })
-    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1' } })
+    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1', email: 'makelaar@i4housing.nl' } })
 
     await POST(makeRequest({ slug: 'i4housing', email: 'makelaar@i4housing.nl' }) as never)
 
@@ -138,7 +139,7 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     kantoorMaybeSingle.mockResolvedValue({
       data: { id: 'kantoor-1', name: 'i4 Housing', logo_url: null, huisstijl_json: {} },
     })
-    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1' } })
+    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1', email: 'makelaar@i4housing.nl' } })
 
     for (let i = 0; i < 5; i++) {
       await POST(makeRequest(
@@ -164,7 +165,7 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     kantoorMaybeSingle.mockResolvedValue({
       data: { id: 'kantoor-1', name: 'i4 Housing', logo_url: null, huisstijl_json: {} },
     })
-    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1' } })
+    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1', email: 'makelaar@i4housing.nl' } })
     generateLink.mockResolvedValue({ data: null, error: { message: 'kapot' } })
 
     const res = await POST(makeRequest({ slug: 'i4housing', email: 'makelaar@i4housing.nl' }) as never)
@@ -174,4 +175,22 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     expect(data).toEqual({ ok: true })
     expect(sendKantoorResetEmail).not.toHaveBeenCalled()
   })
+
+  it('stuurt niets als ilike een ander adres vond (jokerteken _), en escapet % en _', async () => {
+    expect(escapeIlike('q_inn%x@a.nl')).toBe('q\\_inn\\%x@a.nl')
+    kantoorMaybeSingle.mockResolvedValue({ data: { id: 'kantoor-1', name: 'i4 Housing', logo_url: null, huisstijl_json: {} } })
+    makelaarMaybeSingle.mockResolvedValue({ data: { id: 'makelaar-1', email: 'quinn@i4housing.nl' } })
+    const res = await POST(makeRequest({ slug: 'i4housing', email: 'q_inn@i4housing.nl' }) as never)
+    expect(await res.json()).toEqual({ ok: true })
+    expect(generateLink).not.toHaveBeenCalled()
+  })
+
+  it('antwoordt nooit sneller dan de minimale duur (geen timing-signaal)', async () => {
+    _zetMinimaleDuurVoorTest(120)
+    const start = Date.now()
+    await POST(makeRequest({ slug: 'bestaat-niet', email: 'x@y.nl' }) as never)
+    expect(Date.now() - start).toBeGreaterThanOrEqual(115)
+    expect(MINIMALE_DUUR_MS).toBeGreaterThanOrEqual(1000)
+  })
 })
+

@@ -39,6 +39,28 @@ function generiekAntwoord() {
   return NextResponse.json({ ok: true })
 }
 
+/**
+ * Minimale duur van elk antwoord: anders verraadt de responstijd of er een
+ * account bestaat (generateLink + mail versturen kost merkbaar meer tijd).
+ */
+export const MINIMALE_DUUR_MS = 1500
+
+/** Alleen voor tests: de minimale duur uitzetten. */
+let minimaleDuur = MINIMALE_DUUR_MS
+export function _zetMinimaleDuurVoorTest(ms: number) {
+  minimaleDuur = ms
+}
+
+/** `%` en `_` zijn jokertekens in `ilike`; een e-mailadres mag `_` bevatten. */
+export function escapeIlike(waarde: string): string {
+  return waarde.replace(/[\\%_]/g, (t) => `\\${t}`)
+}
+
+async function wachtTot(start: number, minimaal = minimaleDuur) {
+  const rest = minimaal - (Date.now() - start)
+  if (rest > 0) await new Promise((r) => setTimeout(r, rest))
+}
+
 export async function POST(request: NextRequest) {
   if (!isSupabaseConfigured()) return generiekAntwoord()
 
@@ -60,10 +82,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Ongeldige aanvraag' }, { status: 400 })
   }
 
+  const start = Date.now()
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'onbekend'
   if (!magResetPoging(bouwRateLimitSleutel(ip, email))) {
     // Geen enumeratie-risico: dit zegt niets over of het account bestaat,
     // alleen dat er te snel achter elkaar is aangevraagd.
+    await wachtTot(start)
     return generiekAntwoord()
   }
 
@@ -79,16 +103,18 @@ export async function POST(request: NextRequest) {
     if (kantoor) {
       const { data: makelaar } = await service
         .from('makelaars')
-        .select('id')
+        .select('id, email')
         .eq('kantoor_id', kantoor.id)
-        .ilike('email', email)
+        .ilike('email', escapeIlike(email))
         .maybeSingle()
 
-      if (makelaar) {
+      // Exact (hoofdletterongevoelig) hetzelfde adres, en de link gaat naar
+      // het opgeslagen adres — nooit naar wat de aanvrager intypte.
+      if (makelaar?.email && makelaar.email.toLowerCase() === email.toLowerCase()) {
         const redirectTo = `${APP_URL}/auth/reset-password?next=${encodeURIComponent(slug)}`
         const { data: link, error: linkError } = await service.auth.admin.generateLink({
           type: 'recovery',
-          email,
+          email: makelaar.email,
           options: { redirectTo },
         })
 
@@ -97,7 +123,7 @@ export async function POST(request: NextRequest) {
         } else if (link?.properties?.action_link) {
           const branding = bouwBranding(kantoor)
           const logoUrl = await bruikbaarLogo(branding.logoUrl)
-          await sendKantoorResetEmail(email, {
+          await sendKantoorResetEmail(makelaar.email, {
             naam: branding.naam,
             logoUrl,
             kleur: branding.primair,
@@ -113,5 +139,6 @@ export async function POST(request: NextRequest) {
     console.error('[kantoor-reset] onverwachte fout:', err instanceof Error ? err.message : err)
   }
 
+  await wachtTot(start)
   return generiekAntwoord()
 }
