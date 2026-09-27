@@ -81,7 +81,7 @@ export function DezeWoningPaneel({ control }: Props) {
       </div>
 
       {!heeftIets ? (
-        <p style={{ fontSize: 12.5, color: '#98A0A6', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 12.5, color: '#5C6470', margin: 0, lineHeight: 1.5 }}>
           Vul de wizard links in — hier verschijnt meteen een overzicht van wat je al hebt ingevuld.
         </p>
       ) : (
