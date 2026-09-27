@@ -17,37 +17,27 @@
 
 ## 📍 Stand van zaken
 
-- **Sessie 24-26 sep (branch `feat/sessie-24sep`, nog niet gepusht):** 6.4, 7.2,
-  10.1, 10.2 opgeleverd (parallelle Sonnet-agents, review + fixes door Opus),
-  Buurt & data gerepareerd, WOZ zelf invullen, StatTile/Modal/kop-fixes.
-  `dod:screens` 30/30 groen. Volgende: **7.3** straal per woning op `BasisKaart`
-  (daarna 7.4 Leaflet weg) · **8.2** tekstsjabloon-model (nu vrij: 6.4 is gemerged) ·
-  **9.3** consistentiecontrole · **12.2** e2e. Hardening-migratie wacht op
-  toepassen (§ 8 punt 10).
-- **Fase:** 6 af (6.1-6.4 ✅); uit 7, 8, 9,
-  10, 12 en 13 zijn losse items vooruit gebouwd door parallelle Sonnet-agents
-  (werkwijze: CLAUDE.md § Parallel met agents). Fase 5 geblokkeerd op de exports.
+- **Sessie 26-27 sep (branch `feat/sessie-26sep`, PR → `main`):** 7.3, 7.4, 8.2,
+  9.3 en 12.2 opgeleverd (drie parallelle Sonnet-agents + 9.3 en review door
+  Opus). **Fase 7 is af** (één kaartstack, Leaflet weg). typecheck/test (580)/build
+  groen, `dod:screens` groen op 390/1280/1920, e2e 22 passed / 5 skipped.
+  PR #29 (6.4, 7.2, 10.1, 10.2) stond al op `main`.
+- **Fase:** 6 en 7 af; uit 8, 9, 10, 12 en 13 zijn losse items vooruit gebouwd.
+  Fase 5 geblokkeerd op de exports, fase 11 op het voorbeeld-verkoopadvies.
   Opleverdetails staan in `docs/besluiten.md`, niet hier.
-- **Laatst opgeleverd (23-24 sep, PR `feat/fase-6`):** 6.1 marktanalyse v2
-  (~6 s → ~1,2 s), 6.2 transacties v2, 6.3 concurrentie v2, 7.1 `BasisKaart`
-  (MapLibre, proef achter `/marktanalyse/kaart?kaart=v2`), 8.1 `lib/aiModellen.ts`
-  + prompt caching + evaluatieset (nog niet gedraaid), 9.1 inloggen in
-  kantoorstijl (`/login/i4housing`), 10.3 Buurt & data, 10.4 Recent bekeken,
-  10.6 stijl-leren vindbaar, 12.4 feedbackknop, 13.1 publieke copy. Plus: CSP liet
-  Plausible nooit toe (gerepareerd), kantoorkleuren ontbraken in alle
-  Radix-portals (gerepareerd via `brandingRootCss()`). Zeven migraties toegepast
-  (alle additief of achterwaarts compatibel, na back-up).
-- **Volgende items:** **6.4** kwartaalbericht (gebruikt `lib/aiModellen.ts`) ·
-  **7.2** verkoopkaart-explorer v2 op `BasisKaart` (daarna 7.3, 7.4) · **8.2**
-  tekstsjabloon-model · **10.1/10.2** woningen- en dossierheader v2. Deze zijn
-  grotendeels onafhankelijk → weer parallel te verdelen (6.4 en 8.2 raken allebei
-  `lib/claude.ts`: niet tegelijk).
-- **Buurt & data (24 sep, opgelost op `feat/sessie-24sep`):** Overpass is
-  overbelast, niet stuk → terugval-mirror + CBS-buurtafstanden; WOZ per woning
-  is **niet gekoppeld** (geen gratis toegestane API) → de makelaar vult hem zelf
-  in (intakestap 6 of inline in "Buurt & data", met link naar het loket); anders
-  het CBS-buurtgemiddelde. Scène 4: WOZ vooraf invullen in het demo-dossier.
-  Details: `docs/besluiten.md`.
+- **Volgende items (parallel te verdelen, nul bestandsoverlap):** **8.3**
+  outputset v2 + ervaring (raakt `lib/claude.ts`, `ResultTabs`; hierin ook een
+  gerichte herkansing van alleen `funda_tekst`, zie besluiten 26 sep) ·
+  **12.3** performance (Lighthouse, bundle-analyzer) · **13.2** landingspagina
+  herpositioneren · **9.2** reset-mail in kantoorstijl (schrapbaar) · daarna
+  **8.4** brochure-pdf (na 8.3) en **12.1** team-accounts (wacht op Quinn § 8 punt 5).
+- **Afwijking van CLAUDE.md, gecorrigeerd:** de fase-waarde in code en data is al
+  `verkoopadvies` (niet meer `acquisitie`); platform-admin is lokaal alleen
+  `quinn.berkouwer@gmail.com` (`lib/admin.ts`), het icloud-adres is een gewone
+  i4housing-makelaar (`DOD_EMAIL` voor de kantoorkant).
+- **i4housing-tekstsjabloon (8.2) staat nog niet in de database:** preset zit in
+  `scripts/repair-i4housing-branding.mjs` (dry-run getoond), `--write` wacht op
+  akkoord van Quinn — of zelf invullen via `/admin/kantoor/[id]` → Tekstsjabloon.
 - **Prestatie (dev, demo-kantoor):** marktanalyse ~1,2 s, transacties ~1,2 s,
   concurrentie ~1,6 s eerste load. Productiemeting volgt in 12.3.
 - ⚠️ NL+EN-contentgeneratie duurt ~3 min tegen een Vercel-limiet van 300 s → fase 8.
@@ -61,8 +51,9 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
-  pastelkleuren van de nieuwe kaart goed (`?kaart=v2`)?
+- **Open vragen voor Quinn:** i4housing-tekstsjabloon wegschrijven (`--write`)? ·
+  blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
+  (`/marktanalyse/kaart`, nu de enige kaart)?
 
 ---
 
@@ -699,29 +690,8 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   URL; delta's kloppen (test tegen pure functie); kwartaalbericht bevat geen
   cijfer dat niet in het feitenblad staat.
 
-### Fase 7 — Kaart (4 sessies)
-
-- [x] **7.1 Proof + `BasisKaart`** *(§ 3.5)* — proof van één uur (MapLibre +
-  PDOK-vectortiles + CSP op een preview-deploy); dan `components/kaart/BasisKaart.tsx`,
-  `VerkopenLaag` (markers in merkkleur, clustering > 200 punten), `StraalLaag`
-  (cirkel), `HoverKaart` (adres · prijs · datum · m²). `npm i maplibre-gl`.
-- [x] **7.2 Verkoopkaart-explorer v2** *(port van `docs/ontwerp/verkoopkaart.html`,
-  § 3.8; het prototype gebruikt een statische PDOK-achtergrond omdat een
-  artifact geen tiles mag laden — in de app is dit MapLibre met live tiles)*
-  — eigen verkopen als mini-beeldmerk-pins (blauwe ruit, rode omlijning) op
-  de pastel-basiskaart, tijdlijn (`Slider`) met afspeelknop (schrapbaar),
-  dropdown-filters (woningtype-taxonomie, prijs, oppervlak, verkocht door
-  teamlid, meer), actieve filterpillen, kerncijfers "in beeld" met hero-tegel,
-  zijlijst (sorteren datum/prijs/looptijd) gesynchroniseerd met kaart en
-  hover, frosted hover-kaart, URL-state;
-  kaart en filters reageren < 100 ms (client-side op `haalEigenVerkopen`).
-- [ ] **7.3 Straal per woning** — `StraalKaartPaneel` op `BasisKaart`, standaard
-  500 m, schuiver 100-1.000 m, alleen eigen verkopen; de referentiekaart in de
-  waardering (4.6) schakelt over naar `BasisKaart`.
-- [ ] **7.4 Leaflet opruimen** — `Verkoopkaart.tsx`/`VerkoopkaartClient.tsx`,
-  `leaflet`/`react-leaflet`/`@types/leaflet` uit `package.json`, CSP-regels.
-- **Klaar als:** vloeiend met de volledige eigen dataset; geen CSP-fouten;
-  één kaartstack in de codebase.
+### Fase 7 — Kaart ✅ (26 sep 2026)
+MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart v2, straal per woning, referentiekaart, `/woningen`-kaart; Leaflet verwijderd. Details: `docs/besluiten.md`.
 
 ### Fase 8 — Content in i4housing-format (4 sessies; parallel via subagent in een worktree zodra fase 3 is gemerged — raakt `lib/claude.ts`, `lib/schemas.ts` (alleen `ContentOutputSchema`/`HuisstijlSchema`), `components/ResultTabs.tsx`, pdf-routes, `HuisstijlForm.tsx`)
 
@@ -731,7 +701,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   `scripts/evalueer-content.mjs` dat per dossier twee anonieme varianten
   (A/B: huidig vs kandidaat-model of oud vs nieuw sjabloon) naar
   `docs/evaluatie/rondes/<datum>/` schrijft voor een blind oordeel door Quinn.
-- [ ] **8.2 Tekstsjabloon-model** *(§ 3.4)* — schema, promptbouwer (rendert
+- [x] **8.2 Tekstsjabloon-model** *(§ 3.4)* — schema, promptbouwer (rendert
   koppen als harde structuur, `doel_woorden`), validator + één herkansing,
   admin-formulier in `app/admin/kantoor/HuisstijlForm.tsx` (label, secties,
   slotzin, doel_woorden, EN-koppen), i4housing-preset via
@@ -758,7 +728,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   laatst gebruikte slug (cookie), `/login` zonder slug blijft VestaAI-groen.
 - [ ] **9.2 Reset-mail in kantoorstijl** (schrapbaar) — `generateLink` +
   Resend-sjabloon met logo/kleuren.
-- [ ] **9.3 Consistentiecontrole** — `scripts/controleer-huisstijl.mjs` draaien
+- [x] **9.3 Consistentiecontrole** — `scripts/controleer-huisstijl.mjs` draaien
   op alle routes incl. pdf's en lege staten; alles wat groen doorlaat fixen.
 - **Klaar als:** van inloglink tot pdf nergens VestaAI-groen of de naam
   (behalve de topbar-lockup).
@@ -801,7 +771,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   `/dashboard` met voornaam; teamfoto als banner via het bestaande
   `achtergrond_url`-veld in `HuisstijlForm.tsx` (geen apart `bannerfoto`-veld
   nodig; Quinn keurt de foto goed).
-- [ ] **12.2 E2e** — `e2e/`: login via slug, dossier aanmaken (< 5 s),
+- [x] **12.2 E2e** — `e2e/`: login via slug, dossier aanmaken (< 5 s),
   waardering toont n en pdf-knop, kaart laadt zonder CSP-fout, content
   (`E2E_GENERATE=1`), admin-importhistorie, **RLS-test** met twee kantoren
   (fixture + i4housing) via REST: kantoor A ziet 0 rijen van B.
@@ -952,9 +922,17 @@ aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaar
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
 
-**Twee kaarten in het dossier (18 sep):** de nieuwe referentiekaart (4.6) en
-het oudere `StraalKaartPaneel` ("In de buurt verkocht") staan nu allebei op de
-waarderingstab. Samenvoegen of één laten vervallen bij item 10.2.
+**Twee kaarten in het dossier (18 sep):** de referentiekaart (4.6) en het
+`StraalKaartPaneel` ("In de buurt verkocht") staan allebei op de waarderingstab.
+Sinds 7.3 op dezelfde stack, maar inhoudelijk nog samen te voegen (referenties
+vs. eigen verkopen als lagen van één kaart).
+
+**Uit de sessie van 26-27 sep:** huisstijl-hook (`.claude/hooks/huisstijl-check.sh`)
+meldt radius-fallbacks (`var(--merk-radius-md, 12px)`) ten onrechte als
+kleur-fallback — regex aanscherpen tot hex/rgb · `e2e/smoke.spec.ts`
+generatietest is verouderd (verwacht `POST /api/generate` bij aanmaken; sinds
+fase 3 niet meer) · EN-kwartaalbericht nog niet tegen de echte API getest ·
+`PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
 
 **Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
 `handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`
