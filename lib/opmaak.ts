@@ -29,6 +29,17 @@ export function euroKort(waarde: number | null | undefined): string {
   return '€ ' + (waarde / 1000).toLocaleString('nl-NL', { minimumFractionDigits: 0, maximumFractionDigits: 1 }) + ' k'
 }
 
+/**
+ * Euro voor een smalle tegel (dossierheader): tot een miljoen het volle bedrag,
+ * daarboven `€ 1,48 mln` — `€ 1.482.000` past niet in een tegel van ~150 px en
+ * werd afgekapt tot "€ 1.482.00". Het exacte bedrag staat in het waarderingspaneel.
+ */
+export function euroTegel(waarde: number | null | undefined): string {
+  if (waarde == null || Number.isNaN(waarde)) return '—'
+  if (Math.abs(waarde) < 1_000_000) return euro(waarde)
+  return '€ ' + (waarde / 1_000_000).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mln'
+}
+
 /** `+3,2%` / `-1,0%` — `teken = false` laat het `+` bij een positieve waarde weg. */
 export function procent(waarde: number | null | undefined, teken = true): string {
   if (waarde == null || Number.isNaN(waarde)) return '—'
