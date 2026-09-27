@@ -131,7 +131,7 @@ export function BuurtDataTab({
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-        <p style={{ fontSize: 12, color: '#98A0A6', margin: 0 }}>Opgehaald op {datumTijd(data.opgehaald_op)}</p>
+        <p style={{ fontSize: 12, color: '#5C6470', margin: 0 }}>Opgehaald op {datumTijd(data.opgehaald_op)}</p>
         {verversKnop}
       </div>
 
@@ -188,8 +188,8 @@ export function BuurtDataTab({
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
               {cbsNabijheid.map(({ titel, m }) => (
                 <div key={titel}>
-                  <p style={{ fontSize: 12, fontWeight: 650, color: '#98A0A6', margin: '0 0 4px' }}>{titel}</p>
-                  <p style={{ fontSize: 13, color: '#14181B', margin: 0 }}>{afstand(m.waarde * 1000)} <span style={{ color: '#98A0A6' }}>({NIVEAU_LABEL[m.niveau]})</span></p>
+                  <p style={{ fontSize: 12, fontWeight: 650, color: '#5C6470', margin: '0 0 4px' }}>{titel}</p>
+                  <p style={{ fontSize: 13, color: '#14181B', margin: 0 }}>{afstand(m.waarde * 1000)} <span style={{ color: '#5C6470' }}>({NIVEAU_LABEL[m.niveau]})</span></p>
                 </div>
               ))}
             </div>
@@ -261,8 +261,8 @@ const cardStyle: React.CSSProperties = {
   boxShadow: '0 2px 12px rgba(20,24,27,.04)',
 }
 const blokLabel: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: '#14181B', margin: 0 }
-const bronStijl: React.CSSProperties = { fontSize: 11.5, color: '#98A0A6', margin: '10px 0 0' }
-const legeTekst: React.CSSProperties = { fontSize: 13, color: '#98A0A6', margin: 0 }
+const bronStijl: React.CSSProperties = { fontSize: 11.5, color: '#5C6470', margin: '10px 0 0' }
+const legeTekst: React.CSSProperties = { fontSize: 13, color: '#5C6470', margin: 0 }
 const cijferGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16 }
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const badgeStijl: React.CSSProperties = {
@@ -285,11 +285,11 @@ function Voorziening({ titel, items }: { titel: string; items: { naam: string; a
   const dichtstbij = items[0]
   return (
     <div>
-      <p style={{ fontSize: 12, fontWeight: 650, color: '#98A0A6', margin: '0 0 4px' }}>{titel}</p>
+      <p style={{ fontSize: 12, fontWeight: 650, color: '#5C6470', margin: '0 0 4px' }}>{titel}</p>
       {dichtstbij ? (
         <p style={{ fontSize: 13, color: '#14181B', margin: 0 }}>{afstand(dichtstbij.afstand_m)}</p>
       ) : (
-        <p style={{ fontSize: 13, color: '#98A0A6', margin: 0 }}>—</p>
+        <p style={{ fontSize: 13, color: '#5C6470', margin: 0 }}>—</p>
       )}
     </div>
   )

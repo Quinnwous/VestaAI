@@ -11,7 +11,7 @@ export const WaarderingKaartClient = dynamic(
     ssr: false,
     loading: () => (
       <div style={{ height: 440, borderRadius: 'var(--merk-radius-md, 12px)', background: '#F4EFE5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ fontSize: 13.5, color: '#98A0A6' }}>Kaart laden…</p>
+        <p style={{ fontSize: 13.5, color: '#5C6470' }}>Kaart laden…</p>
       </div>
     ),
   },

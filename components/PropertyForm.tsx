@@ -239,10 +239,10 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
               borderBottom: `3px solid ${s.id === stap ? 'var(--merk)' : s.id < stap ? 'var(--merk-rand)' : '#E6E9EC'}`,
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#5C6470' : '#98A0A6', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#5C6470' : '#5C6470', whiteSpace: 'nowrap' }}>
               {s.id}. {s.label}
               {'kanLater' in s && s.kanLater && (
-                <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#98A0A6', textTransform: 'none' }}>
+                <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#5C6470', textTransform: 'none' }}>
                   kan later
                 </span>
               )}
@@ -389,7 +389,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           {errors.energielabel && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.energielabel.message}</p>}
         </div>
         <div>
-          <label style={labelStyle}>Geldig tot <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Geldig tot <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('energielabel_geldig_tot')}
             type="date" disabled={disabled}
@@ -401,7 +401,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       {/* Perceel + inhoud */}
       <div className="form-grid-2">
         <div>
-          <label style={labelStyle}>Perceeloppervlak (m²) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Perceeloppervlak (m²) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('perceel_m2', { valueAsNumber: true })}
             type="number" min={0} disabled={disabled} placeholder="250"
@@ -409,7 +409,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           />
         </div>
         <div>
-          <label style={labelStyle}>Inhoud (m³) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Inhoud (m³) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('inhoud_m3', { valueAsNumber: true })}
             type="number" min={0} disabled={disabled} placeholder="320"
@@ -421,15 +421,15 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       {/* Slaapkamers, badkamers, woonlagen */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }}>
         <div>
-          <label style={labelStyle}>Slaapkamers <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Slaapkamers <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input {...register('slaapkamers', { valueAsNumber: true })} type="number" min={0} max={20} disabled={disabled} placeholder="3" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
         </div>
         <div>
-          <label style={labelStyle}>Badkamers <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Badkamers <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input {...register('badkamers', { valueAsNumber: true })} type="number" min={0} max={10} disabled={disabled} placeholder="1" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
         </div>
         <div>
-          <label style={labelStyle}>Woonlagen <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Woonlagen <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input {...register('woonlagen', { valueAsNumber: true })} type="number" min={1} max={10} disabled={disabled} placeholder="2" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
         </div>
       </div>
@@ -439,14 +439,14 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
-            <label style={labelStyle}>Onderhoud binnen <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Onderhoud binnen <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <select {...register('staat_afwerking.onderhoud_binnen')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
               <option value="">Kies...</option>
               {ONDERHOUD_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
             </select>
           </div>
           <div>
-            <label style={labelStyle}>Onderhoud buiten <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Onderhoud buiten <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <select {...register('staat_afwerking.onderhoud_buiten')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
               <option value="">Kies...</option>
               {ONDERHOUD_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
@@ -456,17 +456,17 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
 
         <div className="form-grid-2">
           <div>
-            <label style={labelStyle}>Keuken — bouwjaar <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Keuken — bouwjaar <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <input {...register('staat_afwerking.keuken_jaar', { valueAsNumber: true })} type="number" min={1900} max={2035} disabled={disabled} placeholder="2018" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
           </div>
           <div>
-            <label style={labelStyle}>Badkamer — bouwjaar <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Badkamer — bouwjaar <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <input {...register('staat_afwerking.badkamer_jaar', { valueAsNumber: true })} type="number" min={1900} max={2035} disabled={disabled} placeholder="2015" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
           </div>
         </div>
 
         <div>
-          <label style={labelStyle}>Isolatie <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
+          <label style={labelStyle}>Isolatie <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             {ISOLATIE_OPTIES.map(optie => (
               <label key={optie} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
@@ -483,7 +483,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         </div>
 
         <div>
-          <label style={labelStyle}>Recent verbouwd <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Recent verbouwd <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('staat_afwerking.recent_verbouwd')}
             disabled={disabled} placeholder="Bijv: nieuw dakkapel in 2023, uitbouw keuken 2021"
@@ -496,14 +496,14 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
-            <label style={labelStyle}>Ligging <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Ligging <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <select {...register('ligging_buitenruimte.ligging')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
               <option value="">Kies...</option>
               {LIGGING_OPTIES.map(o => <option key={o} value={o}>{o.replace(/_/g, ' ')}</option>)}
             </select>
           </div>
           <div>
-            <label style={labelStyle}>Garage/parkeren <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Garage/parkeren <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <select {...register('ligging_buitenruimte.garage_parkeren')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
               <option value="">Kies...</option>
               {PARKEREN_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
@@ -513,11 +513,11 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
 
         <div className="form-grid-2">
           <div>
-            <label style={labelStyle}>Tuin (m²) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Tuin (m²) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <input {...register('ligging_buitenruimte.tuin_m2', { valueAsNumber: true })} type="number" min={0} disabled={disabled} placeholder="80" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
           </div>
           <div>
-            <label style={labelStyle}>Tuin — oriëntatie <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>Tuin — oriëntatie <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <select {...register('ligging_buitenruimte.tuin_orientatie')} disabled={disabled} style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}>
               <option value="">Kies...</option>
               {ORIENTATIE_OPTIES.map(o => <option key={o} value={o}>{o}</option>)}
@@ -541,7 +541,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         </div>
 
         <div>
-          <label style={labelStyle}>Bijzondere ligging <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
+          <label style={labelStyle}>Bijzondere ligging <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel — meerdere mogelijk)</span></label>
           <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
             {BIJZONDERE_LIGGING_OPTIES.map(optie => (
               <label key={optie} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
@@ -553,13 +553,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         </div>
 
         <div>
-          <label style={labelStyle}>Uitzicht <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Uitzicht <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input {...register('ligging_buitenruimte.uitzicht')} disabled={disabled} placeholder="Bijv: vrij uitzicht over het park" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
         </div>
 
         <div className="form-grid-2">
           <div>
-            <label style={labelStyle}>VvE-bijdrage per maand (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+            <label style={labelStyle}>VvE-bijdrage per maand (€) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
             <input {...register('ligging_buitenruimte.vve_bijdrage_per_maand', { valueAsNumber: true })} type="number" min={0} disabled={disabled} placeholder="120" style={{ ...inputStyle, opacity: disabled ? .5 : 1 }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-end' }}>
@@ -576,9 +576,9 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
           <label style={{ ...labelStyle, marginBottom: 0 }}>
-            {isEn ? "USPs" : "USP's"} <span style={{ color: '#98A0A6', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
+            {isEn ? "USPs" : "USP's"} <span style={{ color: '#5C6470', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
           </label>
-          <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#98A0A6', fontVariantNumeric: 'tabular-nums' }}>
+          <span style={{ fontSize: 12, color: uspsValue.length > MAX_USPS * 0.9 ? '#D97706' : '#5C6470', fontVariantNumeric: 'tabular-nums' }}>
             {uspsValue.length}/{MAX_USPS}
           </span>
         </div>
@@ -596,7 +596,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         />
         {errors.usps
           ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.usps.message}</p>
-          : <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
             {isEn
               ? 'More unique features = stronger copy.'
               : 'Hoe meer unieke kenmerken, hoe sterker de tekst.'}
@@ -607,7 +607,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       {/* Doelgroep */}
       <div>
         <label style={labelStyle}>
-          {isEn ? 'Target audience' : 'Doelgroep'} <span style={{ color: '#98A0A6', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
+          {isEn ? 'Target audience' : 'Doelgroep'} <span style={{ color: '#5C6470', fontWeight: 500 }}>({isEn ? 'optional — can wait' : 'optioneel — kan later'})</span>
         </label>
         <select
           value={doelgroepAnders ? 'Anders' : doelgroepValue ?? ''}
@@ -642,7 +642,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         )}
         {errors.doelgroep
           ? <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.doelgroep.message}</p>
-          : <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
+          : <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
             {isEn
               ? 'Claude tailors tone, atmosphere and USP selection to this buyer profile.'
               : 'Claude schrijft de tekst gericht op deze koper — toon, sfeer en USP-keuze worden hierop afgestemd.'}
@@ -654,7 +654,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           in het dossier terecht — de kernteksten (Funda/brochure/social/e-mail/buurt) staan hier
           los van, die worden altijd gegenereerd. */}
       <div>
-        <label style={labelStyle}>Extra content <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel, naast de kernteksten)</span></label>
+        <label style={labelStyle}>Extra content <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel, naast de kernteksten)</span></label>
         <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
           {CONTENT_KEUZE_OPTIES.map(optie => (
             <label key={optie.value} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13.5, color: '#14181B' }}>
@@ -671,7 +671,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
-            Prijsverwachting verkoper (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — kan later)</span>
+            Prijsverwachting verkoper (€) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel — kan later)</span>
           </label>
           <input
             {...register('prijsverwachting_verkoper', {
@@ -683,10 +683,10 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
             type="number" min={1} disabled={disabled} placeholder="450000"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />
-          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>Wat de verkoper zelf verwacht — de vraagprijs staat pas vast als de opdracht binnen is.</p>
+          <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>Wat de verkoper zelf verwacht — de vraagprijs staat pas vast als de opdracht binnen is.</p>
         </div>
         <div>
-          <label style={labelStyle}>Courtagevoorstel (%) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Courtagevoorstel (%) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('courtagevoorstel_percentage', { valueAsNumber: true })}
             type="number" step="0.01" min={0} max={10} disabled={disabled} placeholder="1.25"
@@ -698,25 +698,25 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
       {/* WOZ — zelf invullen (lib/woz.ts: er is geen gratis, toegestane WOZ-API) */}
       <div className="form-grid-2">
         <div>
-          <label style={labelStyle}>WOZ-waarde (€) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel — kan later)</span></label>
+          <label style={labelStyle}>WOZ-waarde (€) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel — kan later)</span></label>
           <input
             {...register('woz_waarde', { setValueAs: v => (v === '' || v === null || v === undefined ? undefined : Number(v)) })}
             type="number" min={1000} disabled={disabled} placeholder="845000"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />
-          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>
+          <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
             Van de WOZ-beschikking van de verkoper, of opzoeken in het{' '}
             <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
           </p>
         </div>
         <div>
-          <label style={labelStyle}>Waardepeildatum (jaar) <span style={{ color: '#98A0A6', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>Waardepeildatum (jaar) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
           <input
             {...register('woz_peiljaar', { setValueAs: v => (v === '' || v === null || v === undefined ? undefined : Number(v)) })}
             type="number" min={2000} max={2100} disabled={disabled} placeholder="2025"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />
-          <p style={{ marginTop: 6, fontSize: 12, color: '#98A0A6' }}>Peildatum 1 januari 2025 hoort bij belastingjaar 2026.</p>
+          <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>Peildatum 1 januari 2025 hoort bij belastingjaar 2026.</p>
         </div>
       </div>
 
@@ -730,7 +730,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           <span style={{ fontSize: 14, fontWeight: 600, color: '#14181B' }}>
             {isEn ? 'Open house (optional)' : 'Open huis (optioneel)'}
           </span>
-          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)', background: openHuisActief ? 'var(--merk-zacht)' : '#F1F3F5', color: openHuisActief ? 'var(--merk)' : '#98A0A6' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)', background: openHuisActief ? 'var(--merk-zacht)' : '#F1F3F5', color: openHuisActief ? 'var(--merk)' : '#5C6470' }}>
             {openHuisActief ? (isEn ? 'On' : 'Aan') : (isEn ? 'Off' : 'Uit')}
           </span>
         </button>
@@ -738,7 +738,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         {openHuisActief && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 12 }}>
             <div>
-              <label style={{ ...labelStyle, fontSize: 12, color: '#98A0A6' }}>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#5C6470' }}>
                 {isEn ? 'Date' : 'Datum'}
               </label>
               <input
@@ -751,7 +751,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
               />
             </div>
             <div>
-              <label style={{ ...labelStyle, fontSize: 12, color: '#98A0A6' }}>
+              <label style={{ ...labelStyle, fontSize: 12, color: '#5C6470' }}>
                 {isEn ? 'Time' : 'Tijdstip'}
               </label>
               <input
@@ -801,7 +801,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
               {disabled ? 'Bezig met opslaan...' : 'Woning aanmaken →'}
             </button>
             {!disabled && (
-              <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#98A0A6' }}>
+              <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#5C6470' }}>
                 of druk{' '}
                 <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht)', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
               </p>

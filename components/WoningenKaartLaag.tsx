@@ -17,7 +17,12 @@
  */
 import { useEffect, useRef } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import * as maplibregl from 'maplibre-gl'
+// Alléén het type, geen runtime-import: anders trekt deze laag maplibre-gl
+// (~280 kB gzip) het hoofdbundel van elke pagina in die deze laag ergens
+// importeert, óók als <BasisKaart> zelf al dynamic (ssr:false) is — de
+// dynamic-import-grens beschermt alleen de module die hij zelf wrapt, niet
+// de children die er los naast worden geïmporteerd (les 12.3, performance).
+import type * as maplibregl from 'maplibre-gl'
 import { useKaartInstance } from '@/components/kaart/KaartContext'
 import { Pin } from '@/components/kaart'
 import type { ObjectFase } from '@/lib/schemas'
@@ -53,35 +58,41 @@ export function WoningenKaartLaag({
 
   useEffect(() => {
     if (!map) return
+    let actief = true
 
-    const nieuweMarkers: maplibregl.Marker[] = []
+    import('maplibre-gl').then(({ Marker }) => {
+      if (!actief || !map) return
 
-    for (const w of woningen) {
-      const basisVariant = w.id === geselecteerdId ? 'gekozen' : 'normaal'
-      const el = document.createElement('div')
-      el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-      el.style.cursor = 'pointer'
-      el.setAttribute('aria-label', w.address)
+      const nieuweMarkers: maplibregl.Marker[] = []
 
-      el.addEventListener('mouseenter', () => {
-        el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
-        const punt = map.project([w.lng, w.lat])
-        onHover?.({ woning: w, x: punt.x, y: punt.y })
-      })
-      el.addEventListener('mouseleave', () => {
+      for (const w of woningen) {
+        const basisVariant = w.id === geselecteerdId ? 'gekozen' : 'normaal'
+        const el = document.createElement('div')
         el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
-        onHover?.(null)
-      })
-      el.addEventListener('click', () => onSelect?.(w.id))
+        el.style.cursor = 'pointer'
+        el.setAttribute('aria-label', w.address)
 
-      nieuweMarkers.push(new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([w.lng, w.lat]).addTo(map))
-    }
+        el.addEventListener('mouseenter', () => {
+          el.innerHTML = renderToStaticMarkup(<Pin variant="hover" />)
+          const punt = map.project([w.lng, w.lat])
+          onHover?.({ woning: w, x: punt.x, y: punt.y })
+        })
+        el.addEventListener('mouseleave', () => {
+          el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
+          onHover?.(null)
+        })
+        el.addEventListener('click', () => onSelect?.(w.id))
 
-    markersRef.current.forEach((m) => m.remove())
-    markersRef.current = nieuweMarkers
+        nieuweMarkers.push(new Marker({ element: el, anchor: 'bottom' }).setLngLat([w.lng, w.lat]).addTo(map))
+      }
+
+      markersRef.current.forEach((m) => m.remove())
+      markersRef.current = nieuweMarkers
+    })
 
     return () => {
-      nieuweMarkers.forEach((m) => m.remove())
+      actief = false
+      markersRef.current.forEach((m) => m.remove())
       markersRef.current = []
     }
   }, [map, woningen, geselecteerdId, onHover, onSelect])

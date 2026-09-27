@@ -64,7 +64,7 @@ export function StijlLerenPaneel() {
   return (
     <div style={{ borderTop: '1px solid #EBEEF1', paddingTop: 20, marginTop: 20 }}>
       <p style={{ fontSize: 13.5, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Leren van je bewerkingen</p>
-      <p style={{ fontSize: 12.5, color: '#98A0A6', margin: '0 0 12px', lineHeight: 1.5 }}>
+      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 12px', lineHeight: 1.5 }}>
         Als je gegenereerde teksten handmatig aanpast, zien we dat als voorbeeld. Laat er stijlregels uit destilleren — jij bepaalt of ze kloppen.
       </p>
 
@@ -73,7 +73,7 @@ export function StijlLerenPaneel() {
           // Nul bewerkingen: geen kader/CTA en een kleine, grijze regel i.p.v.
           // de gewone 15px-tekst — dit paneel blijft wél op zijn vaste plek
           // staan (item 10.6), maar valt zo niet op als een call-to-action.
-          <p style={{ fontSize: 12, color: '#98A0A6', margin: 0 }}>{bewerkingenLabel(aantal)}</p>
+          <p style={{ fontSize: 12, color: '#5C6470', margin: 0 }}>{bewerkingenLabel(aantal)}</p>
         ) : (
           <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
             <p className="text-sm text-gray-700 mb-3">

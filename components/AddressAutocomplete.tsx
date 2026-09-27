@@ -109,7 +109,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
         />
         {bezig && (
           <div style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#98A0A6" strokeWidth="2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6470" strokeWidth="2">
               <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83">
                 <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite" />
               </path>

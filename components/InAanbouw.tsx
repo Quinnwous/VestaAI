@@ -31,12 +31,12 @@ export function InAanbouw({
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 }}>
         {slot && (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#98A0A6" strokeWidth={2.2} aria-hidden>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5C6470" strokeWidth={2.2} aria-hidden>
             <rect x="4" y="10" width="16" height="11" rx="2" />
             <path d="M8 10V7a4 4 0 018 0v3" strokeLinecap="round" />
           </svg>
         )}
-        <span style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: slot ? '#98A0A6' : 'var(--merk)' }}>
+        <span style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: slot ? '#5C6470' : 'var(--merk)' }}>
           {eyebrow}
         </span>
       </div>

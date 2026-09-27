@@ -41,7 +41,7 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
     <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-600 transition-colors"
       >
         <svg
           className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-90' : ''}`}
@@ -63,7 +63,7 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
           <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3">
             {HOOFD_VELDEN.map(key => (
               <div key={key}>
-                <dt className="text-xs text-gray-400">{LABELS[key]}</dt>
+                <dt className="text-xs text-gray-500">{LABELS[key]}</dt>
                 <dd className="text-xs font-medium text-gray-800 mt-0.5 break-words">
                   {formatWaarde(key, waardeVoorVeld(key, invoer))}
                 </dd>

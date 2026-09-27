@@ -15,7 +15,9 @@
  */
 import { useEffect, useRef } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
-import * as maplibregl from 'maplibre-gl'
+// Alléén het type, geen runtime-import — zie WoningenKaartLaag.tsx (les
+// 12.3, performance).
+import type * as maplibregl from 'maplibre-gl'
 import { useKaartInstance } from './KaartContext'
 import { SubjectPin } from './SubjectPin'
 import { ReferentiePin } from './ReferentiePin'
@@ -49,38 +51,44 @@ export function ReferentiesLaag({
 
   useEffect(() => {
     if (!map) return
+    let actief = true
 
-    const nieuweMarkers: maplibregl.Marker[] = []
+    import('maplibre-gl').then(({ Marker }) => {
+      if (!actief || !map) return
 
-    const subjectEl = document.createElement('div')
-    subjectEl.innerHTML = renderToStaticMarkup(<SubjectPin />)
-    subjectEl.setAttribute('aria-label', `Dit adres: ${subject.label}`)
-    nieuweMarkers.push(
-      new maplibregl.Marker({ element: subjectEl, anchor: 'bottom' })
-        .setLngLat([subject.lng, subject.lat])
-        .addTo(map),
-    )
+      const nieuweMarkers: maplibregl.Marker[] = []
 
-    for (const r of referenties) {
-      const el = document.createElement('div')
-      el.innerHTML = renderToStaticMarkup(<ReferentiePin nummer={r.volgnummer} uitgesloten={r.uitgesloten} />)
-      el.setAttribute('aria-label', `Referentie ${r.volgnummer}${r.uitgesloten ? ' (uitgesloten)' : ''}`)
-      el.addEventListener('mouseenter', () => {
-        const punt = map.project([r.lng, r.lat])
-        onHover?.({ id: r.id, x: punt.x, y: punt.y })
-      })
-      el.addEventListener('mouseleave', () => onHover?.(null))
+      const subjectEl = document.createElement('div')
+      subjectEl.innerHTML = renderToStaticMarkup(<SubjectPin />)
+      subjectEl.setAttribute('aria-label', `Dit adres: ${subject.label}`)
       nieuweMarkers.push(
-        new maplibregl.Marker({ element: el, anchor: 'bottom' })
-          .setLngLat([r.lng, r.lat])
+        new Marker({ element: subjectEl, anchor: 'bottom' })
+          .setLngLat([subject.lng, subject.lat])
           .addTo(map),
       )
-    }
 
-    markersRef.current = nieuweMarkers
+      for (const r of referenties) {
+        const el = document.createElement('div')
+        el.innerHTML = renderToStaticMarkup(<ReferentiePin nummer={r.volgnummer} uitgesloten={r.uitgesloten} />)
+        el.setAttribute('aria-label', `Referentie ${r.volgnummer}${r.uitgesloten ? ' (uitgesloten)' : ''}`)
+        el.addEventListener('mouseenter', () => {
+          const punt = map.project([r.lng, r.lat])
+          onHover?.({ id: r.id, x: punt.x, y: punt.y })
+        })
+        el.addEventListener('mouseleave', () => onHover?.(null))
+        nieuweMarkers.push(
+          new Marker({ element: el, anchor: 'bottom' })
+            .setLngLat([r.lng, r.lat])
+            .addTo(map),
+        )
+      }
+
+      markersRef.current = nieuweMarkers
+    })
 
     return () => {
-      nieuweMarkers.forEach((m) => m.remove())
+      actief = false
+      markersRef.current.forEach((m) => m.remove())
       markersRef.current = []
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
