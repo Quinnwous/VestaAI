@@ -6,6 +6,13 @@
 
 ---
 
+### 27 sep 2026 — i4housing-tekstsjabloon live, afspraak "ga door"
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| i4housing-tekstsjabloon | Akkoord Quinn. Na back-up (`backups/2026-09-27T10-18-58-728Z/`) alléén `huisstijl_json.tekstsjabloon` toegevoegd (gerichte update, schema-gevalideerd; overige 14 velden aantoonbaar ongewijzigd). **Niet** via `repair-i4housing-branding.mjs --write`: dat uploadt ook logo/favicon/sfeerbeelden opnieuw en herschrijft de hele huisstijl — meer dan akkoord was gegeven | Quinn + Opus |
+| Limiet → "ga door" | Na een gebruikslimiet betekent "ga door": onderbroken agents hervatten via SendMessage, niet opnieuw starten (CLAUDE.md § Parallel met agents) | Quinn |
+
 ### 26-27 sep 2026 (sessie Opus als regisseur + drie Sonnet-agents) — 7.3, 7.4, 8.2, 9.3, 12.2
 
 | Onderwerp | Besluit | Door |

@@ -29,6 +29,10 @@
 > maar passen ze niet toe, en raken `docs/roadmap.md`/`docs/besluiten.md` niet aan. Elke agent
 > commit **na elke deelstap** (limietbestendig: bij een op gebruikslimiet gestopte sessie
 > blijft het werk staan en wordt de agent hervat via SendMessage, niet opnieuw gestart).
+> **Afspraak Quinn (27 sep 2026):** stopt de sessie of een agent op de gebruikslimiet en zegt
+> Quinn daarna "ga door", dan hervat Claude zonder te vragen élke onderbroken agent via
+> SendMessage (zelfde agent, zelfde worktree) en maakt de ronde af — nooit een nieuwe agent
+> starten voor half werk.
 >
 > **Push/merge/live — automatisch aan het einde van elke ronde (besluit Quinn 17 sep,
 > aangescherpt 26 sep 2026, geldt tot hij anders zegt):** tijdens een ronde alleen lokaal
