@@ -115,6 +115,10 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Een dynamic import beschermt de kinderen niet** — les 27 sep 2026 (12.3): `BasisKaart` was `dynamic(ssr:false)`, maar de laag-componenten (`VerkopenLaag`, `ReferentiesLaag`, `WoningenKaartLaag`) importeerden zelf `maplibre-gl`, dus 278 kB gzip zat alsnog in de hoofdbundel van elke kaartpagina. Zware libs in een laag: alleen het type statisch importeren, de runtime via `await import()` in het effect. Controleer met `ANALYZE=true npm run build`.
 
+⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
+
+⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026: een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
+
 ⚠️ **Een Next-routebestand (`route.ts`) mag alleen route-exports hebben** (`GET`/`POST`/`maxDuration`/…) — een geëxporteerde hulpfunctie laat `next build` falen terwijl typecheck en tests groen zijn. Hulpfuncties in `lib/`.
 
 ⚠️ **Nooit een absoluut pad als `logo_url`** — dat was de oorzaak van het "?"-logo: `/kantoren/i4housing/logo.png` bestond alleen lokaal en niet in de deploy. Assets horen in Storage, met een volledige URL.
@@ -206,6 +210,8 @@ VestaAI/
 │   │                           #   avatarmenu rechtsboven (Mijn account · Kantoor · Uitloggen).
 │   │                           #   Verhuur volledig uit de app (was hier "op slot")
 │   ├── ObjectWorkspace.tsx     # woningdossier, fase-afhankelijke weergave
+│   ├── BrochurePdfTemplate.tsx # brochure-pdf in kantoorstijl (8.4, GET /api/pdf/brochure)
+│   ├── DezeWoningPaneel.tsx    # live samenvatting naast de intake (10.5)
 │   ├── WaardebepalingPaneel.tsx / UspExtractorPaneel.tsx   # Module B
 │   ├── VerkoopkaartExplorerV2.tsx / StraalKaartPaneel.tsx / WaarderingKaart.tsx   # alle drie op components/kaart/
 │   ├── MarktanalyseExplorer.tsx / ConcurrentieExplorer.tsx / TransactiesZoeken.tsx
