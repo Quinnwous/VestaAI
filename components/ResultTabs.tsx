@@ -182,6 +182,10 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
   const [emailingPdf, setEmailingPdf] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [copiedAll, setCopiedAll] = useState(false)
+  // Item 8.4: aparte brochure-pdf (cover/foto's/kenmerkentabel), los van de
+  // content-suite-export hierboven — zelfde fetch-blob-download patroon.
+  const [downloadingBrochurePdf, setDownloadingBrochurePdf] = useState(false)
+  const [brochurePdfFout, setBrochurePdfFout] = useState<string | null>(null)
 
   const handleCopyAll = async () => {
     const secties: [string, string][] = [
@@ -244,6 +248,33 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
       URL.revokeObjectURL(url)
     } finally {
       setDownloadingPdf(false)
+    }
+  }
+
+  // Item 8.4: brochure-pdf (cover/foto's/kenmerkentabel), aparte route dan de
+  // content-suite-export hierboven.
+  const handleBrochurePdfDownload = async () => {
+    if (!objectId) return
+    setDownloadingBrochurePdf(true)
+    setBrochurePdfFout(null)
+    try {
+      const res = await fetch(`/api/pdf/brochure?object_id=${objectId}`)
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(json?.error ?? 'PDF genereren mislukt')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = res.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] ?? 'brochure.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setBrochurePdfFout(e instanceof Error ? e.message : 'PDF genereren mislukt')
+      window.setTimeout(() => setBrochurePdfFout(null), 4000)
+    } finally {
+      setDownloadingBrochurePdf(false)
     }
   }
 
@@ -445,9 +476,33 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-brochure" aria-labelledby="tab-brochure" hidden={activeTab !== 'brochure'} className="space-y-3">
-          <p className="text-xs text-gray-400">
-            {isEn ? 'Suitable for both a printed and a digital brochure' : 'Geschikt voor zowel een gedrukte als digitale brochure'}
-          </p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-gray-400">
+              {isEn ? 'Suitable for both a printed and a digital brochure' : 'Geschikt voor zowel een gedrukte als digitale brochure'}
+            </p>
+            {objectId && (
+              <div style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  onClick={handleBrochurePdfDownload}
+                  disabled={downloadingBrochurePdf || isEn}
+                  title={isEn ? 'De brochure-pdf gebruikt altijd de Nederlandse tekst' : undefined}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--merk-op)', border: 'none', borderRadius: 'var(--merk-radius-md)', padding: '7px 12px', background: 'var(--merk)', cursor: downloadingBrochurePdf || isEn ? 'not-allowed' : 'pointer', opacity: downloadingBrochurePdf || isEn ? .5 : 1 }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6}>
+                    <path d="M4 2h5l3 3v9H4z" />
+                    <path d="M9 2v3h3" />
+                  </svg>
+                  {downloadingBrochurePdf ? (isEn ? 'Creating PDF…' : 'PDF maken…') : (isEn ? 'Brochure PDF' : 'Brochure-pdf')}
+                </button>
+                {brochurePdfFout && (
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: 8, padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(0,0,0,.08)' }}>
+                    {brochurePdfFout}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
           <TabContent content={weergaveData.brochure_tekst} wordCount onSave={saveField('brochure_tekst')} />
           {rewrite('brochure_tekst')}
         </div>
