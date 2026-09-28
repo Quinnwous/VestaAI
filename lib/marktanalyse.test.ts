@@ -12,9 +12,12 @@ import {
   filterStateNaarEigenFilter,
   segmentBFilter,
   subtypenVoorGroep,
+  segmentVergelijking,
+  MIN_N_BETROUWBAAR,
   type MarktanalyseFilterV2,
 } from './marktanalyse'
 import type { TransactieRow } from './supabase'
+import type { MarktanalyseSamenvattingRij } from './transactiesQuery'
 
 function rij(overrides: Partial<TransactieRow>): TransactieRow {
   return {
@@ -262,3 +265,91 @@ describe('segmentBFilter', () => {
 // `marktanalyse_samenvatting` die inmiddels gefixt en toegepast is (zie
 // `lib/marktanalyse.ts` boven `filterStateNaarTransactieFilter` voor de
 // uitleg + verificatie).
+
+function samenvattingRij(overrides: Partial<MarktanalyseSamenvattingRij> = {}): MarktanalyseSamenvattingRij {
+  return {
+    van: '2025-01-01',
+    tot: '2026-01-01',
+    n: 20,
+    mediaanPrijs: 500_000,
+    mediaanM2: 4_000,
+    mediaanLooptijd: 40,
+    pctTovVraag: 2,
+    ...overrides,
+  }
+}
+
+describe('segmentVergelijking (F1: kerncijfers segment A vs. B)', () => {
+  it('vijf metrieken, verschil = B t.o.v. A (dezelfde berekenDelta als de periode-delta)', () => {
+    const a = samenvattingRij({ n: 20, mediaanPrijs: 500_000, mediaanM2: 4_000, mediaanLooptijd: 40, pctTovVraag: 2 })
+    const b = samenvattingRij({ n: 15, mediaanPrijs: 550_000, mediaanM2: 4_400, mediaanLooptijd: 30, pctTovVraag: 3 })
+    const rijen = segmentVergelijking(a, b)
+    expect(rijen).toHaveLength(5)
+
+    const prijs = rijen.find(r => r.metriek === 'mediaanPrijs')!
+    expect(prijs.a).toBe(500_000)
+    expect(prijs.b).toBe(550_000)
+    expect(prijs.verschil).toBeCloseTo(10, 5) // relatief: +10%
+
+    const looptijd = rijen.find(r => r.metriek === 'mediaanLooptijd')!
+    expect(looptijd.verschil).toBe(-10) // absoluut: 30 - 40
+
+    const aantal = rijen.find(r => r.metriek === 'n')!
+    expect(aantal.a).toBe(20)
+    expect(aantal.b).toBe(15)
+  })
+
+  it('altijd n per segment, ook bij te weinig data', () => {
+    const a = samenvattingRij({ n: 20 })
+    const b = samenvattingRij({ n: 2 })
+    const rijen = segmentVergelijking(a, b)
+    for (const r of rijen) {
+      expect(r.nA).toBe(20)
+      expect(r.nB).toBe(2)
+    }
+  })
+
+  it('te weinig verkopen in B: waarde en verschil vallen weg, A blijft staan', () => {
+    const a = samenvattingRij({ n: 20, mediaanPrijs: 500_000 })
+    const b = samenvattingRij({ n: MIN_N_BETROUWBAAR - 1, mediaanPrijs: 999_999 })
+    const rijen = segmentVergelijking(a, b)
+    const prijs = rijen.find(r => r.metriek === 'mediaanPrijs')!
+    expect(prijs.teWeinigB).toBe(true)
+    expect(prijs.b).toBeNull()
+    expect(prijs.verschil).toBeNull()
+    expect(prijs.teWeinigA).toBe(false)
+    expect(prijs.a).toBe(500_000)
+  })
+
+  it('te weinig verkopen in A: ook A valt weg (net als de bestaande kerncijfer-tegels)', () => {
+    const a = samenvattingRij({ n: MIN_N_BETROUWBAAR - 1, mediaanPrijs: 500_000 })
+    const b = samenvattingRij({ n: 20, mediaanPrijs: 600_000 })
+    const rijen = segmentVergelijking(a, b)
+    const prijs = rijen.find(r => r.metriek === 'mediaanPrijs')!
+    expect(prijs.teWeinigA).toBe(true)
+    expect(prijs.a).toBeNull()
+    expect(prijs.verschil).toBeNull()
+  })
+
+  it('segment B nog niet geladen/mislukt (samenvatting = null): alles van B leeg, A blijft werken', () => {
+    const a = samenvattingRij({ n: 20, mediaanPrijs: 500_000 })
+    const rijen = segmentVergelijking(a, null)
+    for (const r of rijen) {
+      expect(r.teWeinigB).toBe(true)
+      expect(r.b).toBeNull()
+      expect(r.verschil).toBeNull()
+      expect(r.nB).toBe(0)
+    }
+    const prijs = rijen.find(r => r.metriek === 'mediaanPrijs')!
+    expect(prijs.a).toBe(500_000)
+    expect(prijs.teWeinigA).toBe(false)
+  })
+
+  it('een eigen n-drempel overschrijft MIN_N_BETROUWBAAR', () => {
+    const a = samenvattingRij({ n: 3 })
+    const b = samenvattingRij({ n: 3 })
+    const rijen = segmentVergelijking(a, b, 2)
+    expect(rijen[0].teWeinigA).toBe(false)
+    expect(rijen[0].teWeinigB).toBe(false)
+  })
+})
