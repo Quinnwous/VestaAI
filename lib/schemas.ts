@@ -490,9 +490,9 @@ export type WaarderingOpslag = z.infer<typeof WaarderingOpslagSchema>
 // ---------------------------------------------------------------------------
 // Verrijkingsdata (item 10.3, docs/roadmap.md § fase 10) — opslagvorm van een
 // `fetchVerrijking()`-uitkomst (lib/verrijking.ts) op `objecten.verrijking_json`,
-// met tijdstempel "opgehaald op". Migratie <ts>_object_verrijking.sql
-// (additief, nog niet toegepast — zie besluiten.md). `versie: 1` naar analogie
-// van WaarderingOpslagSchema hierboven, zodat een toekomstige vormwijziging
+// met tijdstempel "opgehaald op". Migratie 20260923_object_verrijking.sql
+// (additief), live sinds 23 sep 2026. `versie: 1` naar analogie van
+// WaarderingOpslagSchema hierboven, zodat een toekomstige vormwijziging
 // dezelfde migratie-aanpak kan volgen.
 // ---------------------------------------------------------------------------
 
@@ -627,9 +627,11 @@ export type VerrijkingOpslag = z.infer<typeof VerrijkingOpslagSchema>
 // samengestelde vorm "plaats|wijk" zoals het filtermodel voorschrijft.
 //
 // ⚠️ `makelaars` staat in het filtermodel ("Verkocht door") maar de
-// transactietabel heeft geen makelaar-kolom — de RPC's/`transacties_gefilterd`
-// negeren dit veld tot die koppeling bestaat (zie docs/roadmap.md § 3.1 en de
-// opleverrapportage van item 2.2 voor de open actie).
+// transactietabel heeft geen makelaar-kolom — migratie
+// `20260924190000_transacties_makelaar_id.sql` staat klaar maar is nog niet
+// toegepast, dus de RPC's/`transacties_gefilterd` negeren dit veld tot die
+// koppeling bestaat (zie docs/roadmap.md § 3.1 en de opleverrapportage van
+// item 2.2 voor de open actie).
 // ---------------------------------------------------------------------------
 
 export const TovVraagprijsSchema = z.enum(['alle', 'boven', 'op_of_onder'])
@@ -655,7 +657,7 @@ export const TransactieFilterSchema = z.object({
   garage: z.boolean().optional(),
   tov_vraagprijs: TovVraagprijsSchema.optional(),
   looptijd_max: z.number().optional(),
-  /** ⚠️ nog niet toegepast in de RPC's — geen makelaar-kolom op transacties, zie hierboven. */
+  /** ⚠️ nog niet ondersteund in de RPC's — geen makelaar-kolom op transacties, zie hierboven. */
   makelaars: z.array(z.string()).optional(),
   kantoren: z.array(z.string()).optional(),
   alleen_eigen: z.boolean().optional(),
