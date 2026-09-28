@@ -38,6 +38,7 @@ export function HuisstijlForm({ kantoor }: Props) {
   const [vorm, setVorm] = useState<VormKeuze>(huidig?.vorm ?? 'zacht')
   const [telefoon, setTelefoon] = useState(huidig?.telefoon ?? '')
   const [email, setEmail] = useState(huidig?.email ?? '')
+  const [website, setWebsite] = useState(huidig?.website ?? '')
   const [voorbeelden, setVoorbeelden] = useState<string[]>(huidig?.voorbeelden?.length ? huidig.voorbeelden : [''])
   const [bannerFocusY, setBannerFocusY] = useState<number>(huidig?.banner_focus_y ?? 50)
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -144,6 +145,7 @@ export function HuisstijlForm({ kantoor }: Props) {
       vorm,
       telefoon: telefoon.trim() || undefined,
       email: email.trim() || undefined,
+      website: website.trim() || undefined,
       banner_focus_y: bannerFocusY,
       voorbeelden: voorbeelden.filter(Boolean),
       brochure_stijl: broVb.length || slotTekst.trim()
@@ -175,6 +177,7 @@ export function HuisstijlForm({ kantoor }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <input type="tel" value={telefoon} onChange={e => setTelefoon(e.target.value)} maxLength={40} placeholder="070-1234567" aria-label="Telefoonnummer" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} maxLength={120} placeholder="info@kantoor.nl" aria-label="E-mailadres" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
+          <input type="text" inputMode="url" autoComplete="url" value={website} onChange={e => setWebsite(e.target.value)} maxLength={120} placeholder="www.kantoor.nl" aria-label="Website" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 col-span-2" />
         </div>
       </div>
 

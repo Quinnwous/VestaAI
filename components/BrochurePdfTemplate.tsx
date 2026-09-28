@@ -16,6 +16,8 @@ interface Props {
     kleur: string
     telefoon: string | null
     email: string | null
+    /** Weergavelabel (bv. `i4housing.nl`), al genormaliseerd door `lib/branding.ts` `websiteWeergave()`. */
+    website: string | null
   }
   /** `zacht` (rond, VestaAI-standaard) of `strak` (hoekig) — zelfde keuze als de ingelogde omgeving, zie lib/branding.ts VORM_OPTIES. */
   vorm: 'zacht' | 'strak'
@@ -211,6 +213,7 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
             <Text style={s.slotContactRegel}>Interesse in deze woning? Neem contact op met {kantoor.naam}.</Text>
             {kantoor.telefoon && <Text style={s.slotContactRegel}>{kantoor.telefoon}</Text>}
             {kantoor.email && <Text style={s.slotContactRegel}>{kantoor.email}</Text>}
+            {kantoor.website && <Text style={s.slotContactRegel}>{kantoor.website}</Text>}
           </View>
         )}
         <Footer />

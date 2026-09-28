@@ -116,14 +116,16 @@ export function verkoperWaarschuwingen(waarschuwingen: string[]): string[] {
 
 /**
  * Contactregel voor de kantoorafsluiting (stap "Toelichting van de
- * makelaar"): alleen wat het kantoor heeft ingevuld, telefoon vóór e-mail,
- * gescheiden door " · " — `null` als er niets is ingevuld, zodat de UI de
- * hele regel laat verdwijnen in plaats van een lege balk te tonen (zelfde
- * regel als de huisstijlskill: "een leeg veld laat het element verdwijnen").
- * Puur zodat dit met vitest te testen is, los van de component.
+ * makelaar"): alleen wat het kantoor heeft ingevuld, telefoon → e-mail →
+ * website, gescheiden door " · " — `null` als er niets is ingevuld, zodat de
+ * UI de hele regel laat verdwijnen in plaats van een lege balk te tonen
+ * (zelfde regel als de huisstijlskill: "een leeg veld laat het element
+ * verdwijnen"). `website` is optioneel zodat bestaande aanroepen zonder dat
+ * veld blijven werken. Puur zodat dit met vitest te testen is, los van de
+ * component.
  */
-export function kantoorContactregel(kantoor: { telefoon: string | null; email: string | null }): string | null {
-  const delen = [kantoor.telefoon, kantoor.email].filter(
+export function kantoorContactregel(kantoor: { telefoon: string | null; email: string | null; website?: string | null }): string | null {
+  const delen = [kantoor.telefoon, kantoor.email, kantoor.website].filter(
     (d): d is string => typeof d === 'string' && d.trim().length > 0,
   )
   return delen.length > 0 ? delen.join(' · ') : null

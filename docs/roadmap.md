@@ -17,15 +17,15 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep-f`):** **segmentvergelijking
-  A vs. B** op `/marktanalyse` (`components/SegmentVergelijking.tsx`, pure
-  `segmentVergelijking()` in `lib/marktanalyse.ts`, `deltaTekst()` in
-  `lib/opmaak.ts`; B-samenvatting parallel en los af te vangen) ·
-  **presentatiemodus**: logo-terugval op stap 1 zonder foto, gedeelde
-  `kantoorContactregel()`/`logoWeergave()`. Eerder vandaag (PR #37/#38):
-  opruimen "nog niet toegepast", filter-poets, pdf-pin, presentatiemodus,
-  `.env.example` + `env:check`, **RLS `objecten` kantoorbreed** + initplan-fix
-  + FK-indexen (toegepast), "Wij vs. markt" mobiel.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep-g`):** **G1 websiteveld in
+  de huisstijl** — `huisstijl_json.website` (optioneel, vrije invoer),
+  `websiteWeergave()` in `lib/branding.ts` (label `i4housing.nl` + https-href,
+  ongeldig → `null`), veld in `/admin/kantoor/[id]` → Huisstijl, getoond op de
+  slotpagina van de brochure-pdf en in de contactregel van de presentatiemodus.
+  De waardebepaling-pdf toont geen kantoorcontact, dus ook geen website (bewust).
+  ⚠️ i4 Housing heeft nog geen website ingevuld: via het admin-formulier zetten
+  (of `repair-i4housing-branding.mjs --write`, heeft hem nu in MERK).
+  Daarvoor (PR #39): segmentvergelijking A vs. B, presentatie-polish.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -37,14 +37,12 @@
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  1. **G1 Websiteveld in de huisstijl** — spec klaar in
-     `docs/specs/g1-website-huisstijl.md` (schema + branding + admin-formulier,
-     tonen in brochure-/waardebepaling-pdf en presentatiemodus; geen
-     migratie). Agent-opdracht: "Lees de opdracht in <pad> en voer die uit"
-     (zie CLAUDE.md, les classifier-time-out).
-  2. Kandidaten daarna: A/B-segmentvergelijking ook op transacties/
-     concurrentie? · ontwerp-kit-oogst (`docs/ontwerp/`) · presentatiemodus
-     als pdf-achtige "handout" (zelfde stappen, printbaar).
+  1. **Presentatiemodus als printbare "handout"** — zelfde stappen als
+     `/object/[id]/presentatie`, als pdf of print-css, om bij de verkoper achter
+     te laten (bouwt op G1: contactregel met website).
+  2. Ontwerp-kit-oogst (`docs/ontwerp/`). A/B-segmentvergelijking op
+     transacties/concurrentie afgeraden (zoektool resp. al een
+     kantorenvergelijking — voegt weinig toe).
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
   smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op

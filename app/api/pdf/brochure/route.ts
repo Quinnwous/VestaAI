@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
       input: invoer,
       introTekst,
       fotos: bruikbareFotos,
-      kantoor: { naam: branding.naam, logoUrl, kleur: branding.primair, telefoon: branding.telefoon, email: branding.email },
+      kantoor: { naam: branding.naam, logoUrl, kleur: branding.primair, telefoon: branding.telefoon, email: branding.email, website: branding.website?.label ?? null },
       vorm: branding.vorm,
       slotTekst,
       makelaarNaam: makelaar.name,

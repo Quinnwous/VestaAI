@@ -6,6 +6,14 @@
 
 ---
 
+### 28 sep 2026 (tiende ronde) — G1 websiteveld in de huisstijl
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Website in de huisstijl | `huisstijl_json.website`, geen vormvalidatie in het schema (een rare waarde mag de hele opslag niet laten falen); `websiteWeergave()` normaliseert voor weergave (`https://www.i4housing.nl/` → `i4housing.nl`) en geeft `null` bij ongeldige invoer → element verdwijnt. Getoond op de brochure-slotpagina en in de presentatie-contactregel (telefoon → e-mail → website). Waardebepaling-pdf niet: die toont geen kantoorcontact. Geen migratie (jsonb) | Sonnet + Opus |
+| Invoerveld | `type="text" inputMode="url"`, niet `type="url"`: de native formuliervalidatie blokkeerde `www.kantoor.nl` zonder protocol — precies wat de placeholder voorstelt (gevonden in review) | Opus |
+| Volgende kandidaten | A/B-segmentvergelijking niet naar transacties/concurrentie kopiëren; handout van de presentatiemodus eerst | Opus |
+
 ### 28 sep 2026 (negende ronde) — segmentvergelijking A vs. B, presentatie-polish
 
 | Onderwerp | Besluit | Door |
@@ -547,6 +555,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-g`: G1 websiteveld in de huisstijl
+  (admin-formulier, brochure-pdf, presentatiemodus).
 - 28 sep 2026 — PR `feat/sessie-28sep-f`: segmentvergelijking A vs. B op
   marktanalyse, presentatiemodus-polish.
 - 28 sep 2026 — PR #38 `feat/sessie-28sep-d` (+e): presentatiemodus, env:check,
