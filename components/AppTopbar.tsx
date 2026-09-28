@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
 import { FeedbackSheet, FEEDBACK_TRIGGER_DESKTOP_STYLE, FEEDBACK_TRIGGER_MOBIEL_STYLE } from '@/components/FeedbackKnop'
+import { ZoekPalet, ZoekKnop } from '@/components/ZoekPalet'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -71,7 +72,23 @@ export function AppTopbar({
   // (components/FeedbackKnop.tsx) voor waarom deze niet in dat dropdown-/
   // mobiele menu zelf mag leven.
   const [feedbackOpen, setFeedbackOpen] = useState(false)
+  // Zelfde reden als feedbackOpen hierboven: los van profielOpen/mobiel, en
+  // het palet zelf staat ook buiten dat menu (na </header>, naast FeedbackSheet).
+  const [zoekOpen, setZoekOpen] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
+
+  // ⌘K/Ctrl+K opent het zoekpalet — overal in de ingelogde omgeving, ook met
+  // focus in een ander invoerveld (zelfde gedrag als Linear/Notion/GitHub).
+  useEffect(() => {
+    const toets = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setZoekOpen(v => !v)
+      }
+    }
+    document.addEventListener('keydown', toets)
+    return () => document.removeEventListener('keydown', toets)
+  }, [])
 
   // Buiten de balk klikken of Escape sluit het profielmenu.
   useEffect(() => {
@@ -93,7 +110,7 @@ export function AppTopbar({
   }, [profielOpen])
 
   // Navigeren sluit alles.
-  useEffect(() => { setProfielOpen(false); setMobiel(false) }, [pathname])
+  useEffect(() => { setProfielOpen(false); setMobiel(false); setZoekOpen(false) }, [pathname])
 
   // Laadt het logo niet (verlopen URL, bucket weg), dan valt hij terug op de merkletter —
   // nooit het gebroken-afbeelding-icoon van de browser.
@@ -235,7 +252,15 @@ export function AppTopbar({
             })}
           </nav>
 
-          <div className="topbar-rechts" style={{ marginLeft: 'auto', flexShrink: 0 }}>
+          {/* Zoekknopje: altijd zichtbaar (ook op 390 px), dus bewust buiten
+              .topbar-menus/.topbar-rechts (die op mobiel display:none krijgen)
+              — marginLeft: auto schuift 'm naar rechts, ook zonder de rest
+              van de balk. */}
+          <div style={{ marginLeft: 'auto', flexShrink: 0 }}>
+            <ZoekKnop onClick={() => setZoekOpen(true)} />
+          </div>
+
+          <div className="topbar-rechts" style={{ flexShrink: 0 }}>
             <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setProfielOpen(v => !v)}
@@ -311,6 +336,7 @@ export function AppTopbar({
       </header>
 
       <FeedbackSheet open={feedbackOpen} onOpenChange={setFeedbackOpen} />
+      <ZoekPalet open={zoekOpen} onOpenChange={setZoekOpen} />
 
       <div>{children}</div>
     </div>
