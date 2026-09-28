@@ -85,13 +85,16 @@ export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatu
   const GELDIGE_STATUSSEN: ObjectStatus[] = ['draft', 'published', 'onder_bod', 'verkocht']
   if (!GELDIGE_STATUSSEN.includes(nieuwStatus)) return { ok: false, error: 'Ongeldige status' }
 
-  const { error } = await supabase
+  const { data: geraakt, error } = await supabase
     .from('objecten')
     .update({ status: nieuwStatus })
     .eq('id', objectId)
     .eq('kantoor_id', makelaar.kantoor_id)
+    .select('id')
 
   if (error) return { ok: false, error: error.message }
+  // 0 rijen = niet gevonden of RLS weigert — nooit stil "ok" melden (les 28 sep).
+  if (!geraakt?.length) return { ok: false, error: 'Woning niet gevonden' }
 
   revalidatePath(`/object/${objectId}`)
   revalidatePath('/dashboard')
@@ -121,10 +124,17 @@ export async function deleteObject(objectId: string) {
   if (!makelaar) return { ok: false, error: 'Geen rechten' }
 
   // Eén rol per kantoor (besluit 16 sep 2026, zie CLAUDE.md): iedereen mag elk
-  // kantoor-object verwijderen, niet alleen de eigen woningen.
-  const { error } = await supabase.from('objecten').delete().eq('id', objectId).eq('kantoor_id', makelaar.kantoor_id)
+  // kantoor-object verwijderen, niet alleen de eigen woningen — sinds migratie
+  // 20260928100000_rls_kantoorbreed_en_initplan.sql ook in de RLS.
+  const { data: verwijderd, error } = await supabase
+    .from('objecten')
+    .delete()
+    .eq('id', objectId)
+    .eq('kantoor_id', makelaar.kantoor_id)
+    .select('id')
 
   if (error) return { ok: false, error: error.message }
+  if (!verwijderd?.length) return { ok: false, error: 'Woning niet gevonden' }
 
   revalidatePath('/dashboard')
   revalidatePath('/woningen')

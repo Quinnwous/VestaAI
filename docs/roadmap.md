@@ -23,7 +23,9 @@
   als de pdf) · **`.env.example` + `npm run env:check`**. Ervoor (PR
   `feat/sessie-28sep-c`, #37 — merge wacht op Quinn, auto-mode blokkeerde
   `gh pr merge`): opruimen "nog niet toegepast" + terugvalcode, filter-poets,
-  pdf-subject-pin.
+  pdf-subject-pin. Plus (ronde e): **RLS `objecten` kantoorbreed** (besluit
+  Quinn 28 sep) + initplan-fix + 6 FK-indexen, toegepast na back-up;
+  "Wij vs. markt" op 390 px onder elkaar.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -35,9 +37,9 @@
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  1. **Concurrentie "Wij vs. markt" op 390 px** — labels ("54 dgn") overlappen
-     de stippen in de drie mini-grafieken (`ConcurrentieExplorer.tsx`).
-  2. **RLS-migratie `objecten`** — pas na besluit Quinn (zie hieronder).
+  backlog "na de demo" dat zonder Quinn kan — kandidaten: presentatiemodus
+  stap 1 met hoofdfoto en kantoorlogo/contact op de laatste stap · A/B-
+  segmentvergelijking uitbreiden · ontwerp-kit-oogst (`docs/ontwerp/`).
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
   smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
@@ -58,20 +60,6 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- ⚠️ **Beslissing Quinn — RLS `objecten` vs. "één rol per kantoor" (gevonden 28 sep):**
-  de policies staan UPDATE/DELETE alleen toe voor de eigenaar
-  (`makelaar_id = auth.uid()`) of `is_kantoor_admin()`. `setObjectFase`,
-  `setObjectStatus` en `deleteObject` (`app/(app)/object/[id]/actions.ts`)
-  schrijven via de sessie-client → bij een collega 0 rijen: status/verwijderen
-  melden stil "ok", fase geeft een cryptische fout. Nu onzichtbaar (één login
-  per kantoor; i4housing-account heeft `role='admin'`), maar raakt 12.1 (vijf
-  makelaars). Keuze: (a) policies kantoorbreed maken (`kantoor_id =
-  (select my_kantoor_id())`, migratie, akkoord nodig) of (b) writes via de
-  service-client na kantoorcheck (patroon van de overige routes). Auto-mode
-  blokkeerde (b) als "security weaken" — dus jouw besluit. Aanbeveling: (a),
-  samen met de initplan-fix van de security-advisor (18× `auth.uid()` per rij,
-  o.a. op `transacties` — relevant zodra de exports erin staan) en 6
-  ontbrekende FK-indexen, in één migratie.
 - **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
   (`/marktanalyse/kaart`, nu de enige kaart)?
 
