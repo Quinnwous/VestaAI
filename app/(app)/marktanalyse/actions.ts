@@ -25,6 +25,13 @@ export type MarktanalyseData = {
   reeksMarkt: MarktanalyseReeksRij[]
   reeksB: MarktanalyseReeksRij[] | null
   samenvatting: MarktanalyseSamenvatting
+  /**
+   * Samenvatting van segment B (F1: kerncijfervergelijking A vs. B) — `null`
+   * zowel als de vergelijking uit staat (`filtersB === null`) als wanneer de
+   * aanroep mislukt (`.catch()` hieronder); segment A blijft in dat laatste
+   * geval gewoon werken, zie `lib/marktanalyse.ts` `segmentVergelijking()`.
+   */
+  samenvattingB: MarktanalyseSamenvatting | null
   /** `null` = de verdeling-RPC faalde onverwacht — zie het foutmeldingblok hieronder. */
   verdeling: PrijsklasseVerdelingRij[] | null
 }
@@ -45,7 +52,7 @@ export async function haalMarktanalyseData(
   // had, is gefixt en toegepast (`20260924_fix_marktanalyse_samenvatting_vorige_periode.sql`,
   // geverifieerd tegen productie 27 sep 2026) — één aanroep levert nu zowel
   // `.huidig` als een kloppende `.vorig` op.
-  const [reeksMarkt, samenvatting, verdeling, reeksB] = await Promise.all([
+  const [reeksMarkt, samenvatting, verdeling, reeksB, samenvattingB] = await Promise.all([
     marktanalyseReeks(supabase, filtersA),
     marktanalyseSamenvatting(supabase, filtersA),
     // `marktanalyse_verdeling_prijsklasse` (migratie
@@ -54,7 +61,11 @@ export async function haalMarktanalyseData(
     // RPC-storing: de UI toont dan een eigen foutstaat voor dat blok i.p.v.
     // de hele pagina te laten crashen.
     marktanalyseVerdelingPrijsklasse(supabase, filtersVerdeling).catch(() => null),
-    filtersB ? marktanalyseReeks(supabase, filtersB) : Promise.resolve(null),
+    // Beide segment-B-aanroepen (reeks + samenvatting, F1) vangen hun eigen
+    // fout op: als segment B faalt, blijft segment A (reeksMarkt/samenvatting
+    // hierboven) gewoon werken i.p.v. dat de hele Promise.all afketst.
+    filtersB ? marktanalyseReeks(supabase, filtersB).catch(() => null) : Promise.resolve(null),
+    filtersB ? marktanalyseSamenvatting(supabase, filtersB).catch(() => null) : Promise.resolve(null),
   ])
-  return { reeksMarkt, samenvatting, verdeling, reeksB }
+  return { reeksMarkt, samenvatting, verdeling, reeksB, samenvattingB }
 }
