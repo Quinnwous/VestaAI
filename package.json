@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke": "node e2e/smoke.mjs",
+    "env:check": "node scripts/check-env.mjs",
     "dod:screens": "node --env-file=.env.local scripts/dod-screens.mjs",
     "demo:repetitie": "node --env-file=.env.local scripts/generale-repetitie.mjs",
     "e2e": "playwright test",
