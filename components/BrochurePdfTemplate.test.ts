@@ -49,6 +49,7 @@ function maakPdf(opties: {
   slotTekst?: string | null
   logoUrl?: string | null
   vorm?: 'zacht' | 'strak'
+  website?: string | null
 } = {}) {
   return renderToBuffer(React.createElement(BrochurePdfTemplate, {
     address: 'Kerkstraat 1, Wassenaar',
@@ -61,6 +62,7 @@ function maakPdf(opties: {
       kleur: '#0080C8',
       telefoon: '070 - 123 45 67',
       email: 'info@testmakelaardij.nl',
+      website: opties.website ?? null,
     },
     vorm: opties.vorm ?? 'zacht',
     slotTekst: opties.slotTekst ?? null,
@@ -108,5 +110,11 @@ describe('BrochurePdfTemplate', () => {
   it('rendert in de strakke vormtaal', async () => {
     const pdf = await maakPdf({ vorm: 'strak' })
     expect(pdf.subarray(0, 5).toString()).toBe('%PDF-')
+  })
+
+  it('rendert de slotpagina met website naast telefoon/e-mail', async () => {
+    const pdf = await maakPdf({ website: 'i4housing.nl' })
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-')
+    expect(paginas(pdf)).toBe(4)
   })
 })
