@@ -8,9 +8,17 @@
  * Zie `lib/importSnapshot.ts` voor het contract van `imports.snapshot_json`
  * — dat bestand is gedeeld met de importpijplijn (5.2/5.3) en wordt hier
  * alleen gelezen, nooit gewijzigd.
+ *
+ * De snapshot die een import bewaart wordt sinds item i2
+ * (docs/specs/i2-admin-csv-via-pijplijn.md) uitsluitend gebouwd door
+ * `bouwSnapshot()` in `lib/importPijplijn.ts` — dit bestand had eerder een
+ * eigen, bijna-identieke `bouwSnapshotUitBestaande()` voor de admin-CSV-
+ * import, maar twee bouwers voor één contract liepen uit elkaar. Die is
+ * verwijderd; `app/admin/transacties/actions.ts` roept nu dezelfde
+ * `bouwSnapshot()` aan als `scripts/import-transacties.mjs`.
  */
 import {
-  IMPORT_SNAPSHOT_VERSIE, MAX_SNAPSHOT_RIJEN, leesImportSnapshot,
+  leesImportSnapshot,
   type ImportSnapshot, type ImportSnapshotRij,
 } from './importSnapshot'
 
@@ -75,42 +83,4 @@ export function planTerugdraai(input: PlanTerugdraaiInput): PlanTerugdraaiResult
   const verwijder = rijIdsMetImportId.filter(id => !bijgewerkteIds.has(id))
 
   return { ok: true, herstel: gelezen.bijgewerkt, verwijder }
-}
-
-/** Ruwe, bestaande transactierij zoals opgehaald vóór een nieuwe import — precies de kolommen die een import schrijft, plus de sleutel om op te matchen. */
-export type BestaandeTransactieVoorSnapshot = {
-  id: string
-  adresSleutel: string
-  verkoopdatum: string | null
-  /** Exact de kolomwaarden die een import overschrijft (incl. `import_id`) — wat terugkomt bij een herstel. */
-  vorige: Record<string, unknown>
-}
-
-/** `${adres_sleutel}|${verkoopdatum ?? ''}` — dezelfde sleutel als de unieke index `transacties_natuurlijke_sleutel_idx`. */
-export function bouwSleutel(adresSleutel: string, verkoopdatum: string | null): string {
-  return `${adresSleutel}|${verkoopdatum ?? ''}`
-}
-
-/**
- * Bouwt de snapshot die een nieuwe import moet bewaren, vóór de upsert: elke
- * bestaande rij waarvan de sleutel ook in de nieuwe CSV/het nieuwe bestand
- * voorkomt wordt straks overschreven en komt dus in `bijgewerkt` terecht met
- * haar huidige (=vorige) kolomwaarden. Een bestaande rij die niet matcht,
- * wordt door deze import niet aangeraakt en hoort niet in de snapshot. Een
- * rij uit `nieuweSleutels` zonder match in `bestaande` is nieuw (wordt bij
- * terugdraaien simpelweg verwijderd, niet hersteld).
- */
-export function bouwSnapshotUitBestaande(
-  bestaande: BestaandeTransactieVoorSnapshot[],
-  nieuweSleutels: Set<string>,
-): ImportSnapshot {
-  const kandidaten = bestaande.filter(r => nieuweSleutels.has(bouwSleutel(r.adresSleutel, r.verkoopdatum)))
-  const afgekapt = kandidaten.length > MAX_SNAPSHOT_RIJEN
-  const beperkt = afgekapt ? kandidaten.slice(0, MAX_SNAPSHOT_RIJEN) : kandidaten
-
-  return {
-    versie: IMPORT_SNAPSHOT_VERSIE,
-    bijgewerkt: beperkt.map(r => ({ id: r.id, vorige: r.vorige })),
-    afgekapt,
-  }
 }
