@@ -17,14 +17,16 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep`, autonoom terwijl Quinn sliep):**
-  statische locatiekaart in de waardebepaling-pdf (PDOK-pastel-tegels via
-  `sharp`, genummerde referenties = #-kolom in de tabel, best-effort: zonder
-  kaart als tegels falen; pdf 2,6 s), repetitie scène 4 typt een echt adres en
-  toetst de BAG-voorvulling (33 stappen), Plaats-pil consistent op marktanalyse,
-  transacties en concurrentie ("Alle plaatsen" na "Wis"). Daarvoor (27 sep,
-  PR `feat/sessie-27sep-d`): 12.5b repetitiescript, BAG-bug, "Wis" op Plaats,
-  omweg vorige periode weg.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep-b`, autonoom):** **⌘K-zoeken**
+  (`components/ZoekPalet.tsx`, `app/api/zoeken`, `lib/zoeken.ts`: woningen van
+  het eigen kantoor, pagina's, snelkoppeling naar Transacties opzoeken; knop in
+  de topbar + ⌘K/Ctrl K) · **buurtgrenzen op de verkoopkaart** (schakelbare laag,
+  CBS Wijken en Buurten 2024 via PDOK OGC API, proxy `app/api/kaart/buurtgrenzen`
+  met 1 dag cache, standaard uit) · **`lib/filterVergelijk.ts`** (gedeelde
+  `bereikGelijk`/`verzamelingGelijk`) · concurrentie-v2-RPC's op productie
+  geverifieerd (identiek aan de migratie). Eerder op 28 sep (PR
+  `feat/sessie-28sep`): kaart in de waardebepaling-pdf, repetitie scène 4 met
+  BAG-toets, Plaats-pil consistent.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -36,15 +38,28 @@
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):** de
-  bouwbare demo-items zijn op; de rondes pakken nu backlog "na de demo" op die
-  zonder Quinn kan (keuze sessie, 28 sep): **⌘K zoeken** (woningen, adressen,
-  pagina's; binnen het eigen kantoor) · **wijk-/buurtgrenzen op de
-  verkoopkaart** (CBS via PDOK, als schakelbare laag) · **poets**
-  (`plaatsenGelijk()` dubbel in twee explorers → `lib/`, CLAUDE.md-status
-  concurrentie-v2-RPC's nagaan).
+  demo-items zijn op; backlog "na de demo" en opruimwerk dat zonder Quinn kan:
+  1. **Verouderde "nog niet toegepast"-commentaren, systematisch** — `grep -rn
+     "nog niet toegepast" lib app components` gaf 28 sep 12 plekken (o.a.
+     `lib/transactiesQuery.ts:384` en `app/(app)/marktanalyse/actions.ts:53`
+     over `marktanalyse_verdeling_prijsklasse`/`transacties_plaatsen_wijken`,
+     die wél live staan; `lib/schemas.ts:494/658`, `app/admin/actions.ts`,
+     `InstellingenForm.tsx`/`mijn-kantoor-slug` over `kantoren.slug`,
+     `verrijking/route.ts`, `kantoorLoginBranding.ts`,
+     `concurrentie/page.tsx:22`). Per migratie read-only verifiëren
+     (`list_migrations`, `pg_proc`, `information_schema.columns`), dan commentaar
+     én eventuele terugval-code die alleen voor "nog niet toegepast" bestond
+     bijwerken. Geen SQL uitvoeren.
+  2. **Filter-poets** — "Wis" op Plaats gedraagt zich op concurrentie anders
+     (terug naar het werkgebied) dan op marktanalyse/transacties (leeg = alle
+     plaatsen): gelijktrekken · `var(--merk-accent, #C61E45)`-fallbacks in de
+     explorers weg (hook meldt ze) · `bereikGelijk` in `lib/verkoopkaart.ts` en
+     `VerkoopkaartExplorerV2.tsx` naar `lib/filterVergelijk.ts`.
+  3. **Pdf-kaart contrast** — subject-pin valt weg bij een donkere kantoorkleur
+     (demo-kantoor): witte rand of lichtere variant (`lichter()` uit
+     `lib/branding.ts`) als de merkkleur te donker is.
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
-  smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade
-  (te groot risico zonder overleg vlak voor de demo).
+  smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
   ging over een functie zonder aanroeper. Niet opnieuw oppakken.
@@ -887,15 +902,12 @@ makelaarsveld in de exports) · pastelkleuren van de kaart
 laten beoordelen door Quinn (`pdokPastelStijl()`).
 
 **Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
-content naar de UI (nu: timer + skeletons) · subject-pin in de pdf-kaart valt
-weg bij een donkere kantoorkleur (demo-kantoor; i4housing-blauw is wél
-duidelijk) · A/B-segmentvergelijking uitbreiden · keukentafel-/
+content naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden · keukentafel-/
 presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
-Resend-melding — zie v1) · ⌘K zoeken · Next 15-upgrade · jaarlijkse
+Resend-melding — zie v1) · Next 15-upgrade · jaarlijkse
 CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
 vernederlandsen · dossiers aanmaken uit een Realworks-objectexport (hun huidige
-aanbod in één keer als dossiers "In verkoop") · wijk-/buurtgrenzen op de kaart
-(CBS via PDOK) · 4RENT!-variant van het sjabloon (zie observatie Verhuur in
+aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjabloon (zie observatie Verhuur in
 `docs/besluiten.md`).
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
