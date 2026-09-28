@@ -6,6 +6,17 @@
 
 ---
 
+### 28 sep 2026 (zevende ronde, autonoom) — opruimen "nog niet toegepast", filter-poets, pdf-pin
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Verouderde migratie-commentaren | Read-only geverifieerd (Opus, `pg_proc`/`information_schema`): `marktanalyse_verdeling_prijsklasse`, `transacties_plaatsen_wijken`, `kantoor_branding_publiek`, `kantoren.slug`, `objecten.verrijking_json`, `gebruik_events` en de concurrentie-v2-RPC's staan live; **`transacties.makelaar_id` niet** (commentaren daarover kloppen). Alle 15 plekken bijgewerkt, inclusief migratiekoppen | Sonnet + Opus |
+| Terugvalcode weg | Code die alleen bestond voor een ontbrekende migratie is verwijderd: `zoekTransactiesTerugval()` (PGRST202, ± 250 regels + test), de 42703-takken voor `kantoren.slug` (admin) en `verrijking_json` (verrijking-route, was 503 `migratieVereist`), de `undefined`-slugstaat in `InstellingenForm`. Echte foutafhandeling (RPC faalt → `null` → nette foutstaat) blijft | Sonnet |
+| Foutteksten explorers | "…de bijbehorende migratie moet nog worden toegepast" → "Deze cijfers kunnen we nu niet laden. Probeer het later opnieuw." — geen techniekjargon richting de makelaar | Sonnet |
+| "Wis" op Plaats (concurrentie) | De Wis-link in de dropdown gaat nu naar leeg = alle plaatsen, net als marktanalyse/transacties. Pil-× en "Wis alles" blijven naar de standaard (werkgebied) — in alle drie hetzelfde | Sonnet |
+| Pdf-subject-pin | `subjectPinStijl()` in `lib/statischeKaart.ts`: altijd witte halo (2,5 pt), en onder relatieve luminantie 0,06 een `lichter(kleur, .5)`-vulling. Drempel: referentiepins zijn `#14181B` (≈ 0,009); i4housing-blauw (≈ 0,20) en VestaAI-groen (≈ 0,11) blijven ongewijzigd. De tekenlogica bleek in `WaardebepalingPdfTemplate.tsx` te zitten, niet in de kaartmodule — Opus koppelde hem | Sonnet + Opus |
+| Worktree-omgeving | Agent-worktrees hebben geen `.env.local` en geen echte `node_modules`-symlink: `dod:screens` en `maplibreWorker.guard.test.ts` draaien daar niet. Die checks draait de hoofdsessie na de merge (agents kopiëren geen productiecredentials) | Opus |
+
 ### 28 sep 2026 (zesde ronde, autonoom) — ⌘K-zoeken, buurtgrenzen, filtervergelijkers
 
 | Onderwerp | Besluit | Door |
@@ -515,6 +526,9 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-c`: verouderde "nog niet toegepast"-commentaren
+  en terugvalcode opgeruimd, filter-poets (Wis op Plaats, merk-accent-fallbacks,
+  `bereikGelijk`), pdf-subject-pin zichtbaar bij donkere merkkleur.
 - 28 sep 2026 — PR `feat/sessie-28sep-b`: ⌘K-zoeken, buurtgrenzen op de
   verkoopkaart, gedeelde filtervergelijkers, concurrentie-RPC-status geverifieerd.
 - 28 sep 2026 — PR `feat/sessie-28sep`: kaart in de waardebepaling-pdf, repetitie
