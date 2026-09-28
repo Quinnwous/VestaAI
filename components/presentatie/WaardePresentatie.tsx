@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { PropertyInput } from '@/lib/schemas'
 import { woningtypeLabel } from '@/lib/schemas'
 import type { WaarderingReferentie, WaarderingUitkomst } from '@/lib/waardering'
-import { bepaalPresentatieStappen, referentiesOnderschrift, type PresentatieStapId } from '@/lib/presentatie'
+import { bepaalPresentatieStappen, referentiesOnderschrift } from '@/lib/presentatie'
 import { wozUitInvoer, type WozIjkpunt } from '@/lib/woz'
 import { euro, datum as datumFmt, m2 as m2Fmt, afstand as afstandFmt } from '@/lib/opmaak'
 import { colors, radius } from '@/components/ui/tokens'
@@ -190,6 +190,7 @@ function StapWoning({ address, invoer, fotoUrl }: { address: string; invoer: Pro
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 22 }}>
       {fotoUrl && fotoOk && (
+        // eslint-disable-next-line @next/next/no-img-element -- externe Storage-URL, geen next/image-domein geconfigureerd (zelfde patroon als DossierHeader.tsx)
         <img
           src={fotoUrl}
           alt=""
@@ -356,6 +357,7 @@ function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; 
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginTop: 8 }}>
         {kantoor.logoUrl && logoOk ? (
+          // eslint-disable-next-line @next/next/no-img-element -- externe Storage-URL, zelfde patroon als AppTopbar.tsx
           <img src={kantoor.logoUrl} alt={kantoor.naam} onError={() => setLogoOk(false)} style={{ height: 34, objectFit: 'contain' }} />
         ) : (
           <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--merk-diep, var(--merk))' }}>{kantoor.naam}</div>
