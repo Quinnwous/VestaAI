@@ -45,12 +45,11 @@ import { createClient } from '@supabase/supabase-js'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-// ⚠️ xlsx (SheetJS) is een CJS-pakket: het ESM-namespace-object mist
-// `readFile` (alleen `read`/`write`/`utils` staan als losse named exports;
-// `readFile`/`writeFile` zitten alleen op `default`, geverifieerd tijdens
-// het bouwen van dit script — `import * as XLSX from 'xlsx'` met
-// `XLSX.readFile()` faalt stil-niet-stil met "is not a function").
-import XLSX from 'xlsx'
+// xlsx = de officiële SheetJS-release van cdn.sheetjs.com (de npm-versie
+// 0.18.5 is verouderd en heeft bekende kwetsbaarheden). ⚠️ In ESM heeft
+// SheetJS geen toegang tot het bestandssysteem (`readFile` → "Cannot access
+// file"): lees het bestand zelf in en geef de buffer aan `XLSX.read()`.
+import * as XLSX from 'xlsx'
 import { parseCsv } from '../lib/transactieImport.ts'
 import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt } from '../lib/importPijplijn.ts'
 import { PROFIELEN } from '../lib/importProfielen.ts'
@@ -104,7 +103,7 @@ function vereisEnv(namen) {
 function leesBestand(pad) {
   const ext = path.extname(pad).toLowerCase()
   if (ext === '.xlsx' || ext === '.xls') {
-    const workbook = XLSX.readFile(pad)
+    const workbook = XLSX.read(fs.readFileSync(pad), { type: 'buffer', cellDates: false })
     const eersteBlad = workbook.SheetNames[0]
     if (!eersteBlad) return { headers: [], rijen: [] }
     const matrix = XLSX.utils.sheet_to_json(workbook.Sheets[eersteBlad], { header: 1, raw: false, defval: '' })
