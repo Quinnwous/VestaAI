@@ -177,7 +177,7 @@ export function HuisstijlForm({ kantoor }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <input type="tel" value={telefoon} onChange={e => setTelefoon(e.target.value)} maxLength={40} placeholder="070-1234567" aria-label="Telefoonnummer" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
           <input type="email" value={email} onChange={e => setEmail(e.target.value)} maxLength={120} placeholder="info@kantoor.nl" aria-label="E-mailadres" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400" />
-          <input type="url" value={website} onChange={e => setWebsite(e.target.value)} maxLength={120} placeholder="www.kantoor.nl" aria-label="Website" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 col-span-2" />
+          <input type="text" inputMode="url" autoComplete="url" value={website} onChange={e => setWebsite(e.target.value)} maxLength={120} placeholder="www.kantoor.nl" aria-label="Website" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 col-span-2" />
         </div>
       </div>
 
