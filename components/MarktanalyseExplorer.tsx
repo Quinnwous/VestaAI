@@ -514,7 +514,7 @@ export function MarktanalyseExplorer({
                 />
               ) : (
                 <p style={{ fontSize: 13, color: colors.muted, margin: 0 }}>
-                  De verdeling per prijsklasse is nog niet beschikbaar — de bijbehorende migratie moet nog worden toegepast.
+                  Deze cijfers kunnen we nu niet laden. Probeer het later opnieuw.
                 </p>
               )}
             </ChartCard>

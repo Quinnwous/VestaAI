@@ -14,8 +14,8 @@
  * toegepast op productie (geverifieerd 28 sep 2026, `pg_get_functiondef`
  * exact gelijk aan de migratie) — de `.catch(() => null)` per blok in
  * `actions.ts` blijft als verdediging tegen een toekomstige RPC-storing
- * staan; elk blok toont dan een nette "nog niet beschikbaar"-melding i.p.v.
- * te crashen (zie `Onbeschikbaar` hieronder).
+ * staan; elk blok toont dan een nette foutmelding i.p.v. te crashen (zie
+ * `Onbeschikbaar` hieronder).
  */
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
@@ -52,8 +52,8 @@ function kortNaam(naam: string): string {
   return kort.length > 18 ? kort.slice(0, 17) + '…' : kort
 }
 
-/** Nette "nog niet beschikbaar"-melding voor een blok waarvan de RPC (nog) niet bestaat — geen crash, wel duidelijk. */
-function Onbeschikbaar({ tekst = 'Deze cijfers zijn nog niet beschikbaar.' }: { tekst?: string }) {
+/** Nette foutmelding voor een blok waarvan de RPC-aanroep is mislukt — geen crash, wel duidelijk, geen technisch jargon richting de makelaar. */
+function Onbeschikbaar({ tekst = 'Deze cijfers kunnen we nu niet laden. Probeer het later opnieuw.' }: { tekst?: string }) {
   return (
     <p style={{ fontSize: 12.5, color: colors.muted, margin: '4px 0', fontStyle: 'italic' }}>{tekst}</p>
   )
@@ -137,11 +137,10 @@ export function ConcurrentieExplorer({
   if (filter.verborgen.length) pillen.push({ label: 'Verborgen', waarde: `${filter.verborgen.length} kantoor${filter.verborgen.length > 1 ? 'en' : ''}`, onVerwijder: () => zetFilterDeel({ verborgen: [] }) })
 
   // ── Zichtbare ranglijst (na "verberg dit kantoor") ──
-  // ⚠️ `data.ranglijst === null` betekent "RPC nog niet beschikbaar" (migratie
-  // niet toegepast), niet "geen concurrentiedata" — die twee mogen nooit
-  // dezelfde lege staat tonen (anders meldt de pagina "verkopend kantoor
-  // onbekend" terwijl de dataset dat veld wél gevuld heeft, alleen de RPC
-  // nog niet bestaat).
+  // ⚠️ `data.ranglijst === null` betekent "de RPC-aanroep is mislukt", niet
+  // "geen concurrentiedata" — die twee mogen nooit dezelfde lege staat tonen
+  // (anders meldt de pagina "verkopend kantoor onbekend" terwijl de dataset
+  // dat veld wél gevuld heeft, alleen de RPC net even faalde).
   const rpcBeschikbaar = data.ranglijst !== null
   const ranglijstZichtbaar: RanglijstRij[] | null = data.ranglijst
     ? data.ranglijst.filter(r => !filter.verborgen.includes(r.kantoor))
@@ -395,7 +394,7 @@ export function ConcurrentieExplorer({
         {drawerLaden || !drawerKantoor ? (
           <SkeletonRij aantal={4} height={54} />
         ) : !drawerData ? (
-          <Onbeschikbaar tekst="Het concurrentprofiel is nog niet beschikbaar." />
+          <Onbeschikbaar tekst="Dit concurrentprofiel kunnen we nu niet laden. Probeer het later opnieuw." />
         ) : (
           <ConcurrentDrawerInhoud
             profiel={drawerData}
