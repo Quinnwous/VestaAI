@@ -114,15 +114,20 @@ export async function bevestigTransactieImport(
   const nieuweSleutels = new Set(rijen.map(r => bouwSleutel(r.adres_sleutel, r.verkoopdatum)))
   const sleutelsLijst = Array.from(new Set(rijen.map(r => r.adres_sleutel)))
 
-  const { data: bestaandeRuw, error: bestaandeError } = await service
-    .from('transacties_met_coordinaten')
-    .select(BESTAANDE_KOLOMMEN)
-    .eq('kantoor_id', kantoorId)
-    .in('adres_sleutel', sleutelsLijst)
+  // In stukken: duizenden sleutels in één `.in()` maken de GET-URL te lang voor PostgREST.
+  const SLEUTEL_CHUNK = 200
+  const bestaandeRuw: BestaandeRijRuw[] = []
+  for (let i = 0; i < sleutelsLijst.length; i += SLEUTEL_CHUNK) {
+    const { data, error: bestaandeError } = await service
+      .from('transacties_met_coordinaten')
+      .select(BESTAANDE_KOLOMMEN)
+      .eq('kantoor_id', kantoorId)
+      .in('adres_sleutel', sleutelsLijst.slice(i, i + SLEUTEL_CHUNK))
+    if (bestaandeError) return { ok: false, error: `Kon bestaande rijen niet ophalen: ${bestaandeError.message}` }
+    bestaandeRuw.push(...((data ?? []) as unknown as BestaandeRijRuw[]))
+  }
 
-  if (bestaandeError) return { ok: false, error: `Kon bestaande rijen niet ophalen: ${bestaandeError.message}` }
-
-  const bestaandeVoorSnapshot: BestaandeTransactieVoorSnapshot[] = ((bestaandeRuw ?? []) as BestaandeRijRuw[]).map(r => {
+  const bestaandeVoorSnapshot: BestaandeTransactieVoorSnapshot[] = bestaandeRuw.map(r => {
     const { id, lat, lng, adres_sleutel, verkoopdatum, ...vorigeKolommen } = r
     return {
       id,
@@ -148,6 +153,8 @@ export async function bevestigTransactieImport(
       bestandsnaam: bestandsnaam?.trim() || null,
       aantal_rijen: rijen.length,
       status: 'bezig',
+      // Vóór de eerste upsert opgeslagen, zodat ook een mislukte import terug kan.
+      snapshot_json: snapshot,
     })
     .select('id')
     .single()
@@ -187,7 +194,6 @@ export async function bevestigTransactieImport(
       aantal_nieuw: Math.max(0, rijen.length - aantalBijgewerkt),
       aantal_bijgewerkt: aantalBijgewerkt,
       aantal_uitgesloten: overgeslagen.length,
-      snapshot_json: snapshot,
     })
     .eq('id', importId)
 

@@ -50,10 +50,13 @@ export function planTerugdraai(input: PlanTerugdraaiInput): PlanTerugdraaiResult
       reden: 'Dit is niet meer de laatste import van dit kantoor — alleen de meest recente import kan worden teruggedraaid.',
     }
   }
-  if (imp.status !== 'klaar') {
+  // Ook een mislukte import mag terug: juist dan staat de dataset half
+  // bijgewerkt. Kan alleen omdat de snapshot vóór de eerste schrijfactie
+  // wordt opgeslagen (lib/importSnapshot.ts). 'bezig' niet: die kan nog lopen.
+  if (imp.status !== 'klaar' && imp.status !== 'mislukt') {
     return {
       ok: false,
-      reden: `Deze import heeft status "${imp.status}" — alleen een afgeronde import (status "klaar") kan worden teruggedraaid.`,
+      reden: `Deze import heeft status "${imp.status}" — alleen een afgeronde of mislukte import kan worden teruggedraaid.`,
     }
   }
 

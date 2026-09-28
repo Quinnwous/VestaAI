@@ -151,3 +151,15 @@ describe('bouwSnapshotUitBestaande', () => {
     expect(snapshot.bijgewerkt).toHaveLength(MAX_SNAPSHOT_RIJEN)
   })
 })
+
+describe('planTerugdraai — mislukte import', () => {
+  it('staat terugdraaien van een mislukte import toe (half geschreven dataset herstellen)', () => {
+    const resultaat = planTerugdraai({
+      imp: { id: 'imp-1', kantoor_id: 'kantoor-1', status: 'mislukt' },
+      laatsteImportIdVanKantoor: 'imp-1',
+      snapshot: { versie: 1, bijgewerkt: [], afgekapt: false },
+      rijIdsMetImportId: ['r1'],
+    })
+    expect(resultaat).toEqual({ ok: true, herstel: [], verwijder: ['r1'] })
+  })
+})

@@ -5,7 +5,12 @@
  * CSV-import in `/admin/transacties`; lezer: "Laatste import terugdraaien"
  * (5.4).
  *
- * Terugdraaien van import X (alleen de laatste import van een kantoor):
+ * De schrijver slaat de snapshot op in dezelfde insert als de `imports`-rij
+ * (status 'bezig'), dus vóór de eerste upsert — zodat ook een halverwege
+ * mislukte import terug te draaien is.
+ *
+ * Terugdraaien van import X (alleen de laatste import van een kantoor,
+ * status 'klaar' of 'mislukt'):
  * - elke rij in `bijgewerkt` krijgt haar `vorige` kolomwaarden terug
  *   (inclusief de vorige `import_id`);
  * - elke andere rij met `import_id = X` was nieuw → verwijderen;
