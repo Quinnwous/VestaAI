@@ -78,6 +78,32 @@ export type PijplijnResultaat = {
   rapport: ImportRapport
 }
 
+/**
+ * Leest `imports.kwaliteitsrapport_json` typeveilig — het komt ongevalideerd
+ * uit de database (jsonb) terug (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+ * `null` bij afwezige/onherkenbare vorm (bv. een import van vóór dit rapport
+ * bestond), zodat de UI (`app/admin/transacties/Importhistorie.tsx`) nooit op
+ * `unknown` hoeft te gokken. Zelfde patroon als `leesImportSnapshot()` in
+ * lib/importSnapshot.ts.
+ */
+export function leesImportRapport(json: unknown): ImportRapport | null {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return null
+  const r = json as Partial<ImportRapport>
+  const geldig =
+    typeof r.totaalRuw === 'number' &&
+    Array.isArray(r.overgeslagen) &&
+    typeof r.totaalGeimporteerd === 'number' &&
+    Array.isArray(r.perUitsluitreden) &&
+    Array.isArray(r.voorbeeldenPerUitsluitreden) &&
+    Array.isArray(r.perPlaats) &&
+    Array.isArray(r.perJaar) &&
+    typeof r.pctMetCoordinaat === 'number' &&
+    typeof r.aantalEigenVerkopen === 'number' &&
+    typeof r.samengevoegd === 'number' &&
+    Array.isArray(r.voorbeeldenSamenvoegingen)
+  return geldig ? (r as ImportRapport) : null
+}
+
 const MAX_VOORBEELDEN_PER_REDEN = 10
 
 /**
@@ -156,7 +182,9 @@ export function voerImportPijplijnUit(
       garage: bronRij.garage,
       tuin: bronRij.tuin,
       buitenruimte: bronRij.buitenruimte,
-      eigen_verkoop: isEigenKantoor(bronRij.verkopend_kantoor, kantoorAliassen),
+      // Een expliciete eigen_verkoop-kolom in het bestand wint altijd van de
+      // kantoor-aliassen-afleiding (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+      eigen_verkoop: bronRij.eigen_verkoop_expliciet ?? isEigenKantoor(bronRij.verkopend_kantoor, kantoorAliassen),
       verkopend_kantoor: bronRij.verkopend_kantoor,
       bron: bronRij.bron,
       adres_sleutel: sleutel,
@@ -292,4 +320,41 @@ export function telNieuwEnBijgewerkt(
     if (sleutels.has(`${rij.adres_sleutel}::${rij.verkoopdatum ?? ''}`)) bijgewerkt++
   }
   return { nieuw: nieuweRijen.length - bijgewerkt, bijgewerkt }
+}
+
+// ── Upsert-batches: aanvulbare velden niet wissen ───────────────────────────
+
+/**
+ * Kolommen die ná de import nog aangevuld worden (geocodering: `geo`,
+ * `geocode_status`, `wijk`, `buurt`). Heeft een importrij hier geen waarde
+ * voor, dan mag de upsert een eerder aangevulde waarde niet met null
+ * overschrijven — anders wist elke periodieke herimport zonder coördinaten
+ * alle gegeocodeerde locaties.
+ */
+export const AANVULBARE_KOLOMMEN = ['geo', 'geocode_status', 'wijk', 'buurt'] as const
+
+/**
+ * Deelt rijen op in upsert-batches waarin elke rij precies dezelfde kolommen
+ * heeft. Lege aanvulbare kolommen worden weggelaten, en per kolomset apart
+ * geüpsert: supabase-js vult een ontbrekende sleutel binnen één batch
+ * anders aan met null (en PostgREST werkt bij een conflict alleen de
+ * meegestuurde kolommen bij).
+ */
+export function maakUpsertBatches<T extends Record<string, unknown>>(rijen: T[], batchGrootte = 500): Record<string, unknown>[][] {
+  const perSet = new Map<string, Record<string, unknown>[]>()
+  for (const rij of rijen) {
+    const schoon: Record<string, unknown> = { ...rij }
+    for (const kolom of AANVULBARE_KOLOMMEN) {
+      if (schoon[kolom] === null || schoon[kolom] === undefined) delete schoon[kolom]
+    }
+    const sleutel = Object.keys(schoon).sort().join(',')
+    const groep = perSet.get(sleutel)
+    if (groep) groep.push(schoon)
+    else perSet.set(sleutel, [schoon])
+  }
+  const batches: Record<string, unknown>[][] = []
+  for (const groep of Array.from(perSet.values())) {
+    for (let i = 0; i < groep.length; i += batchGrootte) batches.push(groep.slice(i, i + batchGrootte))
+  }
+  return batches
 }

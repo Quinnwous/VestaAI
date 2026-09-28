@@ -52,3 +52,30 @@ describe('mapRij — brainbay (rd)', () => {
     expect(resultaat!.aankopend_kantoor).toBe('Kopend Kantoor')
   })
 })
+
+describe('mapRij — handmatig (admin-CSV, item i2)', () => {
+  const headers = ['adres', 'postcode', 'plaats', 'lat', 'lng', 'verkoopprijs', 'verkoopdatum', 'type', 'oppervlak']
+
+  it('mapt met alleen de gedeelde ALIASSEN, geen bron-specifieke aliassen', () => {
+    const rij = ['Hoofdstraat 1', '2242AB', 'Wassenaar', '52.146', '4.402', '750000', '15-03-2026', 'Tussenwoning', '120']
+    const resultaat = mapRij(rij, headers, PROFIELEN.handmatig)
+    expect(resultaat).not.toBeNull()
+    expect(resultaat!.bron).toBe('handmatig')
+    expect(resultaat!.lat).toBeCloseTo(52.146, 3)
+    expect(resultaat!.verkoopprijs).toBe(750000)
+  })
+
+  it('eigen_verkoop_expliciet is null zonder eigen_verkoop-kolom', () => {
+    const rij = ['Hoofdstraat 1', '2242AB', 'Wassenaar', '52.146', '4.402', '750000', '15-03-2026', 'Tussenwoning', '120']
+    const resultaat = mapRij(rij, headers, PROFIELEN.handmatig)
+    expect(resultaat!.eigen_verkoop_expliciet).toBeNull()
+  })
+
+  it('leest een expliciete eigen_verkoop-kolom (ja/nee)', () => {
+    const metEigen = [...headers, 'eigen_verkoop']
+    const rijJa = ['Hoofdstraat 1', '2242AB', 'Wassenaar', '52.146', '4.402', '750000', '15-03-2026', 'Tussenwoning', '120', 'ja']
+    const rijNee = ['Hoofdstraat 1', '2242AB', 'Wassenaar', '52.146', '4.402', '750000', '15-03-2026', 'Tussenwoning', '120', 'nee']
+    expect(mapRij(rijJa, metEigen, PROFIELEN.handmatig)!.eigen_verkoop_expliciet).toBe(true)
+    expect(mapRij(rijNee, metEigen, PROFIELEN.handmatig)!.eigen_verkoop_expliciet).toBe(false)
+  })
+})

@@ -1,4 +1,5 @@
 import { createServiceSupabaseClient } from '@/lib/supabase'
+import { leesImportRapport, type ImportRapport } from '@/lib/importPijplijn'
 import { bekijkTerugdraaiPlan, type TerugdraaiPreview } from './actions'
 
 export type ImportStatus = 'bezig' | 'klaar' | 'mislukt' | 'teruggedraaid'
@@ -15,7 +16,8 @@ export type ImportHistorieRij = {
   aantalUitgesloten: number | null
   /** Percentage rijen met dit `import_id` en `geocode_status = 'exact'`, of `null` als er geen rijen (meer) zijn. */
   geocodePercentage: number | null
-  kwaliteitsrapportJson: unknown
+  /** Typeveilig gelezen via `leesImportRapport()` (item i2) — `null` bij een ontbrekend of onherkenbaar rapport (bv. een import van vóór dit rapport bestond). */
+  kwaliteitsrapport: ImportRapport | null
   /**
    * Alleen gevuld voor de meest recente niet-teruggedraaide import per
    * kantoor — het al voorbereide terugdraai-plan (`bekijkTerugdraaiPlan`),
@@ -91,7 +93,7 @@ export async function haalImportHistorie(
     aantalBijgewerkt: r.aantal_bijgewerkt,
     aantalUitgesloten: r.aantal_uitgesloten,
     geocodePercentage: geocodePercentages[i],
-    kwaliteitsrapportJson: r.kwaliteitsrapport_json,
+    kwaliteitsrapport: leesImportRapport(r.kwaliteitsrapport_json),
     terugdraaiPreview: terugdraaiPreviews[i],
   }))
 }

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { KantoorInstellingen } from '@/lib/schemas'
 import { normaliseerSlug, isGeldigeSlug } from '@/lib/slug'
+import { normaliseerKantoornaam, schoonAliassen } from '@/lib/kantoorNormalisatie'
 import { slaKantoorInstellingenOp, slaKantoorNaamOpAlsAdmin, slaKantoorSlugOpAlsAdmin } from '../actions'
 
 /**
@@ -29,8 +30,18 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
   const [lidmaatschappen, setLidmaatschappen] = useState(instellingen?.profiel?.lidmaatschappen ?? '')
   const [kenmerken, setKenmerken] = useState(instellingen?.profiel?.kenmerken ?? '')
   const [plaatsen, setPlaatsen] = useState((instellingen?.werkgebied?.plaatsen ?? []).join(', '))
+  const [aliassenTekst, setAliassenTekst] = useState((instellingen?.kantoor_aliassen ?? []).join('\n'))
   const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [slugError, setSlugError] = useState('')
+
+  const aliassenSchoon = schoonAliassen(aliassenTekst)
+  const kantoorNaamNorm = normaliseerKantoornaam(kantoorNaam)
+  const kantoorNaamStaatErAl = aliassenSchoon.some(alias => normaliseerKantoornaam(alias) === kantoorNaamNorm)
+  const toonKantoornaamSuggestie = kantoorNaam.trim() !== '' && kantoorNaamNorm !== null && !kantoorNaamStaatErAl
+
+  const voegKantoornaamToe = () => {
+    setAliassenTekst(huidig => (huidig.trim() ? `${huidig}\n${kantoorNaam.trim()}` : kantoorNaam.trim()))
+  }
 
   const opslaan = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +67,7 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
       werkgebied: {
         plaatsen: plaatsen.split(',').map(p => p.trim()).filter(Boolean),
       },
+      kantoor_aliassen: aliassenSchoon.length ? aliassenSchoon : undefined,
     }
     const result = await slaKantoorInstellingenOp(kantoorId, data)
     const alleOk = naamResult.ok && slugResult.ok && result.ok
@@ -134,6 +146,39 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Werkgebied</h3>
         <p className="text-xs text-gray-500 mb-3">Stuurt de standaardfilters van marktinzichten, kaart en referentieselectie. Komma-gescheiden.</p>
         <input value={plaatsen} onChange={e => setPlaatsen(e.target.value)} placeholder="Wassenaar, Den Haag, Leidschendam, Voorschoten, Leiden" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+      </div>
+
+      <div className="border-t border-gray-100 pt-5">
+        <h3 className="text-sm font-semibold text-gray-900 mb-1">Kantoornamen in exports</h3>
+        <p className="text-xs text-gray-500 mb-3">
+          Hoe jullie kantoor heet in Brainbay/Realworks-exports, bv. &ldquo;i4 Housing B.V.&rdquo;.
+          Wordt gebruikt om eigen verkopen te herkennen. Eén alias per regel.
+        </p>
+        <textarea
+          value={aliassenTekst}
+          onChange={e => setAliassenTekst(e.target.value)}
+          rows={4}
+          placeholder={'i4 Housing B.V.\nI4housing Makelaars'}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono resize-none"
+        />
+        {toonKantoornaamSuggestie && (
+          <button
+            type="button"
+            onClick={voegKantoornaamToe}
+            className="mt-2 text-xs text-gray-600 underline hover:text-gray-900"
+          >
+            + Kantoornaam toevoegen (&ldquo;{kantoorNaam.trim()}&rdquo;)
+          </button>
+        )}
+        {aliassenSchoon.length > 0 && (
+          <div className="mt-2 space-y-0.5">
+            {aliassenSchoon.map(alias => (
+              <p key={alias} className="text-xs text-gray-400 font-mono">
+                {alias} <span className="text-gray-300">→</span> {normaliseerKantoornaam(alias)}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
 
       <button type="submit" disabled={status === 'saving'} className="rounded-lg bg-gray-900 px-5 py-2 text-sm font-semibold text-white hover:bg-gray-800 disabled:opacity-50 transition-colors">

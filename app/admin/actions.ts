@@ -8,6 +8,7 @@ import { distilleerStijlprofiel } from '@/lib/claude'
 import type { HuisstijlConfig, KantoorInstellingen } from '@/lib/schemas'
 import { HuisstijlSchema, KantoorInstellingenSchema, KantoorSlugSchema } from '@/lib/schemas'
 import { normaliseerSlug } from '@/lib/slug'
+import { voegInstellingenSamen } from '@/lib/instellingenSamenvoegen'
 
 type Result = { ok: true } | { ok: false; error: string }
 
@@ -267,7 +268,11 @@ export async function slaKantoorInstellingenOp(kantoorId: string, data: KantoorI
   try {
     const instellingen = KantoorInstellingenSchema.parse(data)
     const service = createServiceSupabaseClient()
-    const { error } = await service.from('kantoren').update({ instellingen_json: instellingen }).eq('id', kantoorId)
+    // Samenvoegen, niet vervangen: velden die het formulier niet kent (bv. `demo`) blijven staan.
+    const { data: huidig, error: leesError } = await service.from('kantoren').select('instellingen_json').eq('id', kantoorId).single()
+    if (leesError) return { ok: false, error: leesError.message }
+    const samen = voegInstellingenSamen(huidig?.instellingen_json as Record<string, unknown> | null, instellingen)
+    const { error } = await service.from('kantoren').update({ instellingen_json: samen }).eq('id', kantoorId)
     if (error) return { ok: false, error: error.message }
     revalidatePath(`/admin/kantoor/${kantoorId}`)
     revalidatePath('/kantoor')

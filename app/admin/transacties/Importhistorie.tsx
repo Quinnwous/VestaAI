@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { datumTijd } from '@/lib/opmaak'
+import type { ImportRapport } from '@/lib/importPijplijn'
 import { terugdraaienImport } from './actions'
 import type { ImportHistorieRij, ImportStatus } from './importHistorieData'
 
@@ -125,7 +126,7 @@ function ImportRij({ imp }: { imp: ImportHistorieRij }) {
 
       {rapportOpen && (
         <div className="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
-          <Kwaliteitsrapport json={imp.kwaliteitsrapportJson} />
+          <Kwaliteitsrapport rapport={imp.kwaliteitsrapport} />
         </div>
       )}
 
@@ -164,71 +165,63 @@ function ImportRij({ imp }: { imp: ImportHistorieRij }) {
   )
 }
 
-/** Toont `kwaliteitsrapport_json` generiek en defensief — het schema komt uit de importpijplijn (5.2/5.3), onbekende vorm → "Geen rapport". */
-function Kwaliteitsrapport({ json }: { json: unknown }) {
-  if (!json || typeof json !== 'object' || Array.isArray(json)) {
-    return <p className="text-xs text-gray-400">Geen rapport</p>
-  }
-  const entries = Object.entries(json as Record<string, unknown>)
-  if (entries.length === 0) {
+/**
+ * Toont het kwaliteitsrapport (`ImportRapport`, lib/importPijplijn.ts)
+ * typeveilig — sinds item i2 (docs/specs/i2-admin-csv-via-pijplijn.md) geen
+ * `unknown`-gegok meer: `importHistorieData.ts` heeft het al door
+ * `leesImportRapport()` gehaald, dus hier hoeft alleen "geen rapport"
+ * (`null`) te worden afgevangen.
+ */
+function Kwaliteitsrapport({ rapport }: { rapport: ImportRapport | null }) {
+  if (!rapport) {
     return <p className="text-xs text-gray-400">Geen rapport</p>
   }
 
   return (
     <div className="text-xs text-gray-600 space-y-2.5">
-      {entries.map(([label, waarde]) => (
-        <KwaliteitsrapportVeld key={label} label={label} waarde={waarde} />
-      ))}
+      <ul className="pl-0 space-y-0.5">
+        <li>Rauwe rijen: <strong className="text-gray-900">{rapport.totaalRuw}</strong></li>
+        <li>Na ontdubbelen: <strong className="text-gray-900">{rapport.totaalGeimporteerd}</strong> ({rapport.samengevoegd} samengevoegd)</li>
+        <li>Met coördinaat: <strong className="text-gray-900">{rapport.pctMetCoordinaat}%</strong></li>
+        <li>Eigen verkopen: <strong className="text-gray-900">{rapport.aantalEigenVerkopen}</strong></li>
+      </ul>
+
+      {rapport.perUitsluitreden.length > 0 && (
+        <div>
+          <p className="font-medium text-gray-700 mb-1">Uitgesloten (blijven bestaan)</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            {rapport.perUitsluitreden.map(r => <li key={r.reden}>{r.label}: {r.aantal}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {rapport.overgeslagen.length > 0 && (
+        <div>
+          <p className="font-medium text-gray-700 mb-1">Niet geïmporteerd ({rapport.overgeslagen.length})</p>
+          <ul className="list-disc pl-4 space-y-0.5">
+            {rapport.overgeslagen.slice(0, 10).map((o, i) => <li key={i}>Regel {o.regel}: {o.reden}</li>)}
+            {rapport.overgeslagen.length > 10 && <li className="text-gray-400">…en {rapport.overgeslagen.length - 10} meer</li>}
+          </ul>
+        </div>
+      )}
+
+      {rapport.perPlaats.length > 0 && (
+        <div>
+          <p className="font-medium text-gray-700 mb-1">Per plaats</p>
+          <ul className="pl-4 space-y-0.5">
+            {rapport.perPlaats.slice(0, 10).map(p => <li key={p.plaats}>{p.plaats}: {p.aantal}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {rapport.perJaar.length > 0 && (
+        <div>
+          <p className="font-medium text-gray-700 mb-1">Per jaar</p>
+          <ul className="pl-4 space-y-0.5">
+            {rapport.perJaar.map(j => <li key={j.jaar}>{j.jaar}: {j.aantal}</li>)}
+          </ul>
+        </div>
+      )}
     </div>
   )
-}
-
-function KwaliteitsrapportVeld({ label, waarde }: { label: string; waarde: unknown }) {
-  if (Array.isArray(waarde)) {
-    if (waarde.length === 0) return null
-    return (
-      <div>
-        <p className="font-medium text-gray-700 mb-1">{veldLabel(label)}</p>
-        <ul className="list-disc pl-4 space-y-0.5">
-          {waarde.slice(0, 10).map((item, i) => <li key={i}>{formateerRapportItem(item)}</li>)}
-          {waarde.length > 10 && <li className="text-gray-400">…en {waarde.length - 10} meer</li>}
-        </ul>
-      </div>
-    )
-  }
-  if (waarde && typeof waarde === 'object') {
-    const subEntries = Object.entries(waarde as Record<string, unknown>)
-    if (subEntries.length === 0) return null
-    return (
-      <div>
-        <p className="font-medium text-gray-700 mb-1">{veldLabel(label)}</p>
-        <ul className="pl-4 space-y-0.5">
-          {subEntries.map(([k, v]) => <li key={k}>{veldLabel(k)}: {formateerRapportWaarde(v)}</li>)}
-        </ul>
-      </div>
-    )
-  }
-  return <p><span className="font-medium text-gray-700">{veldLabel(label)}:</span> {formateerRapportWaarde(waarde)}</p>
-}
-
-function veldLabel(sleutel: string): string {
-  return sleutel.replace(/_/g, ' ')
-}
-
-function formateerRapportItem(item: unknown): string {
-  if (item && typeof item === 'object') {
-    const o = item as Record<string, unknown>
-    const reden = typeof o.reden === 'string' ? o.reden : undefined
-    const aantal = typeof o.aantal === 'number' ? o.aantal : undefined
-    if (reden && aantal !== undefined) return `${reden}: ${aantal}`
-    if (reden) return reden
-    return JSON.stringify(item)
-  }
-  return formateerRapportWaarde(item)
-}
-
-function formateerRapportWaarde(v: unknown): string {
-  if (v == null) return '—'
-  if (typeof v === 'number' || typeof v === 'string' || typeof v === 'boolean') return String(v)
-  return JSON.stringify(v)
 }

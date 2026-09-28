@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normaliseerKantoornaam, isEigenKantoor } from './kantoorNormalisatie'
+import { normaliseerKantoornaam, isEigenKantoor, schoonAliassen, MAX_KANTOOR_ALIASSEN } from './kantoorNormalisatie'
 
 describe('normaliseerKantoornaam', () => {
   it('normaliseert "i4 Housing B.V." en "I4housing Makelaars" naar dezelfde norm', () => {
@@ -54,5 +54,36 @@ describe('isEigenKantoor', () => {
     expect(isEigenKantoor('i4 Housing', [])).toBe(false)
     expect(isEigenKantoor(null, aliassen)).toBe(false)
     expect(isEigenKantoor('', aliassen)).toBe(false)
+  })
+})
+
+describe('schoonAliassen', () => {
+  it('splitst op regels, trimt en laat lege regels weg', () => {
+    expect(schoonAliassen('i4 Housing B.V.\n\n  Wassenaar Makelaars  \n')).toEqual([
+      'i4 Housing B.V.',
+      'Wassenaar Makelaars',
+    ])
+  })
+
+  it('ontdubbelt op de genormaliseerde vorm en behoudt de eerste schrijfwijze', () => {
+    expect(schoonAliassen('i4 Housing B.V.\nI4housing Makelaars\nI4 Housing Makelaardij o.g.')).toEqual([
+      'i4 Housing B.V.',
+    ])
+  })
+
+  it('laat een regel weg die na normalisatie leeg is', () => {
+    expect(schoonAliassen('B.V.\nNVM Makelaars\ni4 Housing')).toEqual(['i4 Housing'])
+  })
+
+  it('kapt af op MAX_KANTOOR_ALIASSEN', () => {
+    const regels = Array.from({ length: 25 }, (_, i) => `Kantoor ${i}`)
+    const resultaat = schoonAliassen(regels.join('\n'))
+    expect(resultaat).toHaveLength(MAX_KANTOOR_ALIASSEN)
+    expect(resultaat[0]).toBe('Kantoor 0')
+  })
+
+  it('geeft een lege lijst voor lege tekst', () => {
+    expect(schoonAliassen('')).toEqual([])
+    expect(schoonAliassen('   \n  \n')).toEqual([])
   })
 })

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { planTerugdraai, bouwSnapshotUitBestaande, bouwSleutel, type ImportVoorTerugdraai } from './importTerugdraaien'
-import { IMPORT_SNAPSHOT_VERSIE, MAX_SNAPSHOT_RIJEN, type ImportSnapshot } from './importSnapshot'
+import { planTerugdraai, type ImportVoorTerugdraai } from './importTerugdraaien'
+import { IMPORT_SNAPSHOT_VERSIE, type ImportSnapshot } from './importSnapshot'
 
 function maakImport(overrides: Partial<ImportVoorTerugdraai> = {}): ImportVoorTerugdraai {
   return { id: 'imp-1', kantoor_id: 'kantoor-1', status: 'klaar', ...overrides }
@@ -104,51 +104,6 @@ describe('planTerugdraai', () => {
     })
     expect(resultaat.ok).toBe(true)
     if (resultaat.ok) expect(resultaat.verwijder).toEqual([])
-  })
-})
-
-describe('bouwSleutel', () => {
-  it('combineert adres_sleutel en verkoopdatum', () => {
-    expect(bouwSleutel('2242ab-1', '2026-03-15')).toBe('2242ab-1|2026-03-15')
-  })
-
-  it('valt terug op een lege string zonder verkoopdatum', () => {
-    expect(bouwSleutel('sleutel', null)).toBe('sleutel|')
-  })
-})
-
-describe('bouwSnapshotUitBestaande', () => {
-  it('neemt alleen bestaande rijen mee waarvan de sleutel in de nieuwe import voorkomt', () => {
-    const bestaande = [
-      { id: 'r1', adresSleutel: 'a', verkoopdatum: '2026-01-01', vorige: { verkoopprijs: 100 } },
-      { id: 'r2', adresSleutel: 'b', verkoopdatum: '2026-01-02', vorige: { verkoopprijs: 200 } },
-    ]
-    const nieuweSleutels = new Set([bouwSleutel('a', '2026-01-01')])
-    const snapshot = bouwSnapshotUitBestaande(bestaande, nieuweSleutels)
-
-    expect(snapshot.versie).toBe(IMPORT_SNAPSHOT_VERSIE)
-    expect(snapshot.afgekapt).toBe(false)
-    expect(snapshot.bijgewerkt).toEqual([{ id: 'r1', vorige: { verkoopprijs: 100 } }])
-  })
-
-  it('levert een lege, niet-afgekapte snapshot zonder matches', () => {
-    const snapshot = bouwSnapshotUitBestaande([], new Set(['iets']))
-    expect(snapshot.bijgewerkt).toEqual([])
-    expect(snapshot.afgekapt).toBe(false)
-  })
-
-  it('kapt af boven MAX_SNAPSHOT_RIJEN en zet afgekapt op true', () => {
-    const bestaande = Array.from({ length: MAX_SNAPSHOT_RIJEN + 5 }, (_, i) => ({
-      id: `r${i}`,
-      adresSleutel: `a${i}`,
-      verkoopdatum: '2026-01-01',
-      vorige: {},
-    }))
-    const nieuweSleutels = new Set(bestaande.map(r => bouwSleutel(r.adresSleutel, r.verkoopdatum)))
-    const snapshot = bouwSnapshotUitBestaande(bestaande, nieuweSleutels)
-
-    expect(snapshot.afgekapt).toBe(true)
-    expect(snapshot.bijgewerkt).toHaveLength(MAX_SNAPSHOT_RIJEN)
   })
 })
 

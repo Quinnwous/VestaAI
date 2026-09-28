@@ -3,10 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
-import { parseTransactieCsv, type TransactieInsert } from '@/lib/transactieImport'
+import { parseCsv, vindKolom, ALIASSEN, type TransactieVeld } from '@/lib/transactieImport'
+import { PROFIELEN } from '@/lib/importProfielen'
 import {
-  planTerugdraai, bouwSnapshotUitBestaande, bouwSleutel,
-  type BestaandeTransactieVoorSnapshot, type ImportVoorTerugdraai,
+  voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, maakUpsertBatches,
+  type GenormaliseerdeRij, type ImportRapport, type BestaandeTransactieRij,
+} from '@/lib/importPijplijn'
+import {
+  planTerugdraai, type ImportVoorTerugdraai,
 } from '@/lib/importTerugdraaien'
 import type { ImportSnapshotRij } from '@/lib/importSnapshot'
 
@@ -16,86 +20,112 @@ async function vereisPlatformAdmin(): Promise<boolean> {
   return isPlatformAdmin(user?.email)
 }
 
+/** `kantoren.instellingen_json.kantoor_aliassen` van één kantoor — bepaalt `eigen_verkoop` via `isEigenKantoor()` in de pijplijn. */
+async function haalKantoorAliassen(
+  service: ReturnType<typeof createServiceSupabaseClient>,
+  kantoorId: string,
+): Promise<string[]> {
+  const { data } = await service.from('kantoren').select('instellingen_json').eq('id', kantoorId).maybeSingle()
+  const instellingen = data?.instellingen_json as { kantoor_aliassen?: string[] } | null | undefined
+  return instellingen?.kantoor_aliassen ?? []
+}
+
+/**
+ * Parseert een CSV-bestand en draait 'm door de volledige importpijplijn
+ * (item i2, docs/specs/i2-admin-csv-via-pijplijn.md) — dezelfde
+ * `voerImportPijplijnUit()` als `scripts/import-transacties.mjs`, met bron
+ * `'handmatig'` (profiel = de gedeelde `ALIASSEN`, geen bron-specifieke
+ * aliassen). `null` bij een leeg bestand (geen datarij na de header).
+ */
+function voerPijplijnUitOpCsv(
+  csvTekst: string,
+  kantoorAliassen: string[],
+): { headers: string[]; rijen: GenormaliseerdeRij[]; rapport: ImportRapport } | null {
+  const alleRijen = parseCsv(csvTekst)
+  if (alleRijen.length < 2) return null
+  const headers = alleRijen[0]
+  const ruweRijen = alleRijen.slice(1)
+  const { rijen, rapport } = voerImportPijplijnUit(ruweRijen, headers, PROFIELEN.handmatig, kantoorAliassen)
+  return { headers, rijen, rapport }
+}
+
 export type ImportPreview = {
   ok: true
+  rapport: ImportRapport
+  /** rapport.totaalGeimporteerd minus de uitgesloten rijen — rijen die zónder waarschuwing worden geïmporteerd. */
   aantalGeldig: number
-  aantalOvergeslagen: number
-  overgeslagen: { regel: number; reden: string }[]
-  voorbeeld: TransactieInsert[]
-  gevondenKolommen: string[]
+  voorbeeld: GenormaliseerdeRij[]
+  gevondenKolommen: TransactieVeld[]
 } | { ok: false; error: string }
 
-/** Toont wat een CSV-bestand zou opleveren, zónder iets te schrijven — voor controle vóór import. */
-export async function previewTransactieImport(csvTekst: string): Promise<ImportPreview> {
+/**
+ * Toont wat een CSV-bestand voor het gekozen kantoor zou opleveren, zónder
+ * iets te schrijven — voor controle vóór import. Loopt sinds item i2 via
+ * dezelfde pijplijn als het importscript, dus met kwaliteitsregels,
+ * ontdubbelen en de eigen_verkoop-afleiding via kantoor-aliassen.
+ */
+export async function previewTransactieImport(kantoorId: string, csvTekst: string): Promise<ImportPreview> {
   if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
+  if (!kantoorId) return { ok: false, error: 'Geen kantoor geselecteerd' }
   if (!csvTekst.trim()) return { ok: false, error: 'Leeg bestand' }
 
-  const { rijen, overgeslagen, gevondenKolommen } = parseTransactieCsv(csvTekst)
-  if (rijen.length === 0) {
+  const service = createServiceSupabaseClient()
+  const kantoorAliassen = await haalKantoorAliassen(service, kantoorId)
+
+  const resultaat = voerPijplijnUitOpCsv(csvTekst, kantoorAliassen)
+  if (!resultaat || resultaat.rijen.length === 0) {
     return { ok: false, error: 'Geen bruikbare rijen gevonden — controleer of er een adres-kolom bestaat.' }
   }
+  const { headers, rijen, rapport } = resultaat
+
+  const gevondenKolommen = (Object.keys(ALIASSEN) as TransactieVeld[]).filter(v => vindKolom(headers, v) !== -1)
+  const aantalUitgesloten = rapport.perUitsluitreden.reduce((som, r) => som + r.aantal, 0)
 
   return {
     ok: true,
-    aantalGeldig: rijen.length,
-    aantalOvergeslagen: overgeslagen.length,
-    overgeslagen: overgeslagen.slice(0, 20),
+    rapport,
+    aantalGeldig: rapport.totaalGeimporteerd - aantalUitgesloten,
     voorbeeld: rijen.slice(0, 5),
     gevondenKolommen,
   }
 }
 
-/** Precies de kolommen die een import op `transacties` schrijft — dezelfde set voor elke rij, zie lib/importTerugdraaien.ts. */
+/** Precies de kolommen die een import op `transacties` schrijft (`GenormaliseerdeRij`) + `id`/`lat`/`lng` — zelfde set als `BESTAANDE_KOLOMMEN` in scripts/import-transacties.mjs, maar via `transacties_met_coordinaten` (lat/lng in plaats van de ruwe `geo`, zie CLAUDE.md § transactiedataset). */
+const BESTAANDE_KOLOMMEN = [
+  'id', 'adres', 'postcode', 'plaats', 'wijk', 'buurt', 'lat', 'lng',
+  'verkoopprijs', 'vraagprijs', 'verkoopdatum', 'looptijd_dagen', 'woningtype',
+  'woonoppervlak_m2', 'perceel_m2', 'inhoud_m3', 'bouwjaar', 'energielabel',
+  'kamers', 'garage', 'tuin', 'buitenruimte', 'eigen_verkoop', 'verkopend_kantoor',
+  'bron', 'adres_sleutel', 'huisnummer', 'toevoeging', 'woningtype_groep', 'woningtype_sub',
+  'geocode_status', 'uitgesloten_reden', 'aankopend_kantoor', 'verkopend_kantoor_norm',
+  'import_id',
+].join(', ')
+
 type BestaandeRijRuw = {
   id: string
-  adres: string
-  postcode: string | null
-  plaats: string | null
-  wijk: string | null
-  buurt: string | null
+  adres_sleutel: string
+  verkoopdatum: string | null
+  import_id: string | null
   lat: number | null
   lng: number | null
-  verkoopprijs: number | null
-  vraagprijs: number | null
-  verkoopdatum: string | null
-  looptijd_dagen: number | null
-  woningtype: string | null
-  woonoppervlak_m2: number | null
-  perceel_m2: number | null
-  inhoud_m3: number | null
-  bouwjaar: number | null
-  energielabel: string | null
-  kamers: number | null
-  garage: boolean | null
-  tuin: boolean | null
-  buitenruimte: string | null
-  eigen_verkoop: boolean
-  verkopend_kantoor: string | null
-  bron: string | null
-  adres_sleutel: string
-  huisnummer: number | null
-  toevoeging: string | null
-  woningtype_groep: string | null
-  woningtype_sub: string | null
-  import_id: string | null
-}
-
-const BESTAANDE_KOLOMMEN = 'id, adres, postcode, plaats, wijk, buurt, lat, lng, verkoopprijs, vraagprijs, verkoopdatum, looptijd_dagen, woningtype, woonoppervlak_m2, perceel_m2, inhoud_m3, bouwjaar, energielabel, kamers, garage, tuin, buitenruimte, eigen_verkoop, verkopend_kantoor, bron, adres_sleutel, huisnummer, toevoeging, woningtype_groep, woningtype_sub, import_id'
+} & Record<string, unknown>
 
 /**
  * Voegt de rijen uit een CSV-bestand toe aan de transactiedataset van één
- * kantoor. Upsert op (kantoor_id, adres_sleutel, verkoopdatum) — de
- * genormaliseerde sleutel uit lib/transactieNormalisatie.ts (item 2.1, zie
- * de migratie 20260917_transacties_pijplijn.sql, die de oude adres-gebaseerde
- * unieke index vervangt) — zodat een periodieke herimport (F4,
- * "Admin-databeheer & maatwerk") records bijwerkt in plaats van te
- * verdubbelen, ook als het adres net iets anders geschreven is.
+ * kantoor — sinds item i2 via dezelfde `voerImportPijplijnUit()` +
+ * `bouwSnapshot()` als `scripts/import-transacties.mjs` (bron 'handmatig'),
+ * dus met kwaliteitsregels (`uitgesloten_reden`, rijen blijven bestaan),
+ * ontdubbelen en een gevuld `kwaliteitsrapport_json`. Upsert op (kantoor_id,
+ * adres_sleutel, verkoopdatum) — de genormaliseerde sleutel uit
+ * lib/transactieNormalisatie.ts — zodat een periodieke herimport records
+ * bijwerkt in plaats van te verdubbelen, ook als het adres net iets anders
+ * geschreven is.
  *
- * Schrijft sinds item 5.4 ook een `imports`-rij (bron 'handmatig') en zet
- * `import_id` op elke geschreven rij, zodat "Laatste import terugdraaien"
- * werkt — inclusief een snapshot van de rijen die deze import overschrijft
- * (lib/importTerugdraaien.ts `bouwSnapshotUitBestaande`, contract in
- * lib/importSnapshot.ts), opgebouwd vóór de upsert.
+ * Schrijft ook een `imports`-rij en zet `import_id` op elke geschreven rij,
+ * zodat "Laatste import terugdraaien" werkt — inclusief een snapshot van de
+ * rijen die deze import overschrijft (`bouwSnapshot()`,
+ * lib/importPijplijn.ts, contract in lib/importSnapshot.ts), opgebouwd vóór
+ * de upsert.
  */
 export async function bevestigTransactieImport(
   kantoorId: string,
@@ -103,15 +133,17 @@ export async function bevestigTransactieImport(
   bestandsnaam?: string,
 ): Promise<{ ok: true; aantal: number } | { ok: false; error: string }> {
   if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
-
-  const { rijen, overgeslagen } = parseTransactieCsv(csvTekst)
-  if (rijen.length === 0) return { ok: false, error: 'Geen bruikbare rijen gevonden' }
+  if (!kantoorId) return { ok: false, error: 'Geen kantoor geselecteerd' }
 
   const service = createServiceSupabaseClient()
+  const kantoorAliassen = await haalKantoorAliassen(service, kantoorId)
+
+  const resultaat = voerPijplijnUitOpCsv(csvTekst, kantoorAliassen)
+  if (!resultaat || resultaat.rijen.length === 0) return { ok: false, error: 'Geen bruikbare rijen gevonden' }
+  const { rijen, rapport } = resultaat
 
   // 1. Snapshot van bestaande rijen die deze import gaat overschrijven —
   // vóór de upsert, anders zijn de "vorige" waarden al weg.
-  const nieuweSleutels = new Set(rijen.map(r => bouwSleutel(r.adres_sleutel, r.verkoopdatum)))
   const sleutelsLijst = Array.from(new Set(rijen.map(r => r.adres_sleutel)))
 
   // In stukken: duizenden sleutels in één `.in()` maken de GET-URL te lang voor PostgREST.
@@ -127,22 +159,17 @@ export async function bevestigTransactieImport(
     bestaandeRuw.push(...((data ?? []) as unknown as BestaandeRijRuw[]))
   }
 
-  const bestaandeVoorSnapshot: BestaandeTransactieVoorSnapshot[] = bestaandeRuw.map(r => {
-    const { id, lat, lng, adres_sleutel, verkoopdatum, ...vorigeKolommen } = r
-    return {
-      id,
-      adresSleutel: adres_sleutel,
-      verkoopdatum,
-      vorige: {
-        ...vorigeKolommen,
-        adres_sleutel,
-        verkoopdatum,
-        geo: lat != null && lng != null ? `POINT(${lng} ${lat})` : null,
-      },
-    }
+  // bouwSnapshot() rekent zelf niets om — de rauwe lat/lng van de view worden
+  // hier omgezet naar dezelfde WKT ('POINT(lng lat)') die de import zelf op
+  // `geo` schrijft, zodat terugdraaien het exacte vorige coördinaat herstelt.
+  const bestaandeVoorSnapshot: BestaandeTransactieRij[] = bestaandeRuw.map(r => {
+    const { lat, lng, ...rest } = r
+    return { ...rest, geo: lat != null && lng != null ? `POINT(${lng} ${lat})` : null }
   })
 
-  const snapshot = bouwSnapshotUitBestaande(bestaandeVoorSnapshot, nieuweSleutels)
+  const snapshot = bouwSnapshot(bestaandeVoorSnapshot, rijen)
+  const { nieuw, bijgewerkt } = telNieuwEnBijgewerkt(bestaandeVoorSnapshot, rijen)
+  const aantalUitgesloten = rijen.filter(r => r.uitgesloten_reden).length
 
   // 2. Importrecord aanmaken (status 'bezig') — bestaat altijd, ook als de upsert hieronder faalt.
   const { data: importRow, error: importInsertError } = await service
@@ -152,6 +179,10 @@ export async function bevestigTransactieImport(
       bron: 'handmatig',
       bestandsnaam: bestandsnaam?.trim() || null,
       aantal_rijen: rijen.length,
+      aantal_nieuw: nieuw,
+      aantal_bijgewerkt: bijgewerkt,
+      aantal_uitgesloten: aantalUitgesloten,
+      kwaliteitsrapport_json: rapport,
       status: 'bezig',
       // Vóór de eerste upsert opgeslagen, zodat ook een mislukte import terug kan.
       snapshot_json: snapshot,
@@ -164,37 +195,29 @@ export async function bevestigTransactieImport(
   }
   const importId = importRow.id as string
 
-  // 3. Upsert in batches, elke rij krijgt dit import_id.
-  const BATCH = 500
+  // 3. Upsert in batches, elke rij krijgt dit import_id. Per kolomset (zie
+  // maakUpsertBatches): lege geo/wijk/buurt overschrijven een eerder
+  // gegeocodeerde waarde niet.
+  const batches = maakUpsertBatches(rijen.map(r => ({ ...r, kantoor_id: kantoorId, import_id: importId })))
   let ingevoegd = 0
 
-  for (let i = 0; i < rijen.length; i += BATCH) {
-    const batch: (TransactieInsert & { kantoor_id: string; import_id: string })[] = rijen
-      .slice(i, i + BATCH)
-      .map(r => ({ ...r, kantoor_id: kantoorId, import_id: importId }))
-
+  for (let n = 0; n < batches.length; n++) {
+    const batch = batches[n]
     const { error, count } = await service
       .from('transacties')
       .upsert(batch, { onConflict: 'kantoor_id,adres_sleutel,verkoopdatum', count: 'exact' })
 
     if (error) {
       await service.from('imports').update({ status: 'mislukt', klaar_op: new Date().toISOString() }).eq('id', importId)
-      return { ok: false, error: `Fout bij batch ${i / BATCH + 1}: ${error.message}` }
+      return { ok: false, error: `Fout bij batch ${n + 1}: ${error.message}` }
     }
     ingevoegd += count ?? batch.length
   }
 
   // 4. Importrecord afronden.
-  const aantalBijgewerkt = snapshot.bijgewerkt.length
   await service
     .from('imports')
-    .update({
-      status: 'klaar',
-      klaar_op: new Date().toISOString(),
-      aantal_nieuw: Math.max(0, rijen.length - aantalBijgewerkt),
-      aantal_bijgewerkt: aantalBijgewerkt,
-      aantal_uitgesloten: overgeslagen.length,
-    })
+    .update({ status: 'klaar', klaar_op: new Date().toISOString() })
     .eq('id', importId)
 
   revalidatePath('/admin/transacties')

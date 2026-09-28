@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, type GenormaliseerdeRij } from './importPijplijn'
+import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, maakUpsertBatches, type GenormaliseerdeRij, type BestaandeTransactieRij } from './importPijplijn'
+import { MAX_SNAPSHOT_RIJEN } from './importSnapshot'
 import { PROFIELEN } from './importProfielen'
 
 const VANDAAG = new Date('2026-09-28T00:00:00Z')
@@ -57,6 +58,27 @@ describe('voerImportPijplijnUit — realworks', () => {
     ]
     const { rijen } = voerImportPijplijnUit(ruweRijen, headers, PROFIELEN.realworks, KANTOOR_ALIASSEN, { vandaag: VANDAAG })
     expect(rijen[0].eigen_verkoop).toBe(false)
+  })
+})
+
+describe('voerImportPijplijnUit — expliciete eigen_verkoop-kolom (item i2, admin-CSV)', () => {
+  it('een expliciete eigen_verkoop-kolom wint van de kantoor-aliassen-afleiding', () => {
+    const headersMetEigen = ['adres', 'postcode', 'plaats', 'verkoopprijs', 'verkoopdatum', 'verkopend_kantoor', 'eigen_verkoop']
+    // Kolom zegt "ja" terwijl het verkopend_kantoor niet in de kantoor-aliassen voorkomt.
+    const ruweRijen = [
+      ['Hoofdstraat 1', '2242AB', 'Wassenaar', '750000', '15-03-2026', 'Concurrent Makelaars', 'ja'],
+    ]
+    const { rijen } = voerImportPijplijnUit(ruweRijen, headersMetEigen, PROFIELEN.handmatig, KANTOOR_ALIASSEN, { vandaag: VANDAAG })
+    expect(rijen[0].eigen_verkoop).toBe(true)
+  })
+
+  it('zonder eigen_verkoop-kolom valt terug op de kantoor-aliassen-afleiding', () => {
+    const headersZonderEigen = ['adres', 'postcode', 'plaats', 'verkoopprijs', 'verkoopdatum', 'verkopend_kantoor']
+    const ruweRijen = [
+      ['Hoofdstraat 1', '2242AB', 'Wassenaar', '750000', '15-03-2026', 'I4 Housing B.V.'],
+    ]
+    const { rijen } = voerImportPijplijnUit(ruweRijen, headersZonderEigen, PROFIELEN.handmatig, KANTOOR_ALIASSEN, { vandaag: VANDAAG })
+    expect(rijen[0].eigen_verkoop).toBe(true)
   })
 })
 
@@ -162,6 +184,54 @@ describe('bouwSnapshot', () => {
     const snapshot = bouwSnapshot([bestaand], [basisRij])
     expect(snapshot.bijgewerkt).toHaveLength(0)
   })
+
+  it('bewaart alleen de kolommen die de nieuwe rijen zelf schrijven (geschrevenKolommen), plus altijd import_id', () => {
+    // Bestaand record met exact alle GenormaliseerdeRij-kolommen aanwezig (zoals
+    // een echte databaserij), plus één kolom die geen GenormaliseerdeRij-sleutel
+    // is (bv. een computed kolom als prijs_m2, of lat/lng zelf).
+    const bestaand: Record<string, unknown> = {
+      ...basisRij,
+      id: 'bestaand-id',
+      import_id: 'vorige-import-id',
+      niet_geschreven_kolom: 'zou hier niet moeten staan',
+    }
+    const snapshot = bouwSnapshot([bestaand as unknown as BestaandeTransactieRij], [basisRij])
+    expect(snapshot.bijgewerkt[0].vorige).not.toHaveProperty('niet_geschreven_kolom')
+    expect(Object.keys(snapshot.bijgewerkt[0].vorige).sort()).toEqual(
+      [...(Object.keys(basisRij) as (keyof GenormaliseerdeRij)[]), 'import_id'].sort(),
+    )
+  })
+
+  it('bewaart geo zoals de aanroeper hem aanlevert — de WKT POINT(lng lat) die de aanroeper uit de lat/lng-coördinatenweergave opbouwt, niet ruwe lat/lng zelf', () => {
+    // Contract (zie app/admin/transacties/actions.ts en scripts/import-transacties.mjs):
+    // bouwSnapshot() rekent zelf niets om — de aanroeper zet lat/lng uit de
+    // view om naar 'POINT(lng lat)' vóórdat hij deze functie aanroept.
+    const bestaand = {
+      id: 'bestaand-id',
+      adres_sleutel: '2242ab|1|',
+      verkoopdatum: '2026-03-15',
+      import_id: null,
+      geo: 'POINT(4.402 52.146)',
+    }
+    const snapshot = bouwSnapshot([bestaand], [{ ...basisRij, geo: 'POINT(4.4 52.1)' }])
+    expect(snapshot.bijgewerkt[0].vorige.geo).toBe('POINT(4.402 52.146)')
+  })
+
+  it('kapt af boven MAX_SNAPSHOT_RIJEN en zet afgekapt op true', () => {
+    const nieuweRijen: GenormaliseerdeRij[] = Array.from({ length: MAX_SNAPSHOT_RIJEN + 5 }, (_, i) => ({
+      ...basisRij,
+      adres_sleutel: `sleutel-${i}`,
+    }))
+    const bestaandeRijen = nieuweRijen.map((r, i) => ({
+      id: `r${i}`,
+      adres_sleutel: r.adres_sleutel,
+      verkoopdatum: r.verkoopdatum,
+      import_id: null,
+    }))
+    const snapshot = bouwSnapshot(bestaandeRijen, nieuweRijen)
+    expect(snapshot.afgekapt).toBe(true)
+    expect(snapshot.bijgewerkt).toHaveLength(MAX_SNAPSHOT_RIJEN)
+  })
 })
 
 describe('telNieuwEnBijgewerkt', () => {
@@ -179,5 +249,29 @@ describe('telNieuwEnBijgewerkt', () => {
   it('telt een mix correct', () => {
     const bestaand = { id: 'x', adres_sleutel: '2242ab|1|', verkoopdatum: '2026-03-15', import_id: null }
     expect(telNieuwEnBijgewerkt([bestaand], [basisRij, nieuweRij2])).toEqual({ nieuw: 1, bijgewerkt: 1 })
+  })
+})
+
+describe('maakUpsertBatches', () => {
+  it('laat lege aanvulbare kolommen weg en groepeert per kolomset', () => {
+    const batches = maakUpsertBatches([
+      { adres_sleutel: 'a', geo: 'POINT(4 52)', geocode_status: 'exact', wijk: 'W', buurt: null },
+      { adres_sleutel: 'b', geo: null, geocode_status: null, wijk: null, buurt: null },
+      { adres_sleutel: 'c', geo: null, geocode_status: null, wijk: null, buurt: null },
+    ])
+    expect(batches).toHaveLength(2)
+    const zonderGeo = batches.find(b => b.length === 2)!
+    for (const rij of zonderGeo) {
+      expect(rij).not.toHaveProperty('geo')
+      expect(rij).not.toHaveProperty('geocode_status')
+      expect(rij).not.toHaveProperty('wijk')
+    }
+    const metGeo = batches.find(b => b.length === 1)!
+    expect(metGeo[0]).toEqual({ adres_sleutel: 'a', geo: 'POINT(4 52)', geocode_status: 'exact', wijk: 'W' })
+  })
+
+  it('knipt een grote groep in batches van de gevraagde grootte', () => {
+    const rijen = Array.from({ length: 5 }, (_, i) => ({ adres_sleutel: String(i), geo: null }))
+    expect(maakUpsertBatches(rijen, 2).map(b => b.length)).toEqual([2, 2, 1])
   })
 })
