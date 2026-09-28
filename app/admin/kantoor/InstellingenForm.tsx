@@ -24,6 +24,7 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
   const slugPreview = normaliseerSlug(kantoorSlug)
   const slugGeldigOfLeeg = slugPreview === '' || isGeldigeSlug(slugPreview)
   const [percentage, setPercentage] = useState(instellingen?.courtage?.percentage?.toString() ?? '')
+  const [btw, setBtw] = useState<'exclusief' | 'inclusief'>(instellingen?.courtage?.btw ?? 'exclusief')
   const [opstartkosten, setOpstartkosten] = useState(instellingen?.courtage?.opstartkosten?.toString() ?? '')
   const [dienstverlening, setDienstverlening] = useState(instellingen?.courtage?.dienstverlening ?? '')
   const [opgericht, setOpgericht] = useState(instellingen?.profiel?.opgericht ?? '')
@@ -56,6 +57,7 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
     const data: KantoorInstellingen = {
       courtage: {
         percentage: percentage ? Number(percentage) : undefined,
+        btw,
         opstartkosten: opstartkosten ? Number(opstartkosten) : undefined,
         dienstverlening: dienstverlening.trim() || undefined,
       },
@@ -111,10 +113,17 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
       <div className="border-t border-gray-100 pt-5">
         <h3 className="text-sm font-semibold text-gray-900 mb-1">Courtage</h3>
         <p className="text-xs text-gray-500 mb-3">Standaardtarief — staat voorgevuld in elk nieuw verkoopadvies, per advies aan te passen.</p>
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-3 gap-3 mb-3">
           <div>
             <label className="block text-xs text-gray-500 mb-1">Percentage</label>
-            <input type="number" step="0.01" min={0} max={10} value={percentage} onChange={e => setPercentage(e.target.value)} placeholder="1.25" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+            <input type="number" step="0.01" min={0} max={10} value={percentage} onChange={e => setPercentage(e.target.value)} placeholder="1.00" className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Btw</label>
+            <select value={btw} onChange={e => setBtw(e.target.value as 'exclusief' | 'inclusief')} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+              <option value="exclusief">Exclusief</option>
+              <option value="inclusief">Inclusief</option>
+            </select>
           </div>
           <div>
             <label className="block text-xs text-gray-500 mb-1">Opstartkosten (€)</label>
