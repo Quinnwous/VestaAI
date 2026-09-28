@@ -1,10 +1,9 @@
 -- Item 9.1 (docs/roadmap.md, fase 9): kantoorspecifieke inlogpagina
--- (/login/[slug]). Additief — deze migratie wordt NIET door de subagent
--- toegepast, alleen klaargezet; de hoofdsessie past hem toe (zie
--- CLAUDE.md § vangrails productiedatabase en "één database, twee
--- codeversies"). De app-code werkt ook zolang deze kolom/functie nog niet
--- bestaan: een onbekende/ontbrekende slug valt overal terug op de
--- generieke /login (zie lib/kantoorLoginBranding.ts).
+-- (/login/[slug]). Additief.
+--
+-- ✅ TOEGEPAST op productie (geverifieerd 28 sep 2026). De app-code blijft
+-- gracieus bij een onbekende/lege slug: die valt terug op de generieke
+-- /login (zie lib/kantoorLoginBranding.ts).
 --
 -- ⚠️ De regex hieronder is een letterlijke kopie van SLUG_REGEX in
 -- lib/slug.ts (een DB-constraint kan geen TS-module importeren) — bij een

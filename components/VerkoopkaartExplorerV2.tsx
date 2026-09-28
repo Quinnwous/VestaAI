@@ -42,13 +42,10 @@ import { typegroepLabel } from '@/lib/schemas'
 import { euro, euroKort, m2, dagen, datum, nlNL } from '@/lib/opmaak'
 import { bouwTransactiesCsv } from '@/lib/transactiesZoeken'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
+import { bereikGelijk } from '@/lib/filterVergelijk'
 
 const ENERGIELABELS = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
 const WERKBLAD_HOOGTE = 620
-
-function bereikGelijk(a: [number, number], b: [number, number]): boolean {
-  return a[0] === b[0] && a[1] === b[1]
-}
 
 /** `2024-Q1` → `Q1 2024` (kortere vorm voor tijdlijn-ticks/label dan `lib/opmaak.ts` `kwartaalLabel`, die dezelfde bewerking op een string doet — hier op een doorlopend kwartaalnummer). */
 function kwartaalKortLabel(kwartaalNr: number): string {

@@ -15,8 +15,7 @@ import { slaKantoorInstellingenOp, slaKantoorNaamOpAlsAdmin, slaKantoorSlugOpAls
 export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
   kantoorId: string
   naam: string
-  /** `undefined` = migratie 20260923_kantoren_slug.sql nog niet toegepast (kolom bestaat niet). */
-  slug: string | null | undefined
+  slug: string | null
   instellingen: KantoorInstellingen | null
 }) {
   const [kantoorNaam, setKantoorNaam] = useState(naam)
@@ -39,7 +38,7 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
     setStatus('saving')
 
     const naamResult = kantoorNaam.trim() !== naam ? await slaKantoorNaamOpAlsAdmin(kantoorId, kantoorNaam) : { ok: true }
-    const slugResult: { ok: boolean; error?: string } = slug !== undefined && slugPreview !== (slug ?? '')
+    const slugResult: { ok: boolean; error?: string } = slugPreview !== (slug ?? '')
       ? await slaKantoorSlugOpAlsAdmin(kantoorId, slugPreview)
       : { ok: true }
 
@@ -74,35 +73,27 @@ export function InstellingenForm({ kantoorId, naam, slug, instellingen }: {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Inlogpagina in kantoorstijl</label>
-        {slug === undefined ? (
-          <p className="text-xs text-amber-600">
-            Nog niet beschikbaar — migratie <code>20260923_kantoren_slug.sql</code> moet eerst toegepast worden.
+        <p className="text-xs text-gray-500 mb-2">
+          Eigen inlogscherm met logo, kleuren en sfeerbeeld van dit kantoor. Leeg = geen eigen
+          inlogpagina, dan gebruikt dit kantoor de gewone <code>/login</code>.
+        </p>
+        <input
+          value={kantoorSlug}
+          onChange={e => { setKantoorSlug(e.target.value); setSlugError('') }}
+          maxLength={60}
+          placeholder="i4housing"
+          aria-label="Slug voor de kantoorlogin"
+          className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 ${slugGeldigOfLeeg ? 'border-gray-300' : 'border-red-300'}`}
+        />
+        {slugPreview && (
+          <p className="text-xs text-gray-500 mt-1">
+            Wordt: <span className="font-mono">/login/{slugPreview}</span>
           </p>
-        ) : (
-          <>
-            <p className="text-xs text-gray-500 mb-2">
-              Eigen inlogscherm met logo, kleuren en sfeerbeeld van dit kantoor. Leeg = geen eigen
-              inlogpagina, dan gebruikt dit kantoor de gewone <code>/login</code>.
-            </p>
-            <input
-              value={kantoorSlug}
-              onChange={e => { setKantoorSlug(e.target.value); setSlugError('') }}
-              maxLength={60}
-              placeholder="i4housing"
-              aria-label="Slug voor de kantoorlogin"
-              className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400 ${slugGeldigOfLeeg ? 'border-gray-300' : 'border-red-300'}`}
-            />
-            {slugPreview && (
-              <p className="text-xs text-gray-500 mt-1">
-                Wordt: <span className="font-mono">/login/{slugPreview}</span>
-              </p>
-            )}
-            {!slugGeldigOfLeeg && (
-              <p className="text-xs text-red-600 mt-1">Alleen kleine letters, cijfers en één koppelteken tussen woorden (bv. i4housing).</p>
-            )}
-            {slugError && <p className="text-xs text-red-600 mt-1">{slugError}</p>}
-          </>
         )}
+        {!slugGeldigOfLeeg && (
+          <p className="text-xs text-red-600 mt-1">Alleen kleine letters, cijfers en één koppelteken tussen woorden (bv. i4housing).</p>
+        )}
+        {slugError && <p className="text-xs text-red-600 mt-1">{slugError}</p>}
       </div>
 
       <div className="border-t border-gray-100 pt-5">

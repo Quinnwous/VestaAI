@@ -29,18 +29,16 @@ export function naarVerrijkingOpslag(data: VerrijkingData, opgehaaldOp: string, 
 }
 
 /**
- * Verwerkt het resultaat van een losse `objecten.verrijking_json`-select tot
- * een gevalideerde opslag, of `null` bij elke vorm van falen. Pure functie
- * (geen eigen database-aanroep) — expres gescheiden van de query zelf, zodat
- * ze los te testen is zonder de Supabase-clienttypes te hoeven nabouwen.
+ * Verwerkt het resultaat van een losse `objecten.verrijking_json`-select
+ * (kolom live sinds migratie `20260923_object_verrijking.sql`, 23 sep 2026)
+ * tot een gevalideerde opslag, of `null` bij elke vorm van falen — geen rij,
+ * een querfout, of data die niet aan het schema voldoet. Pure functie (geen
+ * eigen database-aanroep) — expres gescheiden van de query zelf, zodat ze los
+ * te testen is zonder de Supabase-clienttypes te hoeven nabouwen.
  *
  * Bedoeld voor een losse query t.o.v. de hoofd-objectselect in
- * `app/(app)/object/[id]/page.tsx`: zolang de migratie
- * `20260923_object_verrijking.sql` niet is toegepast bestaat de kolom niet en
- * geeft die losse query een `error` (Postgres/PostgREST-foutcode 42703,
- * undefined_column) terug i.p.v. de hele paginaquery te breken — deze functie
- * behandelt dat gewoon als "nog geen buurtdata". Zie ook de graceful
- * afhandeling in `app/api/object/[id]/verrijking/route.ts`.
+ * `app/(app)/object/[id]/page.tsx`, zodat een querfout die query nooit de
+ * hele paginaquery laat breken.
  */
 export function verwerkOpgeslagenVerrijking(resultaat: { data: unknown; error: unknown } | null | undefined): VerrijkingOpslag | null {
   if (!resultaat || resultaat.error || !resultaat.data) return null

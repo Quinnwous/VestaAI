@@ -21,18 +21,14 @@ export default async function AdminKantoorPage({ params }: { params: { id: strin
   if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')
 
   const service = createServiceSupabaseClient()
-  const [{ data: kantoor }, { data: teamleden }, slugResultaat] = await Promise.all([
-    service.from('kantoren').select('id, name, logo_url, huisstijl_json, instellingen_json').eq('id', params.id).single(),
+  const [{ data: kantoor }, { data: teamleden }] = await Promise.all([
+    service.from('kantoren').select('id, name, logo_url, huisstijl_json, instellingen_json, slug').eq('id', params.id).single(),
     service.from('makelaars').select('id, name, email').eq('kantoor_id', params.id).order('name', { ascending: true }),
-    // Losse query (item 9.1): faalt gracieus (undefined) zolang migratie
-    // 20260923_kantoren_slug.sql nog niet is toegepast, zonder de rest van
-    // de admin-pagina te breken.
-    service.from('kantoren').select('slug').eq('id', params.id).single(),
   ])
 
   if (!kantoor) notFound()
 
-  const slug: string | null | undefined = slugResultaat.error ? undefined : (slugResultaat.data?.slug ?? null)
+  const slug: string | null = (kantoor as Kantoor).slug ?? null
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">

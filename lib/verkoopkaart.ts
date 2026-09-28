@@ -4,6 +4,7 @@ import { gemiddelde } from './utils'
 import { mediaan, kwartaalVan, kwartaalNummer, kwartaalUitNummer, kwartalenTussen, type Kwartaal } from './prijsindex'
 import { MIN_N_VOOR_GEMIDDELDE } from './kerncijfers'
 import { filterEigenRijen, PRIJS_BEREIK, OPP_BEREIK, BOUWJAAR_BEREIK, type MarktanalyseFilterV2 } from './marktanalyse'
+import { bereikGelijk } from './filterVergelijk'
 
 /**
  * Pure filter-/sorteer-/kerncijferlogica voor de verkoopkaart-explorer v2
@@ -113,10 +114,6 @@ export function standaardVerkoopkaartFilter(vanKwartaal: number, totKwartaal: nu
     tot: totKwartaal,
     sort: 'datum',
   }
-}
-
-function bereikGelijk(a: [number, number], b: [number, number]): boolean {
-  return a[0] === b[0] && a[1] === b[1]
 }
 
 /** Vertaalt de verkoopkaart-filterstaat naar `MarktanalyseFilterV2` voor `filterEigenRijen` (§ 3.1 patroon 1). */

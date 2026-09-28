@@ -12,8 +12,9 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
  * Sessie-gebonden client (`createServerSupabaseClient`): RLS laat een
  * makelaar alléén zijn eigen kantoorgegevens zien, dus dit lekt nooit een
  * andere tenant. Geeft `{ slug: null }` terug — nooit een 500 — als er geen
- * sessie is, als het kantoor geen slug heeft, of als de kolom nog niet
- * bestaat (migratie 20260923_kantoren_slug.sql nog niet toegepast).
+ * sessie is, als het kantoor geen slug heeft, of bij een onverwachte queryfout.
+ * Kolom `kantoren.slug` (migratie 20260923_kantoren_slug.sql) is live sinds
+ * 23 sep 2026.
  */
 export async function GET() {
   if (!isSupabaseConfigured()) return NextResponse.json({ slug: null })

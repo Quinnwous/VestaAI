@@ -156,35 +156,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     expect(data.verrijking.marktEigen).toBeNull()
   })
 
-  it('meldt duidelijk dat de migratie nog niet is toegepast bij undefined_column (42703)', async () => {
-    let callCount = 0
-    serviceFromImpl = () => {
-      callCount += 1
-      return callCount === 1 ? selectChain() : updateChain({ error: { code: '42703', message: 'column objecten.verrijking_json does not exist' } })
-    }
-
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
-    const data = await res.json()
-
-    expect(res.status).toBe(503)
-    expect(data.migratieVereist).toBe(true)
-  })
-
-  it('meldt duidelijk dat de migratie nog niet is toegepast bij een PostgREST schema-cache-fout (PGRST204)', async () => {
-    let callCount = 0
-    serviceFromImpl = () => {
-      callCount += 1
-      return callCount === 1 ? selectChain() : updateChain({ error: { code: 'PGRST204', message: "Could not find the 'verrijking_json' column of 'objecten' in the schema cache" } })
-    }
-
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
-    const data = await res.json()
-
-    expect(res.status).toBe(503)
-    expect(data.migratieVereist).toBe(true)
-  })
-
-  it('geeft een generieke 500 bij een andere opslagfout', async () => {
+  it('geeft een generieke 500 bij een opslagfout', async () => {
     let callCount = 0
     serviceFromImpl = () => {
       callCount += 1

@@ -10,8 +10,10 @@ import {
   pdokTegelUrl,
   kaartReferenties,
   haalStatischeKaartAfbeelding,
+  subjectPinStijl,
   MERCATOR_GRENS,
 } from './statischeKaart'
+import { VESTA_MERK } from './branding'
 
 // i4 Housing/Wassenaar-achtige coördinaten, zelfde orde van grootte als de
 // echte fixtures in WaardebepalingPdfTemplate.test.ts.
@@ -208,5 +210,40 @@ describe('haalStatischeKaartAfbeelding', () => {
 
     const resultaat = await haalStatischeKaartAfbeelding(kader, { fetchImpl, timeoutMs: 20 })
     expect(resultaat).toEqual({ ok: false, reden: 'timeout' })
+  })
+})
+
+describe('subjectPinStijl', () => {
+  // Referentiepins in WaardebepalingPdfTemplate.tsx zijn `#14181B` (relatieve
+  // luminantie ≈ 0,009) met een witte rand van 1,6pt — de subject-pin moet
+  // daar bij élke merkkleur duidelijk van te onderscheiden blijven, dus zowel
+  // een merkbaar lichtere vulling (bij een donkere merkkleur) als een dikkere
+  // witte rand dan de referentiepins.
+  const REFERENTIEPIN_STROKE = 1.6
+
+  it('licht een (bijna) zwarte merkkleur op i.p.v. hem ongewijzigd te laten, met een witte rand', () => {
+    for (const donker of ['#111111', '#000000']) {
+      const stijl = subjectPinStijl(donker)
+      expect(stijl.fill.toLowerCase()).not.toBe(donker.toLowerCase())
+      expect(stijl.fill).toMatch(/^#[0-9A-Fa-f]{6}$/)
+      expect(stijl.stroke.toUpperCase()).toBe('#FFFFFF')
+      expect(stijl.strokeWidth).toBeGreaterThan(REFERENTIEPIN_STROKE)
+    }
+  })
+
+  it('laat een normale merkkleur (i4housing-blauw) ongewijzigd, met een witte rand', () => {
+    const stijl = subjectPinStijl('#0080C8')
+    expect(stijl.fill.toUpperCase()).toBe('#0080C8')
+    expect(stijl.stroke.toUpperCase()).toBe('#FFFFFF')
+    expect(stijl.strokeWidth).toBeGreaterThan(REFERENTIEPIN_STROKE)
+  })
+
+  it('valt terug op een veilige merkkleur bij een ongeldige of lege kleur', () => {
+    for (const ongeldig of [undefined, null, '', 'blauw', '#12345']) {
+      const stijl = subjectPinStijl(ongeldig as unknown as string)
+      expect(stijl.fill).toMatch(/^#[0-9A-Fa-f]{6}$/)
+      expect(stijl.fill.toUpperCase()).toBe(VESTA_MERK.primair.toUpperCase())
+      expect(stijl.stroke.toUpperCase()).toBe('#FFFFFF')
+    }
   })
 })

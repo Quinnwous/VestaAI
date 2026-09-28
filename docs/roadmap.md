@@ -17,16 +17,14 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep-b`, autonoom):** **⌘K-zoeken**
-  (`components/ZoekPalet.tsx`, `app/api/zoeken`, `lib/zoeken.ts`: woningen van
-  het eigen kantoor, pagina's, snelkoppeling naar Transacties opzoeken; knop in
-  de topbar + ⌘K/Ctrl K) · **buurtgrenzen op de verkoopkaart** (schakelbare laag,
-  CBS Wijken en Buurten 2024 via PDOK OGC API, proxy `app/api/kaart/buurtgrenzen`
-  met 1 dag cache, standaard uit) · **`lib/filterVergelijk.ts`** (gedeelde
-  `bereikGelijk`/`verzamelingGelijk`) · concurrentie-v2-RPC's op productie
-  geverifieerd (identiek aan de migratie). Eerder op 28 sep (PR
-  `feat/sessie-28sep`): kaart in de waardebepaling-pdf, repetitie scène 4 met
-  BAG-toets, Plaats-pil consistent.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep-c`, autonoom):** verouderde
+  "nog niet toegepast"-commentaren én de terugvalcode die alleen daarvoor
+  bestond opgeruimd (o.a. `zoekTransactiesTerugval`, 42703-takken slug/
+  verrijking; alleen `transacties.makelaar_id` is écht nog niet toegepast) ·
+  filter-poets (Wis op Plaats gelijk op drie verkenners, `--merk-accent`-
+  fallbacks weg, `bereikGelijk` centraal, foutteksten zonder jargon) ·
+  pdf-subject-pin met witte halo en lichtere vulling bij een donkere
+  merkkleur. Eerder op 28 sep: ⌘K-zoeken, buurtgrenzen, pdf-kaart.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -37,27 +35,18 @@
   op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
-- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):** de
-  demo-items zijn op; backlog "na de demo" en opruimwerk dat zonder Quinn kan:
-  1. **Verouderde "nog niet toegepast"-commentaren, systematisch** — `grep -rn
-     "nog niet toegepast" lib app components` gaf 28 sep 12 plekken (o.a.
-     `lib/transactiesQuery.ts:384` en `app/(app)/marktanalyse/actions.ts:53`
-     over `marktanalyse_verdeling_prijsklasse`/`transacties_plaatsen_wijken`,
-     die wél live staan; `lib/schemas.ts:494/658`, `app/admin/actions.ts`,
-     `InstellingenForm.tsx`/`mijn-kantoor-slug` over `kantoren.slug`,
-     `verrijking/route.ts`, `kantoorLoginBranding.ts`,
-     `concurrentie/page.tsx:22`). Per migratie read-only verifiëren
-     (`list_migrations`, `pg_proc`, `information_schema.columns`), dan commentaar
-     én eventuele terugval-code die alleen voor "nog niet toegepast" bestond
-     bijwerken. Geen SQL uitvoeren.
-  2. **Filter-poets** — "Wis" op Plaats gedraagt zich op concurrentie anders
-     (terug naar het werkgebied) dan op marktanalyse/transacties (leeg = alle
-     plaatsen): gelijktrekken · `var(--merk-accent, #C61E45)`-fallbacks in de
-     explorers weg (hook meldt ze) · `bereikGelijk` in `lib/verkoopkaart.ts` en
-     `VerkoopkaartExplorerV2.tsx` naar `lib/filterVergelijk.ts`.
-  3. **Pdf-kaart contrast** — subject-pin valt weg bij een donkere kantoorkleur
-     (demo-kantoor): witte rand of lichtere variant (`lichter()` uit
-     `lib/branding.ts`) als de merkkleur te donker is.
+- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
+  backlog "na de demo" dat zonder Quinn kan:
+  1. **Presentatiemodus waardebepaling ("keukentafel")** — scherm op volledige
+     grootte om de waardering aan de verkoper te laten zien: route
+     `app/(app)/object/[id]/presentatie`, leest de opgeslagen `waardering_json`
+     (net als de pdf: niets herberekenen), stappen met pijltjestoetsen
+     (woning → waarde + bandbreedte → referenties op de kaart → top-6 →
+     WOZ → makelaarscorrectie + contact), Esc terug, Fullscreen API. Knop
+     "Presenteren" in `WaardebepalingPaneel`. Ontwerpkeuze door Claude
+     (besluit 16 sep: "keukentafel-modus → backlog").
+  2. **`.env.example` + `npm run env:check`** (alleen sleutelnamen, nooit
+     waarden) + het restant `content_keuzes` in `lib/schemas.ts` opruimen.
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
   smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op

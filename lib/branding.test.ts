@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bouwBranding, brandingCssVars, tekstOp, donkerder, lichter, VESTA_MERK } from './branding'
+import { bouwBranding, brandingCssVars, tekstOp, donkerder, lichter, luminantie, VESTA_MERK } from './branding'
 
 describe('bouwBranding', () => {
   it('valt terug op de VestaAI-stijl zonder kantoorgegevens', () => {
@@ -56,6 +56,23 @@ describe('kleurbewerkingen', () => {
     expect(lichter('#0089D0', 0.92)).toMatch(/^#[0-9a-f]{6}$/)
     expect(donkerder('#000000', 0.5)).toBe('#000000')
     expect(lichter('#FFFFFF', 0.5)).toBe('#ffffff')
+  })
+})
+
+describe('luminantie', () => {
+  it('geeft 0 voor zwart en 1 voor wit', () => {
+    expect(luminantie('#000000')).toBeCloseTo(0, 6)
+    expect(luminantie('#FFFFFF')).toBeCloseTo(1, 6)
+  })
+
+  it('ligt laag voor (bijna) zwarte merkkleuren, ver onder normale merkkleuren', () => {
+    // Referentiepin-kleur in WaardebepalingPdfTemplate.tsx (#14181B) en een
+    // bijna-zwarte kantoorkleur — beide vlak bij 0.
+    expect(luminantie('#14181B')).toBeLessThan(0.02)
+    expect(luminantie('#111111')).toBeLessThan(0.02)
+    // Normale merkkleuren (i4housing-blauw, VestaAI-groen) liggen duidelijk hoger.
+    expect(luminantie('#0080C8')).toBeGreaterThan(0.1)
+    expect(luminantie(VESTA_MERK.primair)).toBeGreaterThan(0.1)
   })
 })
 

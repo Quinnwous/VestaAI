@@ -4,12 +4,10 @@
  * als losse kopieën in `components/TransactiesZoeken.tsx`,
  * `components/MarktanalyseExplorer.tsx`, `components/ConcurrentieExplorer.tsx`
  * (generieke variant), `lib/marktanalyse.ts` en `lib/transactiesZoeken.ts`.
- * Hier samengevoegd tot één plek; gedrag ongewijzigd.
- *
- * ⚠️ `lib/verkoopkaart.ts` / `components/VerkoopkaartExplorerV2.tsx` hebben
- * ook nog hun eigen kopie van `bereikGelijk` — bewust niet meegenomen in deze
- * opschoning (bestandsoverlap met een andere agent), maar kunnen later
- * probleemloos naar deze module overschakelen.
+ * Hier samengevoegd tot één plek; gedrag ongewijzigd. `lib/verkoopkaart.ts`
+ * en `components/VerkoopkaartExplorerV2.tsx` hadden ook nog hun eigen kopie
+ * van `bereikGelijk` — die zijn sinds filter-poets (28 sep 2026) ook op deze
+ * module overgeschakeld.
  *
  * ⚠️ Niet te verwarren met `plaatsenGelijk(a: string, b: string)` in
  * `lib/kerncijfers.ts` — dat vergelijkt twee plaatsnamen op schrijfwijze

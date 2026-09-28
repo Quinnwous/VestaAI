@@ -5,8 +5,5 @@
 -- ververst worden via POST /api/object/[id]/verrijking (zie
 -- lib/verrijkingOpslag.ts VerrijkingOpslagSchema voor de vorm).
 --
--- ⚠️ Nog NIET toegepast op de productiedatabase — dat doet de hoofdsessie na
--- akkoord. De applicatiecode (route + BuurtDataTab) werkt gracieus zolang
--- deze kolom nog ontbreekt: een update die de kolom niet vindt geeft Postgres-
--- foutcode 42703, die de route expliciet afvangt en meldt i.p.v. te crashen.
+-- ✅ TOEGEPAST op productie (geverifieerd 28 sep 2026).
 alter table objecten add column if not exists verrijking_json jsonb;

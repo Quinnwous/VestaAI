@@ -85,8 +85,8 @@ export default async function ObjectDetailPage({ params }: { params: { id: strin
 
   // Item 10.4 (docs/roadmap.md § Fase 10): voedt "Recent bekeken" op
   // /dashboard. Fire-and-forget — niet awaiten, en logGebruik() faalt zelf
-  // altijd stil (console.warn) zolang gebruik_events nog niet bestaat, dus
-  // dit mag de dossierpagina nooit vertragen of laten crashen.
+  // altijd stil (console.warn) bij een schrijffout, dus dit mag de
+  // dossierpagina nooit vertragen of laten crashen.
   void logGebruik(supabase, { kantoorId: makelaar.kantoor_id, makelaarId: user.id, objectId: object.id, type: 'dossier_bekeken' })
 
   const fase = (object.fase ?? 'in_verkoop') as ObjectFase

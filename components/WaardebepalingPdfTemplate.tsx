@@ -4,6 +4,7 @@ import type { PropertyInput, WaarderingCorrectieSchema } from '@/lib/schemas'
 import { woningtypeLabel } from '@/lib/schemas'
 import type { CorrectieNaam, WaarderingUitkomst } from '@/lib/waardering'
 import type { z } from 'zod'
+import { subjectPinStijl } from '@/lib/statischeKaart'
 
 type Correctie = z.infer<typeof WaarderingCorrectieSchema>
 
@@ -265,7 +266,7 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
                     <SvgText x={r.x} y={r.y + 4} fontSize={11} fontWeight={700} fill="#fff" textAnchor="middle">{r.nummer}</SvgText>
                   </G>
                 ))}
-                <Circle cx={kaart.subject.x} cy={kaart.subject.y} r={10} fill={kantoor.kleur} stroke="#fff" strokeWidth={2} />
+                <Circle cx={kaart.subject.x} cy={kaart.subject.y} r={10} {...subjectPinStijl(kantoor.kleur)} />
               </Svg>
             </View>
           )}

@@ -12,8 +12,8 @@ export type Kantoor = {
   huisstijl_json: HuisstijlConfig | null
   instellingen_json?: KantoorInstellingen | null
   // Kantoorspecifieke inlogpagina (/login/[slug], item 9.1, migratie
-  // 20260923_kantoren_slug.sql) — optioneel omdat de kolom nog toegepast
-  // moet worden en niet elk kantoor er meteen een heeft.
+  // 20260923_kantoren_slug.sql, live sinds 23 sep 2026) — optioneel omdat
+  // niet elke select de kolom meeneemt en niet elk kantoor er een heeft.
   slug?: string | null
 }
 
