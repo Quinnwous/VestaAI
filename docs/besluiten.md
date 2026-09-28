@@ -6,6 +6,16 @@
 
 ---
 
+### 28 sep 2026 (negende ronde) — segmentvergelijking A vs. B, presentatie-polish
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Segmentvergelijking | Zodra segment B aan staat: kaart "Segment A vs. segment B" onder de kerncijfers (mediaan prijs, €/m², looptijd, t.o.v. vraagprijs, aantal), n per segment in de kop, verschil neutraal (▲/▼, geen groen/rood). Drempel `MIN_N_BETROUWBAAR = 6` nu gedeeld in `lib/marktanalyse.ts`. Eigen component i.p.v. `DumbbellStat` (die kleurt wij/markt en semantisch). B-samenvatting met eigen `.catch` → A blijft werken | Sonnet + Opus |
+| Schakelaar segment B | Kiest automatisch een plaats buiten A; zitten alle plaatsen al in A, dan blijft B op "Kies een plaats…" (gezien bij het demo-kantoor, correct gedrag) | Opus |
+| Presentatiemodus | Stap 1 zonder foto toont het kantoorlogo; contactregel en logo-keuze gedeeld (`kantoorContactregel`, `logoWeergave`). Website ontbreekt in het datamodel → item G1 (spec in `docs/specs/`) | Sonnet |
+| Agent-opdrachten | Lange prompts laten de auto-mode-classifier time-outen (agent start niet). Spec als bestand, prompt van één regel (CLAUDE.md) | Opus |
+| Automatisering rondes | Headless lus (`claude -p` per ronde) besproken; Quinn: handmatig blijven doen | Quinn |
+
 ### 28 sep 2026 (achtste ronde, autonoom) — presentatiemodus, .env.example, RLS-bevinding
 
 | Onderwerp | Besluit | Door |
@@ -537,6 +547,10 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-f`: segmentvergelijking A vs. B op
+  marktanalyse, presentatiemodus-polish.
+- 28 sep 2026 — PR #38 `feat/sessie-28sep-d` (+e): presentatiemodus, env:check,
+  RLS `objecten` kantoorbreed + initplan-fix + FK-indexen, Wij vs. markt mobiel.
 - 28 sep 2026 — PR `feat/sessie-28sep-d`: presentatiemodus waardebepaling,
   `.env.example` + `npm run env:check`.
 - 28 sep 2026 — PR `feat/sessie-28sep-c`: verouderde "nog niet toegepast"-commentaren
