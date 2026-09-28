@@ -25,7 +25,10 @@ import {
   Chip, Checkbox, StatTile, SegmentedToggle, Switch, type FilterPil,
 } from '@/components/ui'
 import { colors, radius, shadow } from '@/components/ui/tokens'
-import { BasisKaart, VerkopenLaag, HoverKaart, type VerkoopHoverInfo } from '@/components/kaart'
+import {
+  BasisKaart, VerkopenLaag, HoverKaart, BuurtgrenzenLaag,
+  type VerkoopHoverInfo, type BuurtgrenzenStatus,
+} from '@/components/kaart'
 import { boundsUitPunten } from '@/lib/kaart'
 import { useFilterState } from '@/hooks/useFilterState'
 import {
@@ -109,6 +112,12 @@ export function VerkoopkaartExplorerV2({
   const [hover, setHover] = useState<VerkoopHoverInfo | null>(null)
   const [geselecteerdId, setGeselecteerdId] = useState<string | null>(null)
   const [gemarkeerdId, setGemarkeerdId] = useState<string | null>(null)
+
+  // Buurtgrenzen (backlog roadmap § 9) — standaard uit; de laag zelf meldt
+  // laden/ok/leeg/mislukt/te_ver_uitgezoomd terug zodat de schakelaar een
+  // nette melding kan tonen i.p.v. de rest van de kaart te breken.
+  const [buurtgrenzenAan, setBuurtgrenzenAan] = useState(false)
+  const [buurtgrenzenStatus, setBuurtgrenzenStatus] = useState<BuurtgrenzenStatus>('laden')
 
   function kies(id: string) {
     setGeselecteerdId(huidig => (huidig === id ? null : id))
@@ -362,12 +371,27 @@ export function VerkoopkaartExplorerV2({
 
           <div className="vui-verkoopkaart-werkblad">
             <div style={{ background: colors.surface, border: `1px solid ${colors.border}`, borderRadius: radius.cardLg, boxShadow: shadow.card, padding: '16px 18px 12px', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-              <div style={{ marginBottom: 8 }}>
-                <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: 0, letterSpacing: '-.01em' }}>Kaart</h2>
-                <p style={{ fontSize: 12, color: colors.muted, margin: '2px 0 0' }}>eigen verkopen · sleep om te pannen, scroll om te zoomen</p>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
+                <div>
+                  <h2 style={{ fontSize: 15.5, fontWeight: 800, margin: 0, letterSpacing: '-.01em' }}>Kaart</h2>
+                  <p style={{ fontSize: 12, color: colors.muted, margin: '2px 0 0' }}>eigen verkopen · sleep om te pannen, scroll om te zoomen</p>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, fontWeight: 600, color: colors.bodyStrong, cursor: 'pointer' }}>
+                    Buurtgrenzen
+                    <Switch checked={buurtgrenzenAan} onChange={setBuurtgrenzenAan} ariaLabel="Buurtgrenzen tonen" />
+                  </label>
+                  {buurtgrenzenAan && buurtgrenzenStatus === 'mislukt' && (
+                    <p style={{ fontSize: 11.5, color: colors.muted, margin: '4px 0 0', maxWidth: 200 }}>Buurtgrenzen tijdelijk niet beschikbaar.</p>
+                  )}
+                  {buurtgrenzenAan && buurtgrenzenStatus === 'te_ver_uitgezoomd' && (
+                    <p style={{ fontSize: 11.5, color: colors.muted, margin: '4px 0 0', maxWidth: 200 }}>Zoom in om buurtgrenzen te zien.</p>
+                  )}
+                </div>
               </div>
               <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
                 <BasisKaart direct bounds={bounds} hoogte={WERKBLAD_HOOGTE - 68}>
+                  {buurtgrenzenAan && <BuurtgrenzenLaag onStatus={setBuurtgrenzenStatus} />}
                   <VerkopenLaag
                     transacties={gefilterd}
                     geselecteerdId={geselecteerdId}
