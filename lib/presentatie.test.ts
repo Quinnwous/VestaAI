@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   bepaalPresentatieStappen,
+  kantoorContactregel,
+  logoWeergave,
   presentatieKaartBounds,
   referentiesOnderschrift,
   top6Referenties,
@@ -149,5 +151,41 @@ describe('verkoperWaarschuwingen', () => {
       'Ook binnen 1000 m en 36 maanden minder dan 5 vergelijkbare verkopen gevonden',
       'Zonder locatie: referenties gekozen op plaats en woningtype, niet op afstand',
     ])
+  })
+})
+
+describe('kantoorContactregel', () => {
+  it('combineert telefoon en e-mail met een scheidingsteken', () => {
+    expect(kantoorContactregel({ telefoon: '070-1234567', email: 'info@kantoor.nl' })).toBe('070-1234567 · info@kantoor.nl')
+  })
+
+  it('toont alleen telefoon als e-mail ontbreekt', () => {
+    expect(kantoorContactregel({ telefoon: '070-1234567', email: null })).toBe('070-1234567')
+  })
+
+  it('toont alleen e-mail als telefoon ontbreekt', () => {
+    expect(kantoorContactregel({ telefoon: null, email: 'info@kantoor.nl' })).toBe('info@kantoor.nl')
+  })
+
+  it('geeft null terug zonder telefoon en e-mail', () => {
+    expect(kantoorContactregel({ telefoon: null, email: null })).toBeNull()
+  })
+
+  it('negeert lege of alleen-witruimte-strings', () => {
+    expect(kantoorContactregel({ telefoon: '   ', email: '' })).toBeNull()
+  })
+})
+
+describe('logoWeergave', () => {
+  it('kiest het logo als de URL er is en het laadt', () => {
+    expect(logoWeergave('https://voorbeeld.nl/logo.png', true)).toBe('logo')
+  })
+
+  it('valt terug op de naam als het logo niet laadt', () => {
+    expect(logoWeergave('https://voorbeeld.nl/logo.png', false)).toBe('naam')
+  })
+
+  it('valt terug op de naam zonder logo-URL', () => {
+    expect(logoWeergave(null, true)).toBe('naam')
   })
 })
