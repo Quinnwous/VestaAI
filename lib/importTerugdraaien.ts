@@ -19,7 +19,7 @@
  */
 import {
   leesImportSnapshot,
-  type ImportSnapshot, type ImportSnapshotRij,
+  type ImportSnapshotRij,
 } from './importSnapshot'
 
 /** Alleen de kolommen van een `imports`-rij die `planTerugdraai` nodig heeft. */
