@@ -6,6 +6,35 @@
 
 ---
 
+### 28 sep 2026 (twaalfde ronde) — admin-CSV via de pijplijn, kantoor-aliassen, i4-instellingen (PR #42)
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Kantoor-aliassen | Invoerveld in `/admin/kantoor/[id]` → Instellingen, één naam per regel, live genormaliseerde vorm, suggestie "Kantoornaam toevoegen"; `schoonAliassen()` ontdubbelt op de norm, max 20. Voor i4 pas invullen als de export laat zien hoe ze daarin heten | Sonnet + Opus |
+| Admin-CSV via de importpijplijn | Zelfde kwaliteitsregels, `uitgesloten_reden`, ontdubbelen en rapport als het script (profiel `handmatig`); een expliciete `eigen_verkoop`-kolom wint van de aliassen. Eén snapshot-bouwer (`bouwSnapshot` in `lib/importPijplijn.ts`) | Sonnet |
+| Herimport wist geen geocodering | Lege `geo`/`geocode_status`/`wijk`/`buurt` werden als null geüpsert (supabase-js vult ontbrekende sleutels in een batch aan met null) → elke herimport zonder coördinaten wiste de geocodering. Nu `maakUpsertBatches()`: lege aanvulbare kolommen weg, upsert per kolomset. Gevonden in review | Opus |
+| Instellingen samenvoegen | `slaKantoorInstellingenOp` verving `instellingen_json` volledig → opslaan wiste `demo: true`. Nu `voegInstellingenSamen()`: alleen formuliervelden overschrijven. Demo-vlag in productie gecontroleerd: intact | Opus |
+| i4 Housing-instellingen | Werkgebied: **Wassenaar** (primair), **Den Haag**. Courtage: standaard **1 % excl. btw**, per dossier aanpasbaar (intakeveld `courtagevoorstel_percentage`). Via SQL gezet (was leeg) | Quinn |
+| Plaatsnaam Den Haag | BAG/PDOK/Brainbay schrijven "'s-Gravenhage": zonder normalisatie mist de werkgebiedfilter alle Haagse verkopen → item J1 | Opus |
+| Verwerkersovereenkomst | Uitgesteld tot het platform in gebruik is. Kanttekening vastgelegd: de import van hun Realworks-data is formeel al verwerking (AVG) | Quinn |
+| Vercel Pro | Nog even niet | Quinn |
+
+### 28 sep 2026 (elfde ronde) — datavoorbereiding fase 5, verkopersversie pdf, hardening (PR #41)
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Koers | Na de statusvraag: geen verdere polish, maar fase 5 voorbereiden op alles wat níet van het exportformaat afhangt — dan kost de import bij binnenkomst dagen i.p.v. weken | Quinn + Opus |
+| 5.2 Importkern | `lib/rd.ts` (RD → WGS84, getest op Amersfoort en Rotterdam), `kantoorNormalisatie` (zonder spaties in de norm: "i4 Housing" = "I4housing"), `transactieKwaliteit` (roadmapgrenzen), `ontdubbelen` (Realworks wint, ± 90 dagen), `importProfielen` (aliassen **voorlopig**), `importPijplijn`, `scripts/import-transacties.mjs` (CSV + XLSX, dry-run standaard, weigert `--write` zonder back-up van vandaag) | Sonnet |
+| `xlsx` | Officiële SheetJS-release (cdn.sheetjs.com, 0.20.3) i.p.v. npm 0.18.5 (verouderd, bekende kwetsbaarheden). In ESM heeft SheetJS geen fs-toegang: bestand zelf inlezen en `XLSX.read(buffer)` | Opus |
+| 5.3 Geocodering | `lib/geocodering.ts` + script; mislukte call ≠ geen treffer (status blijft null → volgende run opnieuw). Toevoeging niet in de PDOK-query: "12 A" is in de BAG een huisletter, met `huisnummertoevoeging:A` vond PDOK niets (live getest); `kiesBesteTreffer()` kiest de variant | Sonnet + Opus |
+| 5.4 Importhistorie + terugdraaien | Alleen de laatste import per kantoor; status `klaar` én `mislukt` (juist dan nodig). Snapshot in dezelfde insert als de `imports`-rij, vóór de eerste upsert (contract `lib/importSnapshot.ts`). `.in()`-lookups in stukken van 200 (PostgREST-URL-limiet) | Sonnet + Opus |
+| Handout presentatiemodus | Geen apart document: de waardebepaling-pdf is al het achterlaatdocument. Variant `&voor=verkoper` — zonder makelaar-interne waarschuwingen, met kantoorcontact in de voettekst; split-knop in het paneel, knop op de laatste presentatiestap | Opus + Sonnet |
+| Mobiel dossier | Split-knop gaf 71 px horizontale scroll; knoppenrij wrapt nu | Opus |
+| Hardening-migratie | Toegepast na back-up (akkoord 24 sep); geverifieerd: geen trigger op `auth.users`, `anon` heeft geen EXECUTE meer. De permissieregel voor `apply_migration` stond al | Opus |
+| Auth-schakelaars | Niet te doen vanuit de sessie: de MCP heeft geen Auth-configtool, zoeken naar een beheertoken werd door de classifier geblokkeerd (terecht), Claude in Chrome niet verbonden → Quinn | — |
+| Website i4 | `huisstijl_json.website` gericht gezet (alleen dat veld; het reparatiescript zou de hele huisstijl en assets opnieuw schrijven) | Opus |
+| Worktrees vanaf `main` | Agent-worktrees vertakken van `origin/main`, niet van de featurebranch: specs en gedeelde contracten die alleen op de featurebranch staan, zien agents niet. Geef het absolute pad naar de spec in de hoofdmap, of merge eerst naar main | Opus |
+
 ### 28 sep 2026 (tiende ronde) — G1 websiteveld in de huisstijl
 
 | Onderwerp | Besluit | Door |

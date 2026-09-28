@@ -17,34 +17,43 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep-g`):** **G1 websiteveld in
-  de huisstijl** — `huisstijl_json.website` (optioneel, vrije invoer),
-  `websiteWeergave()` in `lib/branding.ts` (label `i4housing.nl` + https-href,
-  ongeldig → `null`), veld in `/admin/kantoor/[id]` → Huisstijl, getoond op de
-  slotpagina van de brochure-pdf en in de contactregel van de presentatiemodus.
-  De waardebepaling-pdf toont geen kantoorcontact, dus ook geen website (bewust).
-  ⚠️ i4 Housing heeft nog geen website ingevuld: via het admin-formulier zetten
-  (of `repair-i4housing-branding.mjs --write`, heeft hem nu in MERK).
-  Daarvoor (PR #39): segmentvergelijking A vs. B, presentatie-polish.
-- **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
-  (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
-  (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
-  (exports), fase 11 (voorbeeld-verkoopadvies).
+- **Laatste rondes (28 sep, PR #41 `feat/sessie-28sep-h` en PR #42
+  `feat/sessie-28sep-i`, beide live):** fase 5 formaat-onafhankelijk
+  voorbereid — 5.2 importkern + `scripts/import-transacties.mjs` (CSV/XLSX,
+  RD → WGS84, kwaliteitsregels, ontdubbelen, rapport; kolomaliassen per bron
+  **voorlopig** in `lib/importProfielen.ts`), 5.3 geocodering
+  (`scripts/geocodeer-transacties.mjs`, PDOK), 5.4 `/admin/transacties` v2
+  (importhistorie, kwaliteitsrapport, terugdraaien — ook een mislukte import),
+  kantoor-aliassen in `/admin/kantoor/[id]`, admin-CSV via dezelfde pijplijn.
+  Verder: verkopersversie van de waardebepaling-pdf (`&voor=verkoper`),
+  hardening-migratie toegepast, i4 Housing: website, werkgebied (Wassenaar,
+  Den Haag) en courtage (1 %) ingevuld. Details: `docs/besluiten.md` 28 sep.
+- **Fase:** 6, 7, 9, 10 en 13 af; fase 5 klaar tot aan de exports (5.1 en 5.5
+  wachten). Open: 8.5 (staging-modelcheck, betaald), 12.1 (team-accounts, wacht
+  op Quinn), 12.5 rest (demo-dossiers, freeze, repetitie op i4housing).
+  Geblokkeerd: fase 11 (voorbeeld-verkoopadvies).
 - ⚠️ **Demo-realiteit (uit 12.5a):** het i4housing-kantoor heeft nul transacties
   tot fase 5 — marktinzichten, kerncijfers en waardering tonen daar de lege
   staat. Repetitie gebeurt op `/login/demo`; zonder de exports is er geen demo
   op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
-- **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  1. **Presentatiemodus als printbare "handout"** — zelfde stappen als
-     `/object/[id]/presentatie`, als pdf of print-css, om bij de verkoper achter
-     te laten (bouwt op G1: contactregel met website).
-  2. Ontwerp-kit-oogst (`docs/ontwerp/`). A/B-segmentvergelijking op
-     transacties/concurrentie afgeraden (zoektool resp. al een
-     kantorenvergelijking — voegt weinig toe).
-  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
-  smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
+- **Zodra de exports binnen zijn:** 5.1 exportanalyse → `lib/importProfielen.ts`
+  definitief maken → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
+  export) → dry-run → `--write` → geocoderen → backtest → M1-tussencheck.
+- **Volgende ronde (bouwbaar zonder data, werkwijze: agents, nul overlap):**
+  1. **J1 Plaatsnormalisatie** — BAG/PDOK/Brainbay schrijven "'s-Gravenhage",
+     het werkgebied en de UI "Den Haag": zonder normalisatie mist de
+     werkgebiedfilter alle Haagse verkopen. Eén `normaliseerPlaats()` in import,
+     geocodering (woonplaatsvergelijking) en werkgebied-matching.
+  2. **J2 Courtage per dossier** — intakeveld "Courtagevoorstel" start op de
+     kantoorstandaard (i4: 1 % excl. btw) en blijft per dossier aanpasbaar
+     (besluit Quinn 28 sep); btw-aanduiding in de kantoorinstellingen; leeg
+     veld mag geen NaN-validatiefout geven.
+  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie,
+  smoke-generatietest met `E2E_GENERATE=1`, EN-kwartaalbericht tegen de echte
+  API, Sentry (account), Next 15-upgrade (nodig voor mobiel ≥ 85),
+  verkoopadvies v0 op een generieke opbouw (vóór het voorbeeld er is).
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
   ging over een functie zonder aanroeper. Niet opnieuw oppakken.
@@ -54,14 +63,20 @@
 - ⚠️ Contentgeneratie: kern-call sinds 8.3 kleiner (6.000 max_tokens); echte duur
   nog niet gemeten — eerste generatie na deploy timen.
 - **Blokkades (geen van alle blokkeert het bouwen):**
-  - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`)
-    juridisch toetsen + tekenen vóór de import van echte data (fase 5.5).
-  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; status 23 sep).
+  - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`):
+    **uitgesteld tot het platform in gebruik is** (besluit Quinn 28 sep). ⚠️ Let
+    op: het importeren van hun Realworks-data is al verwerking namens i4housing
+    in de zin van de AVG — de overeenkomst hoort er formeel vóór 5.5 te liggen.
+  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; Quinn regelt ze
+    "zo snel mogelijk", 28 sep).
   - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
     regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
   - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
-    leaked-password-protection aan.
+    leaked-password-protection aan. Kan niet via de MCP (geen Auth-configtool),
+    niet via een beheertoken (classifier) en niet via Claude in Chrome (niet
+    verbonden) — Quinn zet ze zelf om. Het grootste risico (aanmelding →
+    automatisch een kantoor) is sinds de hardening-migratie weg.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
 - **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
   (`/marktanalyse/kaart`, nu de enige kaart)?
@@ -582,7 +597,7 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   plaatsen, woningtype-waarden, encoding en scheidingsteken. Beantwoordt:
   bevat Brainbay i4housing's eigen verkopen ook (→ ontdubbelen)? Hoe heet
   i4housing in de kantoorkolom (aliassen)?
-- [ ] **5.2 Importscript** `scripts/import-transacties.mjs --bron brainbay|realworks --bestand <pad> [--write]`
+- [x] **5.2 Importscript** *(28 sep, formaat-onafhankelijk; aliassen per bron voorlopig tot 5.1)* `scripts/import-transacties.mjs --bron brainbay|realworks --bestand <pad> [--write]`
   *Raakt:* nieuw script, `lib/importProfielen.ts` (kolomaliassen per bron,
   bovenop de bestaande `ALIASSEN` uit `lib/transactieImport.ts`), `lib/rd.ts`
   (RD → WGS84; test met het RD-nulpunt Amersfoort (155000, 463000) →
@@ -599,11 +614,11 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   `--write` upsert in batches van 500 met `import_id`, schrijft de `imports`-rij.
   *Tests:* rd, normalisatie, kwaliteit, ontdubbelen, profiel-mapping (pure
   functies).
-- [ ] **5.3 Geocodering** `scripts/geocodeer-transacties.mjs`: hergebruik
+- [x] **5.3 Geocodering** *(28 sep; toevoeging niet in de PDOK-query — "12 A" is een huisletter)* `scripts/geocodeer-transacties.mjs`: hergebruik
   `pdokLookup` uit `lib/verrijking.ts`; postcode + huisnummer → `exact`,
   straat + plaats → `benaderd`, anders `mislukt`; hervatbaar op
   `geocode_status is null`; ~10 verzoeken/s; rapport; alleen rijen zonder `geo`.
-- [ ] **5.4 `/admin/transacties` v2** — importhistorie (bron, datum, nieuw/
+- [x] **5.4 `/admin/transacties` v2** *(28 sep; ook een mislukte import is terug te draaien)* — importhistorie (bron, datum, nieuw/
   bijgewerkt/uitgesloten, geocode-%), kwaliteitsrapport per import, knop
   "Laatste import terugdraaien" (verwijdert rijen met dat `import_id`, herstelt
   bijgewerkte rijen uit `snapshot_json`, zet `teruggedraaid_op`), de bestaande
@@ -843,15 +858,18 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ## 8. Acties Quinn
 
-1. **Vóór fase 5.5:** verwerkersovereenkomst juridisch laten toetsen en
-   tekenen; **Brainbay-licentievoorwaarden schriftelijk** laten bevestigen
-   (tonen van regionale NVM-data in VestaAI aan i4housing zelf).
+1. **Brainbay-licentievoorwaarden schriftelijk** laten bevestigen (tonen van
+   regionale NVM-data in VestaAI aan i4housing zelf). Verwerkersovereenkomst:
+   uitgesteld tot het platform in gebruik is (besluit 28 sep; zie ⚠️ in
+   § Stand van zaken — de import is formeel al verwerking).
 2. **Week 1-3:** volledige Brainbay- en Realworks-exports ophalen (liefst
    XLSX/CSV, alle jaren, met verkopend én aankopend kantoor en coördinaten als
    dat kan).
-3. **Supabase-dashboard:** self-signup uit (Auth → Providers → Email) en
-   leaked-password-protection aan (Auth → Policies).
-4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby).
+3. **Supabase-dashboard (nog open, 2 klikken):** self-signup uit (Auth →
+   Providers → Email → "Allow new users to sign up") en
+   leaked-password-protection aan (Auth → Attack Protection / Policies).
+4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby; Quinn 28 sep:
+   "wachten we even mee").
 5. Teamfoto i4housing goedkeuren (12.1) en de vijf namen + wachtwoorden
    aanleveren.
 6. **Tussencheck taxateur:** `docs/waardering-methode.md` (met het
@@ -863,11 +881,8 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
 8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
 9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
-10. Akkoord op de opruimmigratie (na back-up). De hardening-migratie
-    `20260924_hardening_security_definer.sql` heeft akkoord (24 sep) en een
-    back-up, maar auto-mode blokkeert `apply_migration` zonder permissieregel:
-    regel toevoegen (zie `docs/besluiten.md` 24 sep) of hem zelf in de Supabase
-    SQL-editor plakken.
+10. Akkoord op de opruimmigratie (na back-up). ~~Hardening-migratie~~ —
+    toegepast op 28 sep (na back-up).
 11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
     verwerkersovereenkomst, prijsafspraak.
 13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
@@ -906,17 +921,11 @@ in-memory per instance (zachte rem; tabel als het ooit nodig is) · smoke-genera
 (nieuwe flow, 27 sep) één keer echt draaien met `E2E_GENERATE=1` · CLAUDE.md-status van de
 concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
 
-**Database-hardening (security-advisor, 17 sep):** `SECURITY DEFINER`-functies
-`handle_new_user()`, `rls_auto_enable()`, `my_kantoor_id()`, `is_kantoor_admin()`
-zijn via `/rest/v1/rpc` aan te roepen door `anon`; de trigger `handle_new_user`
-maakt bovendien bij elke nieuwe auth-user een proefkantoor aan (erfenis van
-zelf-aanmelden, 17 sep gezien bij de demo-fixture) → trigger droppen
-(accounts ontstaan alleen via `/admin`, `plaatsInKantoor`) en `revoke execute … from anon`
-(en `rls_auto_enable` ook van `authenticated`); **migratie staat klaar (24 sep), wacht op akkoord (§ 8 punt 10)** · `object_fotos` en
-`stijl_bewerkingen` hebben RLS zonder policy — *nagegaan 24 sep: bewust en correct;
-alle zeven routes gebruiken de service-role-client en filteren zelf op `kantoor_id`,
-en zonder policy is de tabel voor anon/authenticated dicht (deny-all)*;
-leaked-password-protection aan (§ 8 punt 3). Uiterlijk in fase 12.
+**Database-hardening (security-advisor, 17 sep):** ✅ toegepast op 28 sep
+(migratie `20260924_hardening_security_definer.sql`, na back-up): trigger
+`handle_new_user` weg, `anon` heeft geen EXECUTE meer op de vier
+SECURITY DEFINER-functies. `object_fotos`/`stijl_bewerkingen` zonder policy is
+bewust (24 sep nagegaan). Rest: leaked-password-protection (§ 8 punt 3).
 
 **Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
 (staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee
