@@ -67,6 +67,20 @@
   - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
     leaked-password-protection aan.
   - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
+- ⚠️ **Beslissing Quinn — RLS `objecten` vs. "één rol per kantoor" (gevonden 28 sep):**
+  de policies staan UPDATE/DELETE alleen toe voor de eigenaar
+  (`makelaar_id = auth.uid()`) of `is_kantoor_admin()`. `setObjectFase`,
+  `setObjectStatus` en `deleteObject` (`app/(app)/object/[id]/actions.ts`)
+  schrijven via de sessie-client → bij een collega 0 rijen: status/verwijderen
+  melden stil "ok", fase geeft een cryptische fout. Nu onzichtbaar (één login
+  per kantoor; i4housing-account heeft `role='admin'`), maar raakt 12.1 (vijf
+  makelaars). Keuze: (a) policies kantoorbreed maken (`kantoor_id =
+  (select my_kantoor_id())`, migratie, akkoord nodig) of (b) writes via de
+  service-client na kantoorcheck (patroon van de overige routes). Auto-mode
+  blokkeerde (b) als "security weaken" — dus jouw besluit. Aanbeveling: (a),
+  samen met de initplan-fix van de security-advisor (18× `auth.uid()` per rij,
+  o.a. op `transacties` — relevant zodra de exports erin staan) en 6
+  ontbrekende FK-indexen, in één migratie.
 - **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
   (`/marktanalyse/kaart`, nu de enige kaart)?
 

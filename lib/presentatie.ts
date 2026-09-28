@@ -100,3 +100,16 @@ export function presentatieKaartBounds(
     [midLng + spanLng / 2, midLat + spanLat / 2],
   ]
 }
+
+/**
+ * Welke waarschuwingen de verkoper te zien krijgt. Alleen de eerlijke
+ * "weinig data"-meldingen uit `lib/waardering.ts` (te weinig vergelijkbare
+ * verkopen, geen locatie) — die gaan over de betrouwbaarheid van het getal
+ * zelf. Rekennotities over de prijsindex ("index 2023-Q3 niet betrouwbaar,
+ * 2023-Q4 gebruikt") zijn voor de makelaar en blijven in het paneel en de pdf.
+ */
+const VERKOPER_WAARSCHUWING = /^(Ook binnen|Minder dan|Zonder locatie)/
+
+export function verkoperWaarschuwingen(waarschuwingen: string[]): string[] {
+  return waarschuwingen.filter(w => VERKOPER_WAARSCHUWING.test(w))
+}

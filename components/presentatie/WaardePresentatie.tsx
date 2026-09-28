@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { PropertyInput } from '@/lib/schemas'
 import { woningtypeLabel } from '@/lib/schemas'
 import type { WaarderingReferentie, WaarderingUitkomst } from '@/lib/waardering'
-import { bepaalPresentatieStappen, referentiesOnderschrift } from '@/lib/presentatie'
+import { bepaalPresentatieStappen, referentiesOnderschrift, verkoperWaarschuwingen } from '@/lib/presentatie'
 import { wozUitInvoer, type WozIjkpunt } from '@/lib/woz'
 import { euro, datum as datumFmt, m2 as m2Fmt, afstand as afstandFmt } from '@/lib/opmaak'
 import { colors, radius } from '@/components/ui/tokens'
@@ -246,9 +246,9 @@ function StapWaarde({ uitkomst }: { uitkomst: WaarderingUitkomst }) {
 
       <p style={{ fontSize: 15, color: colors.body, margin: 0 }}>{referentiesOnderschrift(uitkomst.n)}</p>
 
-      {uitkomst.waarschuwingen.length > 0 && (
+      {verkoperWaarschuwingen(uitkomst.waarschuwingen).length > 0 && (
         <div style={{ display: 'grid', gap: 8, width: '100%', maxWidth: 520, marginTop: 4 }}>
-          {uitkomst.waarschuwingen.map((w) => (
+          {verkoperWaarschuwingen(uitkomst.waarschuwingen).map((w) => (
             <div key={w} style={{ background: '#FFFBEE', border: '1px solid #F1DFA6', borderRadius: radius.md, padding: '10px 16px', fontSize: 13.5, color: '#7A5A00' }}>
               {w}
             </div>
@@ -340,7 +340,7 @@ function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; 
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
       <div>
         <Eyebrow style={{ textAlign: 'center' }}>Toelichting</Eyebrow>
-        <h2 className="presentatie-titel" style={{ fontFamily: 'var(--merk-font-heading, inherit)', fontSize: 30, fontWeight: 700, color: colors.text, margin: 0 }}>Van jouw makelaar</h2>
+        <h2 className="presentatie-titel" style={{ fontFamily: 'var(--merk-font-heading, inherit)', fontSize: 30, fontWeight: 700, color: colors.text, margin: 0 }}>Toelichting van de makelaar</h2>
       </div>
 
       {correctie ? (

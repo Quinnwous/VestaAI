@@ -4,6 +4,7 @@ import {
   presentatieKaartBounds,
   referentiesOnderschrift,
   top6Referenties,
+  verkoperWaarschuwingen,
 } from './presentatie'
 import type { WaarderingReferentie } from './schemas'
 
@@ -131,5 +132,22 @@ describe('presentatieKaartBounds', () => {
     const spanDichtbij = dichtbij[1][1] - dichtbij[0][1]
     const spanVeraf = veraf[1][1] - veraf[0][1]
     expect(spanVeraf).toBeGreaterThan(spanDichtbij)
+  })
+})
+
+describe('verkoperWaarschuwingen', () => {
+  it('houdt de weinig-data-meldingen en laat index-notities weg', () => {
+    const uit = verkoperWaarschuwingen([
+      'index 2023–Q3 niet betrouwbaar, 2023–Q4 gebruikt',
+      'Minder dan 5 vergelijkbare verkopen in Wassenaar in 24 maanden',
+      'Geen betrouwbare prijsindex voor een of meer referenties: geen tijdcorrectie toegepast',
+      'Ook binnen 1000 m en 36 maanden minder dan 5 vergelijkbare verkopen gevonden',
+      'Zonder locatie: referenties gekozen op plaats en woningtype, niet op afstand',
+    ])
+    expect(uit).toEqual([
+      'Minder dan 5 vergelijkbare verkopen in Wassenaar in 24 maanden',
+      'Ook binnen 1000 m en 36 maanden minder dan 5 vergelijkbare verkopen gevonden',
+      'Zonder locatie: referenties gekozen op plaats en woningtype, niet op afstand',
+    ])
   })
 })
