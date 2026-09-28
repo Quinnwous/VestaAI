@@ -10,10 +10,12 @@
  * component); elke volgende filterwijziging ververst via de server actions
  * in `actions.ts`.
  *
- * ⚠️ De RPC's (migratie `20260924_rpc_concurrentie_v2.sql`) zijn nog niet
- * toegepast — elk blok (tegels/wij-vs-markt/trend/matrix/ranglijst/drawer)
- * toont dan een nette "nog niet beschikbaar"-melding i.p.v. te crashen (zie
- * `Onbeschikbaar` hieronder).
+ * De RPC's (migratie `20260924_rpc_concurrentie_v2.sql`) zijn inmiddels
+ * toegepast op productie (geverifieerd 28 sep 2026, `pg_get_functiondef`
+ * exact gelijk aan de migratie) — de `.catch(() => null)` per blok in
+ * `actions.ts` blijft als verdediging tegen een toekomstige RPC-storing
+ * staan; elk blok toont dan een nette "nog niet beschikbaar"-melding i.p.v.
+ * te crashen (zie `Onbeschikbaar` hieronder).
  */
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
@@ -37,14 +39,11 @@ import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
 import { typegroepLabel, type Typegroep } from '@/lib/schemas'
 import type { PlaatsWijkRij } from '@/lib/transactiesQuery'
 import { haalConcurrentieData, haalConcurrentProfiel, type ConcurrentieData } from '@/app/(app)/marktanalyse/concurrentie/actions'
+import { verzamelingGelijk } from '@/lib/filterVergelijk'
 
 const ONS = 'Eigen kantoor'
 const MIN_N_BETROUWBAAR = 6
 const CONCURRENT_KLEUREN = [colors.bodyStrong, colors.body, colors.muted]
-
-function bereikGelijk<T>(a: T[], b: T[]): boolean {
-  return a.length === b.length && a.every((v, i) => v === b[i])
-}
 
 function kortNaam(naam: string): string {
   const woorden = naam.split(' ')
@@ -129,7 +128,7 @@ export function ConcurrentieExplorer({
     : undefined
 
   const pillen: FilterPil[] = []
-  if (!bereikGelijk(filter.plaatsen, standaard.plaatsen)) {
+  if (!verzamelingGelijk(filter.plaatsen, standaard.plaatsen)) {
     pillen.push({ label: 'Plaats', waarde: filter.plaatsen.join(', ') || 'Alle plaatsen', onVerwijder: () => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] }) })
   }
   if (filter.wijken.length) pillen.push({ label: 'Wijken', waarde: filter.wijken.map(w => w.split('|')[1]).join(', '), onVerwijder: () => zetFilterDeel({ wijken: [] }) })

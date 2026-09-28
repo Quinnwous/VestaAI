@@ -421,13 +421,14 @@ export async function concurrentieSegmenten(client: SessieClient, filters?: Tran
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Concurrentie v2 (item 6.3, migratie <ts>_rpc_concurrentie_v2.sql — NOG NIET
-// TOEGEPAST, zie dat bestand): werkt op `verkopend_kantoor_norm` i.p.v. het
-// rauwe veld hierboven. Elke wrapper hieronder kan een "function does not
-// exist"-fout gooien tot de migratie is toegepast — de aanroepende server
-// action vangt dat op met een nette "nog niet beschikbaar"-staat i.p.v. de
-// pagina te laten crashen (zelfde patroon als marktanalyseVerdelingPrijsklasse
-// hierboven).
+// Concurrentie v2 (item 6.3, migratie 20260924_rpc_concurrentie_v2.sql —
+// toegepast op productie, geverifieerd 28 sep 2026): werkt op
+// `verkopend_kantoor_norm` i.p.v. het rauwe veld hierboven. De aanroepende
+// server action (`app/(app)/marktanalyse/concurrentie/actions.ts`) vangt
+// elke wrapper hieronder nog steeds op met `.catch(() => null)` — verdediging
+// tegen een eventuele toekomstige RPC-storing, geeft dan een nette "nog niet
+// beschikbaar"-staat i.p.v. de pagina te laten crashen (zelfde patroon als
+// marktanalyseVerdelingPrijsklasse hierboven).
 // ─────────────────────────────────────────────────────────────────────────
 
 type ConcurrentieRanglijstRpcRij = { kantoor: string; aantal: number; aandeel_pct: number; mediaan_looptijd: number | null }
