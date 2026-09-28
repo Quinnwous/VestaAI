@@ -40,6 +40,10 @@
 > spec naar de scratchpad en geef de agent één regel: "Lees de opdracht in <pad> en voer die
 > uit". Worktrees hebben geen `.env.local`/echte `node_modules`: `dod:screens` en
 > `maplibreWorker.guard.test.ts` draait de hoofdsessie na de merge.
+> **Worktrees vertakken van `origin/main`** (les 28 sep 2026), niet van de featurebranch:
+> een spec of gedeeld contract dat alleen op de featurebranch staat, ziet de agent niet.
+> Geef het **absolute pad** naar de spec in de hoofdmap, en verwacht add/add-conflicten
+> op gedeelde bestanden bij het mergen.
 > **Doorlopende rondes (Quinn 27 sep 2026):** is een ronde afgerond en live, dan start Claude
 > meteen de volgende ronde uit `docs/roadmap.md` § Stand van zaken (volgende items, nul
 > bestandsoverlap, weer met agents) — niet wachten op Quinn. Alleen stoppen bij iets
@@ -130,6 +134,12 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 ⚠️ **Een standaardkeuze die eenmalig in een `useEffect` wordt gezet, wacht op de écht geladen data** — les 27 sep 2026: de dossierkaart koos "Eigen verkopen" bij een dossier met 17 referenties, omdat het effect al vuurde op een memo die vóór de fetch een waarde had (opgeslagen uitkomst) terwijl de coördinaten nog leeg waren. Gate op de fetch-resultaten (`serverData`), niet op een placeholder.
 
 ⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026 (op 28 sep opnieuw gezien bij de concurrentie-v2-RPC's; daarna systematisch opgeruimd — alleen `transacties.makelaar_id` is echt nog niet toegepast): een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
+
+⚠️ **Upsert met lege velden wist data** — les 28 sep 2026: supabase-js vult een ontbrekende sleutel binnen één batch aan met null, en een expliciete null overschrijft bij een conflict. Een herimport zonder coördinaten wiste zo alle geocodering. Velden die later worden aangevuld (`geo`, `geocode_status`, `wijk`, `buurt`) gaan via `maakUpsertBatches()` in `lib/importPijplijn.ts`: leeg = weglaten, upsert per kolomset. Zelfde categorie: sla `instellingen_json` samen op (`voegInstellingenSamen()`), nooit vervangen — dat wiste `demo: true`.
+
+⚠️ **`xlsx` komt van cdn.sheetjs.com, niet van npm** (0.18.5 daar is verouderd, bekende kwetsbaarheden). In ESM heeft SheetJS geen fs-toegang: `XLSX.read(fs.readFileSync(pad))`, nooit `XLSX.readFile()`.
+
+⚠️ **Den Haag heet in BAG/PDOK/Brainbay "'s-Gravenhage"** — vergelijk plaatsnamen nooit kaal met het werkgebied (item J1).
 
 ⚠️ **Een Next-routebestand (`route.ts`) mag alleen route-exports hebben** (`GET`/`POST`/`maxDuration`/…) — een geëxporteerde hulpfunctie laat `next build` falen terwijl typecheck en tests groen zijn. Hulpfuncties in `lib/`.
 
