@@ -68,11 +68,12 @@ export function bouwPdokQuery(rij: GeocodeerInvoer): PdokQuery | null {
   const postcode = normaliseerPostcode(rij.postcode)
   const huisnummer = normaliseerHuisnummer(rij.huisnummer)
 
+  // Bewust zonder toevoeging in de query: "12 A" is in de BAG meestal een
+  // `huisletter`, geen `huisnummertoevoeging` — met de toevoeging in de query
+  // vond PDOK dan niets (0 treffers, live gecontroleerd 28 sep 2026). De
+  // juiste variant kiest `kiesBesteTreffer()` uit de treffers.
   if (postcode && huisnummer !== null) {
-    let q = `postcode:${postcode} and huisnummer:${huisnummer}`
-    const toevoeging = rij.toevoeging?.trim()
-    if (toevoeging) q += ` and huisnummertoevoeging:${toevoeging}`
-    return { q, fq: PDOK_FQ_ADRES }
+    return { q: `postcode:${postcode} and huisnummer:${huisnummer}`, fq: PDOK_FQ_ADRES }
   }
 
   const straat = straatUitAdres(rij.adres ?? '')
@@ -91,6 +92,7 @@ export interface PdokDoc {
   centroide_ll?: string // "POINT(lon lat)"
   postcode?: string
   huisnummer?: number | string
+  huisletter?: string
   huisnummertoevoeging?: string
   straatnaam?: string
   woonplaatsnaam?: string
@@ -161,6 +163,23 @@ export function beoordeelTreffer(rij: GeocodeerInvoer, pdokDoc: PdokDoc | null):
   }
 
   return MISLUKT
+}
+
+function toevoegingVan(doc: PdokDoc): string {
+  return `${doc.huisletter ?? ''}${doc.huisnummertoevoeging ?? ''}`.replace(/[\s-]/g, '').toLowerCase()
+}
+
+/**
+ * Kiest uit de PDOK-treffers (zelfde postcode + huisnummer, verschillende
+ * huisletters/toevoegingen) de treffer die bij de toevoeging van de rij past.
+ * Zonder toevoeging: het adres zonder letter/toevoeging als dat er is. Past
+ * niets, dan de eerste treffer — het huisnummer klopt, de coördinaat ligt dan
+ * op hetzelfde pand.
+ */
+export function kiesBesteTreffer(rij: GeocodeerInvoer, docs: PdokDoc[] | null | undefined): PdokDoc | null {
+  if (!docs || docs.length === 0) return null
+  const gezocht = (rij.toevoeging ?? '').replace(/[\s-]/g, '').toLowerCase()
+  return docs.find(d => toevoegingVan(d) === gezocht) ?? docs[0]
 }
 
 /** WKT die PostGIS/PostgREST direct accepteert voor de `geography`-kolom `geo` — zelfde vorm als `lib/transactieImport.ts`. */

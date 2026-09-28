@@ -66,6 +66,7 @@ interface PdokHit {
   // pdokLookup() vraagt ze niet op (fl-lijst blijft ongewijzigd), maar het
   // type mag ze wel kennen zodat beide functies dezelfde vorm delen.
   huisnummer?: number | string
+  huisletter?: string
   huisnummertoevoeging?: string
   straatnaam?: string
   woonplaatsnaam?: string
@@ -89,8 +90,8 @@ async function pdokLookup(adres: string): Promise<PdokHit | null> {
 export async function pdokZoek(query: string, fq?: string): Promise<FetchPoging<{ response: { docs: PdokHit[] } }>> {
   const params = new URLSearchParams({
     q: query,
-    rows: '5',
-    fl: 'centroide_ll,buurtcode,buurtnaam,wijkcode,wijknaam,gemeentecode,gemeentenaam,postcode,huisnummer,huisnummertoevoeging,straatnaam,woonplaatsnaam,nummeraanduiding_id,adresseerbaarobject_id',
+    rows: '10',
+    fl: 'centroide_ll,buurtcode,buurtnaam,wijkcode,wijknaam,gemeentecode,gemeentenaam,postcode,huisnummer,huisletter,huisnummertoevoeging,straatnaam,woonplaatsnaam,nummeraanduiding_id,adresseerbaarobject_id',
   })
   if (fq) params.set('fq', fq)
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?${params.toString()}`

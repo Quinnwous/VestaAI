@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { beoordeelTreffer, bouwPdokQuery, naarGeoWkt } from './geocodering'
+import { beoordeelTreffer, bouwPdokQuery, kiesBesteTreffer, naarGeoWkt } from './geocodering'
 
 describe('bouwPdokQuery', () => {
   it('bouwt een gestructureerde query als postcode + huisnummer bekend zijn', () => {
@@ -7,9 +7,9 @@ describe('bouwPdokQuery', () => {
       .toEqual({ q: 'postcode:2242GJ and huisnummer:12', fq: 'type:adres' })
   })
 
-  it('voegt de toevoeging toe aan de gestructureerde query als die bekend is', () => {
+  it('laat de toevoeging uit de query (huisletter vs. toevoeging kiest kiesBesteTreffer)', () => {
     expect(bouwPdokQuery({ postcode: '2242gj', huisnummer: 12, toevoeging: 'A', adres: 'Dorpsstraat 12 A', plaats: 'Wassenaar' }))
-      .toEqual({ q: 'postcode:2242GJ and huisnummer:12 and huisnummertoevoeging:A', fq: 'type:adres' })
+      .toEqual({ q: 'postcode:2242GJ and huisnummer:12', fq: 'type:adres' })
   })
 
   it('valt terug op straat + huisnummer + plaats als vrije tekst zonder postcode', () => {
@@ -100,5 +100,26 @@ describe('beoordeelTreffer', () => {
 describe('naarGeoWkt', () => {
   it('schrijft lng vóór lat, zoals lib/transactieImport.ts', () => {
     expect(naarGeoWkt(52.144, 4.402)).toBe('POINT(4.402 52.144)')
+  })
+})
+
+describe('kiesBesteTreffer', () => {
+  const zonder = { postcode: '2242GJ', huisnummer: 12, centroide_ll: 'POINT(4.1 52.1)' }
+  const letterA = { ...zonder, huisletter: 'A', centroide_ll: 'POINT(4.2 52.2)' }
+  const toevoeging2 = { ...zonder, huisnummertoevoeging: '2', centroide_ll: 'POINT(4.3 52.3)' }
+  const docs = [zonder, letterA, toevoeging2]
+
+  it('kiest de huisletter die bij de toevoeging van de rij past', () => {
+    expect(kiesBesteTreffer({ toevoeging: 'a' }, docs)).toBe(letterA)
+  })
+  it('kiest een echte huisnummertoevoeging', () => {
+    expect(kiesBesteTreffer({ toevoeging: '-2' }, docs)).toBe(toevoeging2)
+  })
+  it('zonder toevoeging: het adres zonder letter', () => {
+    expect(kiesBesteTreffer({ toevoeging: null }, [letterA, zonder])).toBe(zonder)
+  })
+  it('valt terug op de eerste treffer als niets past, en null zonder treffers', () => {
+    expect(kiesBesteTreffer({ toevoeging: 'Z' }, docs)).toBe(zonder)
+    expect(kiesBesteTreffer({}, [])).toBeNull()
   })
 })

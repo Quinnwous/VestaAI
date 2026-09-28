@@ -40,7 +40,7 @@ import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { beoordeelTreffer, bouwPdokQuery, naarGeoWkt } from '../lib/geocodering.ts'
+import { beoordeelTreffer, bouwPdokQuery, kiesBesteTreffer, naarGeoWkt } from '../lib/geocodering.ts'
 import { pdokZoek } from '../lib/verrijking.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -155,7 +155,7 @@ async function geocodeerRij(rij) {
     return { rij, uitkomst: null, callMislukt: true, reden: poging.reden }
   }
 
-  const doc = poging.data?.response?.docs?.[0] ?? null
+  const doc = kiesBesteTreffer(rij, poging.data?.response?.docs)
   return { rij, uitkomst: beoordeelTreffer(rij, doc), callMislukt: false }
 }
 
