@@ -173,7 +173,7 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
           )}
           {huidigeStap === 'referenties' && <StapReferenties referenties={referenties} />}
           {huidigeStap === 'woz' && woz && <StapWoz woz={woz} indicatie={uitkomst.waarde} />}
-          {huidigeStap === 'toelichting' && <StapToelichting correctie={correctie} kantoor={kantoor} />}
+          {huidigeStap === 'toelichting' && <StapToelichting objectId={objectId} correctie={correctie} kantoor={kantoor} />}
         </div>
       </div>
 
@@ -349,9 +349,49 @@ function WozKolom({ label, waarde, nadruk = false }: { label: string; waarde: nu
 }
 
 // ── Stap 6 — Toelichting van de makelaar ────────────────────────────────────
-function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; kantoor: Props['kantoor'] }) {
+
+/**
+ * Downloadt de verkopersversie van de waardebepaling-pdf (item H4) — zelfde
+ * fetch-blob-download-patroon als `WaardebepalingPdfButton.tsx`, hier lokaal
+ * gehouden omdat de presentatiemodus zijn eigen, kleinere knopvorm heeft
+ * (geen split button nodig: hier is maar één relevante variant — de makelaar
+ * kijkt al mee, de interne knop hoort in het paneel).
+ */
+function useVerkoperPdfDownload(objectId: string) {
+  const [bezig, setBezig] = useState(false)
+  const [fout, setFout] = useState<string | null>(null)
+
+  async function download() {
+    setBezig(true)
+    setFout(null)
+    try {
+      const res = await fetch(`/api/pdf/waardebepaling?object_id=${objectId}&voor=verkoper`)
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(json?.error ?? 'PDF genereren mislukt')
+      }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = res.headers.get('Content-Disposition')?.match(/filename="(.+)"/)?.[1] ?? 'waardebepaling-verkoper.pdf'
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      setFout(e instanceof Error ? e.message : 'PDF genereren mislukt')
+      window.setTimeout(() => setFout(null), 4000)
+    } finally {
+      setBezig(false)
+    }
+  }
+
+  return { download, bezig, fout }
+}
+
+function StapToelichting({ objectId, correctie, kantoor }: { objectId: string; correctie: Correctie | null; kantoor: Props['kantoor'] }) {
   const [logoGeladen, setLogoGeladen] = useState(!!kantoor.logoUrl)
   const contactregel = kantoorContactregel(kantoor)
+  const { download, bezig, fout } = useVerkoperPdfDownload(objectId)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
       <div>
@@ -382,6 +422,24 @@ function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; 
           <p style={{ fontSize: 13, color: colors.muted, margin: 0 }}>{contactregel}</p>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={download}
+        disabled={bezig}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 8, height: 38, padding: '0 18px',
+          fontWeight: 700, fontSize: 13.5, borderRadius: radius.pill, border: `1px solid ${colors.borderStrong}`,
+          background: '#fff', color: colors.bodyStrong, cursor: bezig ? 'default' : 'pointer', opacity: bezig ? 0.7 : 1,
+        }}
+      >
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} width={15} height={15}>
+          <path d="M4 2h5l3 3v9H4z" />
+          <path d="M9 2v3h3" />
+        </svg>
+        {bezig ? 'Pdf maken…' : 'Pdf voor de verkoper'}
+      </button>
+      {fout && <p style={{ fontSize: 12.5, color: '#B42318', margin: 0 }}>{fout}</p>}
     </div>
   )
 }
