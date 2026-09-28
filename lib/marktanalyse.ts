@@ -5,6 +5,7 @@ import { mediaan, kwartaalVan } from './prijsindex'
 import type { TransactieFilter } from './schemas'
 import { woningtypeTaxonomie } from './transactieNormalisatie'
 import { bereikGelijk } from './filterVergelijk'
+import type { MarktanalyseSamenvattingRij } from './transactiesQuery'
 
 /**
  * Aggregatielogica voor de interactieve marktanalyse-explorer (F6, besluit 16
@@ -12,6 +13,14 @@ import { bereikGelijk } from './filterVergelijk'
  * CLAUDE.md § Hoofdstructuur). Puur functies, geen React — makkelijk te
  * testen en herbruikbaar tussen de grafiek en een eventuele CSV-export.
  */
+
+/**
+ * Ondergrens voor een "betrouwbaar" cijfer (docs/ontwerpprincipes.md § Data:
+ * "te weinig data → een waarschuwing, geen schijnzeker getal"). Gedeeld door
+ * de kerncijfer-tegels en de segment-A-vs-B-vergelijking (F1) zodat beide
+ * exact dezelfde drempel hanteren.
+ */
+export const MIN_N_BETROUWBAAR = 6
 
 export type MarktFilter = {
   woningtype?: string
@@ -434,6 +443,75 @@ export function segmentBFilter(f: MarktanalyseFilterState, opts: { datumTot: str
     if (subs.length) filter.typen = subs
   }
   return filter
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// F1: kerncijfers segment A vs. B (docs/roadmap.md § 3.1/3.7) — Segment B
+// stond tot nu toe alleen als extra reeks in de grafieken; deze functie
+// bouwt de compacte vergelijkingstabel onder de tegels (waarde A, waarde B,
+// verschil B t.o.v. A). Puur, geen React — `components/SegmentVergelijking.tsx`
+// formatteert de getallen (lib/opmaak.ts) en tekent de neutrale pijltjes.
+// ─────────────────────────────────────────────────────────────────────────
+
+export type SegmentVergelijkingMetriek = 'mediaanPrijs' | 'mediaanM2' | 'mediaanLooptijd' | 'pctTovVraag' | 'n'
+
+/** Zelfde deltatype als de kerncijfer-tegels (tegelDefs in MarktanalyseExplorer): relatief (%) of absoluut (dagen/procentpunten). */
+const SEGMENT_VERGELIJKING_DELTATYPE: Record<SegmentVergelijkingMetriek, 'relatief' | 'absoluut'> = {
+  mediaanPrijs: 'relatief',
+  mediaanM2: 'relatief',
+  mediaanLooptijd: 'absoluut',
+  pctTovVraag: 'absoluut',
+  n: 'relatief',
+}
+
+export type SegmentVergelijkingRij = {
+  metriek: SegmentVergelijkingMetriek
+  deltaType: 'relatief' | 'absoluut'
+  /** Waarde van segment A, `null` bij te weinig data (`teWeinigA`). */
+  a: number | null
+  /** Waarde van segment B, `null` bij te weinig data, ontbrekende data of een mislukte/nog niet afgeronde aanroep (`teWeinigB`). */
+  b: number | null
+  /** `berekenDelta(b, a, deltaType)` — B t.o.v. A, `null` zodra A of B te weinig data heeft. */
+  verschil: number | null
+  /** Aantal verkopen per segment — altijd getoond, ook bij te weinig data (docs/roadmap.md item F1: "Altijd n per segment"). */
+  nA: number
+  nB: number
+  teWeinigA: boolean
+  teWeinigB: boolean
+}
+
+/**
+ * Bouwt de vijf vergelijkingsrijen (mediaan verkoopprijs, mediaan € per m²,
+ * mediaan looptijd, t.o.v. vraagprijs, aantal verkopen) voor segment A vs. B.
+ * `b = null` dekt zowel "segment B nog niet geladen" als "de aanroep is
+ * mislukt" — in beide gevallen blijft segment A gewoon werken (`a` en
+ * `teWeinigA` zijn onafhankelijk van `b`). Hergebruikt dezelfde
+ * `berekenDelta` als de periode-delta in de kerncijfer-tegels, en dezelfde
+ * `MIN_N_BETROUWBAAR`-drempel (docs/ontwerpprincipes.md § Data).
+ */
+export function segmentVergelijking(
+  a: MarktanalyseSamenvattingRij,
+  b: MarktanalyseSamenvattingRij | null,
+  minN: number = MIN_N_BETROUWBAAR,
+): SegmentVergelijkingRij[] {
+  const teWeinigA = a.n < minN
+  const teWeinigB = !b || b.n < minN
+  return (Object.keys(SEGMENT_VERGELIJKING_DELTATYPE) as SegmentVergelijkingMetriek[]).map(metriek => {
+    const deltaType = SEGMENT_VERGELIJKING_DELTATYPE[metriek]
+    const waardeA = metriek === 'n' ? a.n : a[metriek]
+    const waardeB = b ? (metriek === 'n' ? b.n : b[metriek]) : null
+    return {
+      metriek,
+      deltaType,
+      a: teWeinigA ? null : waardeA,
+      b: teWeinigB ? null : waardeB,
+      verschil: teWeinigA || teWeinigB ? null : berekenDelta(waardeB, waardeA, deltaType),
+      nA: a.n,
+      nB: b?.n ?? 0,
+      teWeinigA,
+      teWeinigB,
+    }
+  })
 }
 
 // De vroegere `vorigePeriodeFilter()` — een client-side werk-around voor een

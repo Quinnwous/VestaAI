@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel, afstand, datumTijd, euroTegel } from './opmaak'
+import { euro, euroKort, procent, dagen, datum, m2, mooieStap, nlNL, kwartaalLabel, afstand, datumTijd, euroTegel, deltaTekst } from './opmaak'
 
 describe('lib/opmaak', () => {
   it('euro formatteert hele bedragen met duizendtalpunten en geen centen', () => {
@@ -23,6 +23,22 @@ describe('lib/opmaak', () => {
     expect(procent(-1.0)).toBe('-1,0%')
     expect(procent(3.24, false)).toBe('3,2%')
     expect(procent(null)).toBe('—')
+  })
+
+  it('deltaTekst: relatief (zonder eenheid) via procent', () => {
+    expect(deltaTekst(10)).toBe('+10,0%')
+    expect(deltaTekst(-5.5)).toBe('-5,5%')
+  })
+
+  it('deltaTekst: absoluut (met eenheid) met eigen teken/precisie', () => {
+    expect(deltaTekst(-8, 'dgn')).toBe('-8 dgn')
+    expect(deltaTekst(2.2, 'pt')).toBe('+2,2 pt')
+    expect(deltaTekst(0, 'dgn')).toBe('0 dgn')
+  })
+
+  it('deltaTekst: "geen vergelijking" zonder waarde', () => {
+    expect(deltaTekst(null)).toBe('geen vergelijking')
+    expect(deltaTekst(undefined, 'dgn')).toBe('geen vergelijking')
   })
 
   it('dagen rondt af', () => {
