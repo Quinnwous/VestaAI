@@ -1,7 +1,8 @@
 -- Database-hardening (roadmap § 9 "Database-hardening", security-advisor 17 sep 2026).
 --
--- ⚠️ NOG NIET TOEGEPAST — niet additief (trekt rechten in, dropt een trigger),
--- dus akkoord-plichtig (CLAUDE.md § Vangrails). Eerst `scripts/backup-data.mjs`.
+-- ✅ TOEGEPAST op 28 sep 2026 (akkoord Quinn 24 sep, back-up
+-- backups/2026-09-28T18-03-29-368Z/). Geverifieerd: geen trigger meer op
+-- auth.users; anon heeft op geen van de vier functies nog EXECUTE.
 --
 -- Waarom introspectie i.p.v. vaste namen: de documentatie spreekt zichzelf tegen
 -- (schema-baseline.sql: "geen trigger meer op auth.users, geverifieerd 17 sep";

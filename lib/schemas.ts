@@ -167,6 +167,12 @@ export const KantoorInstellingenSchema = z.object({
   // i4housing of een ander echt kantoor treft. Zie scripts/seed-demo-kantoor.mjs
   // en lib/demoFixtureGuard.ts.
   demo: z.boolean().optional(),
+  // Kantoornaam-varianten zoals ze in een Brainbay/Realworks-export
+  // voorkomen ("i4 Housing B.V.", "I4housing Makelaars", …) — voedt
+  // `isEigenKantoor()` (lib/kantoorNormalisatie.ts) zodat de importpijplijn
+  // (item 5.2) `eigen_verkoop` kan afleiden uit de kantoorkolom van de
+  // export, zonder dat de exacte schrijfwijze ertoe doet.
+  kantoor_aliassen: z.array(z.string()).optional(),
 })
 
 export type KantoorInstellingen = z.infer<typeof KantoorInstellingenSchema>

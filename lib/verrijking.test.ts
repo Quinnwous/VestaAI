@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cbsRegioCode, fetchVerrijking, verrijkingNaarPrompt } from './verrijking'
+import { cbsRegioCode, fetchVerrijking, pdokZoek, verrijkingNaarPrompt } from './verrijking'
 
 // De verrijkingslaag mag nooit een gemeentecijfer als buurtfeit presenteren — CBS
 // onderdrukt cijfers voor kleine gebieden, dus per indicator zakken we naar het
@@ -269,5 +269,38 @@ describe('bronstatus WOZ en voorzieningen (24 sep 2026)', () => {
     const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
     expect(v.cbs?.nabijheid.supermarkt_km).toEqual({ waarde: 0.4, niveau: 'buurt' })
     expect(v.cbs?.nabijheid.huisarts_km).toBeNull()
+  })
+})
+
+describe('pdokZoek', () => {
+  it('geeft status "ok" met de treffers bij een geslaagde call', async () => {
+    vi.stubGlobal('fetch', mockFetch(null))
+    const poging = await pdokZoek('postcode:2242GJ and huisnummer:12', 'type:adres')
+    expect(poging.status).toBe('ok')
+    expect(poging.data?.response.docs[0]?.buurtnaam).toBe('Leliegracht e.o.')
+  })
+
+  it('stuurt de query en fq door in de url', async () => {
+    const fetchMock = mockFetch(null)
+    vi.stubGlobal('fetch', fetchMock)
+    await pdokZoek('postcode:2242GJ and huisnummer:12', 'type:adres')
+    const url = fetchMock.mock.calls[0][0] as string
+    const query = new URL(url).searchParams
+    expect(url).toContain('api.pdok.nl')
+    expect(query.get('q')).toBe('postcode:2242GJ and huisnummer:12')
+    expect(query.get('fq')).toBe('type:adres')
+  })
+
+  it('geeft status "mislukt" bij een serverfout, niet "leeg"', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('kapot', { status: 503 })))
+    const poging = await pdokZoek('Dorpsstraat 12 Wassenaar')
+    expect(poging.status).toBe('mislukt')
+  })
+
+  it('geeft status "ok" met een lege docs-lijst als PDOK niets vindt', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ response: { docs: [] } }), { status: 200 })))
+    const poging = await pdokZoek('Onbestaandestraat 1 Nergenshuizen')
+    expect(poging.status).toBe('ok')
+    expect(poging.data?.response.docs).toEqual([])
   })
 })

@@ -80,6 +80,7 @@ function maakPdf(opties: {
   correctie?: { waarde: number; motivatie: string; datum: string } | null
   logoUrl?: string | null
   kaart?: KaartVoorPdf | null
+  contactregel?: string | null
 } = {}) {
   const uitkomst = berekenWaarderingV2(SUBJECT, KANDIDATEN, { peildatum: '2026-09-01' })
   return renderToBuffer(React.createElement(WaardebepalingPdfTemplate, {
@@ -91,6 +92,7 @@ function maakPdf(opties: {
     makelaarNaam: 'Test Makelaar',
     opgesteldOp: '2026-09-18T10:00:00.000Z',
     kaart: opties.kaart,
+    contactregel: opties.contactregel,
   }) as React.ReactElement<ReactPDF.DocumentProps>)
 }
 
@@ -142,6 +144,23 @@ describe('WaardebepalingPdfTemplate', () => {
     // Expliciete regressietest voor het pad "geen coördinaat/timeout/fout" —
     // de route geeft dan null door, niet undefined.
     const pdf = await maakPdf({ kaart: null })
+    expect(paginas(pdf)).toBe(1)
+  })
+
+  // Item H4 — verkopersversie: kantoorcontact in de voettekst.
+  it('rendert mét contactregel (verkopersversie) en blijft één pagina', async () => {
+    const pdf = await maakPdf({ contactregel: '070-1234567 · info@testmakelaardij.nl' })
+    expect(pdf.subarray(0, 5).toString()).toBe('%PDF-')
+    expect(paginas(pdf)).toBe(1)
+  })
+
+  it('blijft zonder contactregel (contactregel: null) identiek aan de oude voettekst', async () => {
+    const pdf = await maakPdf({ contactregel: null })
+    expect(paginas(pdf)).toBe(1)
+  })
+
+  it('rendert de volledige verkopersvariant (kaart + contactregel, geen makelaarscorrectie)', async () => {
+    const pdf = await maakPdf({ kaart: maakKaartFixture(), correctie: null, contactregel: '070-1234567 · i4housing.nl' })
     expect(paginas(pdf)).toBe(1)
   })
 })

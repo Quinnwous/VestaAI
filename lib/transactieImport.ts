@@ -24,7 +24,12 @@ export type TransactieVeld =
   | 'bouwjaar' | 'energielabel' | 'kamers' | 'garage' | 'tuin' | 'buitenruimte'
   | 'eigen_verkoop' | 'verkopend_kantoor'
 
-const ALIASSEN: Record<TransactieVeld, string[]> = {
+// Geëxporteerd (was module-privaat) t.b.v. lib/importProfielen.ts (item 5.2):
+// de bron-profielen leggen per bron extra kolomaliassen bovenop deze
+// basislijst, zonder haar te dupliceren. Gedrag van parseTransactieCsv()
+// hieronder is ongewijzigd — alleen de zichtbaarheid van deze losse
+// bouwstenen is aangepast.
+export const ALIASSEN: Record<TransactieVeld, string[]> = {
   adres: ['adres', 'address', 'straat'],
   postcode: ['postcode', 'zip', 'zipcode'],
   plaats: ['plaats', 'stad', 'city', 'woonplaats'],
@@ -114,7 +119,7 @@ export function parseCsv(tekst: string): string[][] {
   return rijen.filter(r => r.some(v => v.trim() !== ''))
 }
 
-function vindKolom(headers: string[], veld: TransactieVeld): number {
+export function vindKolom(headers: string[], veld: TransactieVeld): number {
   const genormaliseerd = headers.map(h => h.trim().toLowerCase().replace(/[\s-]+/g, '_'))
   for (const alias of ALIASSEN[veld]) {
     const idx = genormaliseerd.indexOf(alias)
@@ -124,7 +129,7 @@ function vindKolom(headers: string[], veld: TransactieVeld): number {
 }
 
 /** Nederlandse en internationale getalnotatie: "1.250.000", "1250000", "1.250,50" → getal. */
-function naarGetal(waarde: string | undefined): number | null {
+export function naarGetal(waarde: string | undefined): number | null {
   if (!waarde) return null
   let schoon = waarde.replace(/[^\d,.-]/g, '')
   if (schoon.includes(',')) {
@@ -145,19 +150,19 @@ function naarGetal(waarde: string | undefined): number | null {
 }
 
 /** Coördinaat (lat/lng) — in tegenstelling tot naarGetal() nooit afronden. */
-function naarCoordinaat(waarde: string | undefined): number | null {
+export function naarCoordinaat(waarde: string | undefined): number | null {
   if (!waarde) return null
   const schoon = waarde.replace(/[^\d.-]/g, '')
   const n = parseFloat(schoon)
   return Number.isFinite(n) ? n : null
 }
 
-function naarBoolean(waarde: string | undefined, standaard: boolean): boolean {
+export function naarBoolean(waarde: string | undefined, standaard: boolean): boolean {
   if (waarde === undefined || waarde.trim() === '') return standaard
   return ['ja', 'true', '1', 'yes', 'y'].includes(waarde.trim().toLowerCase())
 }
 
-function naarDatum(waarde: string | undefined): string | null {
+export function naarDatum(waarde: string | undefined): string | null {
   if (!waarde) return null
   const trimmed = waarde.trim()
   // dd-mm-jjjj of dd/mm/jjjj -> ISO

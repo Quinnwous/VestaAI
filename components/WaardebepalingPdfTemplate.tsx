@@ -33,6 +33,12 @@ interface Props {
   opgesteldOp: string
   /** Optioneel — zie KaartVoorPdf. Ontbreekt hij, dan ziet de pdf er precies uit als vóór item 4.7-uitbreiding. */
   kaart?: KaartVoorPdf | null
+  /**
+   * Kantoorcontact voor de verkopersversie (item H4) — gevuld door
+   * `kantoorContactregel()` in de route. `null`/`undefined`: de voettekst
+   * ziet er precies uit als vóór dit item (geen middenkolom).
+   */
+  contactregel?: string | null
 }
 
 // react-pdf's <Text> ondersteunt binnen <Svg> extra props (fontSize, fill,
@@ -181,16 +187,23 @@ function makeStyles(kleur: string) {
       left: 36,
       right: 36,
       flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'space-between',
       fontSize: 7.5,
       color: '#9CA3AF',
     },
+    // Alleen aanwezig bij een verkopersversie met kantoorcontact (item H4) —
+    // flex: 1 neemt de resterende ruimte tussen "Opgesteld door" en de
+    // paginanummering in, zodat die twee op exact dezelfde plek blijven staan
+    // als zonder contactregel (regressietest: identiek aan de oude layout).
+    footerContact: { flex: 1, textAlign: 'center', paddingHorizontal: 10 },
+    footerContactVragen: { color: kleur, fontFamily: 'Helvetica-Bold' },
     waarschuwingBlok: { marginTop: 8, backgroundColor: '#FFFBEE', borderWidth: 0.5, borderColor: '#F1DFA6', borderRadius: 4, padding: '7 10' },
     waarschuwing: { fontSize: 7.5, color: '#7A5A00', lineHeight: 1.4 },
   })
 }
 
-export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie, kantoor, makelaarNaam, opgesteldOp, kaart }: Props) {
+export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie, kantoor, makelaarNaam, opgesteldOp, kaart, contactregel }: Props) {
   const s = makeStyles(kantoor.kleur)
 
   const kenmerken = [
@@ -344,9 +357,17 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
           Dit is een indicatieve waardebepaling op basis van vergelijkbare verkopen, geen taxatie in de zin van NRVT/NWWI.
         </Text>
 
-        {/* Footer */}
+        {/* Footer — de contactregel (item H4, verkopersversie) staat er alleen
+            bij een gevulde `contactregel`; zonder ziet dit er identiek uit
+            aan vóór dat item. */}
         <View style={s.footer} fixed>
           <Text>Opgesteld door {makelaarNaam} op {datumLang(opgesteldOp)}</Text>
+          {contactregel && (
+            <Text style={s.footerContact}>
+              <Text style={s.footerContactVragen}>Vragen? </Text>
+              {kantoor.naam} · {contactregel}
+            </Text>
+          )}
           <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
         </View>
       </Page>

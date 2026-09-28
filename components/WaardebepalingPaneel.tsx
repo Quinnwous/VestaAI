@@ -468,7 +468,7 @@ export function WaardebepalingPaneel({
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
         <h2 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-.02em', margin: 0, color: colors.text }}>Waardebepaling</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button
             type="button" onClick={herbereken} disabled={herberekenBezig}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: herberekenBezig ? 'default' : 'pointer', opacity: herberekenBezig ? 0.6 : 1 }}
@@ -509,7 +509,7 @@ export function WaardebepalingPaneel({
           <div className="wb-grid">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
               {/* Hero: puntwaarde + band + badges */}
-              <div style={{ borderRadius: radius.cardLg, padding: '22px 22px 24px', background: 'linear-gradient(135deg, var(--merk-licht) 0%, var(--merk-diep) 100%)', color: '#fff', boxShadow: `0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb,26,107,69),.7)` }}>
+              <div style={{ borderRadius: radius.cardLg, padding: '22px 22px 24px', background: 'linear-gradient(135deg, var(--merk-licht) 0%, var(--merk-diep) 100%)', color: '#fff', boxShadow: `0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb),.7)` }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.78)' }}>Indicatieve waarde</div>
                 <div className="wb-hero-val num" style={{ fontSize: 46, fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1, marginTop: 2 }}>
                   {gewogenTween == null ? '—' : formatEuro(gewogenTween)}
