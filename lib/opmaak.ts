@@ -47,6 +47,23 @@ export function procent(waarde: number | null | undefined, teken = true): string
   return voorteken + waarde.toLocaleString('nl-NL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%'
 }
 
+/**
+ * Opgemaakte delta-tekst: `+3,2%` (relatief, via `procent`) of `+2 dgn` /
+ * `+1,0 pt` (absoluut, met een eenheid) — `null` → "geen vergelijking".
+ * Gedeeld door élke plek die een delta toont (kerncijfer-tegels in
+ * `MarktanalyseExplorer.tsx`, de segment-A-vs-B-vergelijking, F1), zodat
+ * teken en precisie overal gelijk zijn i.p.v. los `.toLocaleString()`-werk
+ * per aanroeper.
+ */
+export function deltaTekst(waarde: number | null | undefined, eenheid?: string): string {
+  if (waarde == null || Number.isNaN(waarde)) return 'geen vergelijking'
+  if (eenheid) {
+    const voorteken = waarde > 0 ? '+' : ''
+    return `${voorteken}${waarde.toLocaleString('nl-NL', { maximumFractionDigits: 1 })} ${eenheid}`
+  }
+  return procent(waarde)
+}
+
 /** `42 dgn`. */
 export function dagen(waarde: number | null | undefined): string {
   if (waarde == null || Number.isNaN(waarde)) return '—'

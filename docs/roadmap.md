@@ -17,15 +17,15 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep-d`, autonoom):**
-  **presentatiemodus waardebepaling** (`/object/[id]/presentatie`, knop
-  "Presenteren" in het paneel; leest de opgeslagen waardering, zelfde top-6
-  als de pdf) · **`.env.example` + `npm run env:check`**. Ervoor (PR
-  `feat/sessie-28sep-c`, #37 — merge wacht op Quinn, auto-mode blokkeerde
-  `gh pr merge`): opruimen "nog niet toegepast" + terugvalcode, filter-poets,
-  pdf-subject-pin. Plus (ronde e): **RLS `objecten` kantoorbreed** (besluit
-  Quinn 28 sep) + initplan-fix + 6 FK-indexen, toegepast na back-up;
-  "Wij vs. markt" op 390 px onder elkaar.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep-f`):** **segmentvergelijking
+  A vs. B** op `/marktanalyse` (`components/SegmentVergelijking.tsx`, pure
+  `segmentVergelijking()` in `lib/marktanalyse.ts`, `deltaTekst()` in
+  `lib/opmaak.ts`; B-samenvatting parallel en los af te vangen) ·
+  **presentatiemodus**: logo-terugval op stap 1 zonder foto, gedeelde
+  `kantoorContactregel()`/`logoWeergave()`. Eerder vandaag (PR #37/#38):
+  opruimen "nog niet toegepast", filter-poets, pdf-pin, presentatiemodus,
+  `.env.example` + `env:check`, **RLS `objecten` kantoorbreed** + initplan-fix
+  + FK-indexen (toegepast), "Wij vs. markt" mobiel.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -37,9 +37,14 @@
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  backlog "na de demo" dat zonder Quinn kan — kandidaten: presentatiemodus
-  stap 1 met hoofdfoto en kantoorlogo/contact op de laatste stap · A/B-
-  segmentvergelijking uitbreiden · ontwerp-kit-oogst (`docs/ontwerp/`).
+  1. **G1 Websiteveld in de huisstijl** — spec klaar in
+     `docs/specs/g1-website-huisstijl.md` (schema + branding + admin-formulier,
+     tonen in brochure-/waardebepaling-pdf en presentatiemodus; geen
+     migratie). Agent-opdracht: "Lees de opdracht in <pad> en voer die uit"
+     (zie CLAUDE.md, les classifier-time-out).
+  2. Kandidaten daarna: A/B-segmentvergelijking ook op transacties/
+     concurrentie? · ontwerp-kit-oogst (`docs/ontwerp/`) · presentatiemodus
+     als pdf-achtige "handout" (zelfde stappen, printbaar).
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
   smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op

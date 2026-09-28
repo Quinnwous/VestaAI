@@ -30,15 +30,17 @@ import {
   type FilterPil,
 } from '@/components/ui'
 import { KwartaalberichtModal } from '@/components/KwartaalberichtModal'
+import { SegmentVergelijking, type SegmentVergelijkingWeergaveRij } from '@/components/SegmentVergelijking'
 import { colors } from '@/components/ui/tokens'
 import { useFilterState } from '@/hooks/useFilterState'
 import {
   MarktanalyseFilterSchema, standaardFilterState, filterStateNaarTransactieFilter,
   filterStateNaarEigenFilter, segmentBFilter, filterEigenRijen, wijKwartaalReeks,
-  berekenDelta, richtingVanDelta, PRIJSKLASSEN, PRIJS_BEREIK, OPP_BEREIK, BOUWJAAR_BEREIK,
+  berekenDelta, richtingVanDelta, segmentVergelijking, MIN_N_BETROUWBAAR,
+  PRIJSKLASSEN, PRIJS_BEREIK, OPP_BEREIK, BOUWJAAR_BEREIK,
   PERCEEL_BEREIK, type MarktanalyseFilterState, type ReeksRijV2,
 } from '@/lib/marktanalyse'
-import { euro, euroKort, procent, dagen, datum, m2, kwartaalLabel, nlNL } from '@/lib/opmaak'
+import { euro, euroKort, procent, dagen, datum, m2, kwartaalLabel, nlNL, deltaTekst } from '@/lib/opmaak'
 import { SERIE, SERIE_LABEL, TOOLTIP_STYLE } from '@/lib/grafiekThema'
 import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
 import { typegroepLabel } from '@/lib/schemas'
@@ -48,7 +50,6 @@ import { haalMarktanalyseData, type MarktanalyseData } from '@/app/(app)/marktan
 import { bereikGelijk, verzamelingGelijk } from '@/lib/filterVergelijk'
 
 const ENERGIELABELS = ['A+++', 'A++', 'A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']
-const MIN_N_BETROUWBAAR = 6
 const MIN_N_REEKSPUNT = 3
 
 /** Voegt markt/wij/(segment B)-kwartaalreeksen samen tot één rij-per-kwartaal-dataset voor recharts. */
@@ -254,6 +255,36 @@ export function MarktanalyseExplorer({
   const vorigWaarde = (sleutel: (typeof tegelDefs)[number]['sleutel']): number | null =>
     sleutel === 'n' ? vorig.n : (vorig[sleutel] as number | null)
 
+  // ── Segment A vs. B (F1): vergelijkingsrijen onder de tegels ──
+  // `data.samenvattingB` is `null` zowel als B uit staat als wanneer de
+  // aanroep mislukte — `segmentBFout` maakt dat onderscheid (alleen "mislukt"
+  // toont een foutmelding, segment A blijft in beide gevallen gewoon werken).
+  const bHuidig = data.samenvattingB?.huidig ?? null
+  const segmentBLaden = segmentBActief && laden
+  const segmentBFout = segmentBActief && !laden && data.samenvattingB == null
+  const vergelijking = useMemo(
+    () => segmentVergelijking(nu, bHuidig, MIN_N_BETROUWBAAR),
+    [nu, bHuidig],
+  )
+  const vergelijkingRijen: SegmentVergelijkingWeergaveRij[] = tegelDefs.map(d => {
+    const r = vergelijking.find(x => x.metriek === d.sleutel)!
+    return {
+      key: d.sleutel,
+      label: d.label,
+      aTekst: r.a == null ? '—' : d.fmt(r.a),
+      bTekst: r.b == null ? '—' : d.fmt(r.b),
+      verschil: r.verschil,
+      verschilTekst: deltaTekst(r.verschil, d.eenheid),
+    }
+  })
+  const vergelijkingWaarschuwingA = teWeinigData
+    ? `Segment A heeft te weinig verkopen (n = ${nu.n}) voor een betrouwbare vergelijking.`
+    : undefined
+  const vergelijkingWaarschuwingB =
+    !teWeinigData && bHuidig && bHuidig.n < MIN_N_BETROUWBAAR
+      ? `Segment B heeft te weinig verkopen (n = ${bHuidig.n}) voor een betrouwbare vergelijking — kies een andere plaats of een breder type.`
+      : undefined
+
   // Geen eigen <AppPagina>/eyebrow hier: `app/(app)/marktanalyse/layout.tsx`
   // omhult alle vier Marktinzichten-schermen al met AppPagina + de gedeelde
   // "Marktinzichten"-eyebrow ("Zoeken in de markt") — een tweede eyebrow zou
@@ -305,7 +336,7 @@ export function MarktanalyseExplorer({
                 ariaLabel="Woningtype voor segment B"
               />
               <span style={{ fontSize: 12, color: colors.body, marginLeft: 'auto' }}>
-                Segment B verschijnt als rode reeks in elke grafiek; de kerncijfers blijven van segment A.
+                Segment B verschijnt als tweede reeks in elke grafiek; de vergelijking met segment A staat direct onder de kerncijfers.
               </span>
             </>
           ) : undefined
@@ -454,7 +485,6 @@ export function MarktanalyseExplorer({
               const v = vorigWaarde(d.sleutel)
               const deltaWaarde = vorig.n < MIN_N_BETROUWBAAR ? null : berekenDelta(w, v, d.deltaType)
               const richting = richtingVanDelta(deltaWaarde, d.gunstig)
-              const deltaTekst = deltaWaarde == null ? 'geen vergelijking' : d.eenheid ? `${deltaWaarde > 0 ? '+' : ''}${deltaWaarde.toLocaleString('nl-NL', { maximumFractionDigits: 1 })} ${d.eenheid}` : procent(deltaWaarde)
               const sparkline = reeksVoorSparkline.slice(-8).map(r => (d.sleutel === 'n' ? r.n : (r[d.sleutel] as number | null)))
               return (
                 <StatTile
@@ -464,13 +494,25 @@ export function MarktanalyseExplorer({
                   waarde={teWeinigData || w == null ? undefined : w}
                   opmaak={n => d.fmt(n)}
                   waarschuwing={teWeinigData ? `Te weinig verkopen (${nu.n}) voor een betrouwbaar cijfer — verbreed de filters.` : w == null ? '—' : undefined}
-                  delta={teWeinigData ? undefined : { tekst: deltaTekst, richting }}
+                  delta={teWeinigData ? undefined : { tekst: deltaTekst(deltaWaarde, d.eenheid), richting }}
                   bijschrift={`n = ${nlNL.format(nu.n)} · vs vorige periode`}
                   sparkline={teWeinigData ? undefined : sparkline}
                 />
               )
             })}
           </div>
+
+          {segmentBActief && (
+            <SegmentVergelijking
+              rijen={vergelijkingRijen}
+              nA={nu.n}
+              nB={bHuidig?.n ?? 0}
+              waarschuwingA={vergelijkingWaarschuwingA}
+              waarschuwingB={vergelijkingWaarschuwingB}
+              laden={segmentBLaden}
+              fout={segmentBFout}
+            />
+          )}
 
           <div className="vui-marktanalyse-grafieken" style={{ marginBottom: 12 }}>
             <ChartCard
