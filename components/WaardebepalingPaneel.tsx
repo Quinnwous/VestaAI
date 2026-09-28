@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   berekenWaarderingV2,
@@ -474,6 +475,18 @@ export function WaardebepalingPaneel({
           >
             {herberekenBezig ? 'Herberekenen…' : 'Herbereken'}
           </button>
+          {opgeslagenUitkomst && (
+            <Link
+              href={`/object/${objectId}/presentatie`}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, textDecoration: 'none' }}
+            >
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} width={15} height={15}>
+                <rect x={2} y={3} width={12} height={8} rx={1} />
+                <path d="M6 14h4M8 11v3" />
+              </svg>
+              Presenteren
+            </Link>
+          )}
           {!leegStaat && <WaardebepalingPdfButton objectId={objectId} />}
         </div>
       </div>
