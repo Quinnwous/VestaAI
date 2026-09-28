@@ -6,6 +6,17 @@
 
 ---
 
+### 28 sep 2026 (achtste ronde, autonoom) — presentatiemodus, .env.example, RLS-bevinding
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Presentatiemodus ("keukentafel") | Uit de backlog gehaald (besluit 16 sep: "keukentafel-modus → backlog"). Route `/object/[id]/presentatie`, podium over de hele viewport, stappen woning → waarde → kaart → top-6 → WOZ → toelichting (stappen zonder data vallen weg), ←/→/spatie, Esc/×, Fullscreen API. Leest de opgeslagen `waardering_json` via `migreerWaarderingJson()` — zelfde bron en top-6 als de pdf, niets herberekend. Knop "Presenteren" naast de pdf-knop | Sonnet + Opus |
+| Waarschuwingen voor de verkoper | `verkoperWaarschuwingen()`: alleen "weinig data"/"geen locatie". Index-notities ("index 2023-Q3 niet betrouwbaar…") blijven voor de makelaar in paneel en pdf. Kop "Toelichting van de makelaar" i.p.v. "Van jouw makelaar" (de verkoper kijkt mee) | Opus |
+| `.env.example` + `env:check` | Drie groepen (verplicht/optioneel/scripts), zonder waarden; `scripts/check-env.mjs` leest de groepen uit `.env.example` (één bron) en print alleen namen. `!.env.example` in `.gitignore`. Bevestigt: `PLATFORM_ADMIN_EMAILS` ontbreekt lokaal | Sonnet |
+| `content_keuzes` | Was al opgeruimd op 27 sep; alleen het optionele schemaveld + backcompat-test staan nog, bewust | Sonnet |
+| RLS `objecten` vs. één rol per kantoor | Gevonden via de security-advisor: UPDATE/DELETE alleen eigenaar of `is_kantoor_admin()`; `setObjectFase`/`setObjectStatus`/`deleteObject` schrijven via de sessie-client → bij een collega stil 0 rijen. Code-fix via service-client werd door auto-mode geblokkeerd ("security weaken") → **beslissing Quinn** (roadmap Stand van zaken). Aanbeveling: één migratie met kantoorbrede policies + initplan-fix (18 policies) + 6 FK-indexen | Opus |
+| `dod:screens` | Neemt nu ook `/object/[id]/presentatie` mee (dossier van het DoD-kantoor mét opgeslagen waardering) | Opus |
+
 ### 28 sep 2026 (zevende ronde, autonoom) — opruimen "nog niet toegepast", filter-poets, pdf-pin
 
 | Onderwerp | Besluit | Door |
@@ -526,6 +537,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-d`: presentatiemodus waardebepaling,
+  `.env.example` + `npm run env:check`.
 - 28 sep 2026 — PR `feat/sessie-28sep-c`: verouderde "nog niet toegepast"-commentaren
   en terugvalcode opgeruimd, filter-poets (Wis op Plaats, merk-accent-fallbacks,
   `bereikGelijk`), pdf-subject-pin zichtbaar bij donkere merkkleur.

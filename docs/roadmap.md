@@ -17,14 +17,13 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste ronde (28 sep, PR `feat/sessie-28sep-c`, autonoom):** verouderde
-  "nog niet toegepast"-commentaren én de terugvalcode die alleen daarvoor
-  bestond opgeruimd (o.a. `zoekTransactiesTerugval`, 42703-takken slug/
-  verrijking; alleen `transacties.makelaar_id` is écht nog niet toegepast) ·
-  filter-poets (Wis op Plaats gelijk op drie verkenners, `--merk-accent`-
-  fallbacks weg, `bereikGelijk` centraal, foutteksten zonder jargon) ·
-  pdf-subject-pin met witte halo en lichtere vulling bij een donkere
-  merkkleur. Eerder op 28 sep: ⌘K-zoeken, buurtgrenzen, pdf-kaart.
+- **Laatste ronde (28 sep, PR `feat/sessie-28sep-d`, autonoom):**
+  **presentatiemodus waardebepaling** (`/object/[id]/presentatie`, knop
+  "Presenteren" in het paneel; leest de opgeslagen waardering, zelfde top-6
+  als de pdf) · **`.env.example` + `npm run env:check`**. Ervoor (PR
+  `feat/sessie-28sep-c`, #37 — merge wacht op Quinn, auto-mode blokkeerde
+  `gh pr merge`): opruimen "nog niet toegepast" + terugvalcode, filter-poets,
+  pdf-subject-pin.
 - **Fase:** 6, 7, 9, 10 en 13 af (± 80 % van de roadmap naar sessies). Open: 8.5
   (staging-modelcheck, betaald), 12.1 (team-accounts, wacht op Quinn), 12.5 rest
   (demo-dossiers kiezen, freeze, repetitie op i4housing). Geblokkeerd: fase 5
@@ -36,17 +35,9 @@
   demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Volgende ronde (werkwijze: meteen starten, agents, nul overlap):**
-  backlog "na de demo" dat zonder Quinn kan:
-  1. **Presentatiemodus waardebepaling ("keukentafel")** — scherm op volledige
-     grootte om de waardering aan de verkoper te laten zien: route
-     `app/(app)/object/[id]/presentatie`, leest de opgeslagen `waardering_json`
-     (net als de pdf: niets herberekenen), stappen met pijltjestoetsen
-     (woning → waarde + bandbreedte → referenties op de kaart → top-6 →
-     WOZ → makelaarscorrectie + contact), Esc terug, Fullscreen API. Knop
-     "Presenteren" in `WaardebepalingPaneel`. Ontwerpkeuze door Claude
-     (besluit 16 sep: "keukentafel-modus → backlog").
-  2. **`.env.example` + `npm run env:check`** (alleen sleutelnamen, nooit
-     waarden) + het restant `content_keuzes` in `lib/schemas.ts` opruimen.
+  1. **Concurrentie "Wij vs. markt" op 390 px** — labels ("54 dgn") overlappen
+     de stippen in de drie mini-grafieken (`ConcurrentieExplorer.tsx`).
+  2. **RLS-migratie `objecten`** — pas na besluit Quinn (zie hieronder).
   Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie, hardening-migratie,
   smoke-generatietest met `E2E_GENERATE=1`, Sentry (account), Next 15-upgrade.
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
