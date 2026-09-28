@@ -25,7 +25,7 @@ export type MarktanalyseData = {
   reeksMarkt: MarktanalyseReeksRij[]
   reeksB: MarktanalyseReeksRij[] | null
   samenvatting: MarktanalyseSamenvatting
-  /** `null` = de verdeling-RPC is (nog) niet beschikbaar — zie het foutmeldingblok hieronder. */
+  /** `null` = de verdeling-RPC faalde onverwacht — zie het foutmeldingblok hieronder. */
   verdeling: PrijsklasseVerdelingRij[] | null
 }
 
@@ -48,11 +48,11 @@ export async function haalMarktanalyseData(
   const [reeksMarkt, samenvatting, verdeling, reeksB] = await Promise.all([
     marktanalyseReeks(supabase, filtersA),
     marktanalyseSamenvatting(supabase, filtersA),
-    // `marktanalyse_verdeling_prijsklasse` staat klaar in
-    // supabase/migrations/20260923_marktanalyse_verdeling_en_plaatsen.sql maar
-    // is nog niet toegepast (zie dat bestand) — tot dat gebeurt geeft de RPC
-    // een "function does not exist"-fout; de UI toont dan een eigen foutstaat
-    // voor dat blok i.p.v. de hele pagina te laten crashen.
+    // `marktanalyse_verdeling_prijsklasse` (migratie
+    // 20260923_marktanalyse_verdeling_en_plaatsen.sql) is live sinds 23 sep
+    // 2026. De `.catch()` is verdediging tegen een eventuele toekomstige
+    // RPC-storing: de UI toont dan een eigen foutstaat voor dat blok i.p.v.
+    // de hele pagina te laten crashen.
     marktanalyseVerdelingPrijsklasse(supabase, filtersVerdeling).catch(() => null),
     filtersB ? marktanalyseReeks(supabase, filtersB) : Promise.resolve(null),
   ])

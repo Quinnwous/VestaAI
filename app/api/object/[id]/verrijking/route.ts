@@ -26,10 +26,8 @@ export const maxDuration = 30
  * 2. De "Ververs"-knop in `components/BuurtDataTab.tsx`, voor bestaande
  *    dossiers zonder (of met verouderde) buurtdata.
  *
- * ⚠️ Werkt alleen na de migratie `20260923_object_verrijking.sql` (kolom
- * `objecten.verrijking_json`). Zolang die niet is toegepast faalt de update
- * met Postgres-foutcode 42703 (undefined_column) — expliciet afgevangen
- * hieronder zodat dit duidelijk meldt i.p.v. een generieke 500 te geven.
+ * Kolom `objecten.verrijking_json` (migratie `20260923_object_verrijking.sql`)
+ * is live sinds 23 sep 2026.
  */
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createServerSupabaseClient()
@@ -103,19 +101,6 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       .eq('kantoor_id', makelaar.kantoor_id)
 
     if (error) {
-      // Postgres zelf geeft 42703 (undefined_column) terug; PostgREST/Supabase-js
-      // vertaalt een onbekende kolom bij een update vaker naar PGRST204
-      // ("Could not find the '…' column … in the schema cache") — beide zijn
-      // hier hetzelfde signaal: de migratie is nog niet toegepast.
-      if (error.code === '42703' || error.code === 'PGRST204') {
-        return NextResponse.json(
-          {
-            error: 'Buurtdata kon niet opgeslagen worden: de migratie voor objecten.verrijking_json is nog niet toegepast.',
-            migratieVereist: true,
-          },
-          { status: 503 },
-        )
-      }
       const ref = meldFout('object/[id]/verrijking:opslaan', error, { objectId: params.id })
       return NextResponse.json({ error: error.message, ref }, { status: 500 })
     }

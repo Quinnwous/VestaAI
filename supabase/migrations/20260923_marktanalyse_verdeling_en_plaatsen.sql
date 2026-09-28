@@ -1,10 +1,9 @@
 -- Item 6.1 (Marktanalyse-explorer v2, docs/roadmap.md § 5 Fase 6) — twee
 -- additieve RPC's naast de bestaande 20260917_rpc_transacties.sql, zelfde
 -- patroon (`transacties_gefilterd`, `language sql`, `stable`,
--- `security invoker`, `set search_path = public`). NIET toegepast door de
--- bouwende agent — vereist Quinns akkoord/toepassing door de hoofdsessie
--- (CLAUDE.md § Vangrails productiedatabase: additieve migraties mogen
--- tussendoor, maar deze wordt hier bewust alleen aangeleverd).
+-- `security invoker`, `set search_path = public`).
+--
+-- ✅ TOEGEPAST op productie (geverifieerd 28 sep 2026: beide functies bestaan).
 --
 -- 1. marktanalyse_verdeling_prijsklasse: telling per prijsklasse (totaal +
 --    eigen verkopen) voor de "verdeling naar prijsklasse"-staven. De zes
