@@ -51,7 +51,7 @@ import { fileURLToPath } from 'node:url'
 // file"): lees het bestand zelf in en geef de buffer aan `XLSX.read()`.
 import * as XLSX from 'xlsx'
 import { parseCsv } from '../lib/transactieImport.ts'
-import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt } from '../lib/importPijplijn.ts'
+import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, maakUpsertBatches } from '../lib/importPijplijn.ts'
 import { PROFIELEN } from '../lib/importProfielen.ts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -247,10 +247,12 @@ async function main() {
 
   try {
     let geschreven = 0
-    for (let i = 0; i < rijen.length; i += BATCH) {
-      const batch = rijen.slice(i, i + BATCH).map(r => ({ ...r, kantoor_id: KANTOOR_ID, import_id: importId }))
+    // Per kolomset (maakUpsertBatches): lege geo/wijk/buurt overschrijven een
+    // eerder gegeocodeerde waarde niet bij een herimport.
+    const batches = maakUpsertBatches(rijen.map(r => ({ ...r, kantoor_id: KANTOOR_ID, import_id: importId })), BATCH)
+    for (const [n, batch] of batches.entries()) {
       const { error } = await service.from('transacties').upsert(batch, { onConflict: 'kantoor_id,adres_sleutel,verkoopdatum' })
-      if (error) throw new Error(`batch ${Math.floor(i / BATCH) + 1}: ${error.message}`)
+      if (error) throw new Error(`batch ${n + 1}: ${error.message}`)
       geschreven += batch.length
       log(`   … ${geschreven}/${rijen.length} weggeschreven`)
     }

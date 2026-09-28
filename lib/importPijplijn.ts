@@ -321,3 +321,40 @@ export function telNieuwEnBijgewerkt(
   }
   return { nieuw: nieuweRijen.length - bijgewerkt, bijgewerkt }
 }
+
+// ── Upsert-batches: aanvulbare velden niet wissen ───────────────────────────
+
+/**
+ * Kolommen die ná de import nog aangevuld worden (geocodering: `geo`,
+ * `geocode_status`, `wijk`, `buurt`). Heeft een importrij hier geen waarde
+ * voor, dan mag de upsert een eerder aangevulde waarde niet met null
+ * overschrijven — anders wist elke periodieke herimport zonder coördinaten
+ * alle gegeocodeerde locaties.
+ */
+export const AANVULBARE_KOLOMMEN = ['geo', 'geocode_status', 'wijk', 'buurt'] as const
+
+/**
+ * Deelt rijen op in upsert-batches waarin elke rij precies dezelfde kolommen
+ * heeft. Lege aanvulbare kolommen worden weggelaten, en per kolomset apart
+ * geüpsert: supabase-js vult een ontbrekende sleutel binnen één batch
+ * anders aan met null (en PostgREST werkt bij een conflict alleen de
+ * meegestuurde kolommen bij).
+ */
+export function maakUpsertBatches<T extends Record<string, unknown>>(rijen: T[], batchGrootte = 500): Record<string, unknown>[][] {
+  const perSet = new Map<string, Record<string, unknown>[]>()
+  for (const rij of rijen) {
+    const schoon: Record<string, unknown> = { ...rij }
+    for (const kolom of AANVULBARE_KOLOMMEN) {
+      if (schoon[kolom] === null || schoon[kolom] === undefined) delete schoon[kolom]
+    }
+    const sleutel = Object.keys(schoon).sort().join(',')
+    const groep = perSet.get(sleutel)
+    if (groep) groep.push(schoon)
+    else perSet.set(sleutel, [schoon])
+  }
+  const batches: Record<string, unknown>[][] = []
+  for (const groep of Array.from(perSet.values())) {
+    for (let i = 0; i < groep.length; i += batchGrootte) batches.push(groep.slice(i, i + batchGrootte))
+  }
+  return batches
+}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, type GenormaliseerdeRij, type BestaandeTransactieRij } from './importPijplijn'
+import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, maakUpsertBatches, type GenormaliseerdeRij, type BestaandeTransactieRij } from './importPijplijn'
 import { MAX_SNAPSHOT_RIJEN } from './importSnapshot'
 import { PROFIELEN } from './importProfielen'
 
@@ -249,5 +249,29 @@ describe('telNieuwEnBijgewerkt', () => {
   it('telt een mix correct', () => {
     const bestaand = { id: 'x', adres_sleutel: '2242ab|1|', verkoopdatum: '2026-03-15', import_id: null }
     expect(telNieuwEnBijgewerkt([bestaand], [basisRij, nieuweRij2])).toEqual({ nieuw: 1, bijgewerkt: 1 })
+  })
+})
+
+describe('maakUpsertBatches', () => {
+  it('laat lege aanvulbare kolommen weg en groepeert per kolomset', () => {
+    const batches = maakUpsertBatches([
+      { adres_sleutel: 'a', geo: 'POINT(4 52)', geocode_status: 'exact', wijk: 'W', buurt: null },
+      { adres_sleutel: 'b', geo: null, geocode_status: null, wijk: null, buurt: null },
+      { adres_sleutel: 'c', geo: null, geocode_status: null, wijk: null, buurt: null },
+    ])
+    expect(batches).toHaveLength(2)
+    const zonderGeo = batches.find(b => b.length === 2)!
+    for (const rij of zonderGeo) {
+      expect(rij).not.toHaveProperty('geo')
+      expect(rij).not.toHaveProperty('geocode_status')
+      expect(rij).not.toHaveProperty('wijk')
+    }
+    const metGeo = batches.find(b => b.length === 1)!
+    expect(metGeo[0]).toEqual({ adres_sleutel: 'a', geo: 'POINT(4 52)', geocode_status: 'exact', wijk: 'W' })
+  })
+
+  it('knipt een grote groep in batches van de gevraagde grootte', () => {
+    const rijen = Array.from({ length: 5 }, (_, i) => ({ adres_sleutel: String(i), geo: null }))
+    expect(maakUpsertBatches(rijen, 2).map(b => b.length)).toEqual([2, 2, 1])
   })
 })

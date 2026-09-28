@@ -6,7 +6,7 @@ import { isPlatformAdmin } from '@/lib/admin'
 import { parseCsv, vindKolom, ALIASSEN, type TransactieVeld } from '@/lib/transactieImport'
 import { PROFIELEN } from '@/lib/importProfielen'
 import {
-  voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt,
+  voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, maakUpsertBatches,
   type GenormaliseerdeRij, type ImportRapport, type BestaandeTransactieRij,
 } from '@/lib/importPijplijn'
 import {
@@ -195,20 +195,21 @@ export async function bevestigTransactieImport(
   }
   const importId = importRow.id as string
 
-  // 3. Upsert in batches, elke rij krijgt dit import_id.
-  const BATCH = 500
+  // 3. Upsert in batches, elke rij krijgt dit import_id. Per kolomset (zie
+  // maakUpsertBatches): lege geo/wijk/buurt overschrijven een eerder
+  // gegeocodeerde waarde niet.
+  const batches = maakUpsertBatches(rijen.map(r => ({ ...r, kantoor_id: kantoorId, import_id: importId })))
   let ingevoegd = 0
 
-  for (let i = 0; i < rijen.length; i += BATCH) {
-    const batch = rijen.slice(i, i + BATCH).map(r => ({ ...r, kantoor_id: kantoorId, import_id: importId }))
-
+  for (let n = 0; n < batches.length; n++) {
+    const batch = batches[n]
     const { error, count } = await service
       .from('transacties')
       .upsert(batch, { onConflict: 'kantoor_id,adres_sleutel,verkoopdatum', count: 'exact' })
 
     if (error) {
       await service.from('imports').update({ status: 'mislukt', klaar_op: new Date().toISOString() }).eq('id', importId)
-      return { ok: false, error: `Fout bij batch ${i / BATCH + 1}: ${error.message}` }
+      return { ok: false, error: `Fout bij batch ${n + 1}: ${error.message}` }
     }
     ingevoegd += count ?? batch.length
   }
