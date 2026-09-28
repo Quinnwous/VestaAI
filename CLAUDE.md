@@ -284,7 +284,7 @@ VestaAI/
 - Zod-schemas en TypeScript-types in `lib/schemas.ts` — importeer die in client components (niet `lib/claude.ts`, want die bundelt de Anthropic SDK).
 - Rekenlogica (waardering, marktanalyse, concurrentie, CSV-import, geo-afstand) staat als pure functies in `lib/*.ts`, los van React — makkelijk te testen, zie de bijbehorende `*.test.ts`-bestanden.
 - Statistische claims (waardering, kenmerk-effecten) altijd met het aantal onderliggende referenties tonen, en bij te weinig data een expliciete waarschuwing i.p.v. een schijnzeker getal — zie `lib/waardering.ts`.
-- `.env.local` nooit committen; er is geen `.env.example` (ontbreekt — zie roadmap als dit opvalt).
+- `.env.local` nooit committen. `.env.example` is de lijst van alle sleutels (groepen verplicht/optioneel/scripts, zonder waarden) en de enige bron voor `npm run env:check` (meldt alleen namen). Nieuwe `process.env`-sleutel → ook in `.env.example`.
 - **UI/design-system** (Claude Design-redesign, juli 2026): herbruikbare primitives + tokens in `components/ui/` (kleuren/typografie in `tokens.ts`; Tailwind `forest`-scale + `font-serif`). Signatuur: Newsreader serif-koppen met cursief accentwoord + eyebrow-labels (`PageHeader`/`SerifTitle`/`Eyebrow`). `tokens.ts` blijft VestaAI's eigen groene basisstijl (landing, auth, admin) — de merkkleuren van een ingelogd kantoor lopen via `--merk*`, niet via `tokens.ts`. Hover/focus die inline-styles moeten overrulen: `.vui-*`-classes in `globals.css` (met `!important`). ⚠️ De Tailwind `blue`-scale is projectbreed geremapt naar groen (`tailwind.config.ts`) — **niet verwijderen**; landing/auth/admin leunen erop.
 
 ## Commands
@@ -292,6 +292,7 @@ VestaAI/
 - `npm run dev` — start lokale server
 - `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild en tsconfig's `jsx: preserve`.
 - `npm run typecheck` — TypeScript check
+- `npm run env:check` — ontbrekende omgevingsvariabelen (leest `.env.example` + `.env.local`, print nooit waarden)
 - `npm run build` — productie-build
 - `npm run e2e` — Playwright-suite in `e2e/` (zie `e2e/README.md`): kantoorlogin, dossier < 5 s, waardering + pdf, kaart zonder CSP-fout, admin, RLS-isolatie tussen kantoren. Content-tests alleen met `E2E_GENERATE=1` (kost API-geld). Maakt en verwijdert één testdossier, uitsluitend in het demo-kantoor.
 - `npm run demo:repetitie` — generale repetitie van `docs/demoscript.md`: loopt de zes scènes af met Playwright (demo-kantoor, 1920×1080), screenshots naar `screenshots/repetitie/`, exit 1 bij `pageerror`/lege staat/ontbrekend knoplabel. Alleen lezend: klikt niets aan dat schrijft of geld kost. Zelfde inlog en `.env.local`-eisen als `dod:screens` (hieronder).
