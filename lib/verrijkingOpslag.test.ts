@@ -141,7 +141,7 @@ describe('verwerkOpgeslagenVerrijking', () => {
     expect(resultaat?.marktEigen).toBeUndefined()
   })
 
-  it('geeft null als de kolom nog niet bestaat (undefined_column)', () => {
+  it('geeft null bij een querfout (bv. undefined_column of een RLS-blokkade)', () => {
     const resultaat = verwerkOpgeslagenVerrijking({
       data: null,
       error: { code: '42703', message: 'column objecten.verrijking_json does not exist' },

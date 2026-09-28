@@ -1,15 +1,15 @@
 /**
  * Kantoorbranding ophalen op basis van een URL-slug, vóór er een sessie
- * bestaat (`/login/[slug]`, item 9.1). Gebruikt de RPC `kantoor_branding_publiek`
- * (`security definer`, zie supabase/migrations/20260923_kantoren_slug.sql) die
+ * bestaat (`/login/[slug]`, item 9.1, migratie
+ * `supabase/migrations/20260923_kantoren_slug.sql`, live sinds 23 sep 2026).
+ * Gebruikt de RPC `kantoor_branding_publiek` (`security definer`) die
  * uitsluitend acht publieke merkvelden teruggeeft — nooit kantoor-id, e-mail,
  * instellingen_json of de content-trainingsvelden uit huisstijl_json
  * (voorbeelden/stijlprofiel/geleerde_regels/brochure_stijl).
  *
- * Graceful in twee situaties die allebei op `null` uitkomen zonder te
- * crashen: een onbekende/foutieve slug, én de kolom/RPC die nog niet bestaat
- * omdat de migratie nog niet is toegepast (de hoofdsessie doet dat apart,
- * zie roadmap 9.1) — de aanroeper valt dan terug op de generieke /login.
+ * Graceful bij een onbekende/foutieve slug of een onverwachte RPC-fout: komt
+ * op `null` uit zonder te crashen, de aanroeper valt dan terug op de
+ * generieke /login.
  */
 import { createServerSupabaseClient, isSupabaseConfigured } from './supabase'
 import { bouwBranding, type Branding } from './branding'
@@ -53,8 +53,7 @@ export async function haalKantoorBrandingOpVoorSlug(ruweSlug: string): Promise<B
       },
     })
   } catch {
-    // Kolom/RPC bestaat nog niet (migratie nog niet toegepast) of een andere
-    // onverwachte fout — nooit de inlogpagina laten crashen op branding.
+    // Onverwachte fout — nooit de inlogpagina laten crashen op branding.
     return null
   }
 }
