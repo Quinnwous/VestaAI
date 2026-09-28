@@ -181,7 +181,7 @@ export function ConcurrentieExplorer({
       </div>
 
       <FilterBar pillenRij={pillen.length > 0 ? <FilterPills pillen={pillen} onWisAlles={() => zetFilterVolledig(standaard)} /> : undefined}>
-        <FilterDropdown label="Plaats" samenvatting={plaatsSamenvatting} onWis={() => zetFilterDeel({ plaatsen: standaard.plaatsen, wijken: [] })}>
+        <FilterDropdown label="Plaats" samenvatting={plaatsSamenvatting} onWis={() => zetFilterDeel({ plaatsen: [], wijken: [] })}>
           <PlaatsWijkKiezer plaatsen={plaatsen} filter={filter} zetFilterDeel={zetFilterDeel} />
         </FilterDropdown>
 

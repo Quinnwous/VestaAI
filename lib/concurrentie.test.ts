@@ -284,6 +284,12 @@ describe('concurrentieFilterNaarTransactieFilter', () => {
     expect(filter.datum_van).toBeUndefined()
     expect(filter.datum_tot).toBeUndefined()
   })
+
+  it('laat plaatsen weg (= alle plaatsen) bij een lege plaatsenlijst, ook als de standaard het werkgebied is (item filter-poets: "Wis" op Plaats trekt leeg gelijk aan alle plaatsen, net als marktanalyse/transacties)', () => {
+    const f = { ...standaardConcurrentieFilter(['Wassenaar']), plaatsen: [] }
+    const filter = concurrentieFilterNaarTransactieFilter(f, { datumTot: null })
+    expect(filter.plaatsen).toBeUndefined()
+  })
 })
 
 describe('concurrentieFilterZonderPeriode', () => {
