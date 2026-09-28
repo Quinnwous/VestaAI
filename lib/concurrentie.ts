@@ -122,9 +122,11 @@ export function concurrentProfielen(rijen: TransactieRow[]): ConcurrentProfiel[]
 // v2 (item 6.3, docs/roadmap.md § 5 Fase 6 — port van
 // docs/ontwerp/concurrentie.html): marktaandeel per jaar, "wie wint waar"
 // (plaats × typegroep), "wij vs. markt" en het concurrentprofiel.
-// Referentie-implementatie voor de RPC's in de nieuwe (nog niet toegepaste)
-// migratie `supabase/migrations/<ts>_rpc_concurrentie_v2.sql` — zie
-// `lib/transactiesQuery.rpc.test.ts` voor de live vergelijkingstests.
+// Referentie-implementatie voor de RPC's in
+// `supabase/migrations/20260924_rpc_concurrentie_v2.sql` — inmiddels
+// toegepast op productie (geverifieerd 28 sep 2026, functiedefinities exact
+// gelijk aan de migratie). Zie `lib/transactiesQuery.rpc.test.ts` voor de
+// live vergelijkingstests.
 //
 // ⚠️ Werkt op `verkopend_kantoor_norm` (kleine letters, gedeeld met de
 // import-normalisatie), niet op het rauwe `verkopend_kantoor` dat v1

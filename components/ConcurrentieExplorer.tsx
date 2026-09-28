@@ -10,10 +10,12 @@
  * component); elke volgende filterwijziging ververst via de server actions
  * in `actions.ts`.
  *
- * ⚠️ De RPC's (migratie `20260924_rpc_concurrentie_v2.sql`) zijn nog niet
- * toegepast — elk blok (tegels/wij-vs-markt/trend/matrix/ranglijst/drawer)
- * toont dan een nette "nog niet beschikbaar"-melding i.p.v. te crashen (zie
- * `Onbeschikbaar` hieronder).
+ * De RPC's (migratie `20260924_rpc_concurrentie_v2.sql`) zijn inmiddels
+ * toegepast op productie (geverifieerd 28 sep 2026, `pg_get_functiondef`
+ * exact gelijk aan de migratie) — de `.catch(() => null)` per blok in
+ * `actions.ts` blijft als verdediging tegen een toekomstige RPC-storing
+ * staan; elk blok toont dan een nette "nog niet beschikbaar"-melding i.p.v.
+ * te crashen (zie `Onbeschikbaar` hieronder).
  */
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'

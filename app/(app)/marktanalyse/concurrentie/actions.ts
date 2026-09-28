@@ -3,16 +3,16 @@
 /**
  * Server actions voor de concurrentie-explorer v2 (item 6.3): ververst de
  * regionale aggregaties (RPC's, migratie `20260924_rpc_concurrentie_v2.sql`
- * — nog niet toegepast) op elke filterwijziging, zonder de pagina te
- * herladen. Dit is de enige plek buiten `lib/transactiesQuery.ts` die deze
- * RPC-wrappers aanroept — de eigenlijke `.rpc(...)`-aanroepen blijven daar
- * (guard-test).
+ * — toegepast op productie, geverifieerd 28 sep 2026) op elke
+ * filterwijziging, zonder de pagina te herladen. Dit is de enige plek buiten
+ * `lib/transactiesQuery.ts` die deze RPC-wrappers aanroept — de eigenlijke
+ * `.rpc(...)`-aanroepen blijven daar (guard-test).
  *
- * Elke RPC afzonderlijk met `.catch(() => null)`: zolang de migratie niet is
- * toegepast geeft de database "function does not exist" terug. `null` per
- * blok laat de rest van de pagina gewoon werken — de explorer toont per blok
- * een nette "nog niet beschikbaar"-melding i.p.v. de hele pagina te laten
- * crashen (DoD-eis, zie roadmap.md § 4).
+ * Elke RPC afzonderlijk met `.catch(() => null)`: verdediging tegen een
+ * eventuele toekomstige RPC-storing ("function does not exist" of anders).
+ * `null` per blok laat de rest van de pagina gewoon werken — de explorer
+ * toont per blok een nette "nog niet beschikbaar"-melding i.p.v. de hele
+ * pagina te laten crashen (DoD-eis, zie roadmap.md § 4).
  */
 
 import { createServerSupabaseClient } from '@/lib/supabase'
@@ -27,7 +27,7 @@ import type { RanglijstRij, WijVsMarkt, AandeelJaarRij, MatrixCel, ConcurrentPro
 import type { TransactieFilter } from '@/lib/schemas'
 
 export type ConcurrentieData = {
-  /** `null` = RPC (nog) niet beschikbaar. */
+  /** `null` = RPC-aanroep mislukt (verdediging, zie bestandscommentaar). */
   ranglijst: RanglijstRij[] | null
   wijVsMarkt: WijVsMarkt | null
   /** Alle kantoren, alle jaren — de explorer kiest zelf "wij" + top 3 concurrenten voor de trendgrafiek. */
@@ -56,7 +56,7 @@ export async function haalConcurrentieData(
   return { ranglijst, wijVsMarkt: wijVsMarktData, aandeelJaar, matrix }
 }
 
-/** Concurrentprofiel voor de drawer, op aanvraag (klik op een kantoor) — `null` bij een nog niet toegepaste migratie. */
+/** Concurrentprofiel voor de drawer, op aanvraag (klik op een kantoor) — `null` bij een mislukte RPC-aanroep. */
 export async function haalConcurrentProfiel(filters: TransactieFilter, kantoor: string): Promise<ConcurrentProfielV2 | null> {
   const supabase = createServerSupabaseClient()
   return concurrentieProfiel(supabase, filters, kantoor).catch(() => null)
