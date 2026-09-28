@@ -65,7 +65,7 @@ export function WaardebepalingPdfButton({ objectId }: Props) {
         disabled={bezigMet}
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px',
-          fontWeight: 700, fontSize: 13, borderRadius: `${radius.md} 0 0 ${radius.md}`, border: 'none',
+          fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', borderRadius: `${radius.md} 0 0 ${radius.md}`, border: 'none',
           background: 'var(--merk)', color: 'var(--merk-op)',
           cursor: bezigMet ? 'default' : 'pointer', opacity: bezigMet ? 0.7 : 1,
         }}
