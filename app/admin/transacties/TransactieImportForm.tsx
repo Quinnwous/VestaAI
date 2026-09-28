@@ -33,7 +33,7 @@ export function TransactieImportForm({ kantoren }: { kantoren: KantoorOptie[] })
   const bevestig = async () => {
     if (!kantoorId || !csvTekst) return
     setBezig(true)
-    const res = await bevestigTransactieImport(kantoorId, csvTekst)
+    const res = await bevestigTransactieImport(kantoorId, csvTekst, bestandsnaam)
     setBezig(false)
     if (res.ok) {
       setResultaat({ ok: true, bericht: `${res.aantal} transacties geïmporteerd/bijgewerkt.` })
