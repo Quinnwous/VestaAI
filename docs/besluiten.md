@@ -6,6 +6,17 @@
 
 ---
 
+### 28 sep 2026 (achtste ronde, autonoom) — presentatiemodus, .env.example, RLS-bevinding
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Presentatiemodus ("keukentafel") | Uit de backlog gehaald (besluit 16 sep: "keukentafel-modus → backlog"). Route `/object/[id]/presentatie`, podium over de hele viewport, stappen woning → waarde → kaart → top-6 → WOZ → toelichting (stappen zonder data vallen weg), ←/→/spatie, Esc/×, Fullscreen API. Leest de opgeslagen `waardering_json` via `migreerWaarderingJson()` — zelfde bron en top-6 als de pdf, niets herberekend. Knop "Presenteren" naast de pdf-knop | Sonnet + Opus |
+| Waarschuwingen voor de verkoper | `verkoperWaarschuwingen()`: alleen "weinig data"/"geen locatie". Index-notities ("index 2023-Q3 niet betrouwbaar…") blijven voor de makelaar in paneel en pdf. Kop "Toelichting van de makelaar" i.p.v. "Van jouw makelaar" (de verkoper kijkt mee) | Opus |
+| `.env.example` + `env:check` | Drie groepen (verplicht/optioneel/scripts), zonder waarden; `scripts/check-env.mjs` leest de groepen uit `.env.example` (één bron) en print alleen namen. `!.env.example` in `.gitignore`. Bevestigt: `PLATFORM_ADMIN_EMAILS` ontbreekt lokaal | Sonnet |
+| `content_keuzes` | Was al opgeruimd op 27 sep; alleen het optionele schemaveld + backcompat-test staan nog, bewust | Sonnet |
+| RLS `objecten` vs. één rol per kantoor | Gevonden via de security-advisor: UPDATE/DELETE alleen eigenaar of `is_kantoor_admin()`; de dossieracties schrijven via de sessie-client → bij een collega stil 0 rijen. **Quinn: "geen probleem als ze elkaars dossiers kunnen aanpassen"** → migratie `20260928100000_rls_kantoorbreed_en_initplan.sql` (na back-up toegepast): UPDATE/DELETE kantoorbreed, admin-policies weg, `(select auth.uid())`/`(select my_kantoor_id())` in alle policies van objecten/makelaars/transacties/imports/object_documenten/gebruik_events, 6 FK-indexen. Isolatie geverifieerd (demo-makelaar ziet 1 kantoor). Acties melden 0 rijen nu als fout | Quinn + Opus |
+| `dod:screens` | Neemt nu ook `/object/[id]/presentatie` mee (dossier van het DoD-kantoor mét opgeslagen waardering) | Opus |
+
 ### 28 sep 2026 (zevende ronde, autonoom) — opruimen "nog niet toegepast", filter-poets, pdf-pin
 
 | Onderwerp | Besluit | Door |
@@ -526,6 +537,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-d`: presentatiemodus waardebepaling,
+  `.env.example` + `npm run env:check`.
 - 28 sep 2026 — PR `feat/sessie-28sep-c`: verouderde "nog niet toegepast"-commentaren
   en terugvalcode opgeruimd, filter-poets (Wis op Plaats, merk-accent-fallbacks,
   `bereikGelijk`), pdf-subject-pin zichtbaar bij donkere merkkleur.

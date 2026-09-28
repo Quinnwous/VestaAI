@@ -18,7 +18,7 @@ import { chromium } from 'playwright'
 import { mkdir } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { sessieCookie, toontFoutstaat, poortUitArgs, serviceClient } from './lib/dodSessie.mjs'
+import { sessieCookie, toontFoutstaat, poortUitArgs, serviceClient, DOD_EMAIL } from './lib/dodSessie.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const OUT_DIR = path.resolve(__dirname, '..', 'screenshots')
@@ -48,6 +48,15 @@ async function main() {
 
   const { data: object } = await serviceClient().from('objecten').select('id').limit(1).maybeSingle()
   const routes = object ? [...ROUTES, { slug: 'dossier', pad: `/object/${object.id}` }] : ROUTES
+
+  // Presentatiemodus: een dossier van het DoD-kantoor mét opgeslagen waardering
+  // (anders toont de route alleen de lege staat).
+  const { data: dodMakelaar } = await serviceClient().from('makelaars').select('kantoor_id').eq('email', DOD_EMAIL).maybeSingle()
+  if (dodMakelaar) {
+    const { data: gewaardeerd } = await serviceClient().from('objecten').select('id')
+      .eq('kantoor_id', dodMakelaar.kantoor_id).not('waardering_json', 'is', null).limit(1).maybeSingle()
+    if (gewaardeerd) routes.push({ slug: 'presentatie', pad: `/object/${gewaardeerd.id}/presentatie` })
+  }
 
   const browser = await chromium.launch()
   const context = await browser.newContext({ baseURL: BASE_URL })

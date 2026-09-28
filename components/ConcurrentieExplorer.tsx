@@ -307,7 +307,7 @@ export function ConcurrentieExplorer({
             ) : !data.wijVsMarkt ? (
               <Onbeschikbaar />
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: 12 }}>
+              <div className="vui-wij-vs-markt">
                 <div style={{ background: colors.surfaceAlt, borderRadius: radius.md, padding: '12px 14px' }}>
                   <div style={{ fontSize: 12.5, fontWeight: 700, color: colors.body, marginBottom: 14 }}>Looptijd</div>
                   <DumbbellStat wij={data.wijVsMarkt.looptijdWij} markt={data.wijVsMarkt.looptijdMarkt} fmt={dagen} gunstig={-1}
