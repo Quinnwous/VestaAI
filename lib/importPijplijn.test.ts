@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { voerImportPijplijnUit, bouwSnapshot, type GenormaliseerdeRij } from './importPijplijn'
+import { voerImportPijplijnUit, bouwSnapshot, telNieuwEnBijgewerkt, type GenormaliseerdeRij } from './importPijplijn'
 import { PROFIELEN } from './importProfielen'
 
 const VANDAAG = new Date('2026-09-28T00:00:00Z')
@@ -93,42 +93,42 @@ describe('voerImportPijplijnUit — ontdubbelen tussen brainbay en realworks', (
   })
 })
 
-describe('bouwSnapshot', () => {
-  const basisRij: GenormaliseerdeRij = {
-    adres: 'Hoofdstraat 1',
-    postcode: '2242ab',
-    plaats: 'Wassenaar',
-    wijk: null,
-    buurt: null,
-    geo: null,
-    verkoopprijs: 750_000,
-    vraagprijs: null,
-    verkoopdatum: '2026-03-15',
-    looptijd_dagen: null,
-    woningtype: null,
-    woonoppervlak_m2: 120,
-    perceel_m2: null,
-    inhoud_m3: null,
-    bouwjaar: null,
-    energielabel: null,
-    kamers: null,
-    garage: null,
-    tuin: null,
-    buitenruimte: null,
-    eigen_verkoop: true,
-    verkopend_kantoor: 'i4 Housing',
-    bron: 'realworks',
-    adres_sleutel: '2242ab|1|',
-    huisnummer: 1,
-    toevoeging: null,
-    woningtype_groep: 'rijwoning',
-    woningtype_sub: null,
-    geocode_status: null,
-    uitgesloten_reden: null,
-    aankopend_kantoor: null,
-    verkopend_kantoor_norm: 'i4housing',
-  }
+const basisRij: GenormaliseerdeRij = {
+  adres: 'Hoofdstraat 1',
+  postcode: '2242ab',
+  plaats: 'Wassenaar',
+  wijk: null,
+  buurt: null,
+  geo: null,
+  verkoopprijs: 750_000,
+  vraagprijs: null,
+  verkoopdatum: '2026-03-15',
+  looptijd_dagen: null,
+  woningtype: null,
+  woonoppervlak_m2: 120,
+  perceel_m2: null,
+  inhoud_m3: null,
+  bouwjaar: null,
+  energielabel: null,
+  kamers: null,
+  garage: null,
+  tuin: null,
+  buitenruimte: null,
+  eigen_verkoop: true,
+  verkopend_kantoor: 'i4 Housing',
+  bron: 'realworks',
+  adres_sleutel: '2242ab|1|',
+  huisnummer: 1,
+  toevoeging: null,
+  woningtype_groep: 'rijwoning',
+  woningtype_sub: null,
+  geocode_status: null,
+  uitgesloten_reden: null,
+  aankopend_kantoor: null,
+  verkopend_kantoor_norm: 'i4housing',
+}
 
+describe('bouwSnapshot', () => {
   it('geeft geen snapshot-entry voor een compleet nieuwe rij', () => {
     const snapshot = bouwSnapshot([], [basisRij])
     expect(snapshot.bijgewerkt).toHaveLength(0)
@@ -161,5 +161,23 @@ describe('bouwSnapshot', () => {
     }
     const snapshot = bouwSnapshot([bestaand], [basisRij])
     expect(snapshot.bijgewerkt).toHaveLength(0)
+  })
+})
+
+describe('telNieuwEnBijgewerkt', () => {
+  const nieuweRij2: GenormaliseerdeRij = { ...basisRij, adres_sleutel: '2242ab|2|' }
+
+  it('telt een rij zonder match als nieuw', () => {
+    expect(telNieuwEnBijgewerkt([], [basisRij])).toEqual({ nieuw: 1, bijgewerkt: 0 })
+  })
+
+  it('telt een rij met match als bijgewerkt', () => {
+    const bestaand = { id: 'x', adres_sleutel: '2242ab|1|', verkoopdatum: '2026-03-15', import_id: null }
+    expect(telNieuwEnBijgewerkt([bestaand], [basisRij])).toEqual({ nieuw: 0, bijgewerkt: 1 })
+  })
+
+  it('telt een mix correct', () => {
+    const bestaand = { id: 'x', adres_sleutel: '2242ab|1|', verkoopdatum: '2026-03-15', import_id: null }
+    expect(telNieuwEnBijgewerkt([bestaand], [basisRij, nieuweRij2])).toEqual({ nieuw: 1, bijgewerkt: 1 })
   })
 })

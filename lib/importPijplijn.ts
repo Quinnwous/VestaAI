@@ -274,3 +274,22 @@ export function bouwSnapshot(bestaandeRijen: BestaandeTransactieRij[], nieuweRij
 
   return { versie: IMPORT_SNAPSHOT_VERSIE, bijgewerkt, afgekapt }
 }
+
+/**
+ * Telt hoeveel van `nieuweRijen` een bestaande rij bijwerken vs. echt nieuw
+ * zijn — voor `imports.aantal_nieuw`/`aantal_bijgewerkt`. Losstaand van
+ * `bouwSnapshot()` omdat die zelf afkapt op `MAX_SNAPSHOT_RIJEN` (het
+ * snapshot-contract) terwijl deze telling altijd het volledige, echte
+ * aantal moet geven — ook als de snapshot zelf afgekapt is.
+ */
+export function telNieuwEnBijgewerkt(
+  bestaandeRijen: BestaandeTransactieRij[],
+  nieuweRijen: GenormaliseerdeRij[],
+): { nieuw: number; bijgewerkt: number } {
+  const sleutels = new Set(bestaandeRijen.map(r => `${r.adres_sleutel}::${r.verkoopdatum ?? ''}`))
+  let bijgewerkt = 0
+  for (const rij of nieuweRijen) {
+    if (sleutels.has(`${rij.adres_sleutel}::${rij.verkoopdatum ?? ''}`)) bijgewerkt++
+  }
+  return { nieuw: nieuweRijen.length - bijgewerkt, bijgewerkt }
+}
