@@ -62,12 +62,39 @@ interface PdokHit {
   postcode?: string
   nummeraanduiding_id?: string
   adresseerbaarobject_id?: string
+  // Extra velden voor pdokZoek()/de geocodeerpijplijn (item 5.3) hieronder —
+  // pdokLookup() vraagt ze niet op (fl-lijst blijft ongewijzigd), maar het
+  // type mag ze wel kennen zodat beide functies dezelfde vorm delen.
+  huisnummer?: number | string
+  huisnummertoevoeging?: string
+  straatnaam?: string
+  woonplaatsnaam?: string
 }
 
 async function pdokLookup(adres: string): Promise<PdokHit | null> {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(adres)}&fq=type:adres&rows=1&fl=centroide_ll,buurtcode,buurtnaam,wijkcode,wijknaam,gemeentecode,gemeentenaam,postcode,nummeraanduiding_id,adresseerbaarobject_id`
   const data = await fetchMet<{ response: { docs: PdokHit[] } }>(url)
   return data?.response?.docs?.[0] ?? null
+}
+
+/**
+ * Algemene PDOK Locatieserver-zoekfunctie (item 5.3, docs/roadmap.md § Fase
+ * 5): dezelfde `fetchMetStatus` als de rest van dit bestand, zodat een
+ * aanroeper (bv. `scripts/geocodeer-transacties.mjs`) onderscheid kan maken
+ * tussen 'leeg' (geen treffer — dit adres bestaat niet in PDOK) en 'mislukt'
+ * (netwerk/HTTP-fout — de call zelf ging mis en verdient een nieuwe poging).
+ * `pdokLookup()` hierboven blijft ongewijzigd voor de bestaande call-sites
+ * (`lookupCoordinaten`/`fetchVerrijking`) — dit is een losse export ernaast.
+ */
+export async function pdokZoek(query: string, fq?: string): Promise<FetchPoging<{ response: { docs: PdokHit[] } }>> {
+  const params = new URLSearchParams({
+    q: query,
+    rows: '5',
+    fl: 'centroide_ll,buurtcode,buurtnaam,wijkcode,wijknaam,gemeentecode,gemeentenaam,postcode,huisnummer,huisnummertoevoeging,straatnaam,woonplaatsnaam,nummeraanduiding_id,adresseerbaarobject_id',
+  })
+  if (fq) params.set('fq', fq)
+  const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?${params.toString()}`
+  return fetchMetStatus<{ response: { docs: PdokHit[] } }>(url)
 }
 
 function parsePdokCoord(centroide: string): { lat: number; lon: number } | null {
