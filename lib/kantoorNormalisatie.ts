@@ -61,3 +61,33 @@ export function isEigenKantoor(naam: string | null | undefined, aliassen: string
   if (!norm) return false
   return aliassen.some(alias => normaliseerKantoornaam(alias) === norm)
 }
+
+/** Maximum aantal aliassen dat een kantoor mag opslaan (item I1, invoerveld in /admin). */
+export const MAX_KANTOOR_ALIASSEN = 20
+
+/**
+ * Zet de vrije tekst uit het aliassenveld (`/admin/kantoor/[id]` →
+ * Instellingen, één alias per regel) om in een schone lijst voor
+ * `instellingen_json.kantoor_aliassen`: lege regels weg, getrimd, ontdubbeld
+ * **op de genormaliseerde vorm** (dus "i4 Housing B.V." en "I4housing"
+ * tellen als dezelfde alias — de tweede variant wordt genegeerd) en afgekapt
+ * op `MAX_KANTOOR_ALIASSEN`. Een regel die na normalisatie leeg is (bv.
+ * enkel "B.V.") wordt overgeslagen — die zou toch nooit iets matchen. De
+ * oorspronkelijke schrijfwijze van de eerst geziene variant blijft bewaard:
+ * die is voor Quinn om te lezen, `isEigenKantoor()` normaliseert zelf bij
+ * het vergelijken.
+ */
+export function schoonAliassen(tekst: string): string[] {
+  const gezienNormaliseringen = new Set<string>()
+  const resultaat: string[] = []
+  for (const regel of tekst.split('\n')) {
+    const alias = regel.trim()
+    if (!alias) continue
+    const norm = normaliseerKantoornaam(alias)
+    if (!norm || gezienNormaliseringen.has(norm)) continue
+    gezienNormaliseringen.add(norm)
+    resultaat.push(alias)
+    if (resultaat.length >= MAX_KANTOOR_ALIASSEN) break
+  }
+  return resultaat
+}
