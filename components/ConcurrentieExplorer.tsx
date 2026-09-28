@@ -174,7 +174,7 @@ export function ConcurrentieExplorer({
     <>
       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-.02em', color: colors.text, margin: 0 }}>Concurrentie</h1>
-        <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+        <Badge dot color="var(--merk-accent)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
           Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b>
           {rpcBeschikbaar ? ` · ${nlNL.format(nTotaal)} transacties in de selectie` : ''}
         </Badge>

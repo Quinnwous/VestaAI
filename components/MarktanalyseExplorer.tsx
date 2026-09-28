@@ -275,7 +275,7 @@ export function MarktanalyseExplorer({
               Nog geen transacties
             </Badge>
           ) : (
-            <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+            <Badge dot color="var(--merk-accent)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
               Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
             </Badge>
           )}
