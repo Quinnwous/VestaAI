@@ -18,10 +18,12 @@ export const metadata = { title: 'Concurrentie' }
  * de pagina meteen met cijfers rendert; elke volgende filterwijziging
  * ververst via de server actions in `actions.ts` vanuit de client component.
  *
- * ⚠️ De RPC's in `supabase/migrations/20260924_rpc_concurrentie_v2.sql` zijn
- * nog niet toegepast — tot dat gebeurt geeft elk blok een "nog niet
- * beschikbaar"-melding i.p.v. de pagina te laten crashen (zie actions.ts en
- * ConcurrentieExplorer.tsx).
+ * De RPC's in `supabase/migrations/20260924_rpc_concurrentie_v2.sql` zijn
+ * live sinds 24 sep 2026 (geverifieerd 28 sep 2026). `actions.ts` vangt elke
+ * RPC-aanroep nog steeds op met `.catch(() => null)` — verdediging tegen een
+ * eventuele toekomstige RPC-storing, geeft dan een eigen "niet
+ * beschikbaar"-melding per blok i.p.v. de hele pagina te laten crashen (zie
+ * actions.ts en ConcurrentieExplorer.tsx).
  */
 export default async function ConcurrentieAnalysePage() {
   const makelaar = await haalIngelogdeMakelaarOp()
