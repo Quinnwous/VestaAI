@@ -26,7 +26,7 @@
 import { ALIASSEN, naarBoolean, naarCoordinaat, naarDatum, naarGetal, type TransactieVeld } from './transactieImport'
 import { rdNaarWgs84, isRdCoordinaat } from './rd'
 
-export type Bron = 'brainbay' | 'realworks'
+export type Bron = 'brainbay' | 'realworks' | 'handmatig'
 
 /** Velden die niet in de gedeelde `TransactieVeld`-taxonomie zitten maar wel in een pijplijn-import voorkomen. */
 export type ExtraVeld = 'rd_x' | 'rd_y' | 'aankopend_kantoor'
@@ -95,9 +95,25 @@ const REALWORKS: ImportProfiel = {
   coordinatenType: 'wgs84',
 }
 
+// ── Handmatig (item i2, docs/specs/i2-admin-csv-via-pijplijn.md) ───────────
+// De CSV-upload op /admin/transacties: geen bron-specifieke aliassen (de
+// beheerder levert zelf een bestand aan, geen vast CRM-exportformaat), dus
+// alleen de gedeelde `ALIASSEN` uit lib/transactieImport.ts. Coördinaten
+// komen — net als voorheen in parseTransactieCsv() — als kant-en-klare
+// lat/lng-kolommen aan, nooit als RD X/Y.
+const HANDMATIG: ImportProfiel = {
+  bron: 'handmatig',
+  extraAliassen: {},
+  extraVeldAliassen: {},
+  datumformaat: 'NL (dd-mm-jjjj) of ISO (jjjj-mm-dd) — naarDatum() dekt beide al',
+  decimaalnotatie: 'NL (komma) of internationaal (punt) — naarGetal() dekt beide al',
+  coordinatenType: 'wgs84',
+}
+
 export const PROFIELEN: Record<Bron, ImportProfiel> = {
   brainbay: BRAINBAY,
   realworks: REALWORKS,
+  handmatig: HANDMATIG,
 }
 
 /** Kolomindex-lookup met een eigen (mogelijk per bron aangevulde) aliaslijst — zelfde normalisatie als vindKolom() in transactieImport.ts, maar niet gebonden aan de globale ALIASSEN. */
@@ -138,6 +154,14 @@ export type BronRij = {
   verkopend_kantoor: string | null
   aankopend_kantoor: string | null
   bron: Bron
+  /**
+   * `eigen_verkoop`-kolom (alias-lijst `ALIASSEN.eigen_verkoop`), als die in
+   * het bestand voorkomt — `null` als de kolom ontbreekt. Een expliciete
+   * waarde wint in de pijplijn altijd van de kantoor-aliassen-afleiding (item
+   * i2): alleen bij `null` valt `voerImportPijplijnUit()` terug op
+   * `isEigenKantoor()`.
+   */
+  eigen_verkoop_expliciet: boolean | null
 }
 
 /**
@@ -204,5 +228,6 @@ export function mapRij(ruweRij: string[], headers: string[], profiel: ImportProf
     verkopend_kantoor: get('verkopend_kantoor')?.trim() || null,
     aankopend_kantoor: getExtra('aankopend_kantoor')?.trim() || null,
     bron: profiel.bron,
+    eigen_verkoop_expliciet: kolomIndex.eigen_verkoop !== -1 ? naarBoolean(get('eigen_verkoop'), false) : null,
   }
 }

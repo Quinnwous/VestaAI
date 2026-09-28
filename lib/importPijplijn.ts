@@ -78,6 +78,32 @@ export type PijplijnResultaat = {
   rapport: ImportRapport
 }
 
+/**
+ * Leest `imports.kwaliteitsrapport_json` typeveilig — het komt ongevalideerd
+ * uit de database (jsonb) terug (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+ * `null` bij afwezige/onherkenbare vorm (bv. een import van vóór dit rapport
+ * bestond), zodat de UI (`app/admin/transacties/Importhistorie.tsx`) nooit op
+ * `unknown` hoeft te gokken. Zelfde patroon als `leesImportSnapshot()` in
+ * lib/importSnapshot.ts.
+ */
+export function leesImportRapport(json: unknown): ImportRapport | null {
+  if (!json || typeof json !== 'object' || Array.isArray(json)) return null
+  const r = json as Partial<ImportRapport>
+  const geldig =
+    typeof r.totaalRuw === 'number' &&
+    Array.isArray(r.overgeslagen) &&
+    typeof r.totaalGeimporteerd === 'number' &&
+    Array.isArray(r.perUitsluitreden) &&
+    Array.isArray(r.voorbeeldenPerUitsluitreden) &&
+    Array.isArray(r.perPlaats) &&
+    Array.isArray(r.perJaar) &&
+    typeof r.pctMetCoordinaat === 'number' &&
+    typeof r.aantalEigenVerkopen === 'number' &&
+    typeof r.samengevoegd === 'number' &&
+    Array.isArray(r.voorbeeldenSamenvoegingen)
+  return geldig ? (r as ImportRapport) : null
+}
+
 const MAX_VOORBEELDEN_PER_REDEN = 10
 
 /**
@@ -156,7 +182,9 @@ export function voerImportPijplijnUit(
       garage: bronRij.garage,
       tuin: bronRij.tuin,
       buitenruimte: bronRij.buitenruimte,
-      eigen_verkoop: isEigenKantoor(bronRij.verkopend_kantoor, kantoorAliassen),
+      // Een expliciete eigen_verkoop-kolom in het bestand wint altijd van de
+      // kantoor-aliassen-afleiding (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+      eigen_verkoop: bronRij.eigen_verkoop_expliciet ?? isEigenKantoor(bronRij.verkopend_kantoor, kantoorAliassen),
       verkopend_kantoor: bronRij.verkopend_kantoor,
       bron: bronRij.bron,
       adres_sleutel: sleutel,
