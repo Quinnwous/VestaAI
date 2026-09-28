@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { TransactieImportForm } from './TransactieImportForm'
+import { Importhistorie } from './Importhistorie'
+import { haalImportHistorie } from './importHistorieData'
 
 export const metadata = { title: 'Transacties importeren — VestaAI' }
 
@@ -30,6 +32,9 @@ export default async function AdminTransactiesPage() {
       tellingen.set(k.id, { totaal: totaal.count ?? 0, eigen: eigen.count ?? 0 })
     }))
   }
+
+  const kantoorNaamPerId = new Map((kantoren ?? []).map(k => [k.id, k.name] as const))
+  const importHistorie = await haalImportHistorie(kantoorNaamPerId)
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
@@ -62,6 +67,9 @@ export default async function AdminTransactiesPage() {
       </div>
 
       <TransactieImportForm kantoren={(kantoren ?? []).map(k => ({ id: k.id, name: k.name }))} />
+
+      <h2 className="text-lg font-bold text-gray-900 mt-10 mb-3">Importhistorie</h2>
+      <Importhistorie imports={importHistorie} />
     </main>
   )
 }
