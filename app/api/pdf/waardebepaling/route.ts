@@ -10,6 +10,8 @@ import { PropertyInputSchema, type PropertyInput } from '@/lib/schemas'
 import { meldFout } from '@/lib/fouten'
 import { haalTransactieCoordinaten } from '@/lib/transactiesQuery'
 import { bepaalKaartKader, pixelInKader, kaartReferenties, haalStatischeKaartAfbeelding, type Punt } from '@/lib/statischeKaart'
+import { verkoperWaarschuwingen, kantoorContactregel } from '@/lib/presentatie'
+import { isVoorVerkoper, waardebepalingBestandsnaam } from '@/lib/pdfVariant'
 
 export const runtime = 'nodejs'
 
@@ -66,10 +68,17 @@ async function bouwKaartVoorPdf(
  * (migreert v1 → v2 via `migreerWaarderingJson`, zelfde patroon als
  * `waardering-actions.ts`). Hergebruikt het pdf/generate-patroon: sessie-
  * client voor auth, service-client voor de scoped lookup op `kantoor_id`.
+ *
+ * `&voor=verkoper` (item H4, "handout" van de presentatiemodus): zelfde
+ * toegangscontrole en dezelfde opgeslagen `waardering_json` — alleen de
+ * makelaar-interne waarschuwingen vallen weg (`verkoperWaarschuwingen()`) en
+ * het kantoorcontact komt in de voettekst (`kantoorContactregel()`). Zonder
+ * de parameter is het gedrag exact zoals vóór dit item.
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const objectId = searchParams.get('object_id')
+  const voorVerkoper = isVoorVerkoper(searchParams.get('voor'))
 
   if (!objectId) {
     return NextResponse.json({ error: 'object_id vereist' }, { status: 400 })
@@ -117,19 +126,29 @@ export async function GET(req: NextRequest) {
   const logoUrl = await bruikbaarLogo(branding.logoUrl)
   const kaart = await bouwKaartVoorPdf(supabase, { lat: object.lat, lng: object.lng }, top6VanUitkomst(opslag.uitkomst.referenties))
 
+  // Verkopersversie: geen makelaar-interne waarschuwingen (rekennotities over
+  // de prijsindex blijven voor intern gebruik), wel het kantoorcontact.
+  const uitkomstVoorPdf = voorVerkoper
+    ? { ...opslag.uitkomst, waarschuwingen: verkoperWaarschuwingen(opslag.uitkomst.waarschuwingen) }
+    : opslag.uitkomst
+  const contactregel = voorVerkoper
+    ? kantoorContactregel({ telefoon: branding.telefoon, email: branding.email, website: branding.website?.label ?? null })
+    : null
+
   try {
     const pdf = await renderToBuffer(React.createElement(WaardebepalingPdfTemplate, {
       address: object.address,
       input: invoer,
-      uitkomst: opslag.uitkomst,
+      uitkomst: uitkomstVoorPdf,
       correctie: opslag.correctie,
       kantoor: { naam: branding.naam, logoUrl, kleur: branding.primair },
       makelaarNaam: makelaar.name,
       opgesteldOp: new Date().toISOString(),
       kaart,
+      contactregel,
     }) as React.ReactElement<ReactPDF.DocumentProps>)
 
-    const bestandsnaam = `waardebepaling-${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.pdf`
+    const bestandsnaam = waardebepalingBestandsnaam(object.address, voorVerkoper)
 
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
