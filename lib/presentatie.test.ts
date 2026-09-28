@@ -174,6 +174,20 @@ describe('kantoorContactregel', () => {
   it('negeert lege of alleen-witruimte-strings', () => {
     expect(kantoorContactregel({ telefoon: '   ', email: '' })).toBeNull()
   })
+
+  it('voegt de website toe ná telefoon en e-mail', () => {
+    expect(kantoorContactregel({ telefoon: '070-1234567', email: 'info@kantoor.nl', website: 'i4housing.nl' })).toBe(
+      '070-1234567 · info@kantoor.nl · i4housing.nl',
+    )
+  })
+
+  it('toont alleen de website als telefoon en e-mail ontbreken', () => {
+    expect(kantoorContactregel({ telefoon: null, email: null, website: 'i4housing.nl' })).toBe('i4housing.nl')
+  })
+
+  it('werkt zonder website-veld (bestaande aanroepen)', () => {
+    expect(kantoorContactregel({ telefoon: '070-1234567', email: null })).toBe('070-1234567')
+  })
 })
 
 describe('logoWeergave', () => {

@@ -26,6 +26,7 @@ const MERK = {
   vorm: 'zacht',
   telefoon: '070-5117571',
   email: 'info@i4housing.nl',
+  website: 'https://www.i4housing.nl',
 }
 
 /**

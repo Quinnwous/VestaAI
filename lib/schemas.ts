@@ -107,6 +107,10 @@ export const HuisstijlSchema = z.object({
   // Contactgegevens voor de merkbalk bovenaan de ingelogde omgeving.
   telefoon: z.string().max(40).optional(),
   email: z.string().max(120).optional(),
+  // Website-url, vrije invoer (met of zonder protocol/www) — lib/branding.ts
+  // `websiteWeergave()` normaliseert voor weergave/href, hier geen validatie
+  // op vorm zodat een ongeldige waarde niet de hele opslag laat falen.
+  website: z.string().max(120).optional(),
   voorbeelden: z.array(z.string().max(2000)).max(20),
   // Uit de voorbeelden gedestilleerd, compact stijlprofiel (server-side gegenereerd).
   // Wordt in de prompt gebruikt i.p.v. alle voorbeelden integraal → schaalt zonder promptkosten-explosie.

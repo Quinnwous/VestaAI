@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bouwBranding, brandingCssVars, tekstOp, donkerder, lichter, luminantie, VESTA_MERK } from './branding'
+import { bouwBranding, brandingCssVars, tekstOp, donkerder, lichter, luminantie, VESTA_MERK, websiteWeergave } from './branding'
 
 describe('bouwBranding', () => {
   it('valt terug op de VestaAI-stijl zonder kantoorgegevens', () => {
@@ -150,6 +150,53 @@ describe('afgeleide tokens (roadmap 1.9e)', () => {
     // Licht moet tussen de merkkleur en --merk-zacht in zitten, niet erboven of eronder.
     expect(vars['--merk-licht']).not.toBe(vars['--merk-zacht'])
     expect(vars['--merk-accent-zacht']).not.toBe(vars['--merk-zacht'])
+  })
+})
+
+describe('websiteWeergave', () => {
+  it('haalt protocol en www. weg voor de weergavelabel', () => {
+    expect(websiteWeergave('https://www.i4housing.nl/')).toEqual({
+      label: 'i4housing.nl',
+      href: 'https://www.i4housing.nl/',
+    })
+  })
+
+  it('voegt https:// toe als het protocol ontbreekt', () => {
+    expect(websiteWeergave('www.i4housing.nl')).toEqual({
+      label: 'i4housing.nl',
+      href: 'https://www.i4housing.nl/',
+    })
+  })
+
+  it('behoudt een pad in het label', () => {
+    expect(websiteWeergave('i4housing.nl/aanbod')).toEqual({
+      label: 'i4housing.nl/aanbod',
+      href: 'https://i4housing.nl/aanbod',
+    })
+  })
+
+  it('geeft null terug bij lege of ontbrekende invoer', () => {
+    expect(websiteWeergave('')).toBeNull()
+    expect(websiteWeergave('   ')).toBeNull()
+    expect(websiteWeergave(null)).toBeNull()
+    expect(websiteWeergave(undefined)).toBeNull()
+  })
+
+  it('geeft null terug bij ongeldige invoer', () => {
+    expect(websiteWeergave('niet een url')).toBeNull()
+    expect(websiteWeergave('https://')).toBeNull()
+  })
+})
+
+describe('bouwBranding — website', () => {
+  it('neemt een geldige website over', () => {
+    const b = bouwBranding({ name: 'Kantoor', huisstijl_json: { website: 'https://www.i4housing.nl/' } })
+    expect(b.website).toEqual({ label: 'i4housing.nl', href: 'https://www.i4housing.nl/' })
+  })
+
+  it('is null zonder ingevulde website', () => {
+    const b = bouwBranding({ name: 'Kantoor', huisstijl_json: {} })
+    expect(b.website).toBeNull()
   })
 })
 

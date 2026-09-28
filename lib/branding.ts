@@ -91,6 +91,8 @@ export type Branding = {
   /** Contactgegevens voor de merkbalk bovenaan — leeg = balk verdwijnt. */
   telefoon: string | null
   email: string | null
+  /** Genormaliseerd via `websiteWeergave()` — `null` = niet ingevuld of ongeldig, niet tonen. */
+  website: WebsiteWeergave | null
   primair: string
   primairHover: string
   primairZacht: string
@@ -153,6 +155,32 @@ export function tekstOp(hex: string): string {
   return luminantie(hex) > 0.5 ? '#0E1A13' : '#FFFFFF'
 }
 
+export type WebsiteWeergave = { label: string; href: string }
+
+/**
+ * Normaliseert een vrij ingevoerde website-url voor weergave: `label` is de
+ * kale hostnaam zonder protocol/`www.` (`https://www.i4housing.nl/` →
+ * `i4housing.nl`), `href` is altijd een volledige `https://`-url (protocol
+ * ontbreekt het? dan wordt het toegevoegd). Ongeldige invoer (leeg, geen
+ * geldige hostnaam) geeft `null` terug — de UI laat het element dan
+ * verdwijnen, zelfde conventie als `telefoon`/`email`.
+ */
+export function websiteWeergave(url: string | null | undefined): WebsiteWeergave | null {
+  const ruw = typeof url === 'string' ? url.trim() : ''
+  if (!ruw) return null
+  const metProtocol = /^https?:\/\//i.test(ruw) ? ruw : `https://${ruw}`
+  let parsed: URL
+  try {
+    parsed = new URL(metProtocol)
+  } catch {
+    return null
+  }
+  if (!parsed.hostname || !parsed.hostname.includes('.')) return null
+  const pad = parsed.pathname === '/' ? '' : parsed.pathname.replace(/\/+$/, '')
+  const label = `${parsed.hostname.replace(/^www\./i, '')}${pad}`
+  return { label, href: parsed.href }
+}
+
 function geldigeHex(waarde: unknown, fallback: string): string {
   return typeof waarde === 'string' && HEX.test(waarde) ? waarde : fallback
 }
@@ -193,6 +221,7 @@ export function bouwBranding(kantoor: {
     bannerFocusY: typeof huisstijl?.banner_focus_y === 'number' ? huisstijl.banner_focus_y : 50,
     telefoon: tekst(huisstijl?.telefoon),
     email: tekst(huisstijl?.email),
+    website: websiteWeergave(tekst(huisstijl?.website)),
     primair,
     primairHover: donkerder(primair, 0.18),
     primairZacht: lichter(primair, 0.92),

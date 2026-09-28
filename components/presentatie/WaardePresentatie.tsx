@@ -24,7 +24,7 @@ interface Props {
   correctie: Correctie | null
   subject: { lat: number; lng: number } | null
   referenties: (WaarderingReferentie & { lat: number; lng: number })[]
-  kantoor: { naam: string; logoUrl: string | null; kleur: string; telefoon: string | null; email: string | null }
+  kantoor: { naam: string; logoUrl: string | null; kleur: string; telefoon: string | null; email: string | null; website: string | null }
 }
 
 /** Getal-tween (~500ms ease-out) — zelfde patroon als `WaardebepalingPaneel.tsx`'s
