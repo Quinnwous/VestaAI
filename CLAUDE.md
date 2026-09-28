@@ -95,8 +95,9 @@ Fasemodel (besluit 16 sep 2026) — volledig besluitenlogboek in `docs/besluiten
   - **Marktanalyse** (`components/MarktanalyseExplorer.tsx` + `lib/marktanalyse.ts`) — filters op type/wijk/periode, segmentvergelijking, recharts-grafieken (prijs, m²-prijs, doorlooptijd).
   - **Transacties opzoeken** (`components/TransactiesZoeken.tsx`) — zoeken/filteren over de dataset; "meenemen als referentie" wacht op verdere waarderings-integratie.
   - **Concurrentieanalyse** (`components/ConcurrentieExplorer.tsx` + `lib/concurrentie.ts`) — marktaandeel, wie wint welk segment, presteren wij beter, concurrent-profielen. Draait op `transacties.verkopend_kantoor`; toont een eerlijke lege staat zolang dat veld niet gevuld is.
-  - **Verkoopkaart** (`app/(app)/marktanalyse/kaart/`, `components/VerkoopkaartExplorerV2.tsx`, logica `lib/verkoopkaart.ts`) — alleen eigen verkopen als beeldmerk-pin op MapLibre, met live filters, tijdlijn en zijlijst.
+  - **Verkoopkaart** (`app/(app)/marktanalyse/kaart/`, `components/VerkoopkaartExplorerV2.tsx`, logica `lib/verkoopkaart.ts`) — alleen eigen verkopen als beeldmerk-pin op MapLibre, met live filters, tijdlijn en zijlijst, en een schakelbare laag buurtgrenzen (CBS 2024 via PDOK, proxy `app/api/kaart/buurtgrenzen`, `lib/buurtgrenzen.ts`; standaard uit).
 - **Verhuur** — volledig uit de app gehaald (fase 1.3, masterplan 16-17 sep 2026, zie `docs/roadmap.md`). Stond eerder als "Binnenkort" in de topbar; nu bewust níet gebouwd, geen restant meer in de navigatie.
+- **⌘K-zoeken** (`components/ZoekPalet.tsx`, knop in `AppTopbar`, `app/api/zoeken`, `lib/zoeken.ts`) — woningen van het eigen kantoor, pagina's en een snelkoppeling naar Transacties opzoeken (`?zoek=`).
 - **Kantoor** (`app/(app)/kantoor/`) — read-only pagina achter het profielmenu (avatar rechtsboven): huisstijl-preview, kantoorgegevens, team, statistieken. Bewerken kan alleen via `/admin/kantoor/[id]` (platform-admin). Eigen naam/wachtwoord staan sinds fase 1.7 op `/account`, niet meer hier.
 
 **Eén rol per kantoor** (besluit 16 sep 2026): iedereen met een login binnen een kantoor ziet en kan hetzelfde — geen kantoor-admin meer. De kolom `makelaars.role` bestaat nog maar stuurt geen rechten meer binnen het kantoor. Platform-admin (Quinn, `lib/admin.ts`) is een los concept.
@@ -123,7 +124,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Een standaardkeuze die eenmalig in een `useEffect` wordt gezet, wacht op de écht geladen data** — les 27 sep 2026: de dossierkaart koos "Eigen verkopen" bij een dossier met 17 referenties, omdat het effect al vuurde op een memo die vóór de fetch een waarde had (opgeslagen uitkomst) terwijl de coördinaten nog leeg waren. Gate op de fetch-resultaten (`serverData`), niet op een placeholder.
 
-⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026: een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
+⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026 (op 28 sep opnieuw gezien bij de concurrentie-v2-RPC's, en nog 12 plekken open — zie roadmap Stand van zaken): een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
 
 ⚠️ **Een Next-routebestand (`route.ts`) mag alleen route-exports hebben** (`GET`/`POST`/`maxDuration`/…) — een geëxporteerde hulpfunctie laat `next build` falen terwijl typecheck en tests groen zijn. Hulpfuncties in `lib/`.
 
@@ -234,6 +235,7 @@ VestaAI/
 │   ├── branding.ts             # kantoorpalet uit huisstijl_json → CSS-variabelen
 │   ├── waardering.ts           # referentieselectie, bandbreedte, kenmerk-effecten (vergelijkbare-paren)
 │   ├── marktanalyse.ts / concurrentie.ts   # aggregatielogica voor de explorers
+│   ├── filterVergelijk.ts       # bereikGelijk/verzamelingGelijk voor filterpillen (niet zelf kopiëren)
 │   ├── transactieImport.ts     # CSV-parser met kolomherkenning via aliassen
 │   ├── geo.ts                  # haversine-afstand (straal-filter verkoopkaart)
 │   ├── features.ts             # CONTENT_VERGRENDELD-vlag + contentVergrendeldAntwoord()

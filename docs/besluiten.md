@@ -6,6 +6,16 @@
 
 ---
 
+### 28 sep 2026 (zesde ronde, autonoom) — ⌘K-zoeken, buurtgrenzen, filtervergelijkers
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| ⌘K-zoeken | Radix Dialog (geen Sheet), knop in de topbar + ⌘K/Ctrl K (label pas na mount, platform verschilt). Groepen: woningen (sessie-client + `kantoor_id`, max 8, ≥ 2 tekens, `ilike` met `escapeIlike`), pagina's (statisch), snelkoppeling `/marktanalyse/transacties?zoek=` (bestaande URL-state, geen wijziging aan Transacties). Bug onderweg: sluit-reset-timeout werd niet geannuleerd bij heropenen via de sneltoets | Sonnet + Opus |
+| Buurtgrenzen | CBS Wijken en Buurten **2024**, PDOK OGC API Features (`collections/buurten/items`), alleen de zichtbare bbox (> 0,6° → "Zoom in…"), eigen proxy `app/api/kaart/buurtgrenzen` (ingelogd, `s-maxage=86400`), properties server-side uitgedund (PDOK kent `properties` niet). Neutrale lijnen, labels vanaf zoom 12, standaard uit, schakelaar in de kaartkop. Geen CSP-wijziging | Sonnet |
+| Filtervergelijkers | `lib/filterVergelijk.ts`: `bereikGelijk` + volgorde-onafhankelijke `verzamelingGelijk` (niet `plaatsenGelijk`: die naam betekent iets anders in `lib/kerncijfers.ts`). Concurrentie vergelijkt nu ook volgorde-onafhankelijk | Sonnet |
+| Topbar 390 px | De nieuwe zoekknop duwde de hamburger 49 px buiten beeld op élke pagina — de agent zag het niet, `dod:screens` wel. Op ≤ 900 px nu alleen het zoekicoon, kleinere gaten, en de kantoornaam krimpt met een ellips (VestaAI-lockup blijft vast) | Opus |
+| Concurrentie-v2-RPC's | Read-only geverifieerd: alle 5 bestaan en zijn identiek aan `20260924_rpc_concurrentie_v2.sql`; commentaren bijgewerkt. Tweede geval van verouderde "nog niet toegepast"-notities → systematische opruiming als volgend item | Sonnet + Opus |
+
 ### 28 sep 2026 (vijfde ronde, autonoom — Quinn sliep) — pdf-kaart, repetitie scène 4, filterpillen
 
 | Onderwerp | Besluit | Door |
@@ -505,6 +515,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 28 sep 2026 — PR `feat/sessie-28sep-b`: ⌘K-zoeken, buurtgrenzen op de
+  verkoopkaart, gedeelde filtervergelijkers, concurrentie-RPC-status geverifieerd.
 - 28 sep 2026 — PR `feat/sessie-28sep`: kaart in de waardebepaling-pdf, repetitie
   scène 4 met BAG-toets, Plaats-pil consistent op drie verkenners.
 - 27 sep 2026 — PR `feat/sessie-27sep-d`: **12.5b** repetitiescript, BAG-autocomplete

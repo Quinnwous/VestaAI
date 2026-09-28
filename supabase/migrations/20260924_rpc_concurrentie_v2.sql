@@ -2,12 +2,14 @@
 -- — port van docs/ontwerp/concurrentie.html). Additief, alleen nieuwe
 -- functies, geen DDL op tabellen en geen DML.
 --
--- ⚠️ NOG NIET TOEGEPAST — is met opzet niet via apply_migration uitgevoerd
--- (agent-opdracht 6.3: "niet toepassen, melden"). Handmatig valideren
--- (SQL is al logisch getest tegen echte, RLS-gescopede productiedata via
--- ad-hoc SELECT's — geen schemawijziging, alleen leesqueries) en toepassen
--- zodra Quinn akkoord geeft. Tot die tijd geeft de app een nette
--- "nog niet beschikbaar"-staat (zie ConcurrentieExplorer.tsx `.catch()`).
+-- ✅ TOEGEPAST op productie (geverifieerd 28 sep 2026: alle vijf functies
+-- bestaan, `pg_get_functiondef()` exact gelijk aan de SQL hieronder). Was
+-- eerder bewust niet via apply_migration uitgevoerd (agent-opdracht 6.3:
+-- "niet toepassen, melden") en is nadien toegepast — dit bestand bleef ten
+-- onrechte "nog niet toegepast" zeggen (les CLAUDE.md 27 sep: verouderde
+-- "nog niet toegepast"-commentaren bijwerken zodra een migratie wél is
+-- toegepast). De app blijft de "nog niet beschikbaar"-staat tonen bij een
+-- eventuele toekomstige RPC-storing (zie ConcurrentieExplorer.tsx `.catch()`).
 --
 -- Werkt op `verkopend_kantoor_norm` (kleine letters, gedeeld met de import-
 -- normalisatie) i.p.v. het rauwe `verkopend_kantoor` dat de oudere
