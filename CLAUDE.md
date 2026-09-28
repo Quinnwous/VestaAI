@@ -35,6 +35,11 @@
 > starten voor half werk. Uitzondering: stopte een agent vóór zijn eerste wijziging, dan is
 > zijn worktree automatisch opgeruimd — hervatten zou hem zonder worktree in de hoofdmap laten
 > werken; dan opnieuw starten met dezelfde opdracht (er gaat niets verloren).
+> **Agent-opdrachten als bestand (les 28 sep 2026):** een lange opdracht in de Agent-prompt
+> laat de auto-mode-classifier time-outen ("no verdict") — de agent start dan niet. Schrijf de
+> spec naar de scratchpad en geef de agent één regel: "Lees de opdracht in <pad> en voer die
+> uit". Worktrees hebben geen `.env.local`/echte `node_modules`: `dod:screens` en
+> `maplibreWorker.guard.test.ts` draait de hoofdsessie na de merge.
 > **Doorlopende rondes (Quinn 27 sep 2026):** is een ronde afgerond en live, dan start Claude
 > meteen de volgende ronde uit `docs/roadmap.md` § Stand van zaken (volgende items, nul
 > bestandsoverlap, weer met agents) — niet wachten op Quinn. Alleen stoppen bij iets
