@@ -18,6 +18,7 @@
  */
 
 import { colors, radius, shadow, Skeleton, Legenda } from '@/components/ui'
+import { nlNL } from '@/lib/opmaak'
 
 export type SegmentVergelijkingWeergaveRij = {
   key: string
@@ -98,8 +99,8 @@ export function SegmentVergelijking({
         <h2 style={{ fontSize: 14.5, fontWeight: 800, margin: 0, color: colors.text }}>Segment A vs. segment B</h2>
         <Legenda
           items={[
-            { label: `A · n = ${nA}`, kleur: 'var(--merk)' },
-            { label: `B · n = ${nB}`, kleur: 'var(--merk-accent)' },
+            { label: `A · n = ${nlNL.format(nA)}`, kleur: 'var(--merk)' },
+            { label: `B · n = ${nlNL.format(nB)}`, kleur: 'var(--merk-accent)' },
           ]}
         />
       </div>
