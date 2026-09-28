@@ -106,7 +106,7 @@ export default async function PresentatiePagina({ params }: { params: { id: stri
       correctie={opslag.correctie}
       subject={object.lat != null && object.lng != null ? { lat: object.lat, lng: object.lng } : null}
       referenties={referentiesMetCoords}
-      kantoor={{ naam: branding.naam, logoUrl, kleur: branding.primair, telefoon: branding.telefoon, email: branding.email }}
+      kantoor={{ naam: branding.naam, logoUrl, kleur: branding.primair, telefoon: branding.telefoon, email: branding.email, website: branding.website?.label ?? null }}
     />
   )
 }
