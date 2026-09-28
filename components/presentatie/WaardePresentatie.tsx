@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import type { PropertyInput } from '@/lib/schemas'
 import { woningtypeLabel } from '@/lib/schemas'
 import type { WaarderingReferentie, WaarderingUitkomst } from '@/lib/waardering'
-import { bepaalPresentatieStappen, referentiesOnderschrift, verkoperWaarschuwingen } from '@/lib/presentatie'
+import { bepaalPresentatieStappen, kantoorContactregel, logoWeergave, referentiesOnderschrift, verkoperWaarschuwingen } from '@/lib/presentatie'
 import { wozUitInvoer, type WozIjkpunt } from '@/lib/woz'
 import { euro, datum as datumFmt, m2 as m2Fmt, afstand as afstandFmt } from '@/lib/opmaak'
 import { colors, radius } from '@/components/ui/tokens'
@@ -166,7 +166,7 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 28px', overflow: 'auto' }}>
         <div key={huidigeStap} className="presentatie-stap-inhoud" style={{ width: '100%', maxWidth: 880 }}>
-          {huidigeStap === 'woning' && <StapWoning address={address} invoer={invoer} fotoUrl={fotoUrl} />}
+          {huidigeStap === 'woning' && <StapWoning address={address} invoer={invoer} fotoUrl={fotoUrl} kantoor={kantoor} />}
           {huidigeStap === 'waarde' && <StapWaarde uitkomst={uitkomst} />}
           {huidigeStap === 'kaart' && subject && (
             <StapKaart subject={subject} adres={address} referenties={referenties} />
@@ -183,13 +183,15 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
 }
 
 // ── Stap 1 — De woning ──────────────────────────────────────────────────────
-function StapWoning({ address, invoer, fotoUrl }: { address: string; invoer: PropertyInput; fotoUrl: string | null }) {
+function StapWoning({ address, invoer, fotoUrl, kantoor }: { address: string; invoer: PropertyInput; fotoUrl: string | null; kantoor: Props['kantoor'] }) {
   const [fotoOk, setFotoOk] = useState(!!fotoUrl)
+  const [logoGeladen, setLogoGeladen] = useState(!!kantoor.logoUrl)
+  const toonFoto = fotoUrl && fotoOk
   const kenmerken = [woningtypeLabel(invoer), m2Fmt(invoer.oppervlak_m2), `bouwjaar ${invoer.bouwjaar}`].filter(Boolean).join(' · ')
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 22 }}>
-      {fotoUrl && fotoOk && (
+      {toonFoto ? (
         // eslint-disable-next-line @next/next/no-img-element -- externe Storage-URL, geen next/image-domein geconfigureerd (zelfde patroon als DossierHeader.tsx)
         <img
           src={fotoUrl}
@@ -197,6 +199,19 @@ function StapWoning({ address, invoer, fotoUrl }: { address: string; invoer: Pro
           onError={() => setFotoOk(false)}
           style={{ width: '100%', maxWidth: 640, aspectRatio: '16 / 9', objectFit: 'cover', borderRadius: radius.cardLg, boxShadow: '0 24px 64px -24px rgba(20,24,27,.3)' }}
         />
+      ) : (
+        // Geen (bruikbare) dossierfoto: een klein kantoorlogo boven het adres
+        // i.p.v. een lege of gebroken beeldplek — logoWeergave() maakt exact
+        // dezelfde logo/naam-keuze als de kantoorafsluiting in StapToelichting.
+        logoWeergave(kantoor.logoUrl, logoGeladen) === 'logo' && (
+          // eslint-disable-next-line @next/next/no-img-element -- externe Storage-URL, zelfde patroon als AppTopbar.tsx
+          <img
+            src={kantoor.logoUrl!}
+            alt={kantoor.naam}
+            onError={() => setLogoGeladen(false)}
+            style={{ height: 28, maxWidth: 200, objectFit: 'contain' }}
+          />
+        )
       )}
       <div>
         <Eyebrow style={{ textAlign: 'center' }}>Woningdossier</Eyebrow>
@@ -335,7 +350,8 @@ function WozKolom({ label, waarde, nadruk = false }: { label: string; waarde: nu
 
 // ── Stap 6 — Toelichting van de makelaar ────────────────────────────────────
 function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; kantoor: Props['kantoor'] }) {
-  const [logoOk, setLogoOk] = useState(!!kantoor.logoUrl)
+  const [logoGeladen, setLogoGeladen] = useState(!!kantoor.logoUrl)
+  const contactregel = kantoorContactregel(kantoor)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 24 }}>
       <div>
@@ -356,16 +372,14 @@ function StapToelichting({ correctie, kantoor }: { correctie: Correctie | null; 
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, marginTop: 8 }}>
-        {kantoor.logoUrl && logoOk ? (
+        {logoWeergave(kantoor.logoUrl, logoGeladen) === 'logo' ? (
           // eslint-disable-next-line @next/next/no-img-element -- externe Storage-URL, zelfde patroon als AppTopbar.tsx
-          <img src={kantoor.logoUrl} alt={kantoor.naam} onError={() => setLogoOk(false)} style={{ height: 34, objectFit: 'contain' }} />
+          <img src={kantoor.logoUrl!} alt={kantoor.naam} onError={() => setLogoGeladen(false)} style={{ height: 34, objectFit: 'contain' }} />
         ) : (
           <div style={{ fontSize: 17, fontWeight: 800, color: 'var(--merk-diep, var(--merk))' }}>{kantoor.naam}</div>
         )}
-        {(kantoor.telefoon || kantoor.email) && (
-          <p style={{ fontSize: 13, color: colors.muted, margin: 0 }}>
-            {[kantoor.telefoon, kantoor.email].filter(Boolean).join(' · ')}
-          </p>
+        {contactregel && (
+          <p style={{ fontSize: 13, color: colors.muted, margin: 0 }}>{contactregel}</p>
         )}
       </div>
     </div>
