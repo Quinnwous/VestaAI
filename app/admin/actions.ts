@@ -290,11 +290,9 @@ export async function slaKantoorNaamOpAlsAdmin(kantoorId: string, naam: string):
 
 /**
  * Slug voor de kantoorspecifieke inlogpagina (/login/[slug], item 9.1).
- * Vereist migratie 20260923_kantoren_slug.sql (kolom + unique constraint) —
- * die is nog niet toegepast op het moment van bouwen, dus deze actie geeft
- * een duidelijke foutmelding i.p.v. te crashen als de kolom nog ontbreekt.
- * Lege string mag: dat verwijdert de slug weer (kantoor valt terug op de
- * generieke /login).
+ * Kolom + unique constraint uit migratie 20260923_kantoren_slug.sql zijn live
+ * sinds 23 sep 2026. Lege string mag: dat verwijdert de slug weer (kantoor
+ * valt terug op de generieke /login).
  */
 export async function slaKantoorSlugOpAlsAdmin(kantoorId: string, ruweSlug: string): Promise<Result> {
   if (!(await vereisPlatformAdmin())) return { ok: false, error: 'Geen rechten' }
@@ -312,9 +310,8 @@ export async function slaKantoorSlugOpAlsAdmin(kantoorId: string, ruweSlug: stri
     .eq('id', kantoorId)
 
   if (error) {
-    // 23505 = unique_violation (Postgres), 42703 = ontbrekende kolom (migratie nog niet toegepast)
+    // 23505 = unique_violation (Postgres): deze slug is al bij een ander kantoor in gebruik.
     if (error.code === '23505') return { ok: false, error: 'Deze slug is al in gebruik door een ander kantoor.' }
-    if (error.code === '42703') return { ok: false, error: 'De slug-kolom bestaat nog niet — migratie 20260923_kantoren_slug.sql moet eerst toegepast worden.' }
     return { ok: false, error: error.message }
   }
 
