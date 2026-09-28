@@ -120,16 +120,16 @@ export function AppTopbar({
       src={branding.logoUrl}
       alt={branding.naam}
       onError={() => setLogoKapot(true)}
-      style={{ height: 38, maxWidth: 210, objectFit: 'contain' }}
+      style={{ height: 38, maxWidth: 210, minWidth: 0, objectFit: 'contain' }}
     />
   ) : (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+    <span style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
       <span style={{ width: 30, height: 30, borderRadius: 'var(--merk-radius-sm, 9px)', background: 'var(--merk)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
         <span style={{ color: 'var(--merk-op)', fontWeight: 800, fontSize: 16, letterSpacing: '-.04em' }}>
           {branding.naam.slice(0, 1).toUpperCase()}
         </span>
       </span>
-      <span style={{ fontWeight: 750, fontSize: 16, letterSpacing: '-.02em', color: '#14181B' }}>{branding.naam}</span>
+      <span style={{ fontWeight: 750, fontSize: 16, letterSpacing: '-.02em', color: '#14181B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{branding.naam}</span>
     </span>
   )
 
@@ -198,6 +198,11 @@ export function AppTopbar({
         @media (max-width: 900px) {
           .topbar-menus, .topbar-rechts { display: none; }
           .topbar-mobiel-knop { display: flex; }
+          /* 390 px: zoekknop alleen als icoon (touch heeft geen ⌘K), kleinere
+             gaten, en de lockup mag krimpen (lange kantoornaam → ellips) —
+             anders duwde de zoekknop de hamburger buiten beeld (28 sep). */
+          .zoekknop-toets { display: none; }
+          .topbar-rij { gap: 10px !important; }
         }
       `}</style>
 
@@ -208,14 +213,14 @@ export function AppTopbar({
           backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
       >
-        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 22 }}>
-          <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ maxWidth: 'var(--app-breedte)', margin: '0 auto', height: 66, padding: '0 var(--app-marge)', display: 'flex', alignItems: 'center', gap: 22 }} className="topbar-rij">
+          <Link href="/dashboard" style={{ textDecoration: 'none', flexShrink: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
             {/* Co-branding-lockup (besluit 16 sep 2026, vergroot fase 1.3): Quinn wil
                 zichtbaar houden dat het platform van VestaAI is, ook al draagt de rest
                 van de omgeving volledig de huisstijl van het kantoor. Vaste
                 VestaAI-groen, niet var(--merk) — dit ís het VestaAI-merk, niet het
                 kantoor-merk. */}
-            <span style={{ display: 'flex', alignItems: 'center', gap: 7 }} title="VestaAI">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }} title="VestaAI">
               <span style={{ width: 26, height: 26, borderRadius: 7, background: '#1A6B45', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: '#fff', fontWeight: 800, fontSize: 13.5, letterSpacing: '-.04em' }}>V</span>
               </span>

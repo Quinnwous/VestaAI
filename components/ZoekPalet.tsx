@@ -110,7 +110,7 @@ export function ZoekKnop({ onClick }: { onClick: () => void }) {
     >
       <SearchIcon size={15} />
       {toetsLabel && (
-        <span style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.01em', color: colors.muted, whiteSpace: 'nowrap' }}>
+        <span className="zoekknop-toets" style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.01em', color: colors.muted, whiteSpace: 'nowrap' }}>
           {toetsLabel}
         </span>
       )}
