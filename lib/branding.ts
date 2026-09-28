@@ -136,8 +136,10 @@ export function lichter(hex: string, factor: number): string {
 /**
  * Relatieve luminantie (WCAG). Bepaalt of tekst op de merkkleur zwart of wit moet
  * zijn — zonder dit wordt een licht kantoorlogo-geel onleesbaar met witte letters.
+ * Ook hergebruikt door `lib/statischeKaart.ts` (`subjectPinStijl`) om te bepalen of
+ * een (bijna) zwarte merkkleur op de pdf-locatiekaart eerst opgelicht moet worden.
  */
-function luminantie(hex: string): number {
+export function luminantie(hex: string): number {
   const kanaal = (c: number) => {
     const s = c / 255
     return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
