@@ -113,3 +113,33 @@ const VERKOPER_WAARSCHUWING = /^(Ook binnen|Minder dan|Zonder locatie)/
 export function verkoperWaarschuwingen(waarschuwingen: string[]): string[] {
   return waarschuwingen.filter(w => VERKOPER_WAARSCHUWING.test(w))
 }
+
+/**
+ * Contactregel voor de kantoorafsluiting (stap "Toelichting van de
+ * makelaar"): alleen wat het kantoor heeft ingevuld, telefoon vóór e-mail,
+ * gescheiden door " · " — `null` als er niets is ingevuld, zodat de UI de
+ * hele regel laat verdwijnen in plaats van een lege balk te tonen (zelfde
+ * regel als de huisstijlskill: "een leeg veld laat het element verdwijnen").
+ * Puur zodat dit met vitest te testen is, los van de component.
+ */
+export function kantoorContactregel(kantoor: { telefoon: string | null; email: string | null }): string | null {
+  const delen = [kantoor.telefoon, kantoor.email].filter(
+    (d): d is string => typeof d === 'string' && d.trim().length > 0,
+  )
+  return delen.length > 0 ? delen.join(' · ') : null
+}
+
+export type LogoWeergave = 'logo' | 'naam'
+
+/**
+ * Kiest tussen het kantoorlogo en de kantoornaam als tekst — gebruikt op
+ * twee plekken die exact dezelfde keuze moeten maken: stap 1 "De woning"
+ * zonder dossierfoto (klein logo boven het adres) en stap 6 "Toelichting"
+ * (kantoorafsluiting). `logoGeladen` komt uit de `onError`-state van de
+ * component zelf (dat deel is niet puur te maken, zie AppTopbar.tsx voor
+ * hetzelfde patroon) — zonder logo-URL is er niets om te laden, dus dan is
+ * de uitkomst altijd 'naam'.
+ */
+export function logoWeergave(logoUrl: string | null, logoGeladen: boolean): LogoWeergave {
+  return logoUrl && logoGeladen ? 'logo' : 'naam'
+}
