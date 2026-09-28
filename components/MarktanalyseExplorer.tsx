@@ -275,7 +275,7 @@ export function MarktanalyseExplorer({
               Nog geen transacties
             </Badge>
           ) : (
-            <Badge dot color="var(--merk-accent, #C61E45)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
+            <Badge dot color="var(--merk-accent)" style={{ whiteSpace: 'normal', maxWidth: '100%' }}>
               Data t/m <b style={{ color: colors.text }}>{datum(dataTotEnMet)}</b> · {nlNL.format(nu.n)} transacties in de selectie
             </Badge>
           )}
@@ -514,7 +514,7 @@ export function MarktanalyseExplorer({
                 />
               ) : (
                 <p style={{ fontSize: 13, color: colors.muted, margin: 0 }}>
-                  De verdeling per prijsklasse is nog niet beschikbaar — de bijbehorende migratie moet nog worden toegepast.
+                  Deze cijfers kunnen we nu niet laden. Probeer het later opnieuw.
                 </p>
               )}
             </ChartCard>
