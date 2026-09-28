@@ -13,6 +13,14 @@
  *    `app/api/fotos/staging/route.ts`) samen tot één PNG-buffer, uitgesneden
  *    op het kader. Geen nieuwe npm-dependency nodig.
  *
+ * De pins zelf (subject + genummerde referenties) worden niet hier getekend
+ * maar als een `<Svg>`-laag over deze PNG heen in `WaardebepalingPdfTemplate.tsx`
+ * (react-pdf) — dat template rekent niets uit, het gebruikt kant-en-klare
+ * pixelposities uit `pixelInKader`/`kaartReferenties`. `subjectPinStijl()`
+ * hieronder is wél hier gedefinieerd (pure kleurlogica, dus met de andere pure
+ * functies in dit bestand) en levert de vul-/randkleur die dat template voor
+ * de subject-pin moet gebruiken.
+ *
  * Ondergrond: PDOK BRT-Achtergrondkaart, stijl "pastel" (zelfde stijlkeuze
  * als de interactieve MapLibre-kaart, § 3.5 / besluit 17 sep 2026) — maar
  * hier via **WMTS-tegels**, niet WMS GetMap: de GetCapabilities van
@@ -24,6 +32,8 @@
  * (EPSG:3857, 256×256 px, TopLeftCorner (-20037508.3428, 20037508.3428)) —
  * dezelfde rekenwijze als OSM/Google-tegels.
  */
+
+import { VESTA_MERK, luminantie, lichter } from './branding'
 
 const TEGEL_PX = 256
 const AARDE_STRAAL_M = 6378137
@@ -185,6 +195,47 @@ export function kaartReferenties(
     if (c) resultaat.push({ id: r.id, nummer: i + 1, lat: c.lat, lng: c.lng })
   })
   return resultaat
+}
+
+// ── Subject-pin contrast ────────────────────────────────────────────────────
+
+const HEX_KLEUR = /^#[0-9A-Fa-f]{6}$/
+
+/**
+ * Onder deze relatieve luminantie (WCAG, via `lib/branding.ts` `luminantie()`)
+ * is een merkkleur op de pastel-kaart nauwelijks te onderscheiden van de
+ * referentiepins (`WaardebepalingPdfTemplate.tsx`, vulling `#14181B`, eigen
+ * luminantie ≈ 0,009): beide zijn dan een donkere stip met een witte rand, en
+ * bij een (bijna) zwarte merkkleur — zoals het demo-kantoor — valt de subject
+ * (dé woning) niet meer op tussen de referenties.
+ *
+ * 0,06 zit ruim boven die 0,009 (marge voor "donker maar niet zwart") en ruim
+ * onder normale merkkleuren: i4housing-blauw `#0080C8` ≈ 0,196 en VestaAI-groen
+ * `#1A6B45` ≈ 0,112 blijven dus onaangeraakt, terwijl `#111111` (≈ 0,006) en
+ * `#000000` (0) wél worden opgelicht.
+ */
+export const SUBJECT_PIN_LUMINANTIE_DREMPEL = 0.06
+
+/** Hoeveel `lichter()` een te donkere merkkleur naar wit toe mengt — genoeg om ruim
+ * boven de drempel hierboven uit te komen (een grijstint van ~0,2 luminantie bij zwart). */
+const SUBJECT_PIN_LICHTER_FACTOR = 0.5
+
+export type SubjectPinStijl = { fill: string; stroke: string; strokeWidth: number }
+
+/**
+ * Vul-/randkleur voor de subject-pin (de woning zelf) op de pdf-locatiekaart.
+ * Altijd een duidelijke witte rand (halo), dikker dan de rand van de
+ * referentiepins (1,6pt in het template) zodat de subject sowieso een eigen silhouet houdt.
+ * Is de merkkleur te donker (onder `SUBJECT_PIN_LUMINANTIE_DREMPEL`) dan wordt
+ * de vulling met `lichter()` opgelicht i.p.v. de merkkleur zelf te gebruiken —
+ * anders verdwijnt de subject-pin bij een (bijna) zwart kantoor tegen de
+ * eveneens donkere referentiepins. Een ontbrekende of ongeldige kleur valt
+ * veilig terug op VestaAI's eigen merkkleur (nooit een onbepaalde/zwarte pin).
+ */
+export function subjectPinStijl(merkkleur: string | null | undefined): SubjectPinStijl {
+  const veilig = typeof merkkleur === 'string' && HEX_KLEUR.test(merkkleur) ? merkkleur : VESTA_MERK.primair
+  const fill = luminantie(veilig) < SUBJECT_PIN_LUMINANTIE_DREMPEL ? lichter(veilig, SUBJECT_PIN_LICHTER_FACTOR) : veilig
+  return { fill, stroke: '#FFFFFF', strokeWidth: 2.5 }
 }
 
 // ── IO: tegels ophalen + samenstellen (sharp) ──────────────────────────────
