@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { meldFout } from '@/lib/fouten'
 import type { ZoekWoning } from '@/lib/zoeken'
 import { MIN_ZOEKLENGTE } from '@/lib/zoeken'
+import { escapeIlike } from '@/lib/kantoorReset'
 
 export type ZoekApiResultaat = { woningen: ZoekWoning[] }
 
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest) {
     .from('objecten')
     .select('id, address, fase')
     .eq('kantoor_id', makelaar.kantoor_id)
-    .ilike('address', `%${q}%`)
+    // `%`/`_` in de zoekterm letterlijk nemen, niet als jokerteken (les 9.2)
+    .ilike('address', `%${escapeIlike(q)}%`)
     .order('created_at', { ascending: false })
     .limit(8)
 
