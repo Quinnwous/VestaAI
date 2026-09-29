@@ -95,6 +95,16 @@ describe('beoordeelTreffer', () => {
     })
     expect(uitkomst.status).toBe('mislukt')
   })
+
+  it("is benaderd bij een plaatsverschil 's-Gravenhage (rij) vs. Den Haag (PDOK) — item J1", () => {
+    const rij = { huisnummer: 12, adres: 'Dorpsstraat 12', plaats: 'Den Haag' }
+    const uitkomst = beoordeelTreffer(rij, {
+      centroide_ll: 'POINT(4.31 52.08)',
+      straatnaam: 'Dorpsstraat',
+      woonplaatsnaam: "'s-Gravenhage",
+    })
+    expect(uitkomst.status).toBe('benaderd')
+  })
 })
 
 describe('naarGeoWkt', () => {

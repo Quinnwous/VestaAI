@@ -11,6 +11,7 @@
  *
  * Gebruikt door `scripts/geocodeer-transacties.mjs`.
  */
+import { plaatsenGelijk } from './plaatsNormalisatie'
 
 // ── 1. Invoer: de velden van een transactierij die we nodig hebben ─────────
 
@@ -152,11 +153,12 @@ export function beoordeelTreffer(rij: GeocodeerInvoer, pdokDoc: PdokDoc | null):
 
   const straatRij = normaliseerDeel(straatUitAdres(rij.adres ?? ''))
   const straatDoc = normaliseerDeel(pdokDoc.straatnaam)
-  const plaatsRij = normaliseerDeel(rij.plaats)
-  const plaatsDoc = normaliseerDeel(pdokDoc.woonplaatsnaam)
 
   const straatMatcht = straatRij !== null && straatRij === straatDoc
-  const plaatsMatcht = plaatsRij !== null && plaatsRij === plaatsDoc
+  // plaatsenGelijk (i.p.v. een kale lowercase-vergelijking, item J1): anders
+  // wordt "'s-Gravenhage" (PDOK/BAG) vs. "Den Haag" (rij) ten onrechte als
+  // mislukt beoordeeld terwijl het dezelfde plaats is.
+  const plaatsMatcht = !!rij.plaats && !!pdokDoc.woonplaatsnaam && plaatsenGelijk(rij.plaats, pdokDoc.woonplaatsnaam)
 
   if (straatMatcht && plaatsMatcht) {
     return { status: 'benaderd', lat: coord.lat, lng: coord.lng, wijk, buurt }

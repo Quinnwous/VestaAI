@@ -8,9 +8,6 @@ import {
   vergelijkLooptijdMetMarkt,
   berekenMarktaandeel,
   filterOpPlaatsLaatste12Mnd,
-  plaatsSleutel,
-  plaatsenGelijk,
-  plaatsVarianten,
   type EigenVerkoopPlaatsRow,
 } from './kerncijfers'
 
@@ -163,23 +160,5 @@ describe('filterOpPlaatsLaatste12Mnd', () => {
   })
 })
 
-describe('plaatsnaam-normalisatie', () => {
-  it('plaatsSleutel negeert hoofdletters, apostrofs, koppeltekens en diakrieten', () => {
-    expect(plaatsSleutel('Wassenaar')).toBe(plaatsSleutel('wassenaar'))
-    expect(plaatsSleutel("'s-Gravenhage")).toBe(plaatsSleutel('s Gravenhage'))
-  })
-
-  it("plaatsenGelijk herkent 's-Gravenhage en Den Haag als dezelfde plaats", () => {
-    expect(plaatsenGelijk("'s-Gravenhage", 'Den Haag')).toBe(true)
-    expect(plaatsenGelijk('Wassenaar', 'Voorschoten')).toBe(false)
-  })
-
-  it('plaatsVarianten geeft de bekende aliassen mee voor een RPC-filter', () => {
-    expect(plaatsVarianten("'s-Gravenhage")).toEqual(["'s-Gravenhage", 'Den Haag'])
-    expect(plaatsVarianten('Den Haag')).toEqual(['Den Haag', "'s-Gravenhage"])
-  })
-
-  it('plaatsVarianten geeft alleen de plaats zelf terug zonder bekende alias', () => {
-    expect(plaatsVarianten('Wassenaar')).toEqual(['Wassenaar'])
-  })
-})
+// Tests voor plaatsSleutel/plaatsenGelijk/plaatsVarianten/canoniekePlaats zelf
+// staan sinds item J1 in lib/plaatsNormalisatie.test.ts.

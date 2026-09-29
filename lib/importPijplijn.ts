@@ -1,8 +1,9 @@
 /**
  * Pure orkestratie van de importpijplijn (item 5.2, docs/roadmap.md § Fase
  * 5): ruwe rijen → mappen (`lib/importProfielen.ts` `mapRij()`) →
- * normaliseren (adres_sleutel, woningtype-groep/sub, verkopend_kantoor_norm,
- * eigen_verkoop) → kwaliteit (`lib/transactieKwaliteit.ts`) → ontdubbelen
+ * normaliseren (adres_sleutel, plaats (`canoniekePlaats()`, item J1,
+ * docs/specs/j1-plaatsnormalisatie.md), woningtype-groep/sub,
+ * verkopend_kantoor_norm, eigen_verkoop) → kwaliteit (`lib/transactieKwaliteit.ts`) → ontdubbelen
  * (`lib/ontdubbelen.ts`) → `{ rijen, rapport }`. Geen Supabase-afhankelijkheid
  * hier — `scripts/import-transacties.mjs` roept dit aan en doet zelf de
  * database-I/O (lezen van bestaande rijen, upserten, wegschrijven van de
@@ -18,6 +19,7 @@ import { beoordeelTransactie, KWALITEIT_LABELS, type KwaliteitsRedenCode } from 
 import { isEigenKantoor, normaliseerKantoornaam } from './kantoorNormalisatie'
 import { ontdubbel, type OntdubbelVoorbeeld } from './ontdubbelen'
 import { IMPORT_SNAPSHOT_VERSIE, MAX_SNAPSHOT_RIJEN, type ImportSnapshot, type ImportSnapshotRij } from './importSnapshot'
+import { canoniekePlaats } from './plaatsNormalisatie'
 
 /** Eén rij, klaar om te upserten op `transacties` (op `kantoor_id` na — dat voegt het script toe). */
 export type GenormaliseerdeRij = {
@@ -164,7 +166,11 @@ export function voerImportPijplijnUit(
     genormaliseerd.push({
       adres: bronRij.adres,
       postcode: bronRij.postcode,
-      plaats: bronRij.plaats,
+      // Canonieke schrijfwijze bij het schrijven (item J1): "Den Haag" i.p.v.
+      // "'s-Gravenhage"/"S GRAVENHAGE"/etc., zodat elke latere exacte
+      // vergelijking (RPC-filters, werkgebied) vanzelf klopt — zie
+      // lib/plaatsNormalisatie.ts.
+      plaats: bronRij.plaats !== null ? canoniekePlaats(bronRij.plaats) : null,
       wijk: bronRij.wijk,
       buurt: bronRij.buurt,
       geo,

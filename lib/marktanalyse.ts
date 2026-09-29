@@ -6,6 +6,7 @@ import type { TransactieFilter } from './schemas'
 import { woningtypeTaxonomie } from './transactieNormalisatie'
 import { bereikGelijk } from './filterVergelijk'
 import type { MarktanalyseSamenvattingRij } from './transactiesQuery'
+import { canoniekePlaats } from './plaatsNormalisatie'
 
 /**
  * Aggregatielogica voor de interactieve marktanalyse-explorer (F6, besluit 16
@@ -333,10 +334,17 @@ export const MarktanalyseFilterSchema = z.object({
 
 export type MarktanalyseFilterState = z.infer<typeof MarktanalyseFilterSchema>
 
-/** Standaardfilter = werkgebied van het kantoor (docs/roadmap.md item 6.1: "Standaardfilter = werkgebied van het kantoor"). */
+/**
+ * Standaardfilter = werkgebied van het kantoor (docs/roadmap.md item 6.1:
+ * "Standaardfilter = werkgebied van het kantoor"). `werkgebiedPlaatsen` komt
+ * rechtstreeks uit `KantoorInstellingenSchema.werkgebied` (vrije invoer door
+ * de platform-admin) en kan dus "'s-Gravenhage" bevatten terwijl de
+ * transactiedataset "Den Haag" schrijft (item J1) — eerst door
+ * `canoniekePlaats` halen, anders levert de RPC-exact-match stil nul rijen op.
+ */
 export function standaardFilterState(werkgebiedPlaatsen: string[]): MarktanalyseFilterState {
   return {
-    plaatsen: werkgebiedPlaatsen,
+    plaatsen: werkgebiedPlaatsen.map(canoniekePlaats),
     wijken: [],
     typen: [],
     periode: 24,
