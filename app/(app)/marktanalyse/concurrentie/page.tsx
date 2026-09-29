@@ -3,6 +3,7 @@ import { haalIngelogdeMakelaarOp, AccountWordtKlaargezet } from '@/lib/haalIngel
 import { KantoorInstellingenSchema } from '@/lib/schemas'
 import { plaatsenWijken, dataTotEnMet, type PlaatsWijkRij } from '@/lib/transactiesQuery'
 import { standaardConcurrentieFilter, concurrentieFilterNaarTransactieFilter, concurrentieFilterZonderPeriode } from '@/lib/concurrentie'
+import { canoniekePlaats } from '@/lib/plaatsNormalisatie'
 import { ConcurrentieExplorer } from '@/components/ConcurrentieExplorer'
 import { haalConcurrentieData } from './actions'
 
@@ -38,7 +39,8 @@ export default async function ConcurrentieAnalysePage() {
   ])
 
   const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
-  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+  // canoniekePlaats (item J1): zie app/(app)/marktanalyse/transacties/page.tsx voor de uitleg.
+  const werkgebiedPlaatsen = (instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []).map(canoniekePlaats)
 
   // `transacties_plaatsen_wijken` staat klaar sinds item 6.1 (migratie
   // 20260923_marktanalyse_verdeling_en_plaatsen.sql) — val terug op het

@@ -4,6 +4,7 @@ import { gemiddelde } from './utils'
 import { mediaan } from './prijsindex'
 import type { TransactieFilter } from './schemas'
 import { PRIJSKLASSEN, periodeNaarDatums, type PeriodeMaanden } from './marktanalyse'
+import { canoniekePlaats } from './plaatsNormalisatie'
 
 /**
  * Concurrentieanalyse (F6, besluit 16 sep 2026, zie CLAUDE.md §
@@ -398,9 +399,14 @@ export const ConcurrentieFilterSchema = z.object({
 })
 export type ConcurrentieFilterState = z.infer<typeof ConcurrentieFilterSchema>
 
-/** Standaardfilter = werkgebied van het kantoor (zelfde besluit als item 6.1). */
+/**
+ * Standaardfilter = werkgebied van het kantoor (zelfde besluit als item 6.1).
+ * Eerst door `canoniekePlaats` (item J1) — het werkgebied kan de officiële
+ * gemeentenaam bevatten ('s-Gravenhage) terwijl de transactiedataset de
+ * spreektaalvariant schrijft (Den Haag), en de RPC's vergelijken exact.
+ */
 export function standaardConcurrentieFilter(werkgebiedPlaatsen: string[]): ConcurrentieFilterState {
-  return { plaatsen: werkgebiedPlaatsen, wijken: [], typen: [], periode: 24, klassen: [], verborgen: [], sort: 'aandeel' }
+  return { plaatsen: werkgebiedPlaatsen.map(canoniekePlaats), wijken: [], typen: [], periode: 24, klassen: [], verborgen: [], sort: 'aandeel' }
 }
 
 /**

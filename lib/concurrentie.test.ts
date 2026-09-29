@@ -253,6 +253,10 @@ describe('standaardConcurrentieFilter', () => {
     expect(f.verborgen).toEqual([])
     expect(f.sort).toBe('aandeel')
   })
+
+  it('normaliseert een werkgebied-plaats naar de canonieke schrijfwijze (item J1)', () => {
+    expect(standaardConcurrentieFilter(["'s-Gravenhage"]).plaatsen).toEqual(['Den Haag'])
+  })
 })
 
 describe('concurrentieFilterNaarTransactieFilter', () => {

@@ -9,6 +9,7 @@ import {
 } from '@/lib/transactiesQuery'
 import { standaardFilterState, filterStateNaarTransactieFilter } from '@/lib/marktanalyse'
 import type { TransactieRow } from '@/lib/supabase'
+import { canoniekePlaats } from '@/lib/plaatsNormalisatie'
 import { MarktanalyseExplorer } from '@/components/MarktanalyseExplorer'
 import { haalMarktanalyseData } from './actions'
 
@@ -49,7 +50,8 @@ export default async function MarktanalysePage() {
   ])
 
   const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
-  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+  // canoniekePlaats (item J1): zie app/(app)/marktanalyse/transacties/page.tsx voor de uitleg.
+  const werkgebiedPlaatsen = (instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []).map(canoniekePlaats)
 
   // `transacties_plaatsen_wijken` staat klaar in dezelfde (nog niet
   // toegepaste) migratie als de verdeling-RPC hieronder — val tot die tijd

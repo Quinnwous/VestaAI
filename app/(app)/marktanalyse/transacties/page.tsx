@@ -17,6 +17,7 @@ import {
   PER_PAGINA,
 } from '@/lib/transactiesZoeken'
 import type { TransactieRow } from '@/lib/supabase'
+import { canoniekePlaats } from '@/lib/plaatsNormalisatie'
 import { TransactiesZoeken } from '@/components/TransactiesZoeken'
 
 export const metadata = { title: 'Transacties opzoeken' }
@@ -49,7 +50,11 @@ export default async function TransactiesPage() {
   ])
 
   const instellingenGeparsed = KantoorInstellingenSchema.safeParse(kantoorRow?.instellingen_json ?? {})
-  const werkgebiedPlaatsen = instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []
+  // canoniekePlaats (item J1): het werkgebied is vrije platform-admin-invoer en
+  // kan de officiële gemeentenaam bevatten ('s-Gravenhage), terwijl de
+  // transactiedataset de spreektaalvariant schrijft (Den Haag) — zonder deze
+  // normalisatie levert de RPC-exact-match stil nul rijen op.
+  const werkgebiedPlaatsen = (instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []).map(canoniekePlaats)
   const kantoorNaam = (kantoorRow?.name as string | undefined) ?? 'ons kantoor'
 
   // `transacties_plaatsen_wijken` (migratie 20260923_marktanalyse_verdeling_en_plaatsen.sql,
