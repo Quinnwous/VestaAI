@@ -105,7 +105,8 @@ function hoofdletterEersteLetter(woord: string): string {
 
 /** Of een naam in één hoofdlettervorm staat (ALLES HOOFD of alles klein) — dan zeggen de hoofdletters niets en formatteren we opnieuw. */
 function isEnkeleHoofdlettervorm(naam: string): boolean {
-  const letters = naam.replace(/[^\p{L}]/gu, '')
+  // Letters zijn tekens met een hoofd- en kleine-lettervorm (ook é, ë, …).
+  const letters = Array.from(naam).filter(t => t.toLowerCase() !== t.toUpperCase()).join('')
   return letters === letters.toUpperCase() || letters === letters.toLowerCase()
 }
 
