@@ -168,7 +168,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 | Frontend + API routes | Next.js 14 (App Router) |
 | Database + Auth + Storage | Supabase (+ PostGIS-extensie voor `transacties.geo`) |
 | AI engine (contentsuite, AI USP-extractor) | Claude API — `claude-sonnet-4-6` |
-| Virtual staging | Gemini API — `gemini-2.0-flash-exp` (`GOOGLE_AI_API_KEY`) |
+| Virtual staging | Gemini API — `gemini-2.5-flash-image` ("Nano Banana", `app/api/fotos/staging/route.ts`) (`GOOGLE_AI_API_KEY`) |
 | Transactiedataset (waardering, marktinzichten, kaart) | i4housing's eigen Realworks-verkoopdata + overige verkopen, CSV-import via `/admin/transacties` |
 | Kaart | MapLibre GL + PDOK BRT-Achtergrondkaart-vectortiles (pastel), één stack in `components/kaart/` — Leaflet is weg sinds item 7.4 |
 | Grafieken | `recharts` |

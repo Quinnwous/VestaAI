@@ -18,8 +18,8 @@
  *    ongewijzigd door (na stap 1).
  *
  * Generiek over het rijtype T (alleen `adres_sleutel`/`verkoopdatum`/`bron`
- * zijn vereist) zodat dit zowel op `TransactieInsert`-achtige objecten als
- * op de rijkere vorm van `lib/importPijplijn.ts` werkt.
+ * zijn vereist) zodat dit op de rijkere vorm van `lib/importPijplijn.ts`
+ * (`GenormaliseerdeRij`) werkt.
  */
 
 export type OntdubbelKern = {

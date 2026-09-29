@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-- **Laatste rondes (28 sep, PR #41 `feat/sessie-28sep-h` en PR #42
+- **Rondes 28 sep (PR #41 `feat/sessie-28sep-h` en PR #42
   `feat/sessie-28sep-i`, beide live):** fase 5 formaat-onafhankelijk
   voorbereid — 5.2 importkern + `scripts/import-transacties.mjs` (CSV/XLSX,
   RD → WGS84, kwaliteitsregels, ontdubbelen, rapport; kolomaliassen per bron
@@ -41,19 +41,17 @@
 - **Zodra de exports binnen zijn:** 5.1 exportanalyse → `lib/importProfielen.ts`
   definitief maken → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
   export) → dry-run → `--write` → geocoderen → backtest → M1-tussencheck.
-- **Volgende ronde (bouwbaar zonder data, werkwijze: agents, nul overlap):**
-  1. **J1 Plaatsnormalisatie** — BAG/PDOK/Brainbay schrijven "'s-Gravenhage",
-     het werkgebied en de UI "Den Haag": zonder normalisatie mist de
-     werkgebiedfilter alle Haagse verkopen. Eén `normaliseerPlaats()` in import,
-     geocodering (woonplaatsvergelijking) en werkgebied-matching.
-  2. **J2 Courtage per dossier** — intakeveld "Courtagevoorstel" start op de
-     kantoorstandaard (i4: 1 % excl. btw) en blijft per dossier aanpasbaar
-     (besluit Quinn 28 sep); btw-aanduiding in de kantoorinstellingen; leeg
-     veld mag geen NaN-validatiefout geven.
-  Niet zonder Quinn: 8.5 (betaalde testrun), 8.1-evaluatie,
-  smoke-generatietest met `E2E_GENERATE=1`, EN-kwartaalbericht tegen de echte
-  API, Sentry (account), Next 15-upgrade (nodig voor mobiel ≥ 85),
-  verkoopadvies v0 op een generieke opbouw (vóór het voorbeeld er is).
+- **Rondes 29 sep (J en K, PR #43 en #44):** J1 plaatsnormalisatie (import
+  schrijft "Den Haag", HOOFDLETTER-exports → "Wassenaar"; demo-kantoor omgezet),
+  J2 courtage per dossier (kantoorstandaard, btw-aanduiding), K1
+  verkoopadvies-datalaag (`lib/verkoopadvies.ts` + `lib/verkoopadviesLaden.ts`:
+  het fase-11-contract + `verkoopadviesGereedheid()`, live getest: 0,9 s), K2
+  dode importcode weg + "locatie benaderd" in Transacties opzoeken.
+- **Bouwbaar zonder data is nu vrijwel op.** Wat overblijft vraagt een keuze of
+  input van Quinn: verkoopadvies-opbouw (voorbeeld), 8.5-testrun + smoke-generatie
+  + EN-kwartaalbericht (betaald, paar euro), Next 15-upgrade (mobiel ≥ 85),
+  team-accounts (namen), kantoorprofiel i4 ("over ons", opgericht, kenmerken —
+  de gereedheidscheck meldt het als ontbrekend), Sentry (account).
 - **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
   de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
   ging over een functie zonder aanroeper. Niet opnieuw oppakken.

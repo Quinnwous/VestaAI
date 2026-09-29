@@ -6,6 +6,18 @@
 
 ---
 
+### 29 sep 2026 (dertiende en veertiende ronde) — plaatsnormalisatie, courtage per dossier, verkoopadvies-datalaag (PR #43, #44)
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Canonieke plaatsnaam | In de database de spreektaal: "Den Haag" (niet "'s-Gravenhage"). `canoniekePlaats()` bij het schrijven (import); HOOFDLETTER- of kleine-letterinvoer wordt opnieuw geformatteerd ("WASSENAAR" → "Wassenaar", "ijmuiden" → "IJmuiden"), gemengde invoer blijft staan. Werkgebied gaat door dezelfde functie vóór de standaardfilters. De hoofdlettergevallen vond Opus in review — anders had een export in hoofdletters het werkgebied alsnog gemist | Sonnet + Opus |
+| Demo-kantoor omgezet | 3.182 synthetische transacties + werkgebied "'s-Gravenhage" → "Den Haag", ná de deploy van de code (anders liep oude code op nieuwe data), na back-up `backups/2026-09-29T07-25-17-919Z/`. Generale repetitie daarna groen | Opus |
+| Courtage per dossier | Nieuw dossier start op `instellingen_json.courtage.percentage`, label "excl./incl. btw" (`courtage.btw`, ontbreekt = exclusief), per woning aanpasbaar; leeg veld gaf `NaN` → validatiefout (gefixt). `PropertyForm` wordt alleen voor nieuwe dossiers gebruikt, dus geen risico dat een bestaande waarde overschreven wordt | Sonnet |
+| Verkoopadvies-datalaag | Het fase-11-contract gebouwd zonder UI/pdf (die wachten op het voorbeeld): `bouwVerkoopadviesInput()`, `haalVerkoopadviesInput()` (sessie-client, marktcontext 24 mnd verankerd aan de laatste verkoopdatum, best-effort), `verkoopadviesGereedheid()` (7 onderdelen: ok/zwak/ontbreekt). Filter op subtypes van de typegroep — `TransactieFilter` kent geen `typegroepen` | Sonnet |
+| Locatie benaderd | `geocode_status = 'benaderd'` zichtbaar in Transacties opzoeken: tekstregel onder de minikaart, klein pin-icoon met tooltip in de tabel (geen extra kolom) | Sonnet |
+| `parseTransactieCsv` weg | Geen aanroeper meer sinds ronde I; `TransactieInsert` ook. `lib/transactieImport.ts` is nu een bibliotheek met parse-helpers | Sonnet |
+| Werk van een andere sessie | Platformschema i4 Housing (html + pdf) en de `CLAUDE.md`-regel over `gemini-2.5-flash-image` meegecommit op verzoek van Quinn, na controle op geheimen | Quinn |
+
 ### 28 sep 2026 (twaalfde ronde) — admin-CSV via de pijplijn, kantoor-aliassen, i4-instellingen (PR #42)
 
 | Onderwerp | Besluit | Door |
