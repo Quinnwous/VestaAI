@@ -11,6 +11,7 @@
  *   node --env-file=.env.local scripts/meet-lighthouse.mjs --label=voor
  *   node --env-file=.env.local scripts/meet-lighthouse.mjs --basis=http://localhost:3000 --runs=5
  *   node --env-file=.env.local scripts/meet-lighthouse.mjs --routes=/dashboard,/marktanalyse --desktop
+ *   node --env-file=.env.local scripts/meet-lighthouse.mjs --anoniem --routes=/,/login/i4housing  (publiek, zonder sessie)
  *
  * Standaard: productie (https://www.vestaai.nl — de kale domeinnaam stuurt door), 3 runs, mobiel, routes dashboard ·
  * marktanalyse · concurrentie · woningen · dossier (eerste dossier met
@@ -36,6 +37,7 @@ const args = Object.fromEntries(
 const BASIS = String(args.basis ?? 'https://www.vestaai.nl').replace(/\/$/, '')
 const RUNS = Number(args.runs ?? 3)
 const DESKTOP = !!args.desktop
+const ANONIEM = !!args.anoniem
 
 async function chromePad() {
   if (process.env.CHROME_PATH) return process.env.CHROME_PATH
@@ -104,12 +106,12 @@ const mediaan = (xs) => { const s = [...xs].sort((a, b) => a - b); return s[Math
 
 async function main() {
   const chrome = await chromePad()
-  const cookie = await sessieCookie()
+  const cookie = ANONIEM ? null : await sessieCookie()
   const routes = args.routes ? String(args.routes).split(',') : await standaardRoutes()
   const map = await mkdtemp(join(tmpdir(), 'lh-'))
   const headerBestand = join(map, 'headers.json')
   // Het sessietoken staat alleen in een tijdelijk bestand (0600) en gaat na afloop weg.
-  await writeFile(headerBestand, JSON.stringify({ Cookie: `${cookie.name}=${cookie.value}` }), { mode: 0o600 })
+  await writeFile(headerBestand, JSON.stringify(cookie ? { Cookie: `${cookie.name}=${cookie.value}` } : {}), { mode: 0o600 })
 
   const resultaat = {}
   try {
@@ -117,7 +119,7 @@ async function main() {
       const runs = []
       for (let i = 0; i < RUNS; i++) {
         const lhr = await draaiLighthouse(BASIS + route, headerBestand, chrome)
-        if (new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl).pathname.startsWith('/login')) {
+        if (!ANONIEM && new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl).pathname.startsWith('/login')) {
           throw new Error(`${route} stuurde door naar /login — sessiecookie niet geaccepteerd`)
         }
         runs.push(samenvatting(lhr))
