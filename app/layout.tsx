@@ -22,10 +22,16 @@ const newsreader = Newsreader({
 // Kantoor-lettertype-opties (zie lib/branding.ts § FONT_OPTIES). Hier vooraf geladen
 // als CSS-variabele, net als jakarta/newsreader hierboven — next/font vereist statische
 // imports, dus nieuwe kantoorfonts komen er hier ook bij.
+// preload: false voor de kantoor-opties (les 29 sep 2026): een kantoor gebruikt er
+// hooguit één, maar next/font preloadt élke font uit deze layout met hoge
+// prioriteit op élke pagina — op traag 4G concurreerde dat met het JavaScript
+// (5 fontbestanden, 217 kB). Zonder preload haalt de browser alleen het font op
+// dat de CSS echt gebruikt; `display: swap` toont intussen de terugval.
 const gantari = Gantari({
   subsets: ['latin'],
   variable: '--font-gantari',
   display: 'swap',
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
@@ -33,6 +39,7 @@ const nunito = Nunito_Sans({
   subsets: ['latin'],
   variable: '--font-nunito',
   display: 'swap',
+  preload: false,
   weight: ['400', '500', '600', '700', '800'],
 })
 
@@ -86,11 +93,14 @@ export default function RootLayout({
   return (
     <html lang="nl">
       <head>
+        {/* lazyOnload (29 sep 2026): analytics pas als de browser vrij is — met
+            afterInteractive gaf het script een lange taak van ~0,5 s midden in
+            de hydratie (Lighthouse mobiel). */}
         <Script
           defer
           data-domain="vestaai.nl"
           src="https://plausible.io/js/script.js"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
         />
       </head>
       <body className={`${jakarta.variable} ${newsreader.variable} ${gantari.variable} ${nunito.variable} ${jakarta.className}`}>
