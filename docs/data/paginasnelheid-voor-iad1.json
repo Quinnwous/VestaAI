@@ -1,0 +1,71 @@
+{
+  "label": "voor-iad1",
+  "basis": "https://www.vestaai.nl",
+  "n": 8,
+  "gemetenOp": "2026-09-29T08:41:00.186Z",
+  "resultaten": [
+    {
+      "pagina": "Overzicht",
+      "pad": "/dashboard",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 737,
+      "ttfbP75": 864,
+      "totaalMediaan": 1512
+    },
+    {
+      "pagina": "Woningen",
+      "pad": "/woningen",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 592,
+      "ttfbP75": 733,
+      "totaalMediaan": 1046
+    },
+    {
+      "pagina": "Dossier",
+      "pad": "/object/7ee41a72-efbf-4b7a-a0b6-c49da7cdc558",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 584,
+      "ttfbP75": 607,
+      "totaalMediaan": 1827
+    },
+    {
+      "pagina": "Marktanalyse",
+      "pad": "/marktanalyse",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 538,
+      "ttfbP75": 713,
+      "totaalMediaan": 1574
+    },
+    {
+      "pagina": "Transacties",
+      "pad": "/marktanalyse/transacties",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 519,
+      "ttfbP75": 526,
+      "totaalMediaan": 1802
+    },
+    {
+      "pagina": "Concurrentie",
+      "pad": "/marktanalyse/concurrentie",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 494,
+      "ttfbP75": 657,
+      "totaalMediaan": 1041
+    },
+    {
+      "pagina": "Zoeken (API)",
+      "pad": "/api/zoeken?q=dam",
+      "status": 200,
+      "regio": "iad1",
+      "ttfbMediaan": 704,
+      "ttfbP75": 862,
+      "totaalMediaan": 705
+    }
+  ]
+}
