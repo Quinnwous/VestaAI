@@ -17,12 +17,15 @@
  * Gebruik: als kind van <BasisKaart> — leest de kaartinstantie via context.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 // Alléén het type, geen runtime-import — zie WoningenKaartLaag.tsx voor de
 // reden (les 12.3, performance): dit voorkomt dat maplibre-gl in élke
 // pagina belandt die deze laag importeert, ook als <BasisKaart> zelf al
 // dynamic (ssr:false) is.
 import type * as maplibregl from 'maplibre-gl'
+// Zelfde reden voor react-dom/server (~59 kB gzip): alleen runtime via
+// await import() in het effect, ook al gebruikt de hover-handler het later
+// nog een keer — die pakt de functie via de closure-variabele hieronder.
+import type { renderToStaticMarkup as RenderToStaticMarkup } from 'react-dom/server'
 import { useKaartInstance } from './KaartContext'
 import { Pin } from './Pin'
 import { clusterPunten, celGradenVoorZoom, type ClusterPunt } from '@/lib/kaart'
@@ -81,8 +84,9 @@ export function VerkopenLaag({
     if (!map) return
     let actief = true
 
-    import('maplibre-gl').then(({ Marker }) => {
+    Promise.all([import('maplibre-gl'), import('react-dom/server')]).then(([{ Marker }, serverModule]) => {
       if (!actief || !map) return
+      const renderToStaticMarkup: typeof RenderToStaticMarkup = serverModule.renderToStaticMarkup
 
       const nieuweMarkers: maplibregl.Marker[] = []
 
