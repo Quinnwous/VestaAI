@@ -2,24 +2,49 @@
 
 import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
+import dynamic from 'next/dynamic'
 import { InAanbouw } from '@/components/InAanbouw'
-import { TabBar } from '@/components/ui'
+import { TabBar, Skeleton } from '@/components/ui'
 import { CONTENT_VERGRENDELD, CONTENT_SLOT_TEKST } from '@/lib/features'
 import { ContentTekstenTab } from '@/components/ContentTekstenTab'
 import { BuurtDataTab } from '@/components/BuurtDataTab'
 import { NotitieVeld } from '@/components/NotitieVeld'
 import { StijlLerenPaneel } from '@/components/StijlLerenPaneel'
-import { VirtualStaging } from '@/components/VirtualStaging'
-import { DocumentenAssistent } from '@/components/DocumentenAssistent'
-import { FotoBibliotheek } from '@/components/FotoBibliotheek'
-import { EmailPdfButton } from '@/components/EmailPdfButton'
-import { RealworksExportButton } from '@/components/RealworksExportButton'
-import { PrijswijzigingModal } from '@/components/PrijswijzigingModal'
 import { WaardebepalingPaneel } from '@/components/WaardebepalingPaneel'
 import { UspExtractorPaneel } from '@/components/UspExtractorPaneel'
 import type { ContentOutput, ObjectContentStatus, ObjectFase, VerrijkingOpslag } from '@/lib/schemas'
 import type { WaarderingUitkomst } from '@/lib/waardering'
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
+
+// Alleen relevant zodra de content-subtab Media/Documenten/Export voor het
+// eerst wordt bezocht — via next/dynamic (ssr:false, pas gemount na een
+// klik) uit de hoofdbundel van het dossier gehouden. ContentTekstenTab,
+// WaardebepalingPaneel en BuurtDataTab blijven statisch: die zijn in een van
+// de fases de eerste weergave, en daar willen we geen extra wachttijd.
+const VirtualStagingDynamic = dynamic(
+  () => import('@/components/VirtualStaging').then((m) => m.VirtualStaging),
+  { ssr: false, loading: () => <Skeleton height={140} /> },
+)
+const FotoBibliotheekDynamic = dynamic(
+  () => import('@/components/FotoBibliotheek').then((m) => m.FotoBibliotheek),
+  { ssr: false, loading: () => <Skeleton height={140} /> },
+)
+const DocumentenAssistentDynamic = dynamic(
+  () => import('@/components/DocumentenAssistent').then((m) => m.DocumentenAssistent),
+  { ssr: false, loading: () => <Skeleton height={140} /> },
+)
+const EmailPdfButtonDynamic = dynamic(
+  () => import('@/components/EmailPdfButton').then((m) => m.EmailPdfButton),
+  { ssr: false, loading: () => <Skeleton height={40} /> },
+)
+const RealworksExportButtonDynamic = dynamic(
+  () => import('@/components/RealworksExportButton').then((m) => m.RealworksExportButton),
+  { ssr: false, loading: () => <Skeleton height={40} /> },
+)
+const PrijswijzigingModalDynamic = dynamic(
+  () => import('@/components/PrijswijzigingModal').then((m) => m.PrijswijzigingModal),
+  { ssr: false, loading: () => <Skeleton height={40} /> },
+)
 
 /**
  * Woningdossier — de kern van het product (zie CLAUDE.md § Hoofdstructuur).
@@ -135,8 +160,8 @@ export function ObjectWorkspace({
   contentBezigSinds?: string | null
   /** Item 10.3: laatst opgeslagen buurtdata (`objecten.verrijking_json`), of
    * `null` als er nog niets is opgehaald — de tab "Buurt & data" probeert dan
-   * zelf eenmalig te verversen. `null` ook zolang de migratie voor deze kolom
-   * nog niet is toegepast (graceful, zie lib/verrijkingOpslag.ts). */
+   * zelf eenmalig te verversen. `null` ook als het ophalen mislukte (graceful,
+   * zie lib/verrijkingOpslag.ts). */
   verrijkingInitieel?: VerrijkingOpslag | null
   /** WOZ die de makelaar zelf invulde (`input_json.woz_waarde`/`woz_peiljaar`, lib/woz.ts). */
   wozHandmatig?: { waarde: number; peiljaar: number } | null
@@ -145,11 +170,28 @@ export function ObjectWorkspace({
   // (bv. de "Content"-knop in de acties) — alleen als startwaarde gelezen,
   // geen voortdurende sync nodig.
   const searchParams = useSearchParams()
-  const [active, setActive] = useState<SectionId>(
-    searchParams.get('tab') === 'content' ? 'content' : (CONTENT_VERGRENDELD ? 'waardering' : 'content'),
-  )
+  const initieleSectie: SectionId =
+    searchParams.get('tab') === 'content' ? 'content' : (CONTENT_VERGRENDELD ? 'waardering' : 'content')
+  const [active, setActive] = useState<SectionId>(initieleSectie)
   const [contentTab, setContentTab] = useState<ContentTab>('content')
   const [fotoRefresh, setFotoRefresh] = useState(0)
+
+  // Performance (Lighthouse dossier: 87% van de LCP is render delay door
+  // hydratie/fetches van tabs die niet in beeld zijn): een sectie/subtab
+  // mount pas bij het eerste bezoek en blijft daarna gemount (display: none),
+  // zodat inline-bewerkingen in Teksten niet verloren gaan. De startwaarde
+  // telt als "al bezocht".
+  const [bezochteSecties, setBezochteSecties] = useState<Set<SectionId>>(() => new Set([initieleSectie]))
+  const [bezochteContentTabs, setBezochteContentTabs] = useState<Set<ContentTab>>(() => new Set(['content']))
+
+  const kiesSectie = (id: SectionId) => {
+    setActive(id)
+    setBezochteSecties((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))
+  }
+  const kiesContentTab = (id: ContentTab) => {
+    setContentTab(id)
+    setBezochteContentTabs((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))
+  }
 
   // "In de buurt verkocht" (ex-StraalKaartPaneel) is sinds "Twee kaarten in
   // het dossier samenvoegen" (roadmap § 9) een laag van de dossierkaart in
@@ -190,100 +232,114 @@ export function ObjectWorkspace({
       <TabBar
         tabs={SECTIONS.map(s => s.id === 'content' && CONTENT_VERGRENDELD ? { ...s, label: `${s.label} 🔒` } : s)}
         active={active}
-        onChange={(id) => setActive(id as SectionId)}
+        onChange={(id) => kiesSectie(id as SectionId)}
         style={{ margin: '24px 0 26px' }}
       />
 
       <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
-        <div style={{ display: 'grid', gap: 16 }}>
-          {waarderingSectie}
-        </div>
+        {bezochteSecties.has('waardering') && (
+          <div style={{ display: 'grid', gap: 16 }}>
+            {waarderingSectie}
+          </div>
+        )}
       </div>
 
       <div style={{ display: active === 'buurt' ? 'block' : 'none' }}>
-        <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
+        {bezochteSecties.has('buurt') && (
+          <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
+        )}
       </div>
 
       <div style={{ display: active === 'content' ? 'block' : 'none' }}>
-        {CONTENT_VERGRENDELD ? (
-          <InAanbouw
-            slot
-            eyebrow="Module A — tijdelijk gesloten"
-            titel={CONTENT_SLOT_TEKST.titel}
-            uitleg={CONTENT_SLOT_TEKST.uitleg}
-            punten={[
-              'Brochure en Funda-tekst',
-              'Social media-teksten (bv. Instagram-captions)',
-              'Buurtrapport — omgevingsdata en demografie van de wijk',
-              'Virtual staging en documentenassistent',
-            ]}
-          />
-        ) : (
-          <div>
-            <TabBar
-              tabs={CONTENT_TABS}
-              active={contentTab}
-              onChange={(id) => setContentTab(id as ContentTab)}
-              style={{ marginBottom: 22 }}
+        {bezochteSecties.has('content') && (
+          CONTENT_VERGRENDELD ? (
+            <InAanbouw
+              slot
+              eyebrow="Module A — tijdelijk gesloten"
+              titel={CONTENT_SLOT_TEKST.titel}
+              uitleg={CONTENT_SLOT_TEKST.uitleg}
+              punten={[
+                'Brochure en Funda-tekst',
+                'Social media-teksten (bv. Instagram-captions)',
+                'Buurtrapport — omgevingsdata en demografie van de wijk',
+                'Virtual staging en documentenassistent',
+              ]}
             />
-
-            {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
-            <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
-              <ContentTekstenTab
-                objectId={objectId}
-                outputs={outputs}
-                outputsEn={outputsEn}
-                contentStatus={contentStatus}
-                contentBezigSinds={contentBezigSinds}
+          ) : (
+            <div>
+              <TabBar
+                tabs={CONTENT_TABS}
+                active={contentTab}
+                onChange={(id) => kiesContentTab(id as ContentTab)}
+                style={{ marginBottom: 22 }}
               />
-              <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
-                <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
-              </div>
-              <StijlLerenPaneel />
-            </div>
 
-            {/* Media — virtual staging + bibliotheek als losse kaarten */}
-            <div style={{ display: contentTab === 'media' ? 'block' : 'none' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Virtual staging</h2>
-                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
-                  <VirtualStaging objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
-                </div>
-                <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
-                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
-                  <FotoBibliotheek objectId={objectId} refreshSignal={fotoRefresh} />
-                </div>
+              {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
+              <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
+                {bezochteContentTabs.has('content') && (
+                  <>
+                    <ContentTekstenTab
+                      objectId={objectId}
+                      outputs={outputs}
+                      outputsEn={outputsEn}
+                      contentStatus={contentStatus}
+                      contentBezigSinds={contentBezigSinds}
+                    />
+                    <div style={{ marginTop: 30, borderTop: '1px solid #EBEEF1', paddingTop: 22 }}>
+                      <NotitieVeld objectId={objectId} initieleNotitie={notitie} />
+                    </div>
+                    <StijlLerenPaneel />
+                  </>
+                )}
+              </div>
+
+              {/* Media — virtual staging + bibliotheek als losse kaarten */}
+              <div style={{ display: contentTab === 'media' ? 'block' : 'none' }}>
+                {bezochteContentTabs.has('media') && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <div style={card}>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Virtual staging</h2>
+                      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Meubileer een lege ruimte met AI — kies stijl en ruimte.</p>
+                      <VirtualStagingDynamic objectId={objectId} onBewaard={() => setFotoRefresh(n => n + 1)} />
+                    </div>
+                    <div style={card}>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Foto-bibliotheek</h2>
+                      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px' }}>Gestagede foto&apos;s bij deze woning — om te downloaden of hergebruiken.</p>
+                      <FotoBibliotheekDynamic objectId={objectId} refreshSignal={fotoRefresh} />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Documenten */}
+              <div style={{ display: contentTab === 'documenten' ? 'block' : 'none' }}>
+                {bezochteContentTabs.has('documenten') && <DocumentenAssistentDynamic objectId={objectId} />}
+              </div>
+
+              {/* Export & delen */}
+              <div style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
+                {bezochteContentTabs.has('export') && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+                    <div style={card}>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar jezelf of een collega</h2>
+                      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure intern door — nooit direct naar een koper.</p>
+                      <EmailPdfButtonDynamic objectId={objectId} userEmail={userEmail} />
+                    </div>
+                    <div style={card}>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Realworks-export</h2>
+                      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de woninggegevens als XML voor Realworks.</p>
+                      <RealworksExportButtonDynamic objectId={objectId} />
+                    </div>
+                    <div style={{ ...card, gridColumn: 'span 2' }}>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
+                      <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
+                      <PrijswijzigingModalDynamic objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-
-            {/* Documenten */}
-            <div style={{ display: contentTab === 'documenten' ? 'block' : 'none' }}>
-              <DocumentenAssistent objectId={objectId} />
-            </div>
-
-            {/* Export & delen */}
-            <div style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
-                <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Mail naar jezelf of een collega</h2>
-                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Stuur de brochure intern door — nooit direct naar een koper.</p>
-                  <EmailPdfButton objectId={objectId} userEmail={userEmail} />
-                </div>
-                <div style={card}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Realworks-export</h2>
-                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Exporteer de woninggegevens als XML voor Realworks.</p>
-                  <RealworksExportButton objectId={objectId} />
-                </div>
-                <div style={{ ...card, gridColumn: 'span 2' }}>
-                  <h2 style={{ fontSize: 15, fontWeight: 700, color: '#14181B', margin: '0 0 4px' }}>Prijsaanpassing of verkocht — genereer aankondiging</h2>
-                  <p style={{ fontSize: 12.5, color: '#5C6470', margin: '0 0 16px', lineHeight: 1.5 }}>Maak in één klik social- en e-mailcontent voor een prijsreductie of verkoop.</p>
-                  <PrijswijzigingModal objectId={objectId} adres={address} huidigeprijs={vraagprijs} />
-                </div>
-              </div>
-            </div>
-          </div>
+          )
         )}
       </div>
     </div>
