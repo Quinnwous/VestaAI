@@ -154,11 +154,14 @@ export const DEMO_BUURTEN: DemoBuurt[] = [
   { naam: 'Deijlerweg', plaats: 'Wassenaar', regio: 'wassenaar', lat: 52.1360, lng: 4.3850, kans: 0.09, basisM2: 6600, spreiding: 0.005, straten: ['Deijlerweg', 'Groot Haesebroekseweg', 'Katwijkseweg'] },
   { naam: 'Duinzoom', plaats: 'Wassenaar', regio: 'wassenaar', lat: 52.1530, lng: 4.3720, kans: 0.09, basisM2: 7100, spreiding: 0.004, straten: ["Storm van 's-Gravesandeweg", 'Wassenaarseslag', 'Duinweg'] },
   { naam: 'Centrum', plaats: 'Wassenaar', regio: 'wassenaar', lat: 52.1417, lng: 4.4020, kans: 0.08, basisM2: 5800, spreiding: 0.004, straten: ['Langstraat', 'Hofcamplaan', 'Stoeplaan'] },
-  // Den Haag — 40 %
-  { naam: 'Benoordenhout', plaats: "'s-Gravenhage", regio: 'den_haag', lat: 52.0989, lng: 4.3242, kans: 0.11, basisM2: 6100, spreiding: 0.005, straten: ['Van Alkemadelaan', 'Benoordenhoutseweg', 'Reigersbergenweg'] },
-  { naam: 'Statenkwartier', plaats: "'s-Gravenhage", regio: 'den_haag', lat: 52.0980, lng: 4.2870, kans: 0.11, basisM2: 5600, spreiding: 0.004, straten: ['Statenlaan', 'Nassaulaan', 'Anna Paulownastraat'] },
-  { naam: 'Archipelbuurt', plaats: "'s-Gravenhage", regio: 'den_haag', lat: 52.0868, lng: 4.3010, kans: 0.09, basisM2: 5900, spreiding: 0.003, straten: ['Bankastraat', 'Sumatrastraat', 'Timorstraat'] },
-  { naam: 'Mariahoeve', plaats: "'s-Gravenhage", regio: 'den_haag', lat: 52.0891, lng: 4.3480, kans: 0.09, basisM2: 3500, spreiding: 0.005, straten: ['Beresteinlaan', 'Melis Stokelaan', 'Erasmusweg'] },
+  // Den Haag — 40 % (canonieke schrijfwijze "Den Haag", item J1 — deze
+  // rijen gaan direct (upsert) naar transacties, buiten lib/importPijplijn.ts
+  // om, dus zonder die canoniekePlaats()-normalisatie zou de RPC-exact-match
+  // deze demo-verkopen nooit vinden bij een werkgebied-filter op "Den Haag").
+  { naam: 'Benoordenhout', plaats: 'Den Haag', regio: 'den_haag', lat: 52.0989, lng: 4.3242, kans: 0.11, basisM2: 6100, spreiding: 0.005, straten: ['Van Alkemadelaan', 'Benoordenhoutseweg', 'Reigersbergenweg'] },
+  { naam: 'Statenkwartier', plaats: 'Den Haag', regio: 'den_haag', lat: 52.0980, lng: 4.2870, kans: 0.11, basisM2: 5600, spreiding: 0.004, straten: ['Statenlaan', 'Nassaulaan', 'Anna Paulownastraat'] },
+  { naam: 'Archipelbuurt', plaats: 'Den Haag', regio: 'den_haag', lat: 52.0868, lng: 4.3010, kans: 0.09, basisM2: 5900, spreiding: 0.003, straten: ['Bankastraat', 'Sumatrastraat', 'Timorstraat'] },
+  { naam: 'Mariahoeve', plaats: 'Den Haag', regio: 'den_haag', lat: 52.0891, lng: 4.3480, kans: 0.09, basisM2: 3500, spreiding: 0.005, straten: ['Beresteinlaan', 'Melis Stokelaan', 'Erasmusweg'] },
   // Voorschoten / Leidschendam / Rijswijk — 25 %
   { naam: 'Adegeest', plaats: 'Voorschoten', regio: 'overig', lat: 52.1247, lng: 4.4476, kans: 0.09, basisM2: 4700, spreiding: 0.005, straten: ['Leidseweg', 'Veurseweg', 'Rembrandtlaan'] },
   { naam: 'Leidschendam Centrum', plaats: 'Leidschendam', regio: 'overig', lat: 52.0844, lng: 4.4005, kans: 0.08, basisM2: 4100, spreiding: 0.005, straten: ['Damlaan', 'Sluiskant', 'Prins Bernhardlaan'] },

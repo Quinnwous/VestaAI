@@ -1,11 +1,15 @@
 'use client'
 
 import { useWatch, type Control } from 'react-hook-form'
-import { woningtypeLabel, type PropertyInput } from '@/lib/schemas'
+import { woningtypeLabel, type PropertyInput, type KantoorInstellingen } from '@/lib/schemas'
 import { m2 } from '@/lib/opmaak'
+import { effectieveCourtage, courtageLabel } from '@/lib/courtage'
 
 interface Props {
   control: Control<PropertyInput>
+  /** Instellingen van het kantoor van de ingelogde makelaar (item J2) — voedt de
+   * effectieve courtage (dossiervoorstel of kantoorstandaard) hieronder. */
+  kantoorInstellingen?: KantoorInstellingen | null
 }
 
 const rijStijl: React.CSSProperties = {
@@ -36,7 +40,7 @@ function Rij({ label, waarde }: { label: string; waarde: string }) {
  * in de wizard heeft ingevuld (adres, type, m², bouwjaar, label), ook in
  * stappen waar `WoningdataPanel` niet zichtbaar is.
  */
-export function DezeWoningPaneel({ control }: Props) {
+export function DezeWoningPaneel({ control, kantoorInstellingen }: Props) {
   const adres = useWatch({ control, name: 'adres' }) || ''
   const woningtypeGroep = useWatch({ control, name: 'woningtype_groep' })
   const woningtypeSub = useWatch({ control, name: 'woningtype_sub' })
@@ -44,10 +48,13 @@ export function DezeWoningPaneel({ control }: Props) {
   const bouwjaar = useWatch({ control, name: 'bouwjaar' })
   const energielabel = useWatch({ control, name: 'energielabel' })
   const kamers = useWatch({ control, name: 'kamers' })
+  const courtagevoorstel = useWatch({ control, name: 'courtagevoorstel_percentage' })
 
   const type = woningtypeGroep
     ? woningtypeLabel({ woningtype_groep: woningtypeGroep, woningtype_sub: woningtypeSub })
     : ''
+
+  const courtage = effectieveCourtage(courtagevoorstel, kantoorInstellingen)
 
   const heeftIets = !!adres || !!type || !!oppervlak || !!bouwjaar || !!energielabel
 
@@ -91,6 +98,7 @@ export function DezeWoningPaneel({ control }: Props) {
           <Rij label="Woonoppervlak" waarde={oppervlak ? m2(oppervlak) : ''} />
           <Rij label="Bouwjaar" waarde={bouwjaar ? String(bouwjaar) : ''} />
           <Rij label="Energielabel" waarde={energielabel || ''} />
+          {courtage.percentage != null && <Rij label="Courtage" waarde={courtageLabel(courtage)} />}
         </div>
       )}
 

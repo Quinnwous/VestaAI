@@ -13,19 +13,25 @@ export default async function NewObjectPage() {
   // item 2.3), dan mag de demo-knop in NewObjectForm ook buiten NODE_ENV
   // !== 'production' getoond worden.
   let toonDemoKnop = process.env.NODE_ENV !== 'production'
+  // Kantoorstandaard courtage (item J2, docs/specs/j2-courtage-per-dossier.md):
+  // dezelfde kantoor-lookup als hierboven levert ook instellingen_json.courtage,
+  // dus voortaan altijd ophalen (niet alleen als toonDemoKnop nog false is) —
+  // NewObjectForm/PropertyForm gebruiken het om het courtageveld voor te vullen.
+  let kantoorInstellingen: KantoorInstellingen | null = null
   if (isSupabaseConfigured()) {
     const supabase = createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user && isPlatformAdmin(user.email)) redirect('/admin')
 
-    if (user && !toonDemoKnop) {
+    if (user) {
       const { data: makelaar } = await supabase
         .from('makelaars')
         .select('kantoren(instellingen_json)')
         .eq('id', user.id)
         .maybeSingle()
       const kantoor = makelaar?.kantoren as unknown as { instellingen_json: KantoorInstellingen | null } | null
-      if (kantoor?.instellingen_json?.demo === true) toonDemoKnop = true
+      kantoorInstellingen = kantoor?.instellingen_json ?? null
+      if (!toonDemoKnop && kantoorInstellingen?.demo === true) toonDemoKnop = true
     }
   }
 
@@ -43,7 +49,7 @@ export default async function NewObjectPage() {
   // (components/PropertyForm.tsx, .intake-layout in app/globals.css).
   return (
     <AppPagina>
-      <NewObjectForm toonDemoKnop={toonDemoKnop} />
+      <NewObjectForm toonDemoKnop={toonDemoKnop} kantoorInstellingen={kantoorInstellingen} />
     </AppPagina>
   )
 }

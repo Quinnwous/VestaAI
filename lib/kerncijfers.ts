@@ -9,6 +9,13 @@
  * geen "gewonnen/verloren pitches" en geen winratio meer — `berekenPitchCijfers`
  * en `PitchRow`/`PitchCijfers` zijn vervallen.
  */
+import { plaatsenGelijk } from './plaatsNormalisatie'
+
+// Her-export voor bestaande importeurs die `plaatsenGelijk` nog via
+// `lib/kerncijfers.ts` binnenhalen (bv. app/(app)/object/[id]/waardering-actions.ts,
+// buiten het bereik van item J1) — de functie zelf leeft sinds J1 in
+// lib/plaatsNormalisatie.ts.
+export { plaatsenGelijk }
 
 /** Onder dit aantal is een gemiddelde/percentage/aandeel niet betekenisvol genoeg om te tonen (zie docs/ontwerpprincipes.md § Data). */
 export const MIN_N_VOOR_GEMIDDELDE = 3
@@ -153,60 +160,14 @@ export function berekenMarktaandeel(eigenN: number, marktN: number): Marktaandee
   return { eigenN, marktN, aandeelPct }
 }
 
-/** Eigen verkopen in een specifieke plaats, laatste 12 maanden (voor de marktaandeel-teller). Plaatsvergelijking via `plaatsenGelijk`. */
+/**
+ * Eigen verkopen in een specifieke plaats, laatste 12 maanden (voor de
+ * marktaandeel-teller). Plaatsvergelijking via `plaatsenGelijk`
+ * (lib/plaatsNormalisatie.ts) — het werkgebied kan de officiële gemeentenaam
+ * gebruiken ('s-Gravenhage), de transactiedataset kan spreektaal bevatten
+ * (Den Haag).
+ */
 export function filterOpPlaatsLaatste12Mnd(rows: EigenVerkoopPlaatsRow[], plaats: string, nu: Date = new Date()): EigenVerkoopPlaatsRow[] {
   const laatste12 = filterOpLaatsteMaanden(rows, 12, r => r.verkoopdatum, nu)
   return laatste12.filter(r => r.plaats != null && plaatsenGelijk(r.plaats, plaats))
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// Plaatsnaam-normalisatie (item 2.5): het werkgebied gebruikt de officiële
-// gemeentenaam ('s-Gravenhage, KantoorInstellingenSchema.werkgebied), de
-// transactiedataset kan spreektaal bevatten (Den Haag). Losgelost met een
-// vergelijkingssleutel + een kleine aliaslijst, i.p.v. de marktaandeel-tegel
-// stil leeg te laten bij een spellingsverschil.
-// ─────────────────────────────────────────────────────────────────────────
-
-function kalePlaatsnaam(plaats: string): string {
-  return plaats
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/['’`]/g, '')
-    .replace(/[-\s]+/g, '')
-}
-
-/** Bekende afwijkingen tussen werkgebied-spelling en dataset-spelling. Uitbreiden zodra een volgend kantoor er een tegenkomt. */
-const PLAATS_ALIAS_GROEPEN: string[][] = [
-  ["'s-Gravenhage", 'Den Haag'],
-]
-
-const PLAATS_ALIAS_SLEUTEL = new Map<string, string>()
-for (const groep of PLAATS_ALIAS_GROEPEN) {
-  const sleutel = kalePlaatsnaam(groep[0])
-  for (const naam of groep) PLAATS_ALIAS_SLEUTEL.set(kalePlaatsnaam(naam), sleutel)
-}
-
-/** Vergelijkingssleutel voor een plaatsnaam: kaal + aliasgroep. */
-export function plaatsSleutel(plaats: string): string {
-  const kaal = kalePlaatsnaam(plaats)
-  return PLAATS_ALIAS_SLEUTEL.get(kaal) ?? kaal
-}
-
-/** Of twee plaatsnamen dezelfde plaats bedoelen (spelling-/hoofdletterongevoelig, met aliaslijst). */
-export function plaatsenGelijk(a: string, b: string): boolean {
-  return plaatsSleutel(a) === plaatsSleutel(b)
-}
-
-/**
- * Schrijfwijze-varianten van een plaatsnaam, te gebruiken als RPC-filter
- * (`TransactieFilter.plaatsen`) — de RPC's vergelijken exact (`t.plaats = any (...)`,
- * zie supabase/migrations/20260917_rpc_transacties.sql), dus een spellingsverschil
- * met de dataset zou anders 0 rijen opleveren i.p.v. de echte cijfers.
- */
-export function plaatsVarianten(plaats: string): string[] {
-  const sleutel = plaatsSleutel(plaats)
-  const groep = PLAATS_ALIAS_GROEPEN.find(g => kalePlaatsnaam(g[0]) === sleutel)
-  if (!groep) return [plaats]
-  return [plaats, ...groep.filter(naam => kalePlaatsnaam(naam) !== kalePlaatsnaam(plaats))]
 }

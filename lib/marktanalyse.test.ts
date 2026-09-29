@@ -193,6 +193,16 @@ describe('wijKwartaalReeks (mediaan per kwartaal, referentie voor marktanalyse_r
   })
 })
 
+describe('standaardFilterState (item J1: werkgebied door canoniekePlaats)', () => {
+  it('normaliseert een werkgebied-plaats naar de canonieke schrijfwijze', () => {
+    expect(standaardFilterState(["'s-Gravenhage"]).plaatsen).toEqual(['Den Haag'])
+  })
+
+  it('laat een plaats zonder aliasgroep verder ongemoeid (afgezien van hoofdletters/witruimte)', () => {
+    expect(standaardFilterState(['Wassenaar']).plaatsen).toEqual(['Wassenaar'])
+  })
+})
+
 describe('filterStateNaarTransactieFilter (URL-state → RPC-filter)', () => {
   it('een standaardfilter (alleen werkgebied) geeft alleen plaatsen mee', () => {
     const f = standaardFilterState(['Wassenaar'])
