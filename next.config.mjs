@@ -48,8 +48,11 @@ const nextConfig = {
 // daarom alleen bij ANALYZE=true terug naar `--webpack`, een gewone build
 // blijft Turbopack.
 import withBundleAnalyzerInit from '@next/bundle-analyzer'
+// openAnalyzer: false — anders opent elke analyse-build drie tabbladen in de
+// standaardbrowser (les 30 sep 2026). Open de rapporten zelf als je ze wilt zien.
 const withBundleAnalyzer = withBundleAnalyzerInit({
   enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: false,
 })
 
 export default withBundleAnalyzer(nextConfig)
