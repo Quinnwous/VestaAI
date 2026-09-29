@@ -84,10 +84,29 @@ const TUSSENVOEGSELS = new Set([
   'onder', 'op', 'over', 'te', 'ten', 'ter', 'tot', 'van', 'voor',
 ])
 
-/** Zet alleen de eerste letter om naar een hoofdletter; de rest van het woord blijft ongemoeid (geen bestaande hoofdletters platslaan). */
+/**
+ * Zet de eerste letter om naar een hoofdletter; de rest van het woord blijft
+ * ongemoeid (geen bestaande hoofdletters platslaan). De Nederlandse digraaf
+ * "ij" aan het begin wordt samen hoofdletter: "ijmuiden" → "IJmuiden".
+ * Deelwoorden met een koppelteken krijgen elk een hoofdletter
+ * ("nieuw-vennep" → "Nieuw-Vennep").
+ */
 function hoofdletterEersteLetter(woord: string): string {
   if (!woord) return woord
-  return woord[0].toUpperCase() + woord.slice(1)
+  return woord
+    .split('-')
+    .map(deel => {
+      if (!deel) return deel
+      if (/^ij/i.test(deel)) return 'IJ' + deel.slice(2)
+      return deel[0].toUpperCase() + deel.slice(1)
+    })
+    .join('-')
+}
+
+/** Of een naam in één hoofdlettervorm staat (ALLES HOOFD of alles klein) — dan zeggen de hoofdletters niets en formatteren we opnieuw. */
+function isEnkeleHoofdlettervorm(naam: string): boolean {
+  const letters = naam.replace(/[^\p{L}]/gu, '')
+  return letters === letters.toUpperCase() || letters === letters.toLowerCase()
 }
 
 /** Eén woord van een plaatsnaam netjes maken: tussenvoegsel (niet als eerste woord), 's-voorvoegsel (zoals 's-Hertogenbosch), of gewoon een hoofdletter vooraan. */
@@ -104,8 +123,12 @@ function formatteerWoord(woord: string, eersteWoord: boolean): string {
 
 /** Nette hoofdletters/witruimte voor een plaatsnaam zonder bekende aliasgroep — sloopt geen tussenvoegsels ('s-Hertogenbosch, Bergen op Zoom). */
 function nettePlaatsnaam(naam: string): string {
-  const schoon = naam.trim().replace(/\s+/g, ' ')
-  if (!schoon) return schoon
+  const ruw = naam.trim().replace(/\s+/g, ' ')
+  if (!ruw) return ruw
+  // Exports staan vaak in HOOFDLETTERS ("WASSENAAR"): die moeten als
+  // "Wassenaar" in de database, anders matcht het werkgebied niet (exacte
+  // RPC-vergelijking). Gemengde invoer vertrouwen we en laten we staan.
+  const schoon = isEnkeleHoofdlettervorm(ruw) ? ruw.toLowerCase() : ruw
   return schoon
     .split(' ')
     .map((woord, i) => formatteerWoord(woord, i === 0))

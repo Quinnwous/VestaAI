@@ -60,3 +60,20 @@ describe('canoniekePlaats', () => {
     expect(canoniekePlaats('   ')).toBe('')
   })
 })
+
+describe('canoniekePlaats — hoofdlettervormen uit exports', () => {
+  it.each([
+    ['WASSENAAR', 'Wassenaar'],
+    ['wassenaar', 'Wassenaar'],
+    ['ALPHEN AAN DEN RIJN', 'Alphen aan den Rijn'],
+    ['DEN HELDER', 'Den Helder'],
+    ['ijmuiden', 'IJmuiden'],
+    ['IJMUIDEN', 'IJmuiden'],
+    ['NIEUW-VENNEP', 'Nieuw-Vennep'],
+    ["'S-HERTOGENBOSCH", "'s-Hertogenbosch"],
+    ['Capelle aan den IJssel', 'Capelle aan den IJssel'],
+    ['Leidschendam-Voorburg', 'Leidschendam-Voorburg'],
+  ])('%s → %s', (invoer, verwacht) => {
+    expect(canoniekePlaats(invoer)).toBe(verwacht)
+  })
+})
