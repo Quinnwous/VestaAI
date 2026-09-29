@@ -5,6 +5,7 @@ import { AppPagina, Eyebrow, SerifTitle } from '@/components/ui'
 import { StatistiekenPaneel } from './StatistiekenPaneel'
 import { KantoorBanner } from './KantoorBanner'
 import type { Kantoor, Makelaar } from '@/lib/supabase'
+import { effectieveCourtage, courtageLabel } from '@/lib/courtage'
 
 export const metadata = { title: 'Kantoor' }
 
@@ -82,7 +83,7 @@ export default async function KantoorPage() {
               <div>
                 <p className="text-xs text-gray-500 mb-0.5">Courtage (standaard, aanpasbaar per verkoopadvies)</p>
                 <p className="text-gray-700">
-                  {instellingen.courtage.percentage != null ? `${instellingen.courtage.percentage}%` : '—'}
+                  {courtageLabel(effectieveCourtage(null, instellingen))}
                   {instellingen.courtage.opstartkosten ? ` + €${instellingen.courtage.opstartkosten} opstartkosten` : ''}
                 </p>
               </div>
