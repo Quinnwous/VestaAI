@@ -8,15 +8,14 @@ later in één keer aanmaken. **Nog niet aangemaakt.**
 
 | Naam | Functie (site) | E-mail |
 |---|---|---|
-| Chita van Soest | NVM Makelaar Wonen (KRMT) — leidt het kantoor | chita@i4housing.nl |
-| Nicole van Dijk ⚠️ | NVM Makelaar Wonen — leidt het kantoor | nicole@i4housing.nl |
+| Chita van Soest | NVM Makelaar Wonen (KRMT) | chita@i4housing.nl |
+| Nicole van Dijk | NVM Makelaar Wonen | nicole@i4housing.nl |
 | Ton van Soest | NVM Makelaar Wonen (RM) | ton@i4housing.nl |
 | Marc van Dijk | NVM Makelaar Wonen | marc@i4housing.nl |
 | Naomi Bentvelzen | Makelaar i.o. & office manager | naomi@i4housing.nl |
 | Shannon Terlouw | Makelaar i.o. & marketing/communicatie | shannon@i4housing.nl |
 
-⚠️ Quinn noemde "Nicole van Enmark" als mede-leidinggevende; op de site staat
-alleen Nicole van Dijk. Naam bevestigen vóór aanmaken.
+Namen bevestigd door Quinn (29 sep).
 
 ## Niet (nog) aanmaken
 
