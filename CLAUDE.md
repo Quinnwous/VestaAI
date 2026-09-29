@@ -314,3 +314,13 @@ VestaAI/
 - `npm run e2e` — Playwright-suite in `e2e/` (zie `e2e/README.md`): kantoorlogin, dossier < 5 s, waardering + pdf, kaart zonder CSP-fout, admin, RLS-isolatie tussen kantoren. Content-tests alleen met `E2E_GENERATE=1` (kost API-geld). Maakt en verwijdert één testdossier, uitsluitend in het demo-kantoor.
 - `npm run demo:repetitie` — generale repetitie van `docs/demoscript.md`: loopt de zes scènes af met Playwright (demo-kantoor, 1920×1080), screenshots naar `screenshots/repetitie/`, exit 1 bij `pageerror`/lege staat/ontbrekend knoplabel. Alleen lezend: klikt niets aan dat schrijft of geld kost. Zelfde inlog en `.env.local`-eisen als `dod:screens` (hieronder).
 - `npm run dod:screens` — DoD-visueel: huisstijlcheck (VestaAI-groen, foutstaat, `pageerror`) op 390/1280/1920 px + screenshots van alle ingelogde routes naar `screenshots/`; exit 1 bij een fout. Gebruikt een draaiende server op `DOD_PORT` (standaard 3000) of start zelf `next dev`. Vereist in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (plus de gewone app-variabelen); optioneel `DOD_EMAIL` (standaard `demo@vestaai.nl`, het demo-kantoor met data; i4 Housing via `DOD_EMAIL=quinn.berkouwer@icloud.com`). Logt in via een sessiecookie (`scripts/lib/dodSessie.mjs`), niet via de magic-link-redirect — die wijst naar productie. Alleen lezend, maar ⚠️ `.env.local` wijst naar de productiedatabase.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
