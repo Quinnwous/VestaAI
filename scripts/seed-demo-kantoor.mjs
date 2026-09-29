@@ -42,7 +42,8 @@ const RESET = process.argv.includes('--reset')
 const KANTOOR_NAAM = DEMO_KANTOOR_NAAM // 'Demo Makelaardij'
 const DEMO_EMAIL = 'demo@vestaai.nl'
 const BATCH = 500
-const WERKGEBIED_PLAATSEN = ['Wassenaar', "'s-Gravenhage", 'Voorschoten', 'Leidschendam', 'Rijswijk']
+// Canonieke schrijfwijze (item J1, docs/specs/j1-plaatsnormalisatie.md): "Den Haag", zoals lib/waardering.synthetisch.ts nu ook voor de gegenereerde transacties schrijft.
+const WERKGEBIED_PLAATSEN = ['Wassenaar', 'Den Haag', 'Voorschoten', 'Leidschendam', 'Rijswijk']
 
 const log = (...a) => console.log(...a)
 const kop = (t) => log(`\n── ${t} ${'─'.repeat(Math.max(0, 70 - t.length))}`)
