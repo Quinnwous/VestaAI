@@ -4,7 +4,8 @@ import type { Metadata, Viewport } from 'next'
 import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { AppTopbar } from '@/components/AppTopbar'
-import { TooltipProvider } from '@/components/ui'
+// Direct uit het bestand, niet via de barrel: deze layout laadt op élke pagina.
+import { TooltipProvider } from '@/components/ui/Tooltip'
 import { bouwBranding, brandingCssVars, brandingRootCss, VESTA_MERK } from '@/lib/branding'
 
 type KantoorRij = {
