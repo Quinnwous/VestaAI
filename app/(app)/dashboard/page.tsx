@@ -46,7 +46,7 @@ function isoDag(d: Date): string {
  * "Recent bekeken" (item 10.4) draait op `gebruik_events` (lib/gebruik.ts) —
  * de laatste ~5 unieke dossiers die déze makelaar opende, gededupliceerd en
  * met een server-side berekende "…geleden"-tekst. Faalt stil (lege lijst +
- * lege staat) zolang de migratie nog niet is toegepast door de hoofdsessie.
+ * lege staat) als de query mislukt — de tabel zelf staat live sinds 23 sep.
  * Een los `bannerfoto`-veld in de admin staat nog open (vereist een door
  * Quinn goedgekeurde teamfoto, zie docs/roadmap.md § Stand van zaken) — de
  * banner valt tot die tijd terug op het bestaande sfeerbeeld (hetzelfde als
@@ -67,8 +67,8 @@ export default async function DashboardPage() {
     service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),
     haalEigenVerkopen<EigenVerkoopPlaatsRow>(sessie, EIGEN_VERKOOP_KOLOMMEN),
     dataTotEnMet(sessie),
-    // Item 10.4: "Recent bekeken" — faalt stil (lege lijst) zolang de tabel
-    // gebruik_events nog niet is toegepast, zie lib/gebruik.ts.
+    // Item 10.4: "Recent bekeken" — faalt stil (lege lijst) als de query
+    // mislukt, zie lib/gebruik.ts.
     haalRecentBekekenOp(sessie, makelaar.userId),
   ])
 

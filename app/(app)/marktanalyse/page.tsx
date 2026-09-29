@@ -53,8 +53,7 @@ export default async function MarktanalysePage() {
   // canoniekePlaats (item J1): zie app/(app)/marktanalyse/transacties/page.tsx voor de uitleg.
   const werkgebiedPlaatsen = (instellingenGeparsed.success ? instellingenGeparsed.data.werkgebied?.plaatsen ?? [] : []).map(canoniekePlaats)
 
-  // `transacties_plaatsen_wijken` staat klaar in dezelfde (nog niet
-  // toegepaste) migratie als de verdeling-RPC hieronder — val tot die tijd
+  // RPC `transacties_plaatsen_wijken` (live sinds 23 sep). Mislukt hij, val dan
   // terug op het werkgebied, zodat de plaats-dropdown nooit leeg is.
   let plaatsenLijst: PlaatsWijkRij[]
   try {

@@ -170,9 +170,8 @@ describe.skipIf(!AAN)('transactiesQuery — RPC-vergelijking (SUPABASE_TEST=1, d
     }
   })
 
-  // ── Concurrentie v2 (item 6.3, migratie 20260924_rpc_concurrentie_v2.sql —
-  // NOG NIET TOEGEPAST) — deze vijf tests falen met "function does not
-  // exist" tot Quinn de migratie toepast; ze draaien alleen mee onder
+  // ── Concurrentie v2 (item 6.3, migratie 20260924_rpc_concurrentie_v2.sql,
+  // live — geverifieerd 27 sep 2026). Draaien alleen mee onder
   // SUPABASE_TEST=1 en zijn dus niet onderdeel van de gewone `npm run test`. ──
 
   it('concurrentie_ranglijst komt overeen met lib/concurrentie.ts ranglijstPerKantoor()', async () => {
