@@ -6,6 +6,17 @@
 
 ---
 
+### 29 sep 2026 (zestiende ronde) — Next.js 16 + React 19 live (PR #46), meting
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Next 16 live | 14.2 → 16.3.6 / React 19.3 via de officiële codemods (Sonnet), nagelopen en gemerged door Opus. Runtime-checks in de hoofdsessie: `dod:screens` 33/33, `demo:repetitie` groen, e2e 10/10; geen runtime-errors op productie | Sonnet + Opus |
+| Valse foutstaten | Na de upgrade meldden `dod:screens`/repetitie 38 "foutstaten": Next 15+ zet `<nextjs-portal>` (dev-tools-knop) altijd neer en `toontFoutstaat()` telde dat als fout. Nu alleen een foutdialoog of issue-telling; tegenproef met een echte fout gedaan | Opus |
+| Kwetsbaarheden | Productie 8 → 0: `@xmldom/xmldom` 0.8.15 (via `mammoth`) en `baseline-browser-mapping` via `overrides`, ongebruikte `@types/react-pdf` weg (trok `pdfjs-dist` ≤ 4.1 mee). `npm audit fix` crasht op het URL-geïnstalleerde `xlsx` — gericht met overrides | Opus |
+| Meting servertijd | TTFB na Next 16 (fra1): Overzicht 286, Woningen 208, Dossier 194, Marktanalyse 179, Transacties 228, Concurrentie 180 ms; volledige pagina 0,28–0,57 s. T.o.v. alleen fra1 nog 5–15 % winst op de volledige pagina; t.o.v. vanochtend (iad1) ~3× sneller. `docs/data/paginasnelheid-na-next16.json` | Opus |
+| Meting Lighthouse mobiel | Ingelogd op productie, 3 runs (deze machine is ruisgevoelig — TBT varieerde 140–1.135 ms): dossier 50/66/73 (LCP ~5,2 s), dashboard 82/89/93, marktanalyse 65–68 (LCP ~5,4 s). **Next 16 bracht mobiel niet naar 85**: de rem is het client-JavaScript en de LCP op gesimuleerd traag 4G, niet de server. Vervolg (voorstel, niet gestart): gerichte ronde per pagina met de bundle-analyzer — grafieken en kaart pas laden als ze in beeld komen, minder hydratie boven de vouw | Opus |
+| Lint | 31 meldingen van `eslint-plugin-react-hooks` v7 op bestaande componenten; niet in de DoD, bewust niet meegenomen in de upgrade | Opus |
+
 ### 29 sep 2026 (vijftiende ronde) — serverfuncties naar Frankfurt, kantoorprofiel i4, Next 16 gestart
 
 | Onderwerp | Besluit | Door |
