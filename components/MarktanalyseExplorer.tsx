@@ -19,17 +19,13 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
-  ResponsiveContainer, ComposedChart, Area, Line, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
-} from 'recharts'
-import {
-  Badge, Button, EmptyState,
+  Badge, Button, EmptyState, Skeleton,
   FilterBar, FilterDropdown, FilterPills, RangeSlider, Chip, Checkbox,
   StatTile, ChartCard, Legenda, SegmentedToggle, Switch, SelectMenu,
   type FilterPil,
 } from '@/components/ui'
-import { KwartaalberichtModal } from '@/components/KwartaalberichtModal'
 import { SegmentVergelijking, type SegmentVergelijkingWeergaveRij } from '@/components/SegmentVergelijking'
 import { colors } from '@/components/ui/tokens'
 import { useFilterState } from '@/hooks/useFilterState'
@@ -41,7 +37,7 @@ import {
   PERCEEL_BEREIK, type MarktanalyseFilterState, type ReeksRijV2,
 } from '@/lib/marktanalyse'
 import { euro, euroKort, procent, dagen, datum, m2, kwartaalLabel, nlNL, deltaTekst } from '@/lib/opmaak'
-import { SERIE, SERIE_LABEL, TOOLTIP_STYLE } from '@/lib/grafiekThema'
+import { SERIE } from '@/lib/grafiekThema'
 import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
 import { typegroepLabel } from '@/lib/schemas'
 import type { TransactieRow } from '@/lib/supabase'
@@ -83,33 +79,27 @@ function samenvoegVoorGrafiek(
     })
 }
 
-function GrafiekTooltip({ actief, payload, label, fmt }: { actief?: boolean; payload?: { dataKey: string; value: number | null; payload: Record<string, number> }[]; label?: string; fmt: (v: number) => string }) {
-  if (!actief || !payload?.length) return null
-  const rij = payload[0]?.payload
-  return (
-    <div style={TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 800, color: colors.text, marginBottom: 5 }}>{label}</div>
-      {(['markt', 'wij', 'b'] as const).map(key => {
-        const punt = payload.find(p => p.dataKey === key)
-        if (!punt || punt.value == null) return null
-        return (
-          <div key={key} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '2px 0', color: colors.bodyStrong }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <i style={{ width: 8, height: 8, borderRadius: '50%', background: SERIE[key], display: 'inline-block' }} />
-              {SERIE_LABEL[key]}
-            </span>
-            <b style={{ fontVariantNumeric: 'tabular-nums' }}>{fmt(punt.value)}</b>
-          </div>
-        )
-      })}
-      {rij && (
-        <div style={{ color: colors.muted, marginTop: 4, borderTop: `1px solid ${colors.border}`, paddingTop: 4 }}>
-          n: markt {rij.nMarkt}{rij.nWij ? ` · wij ${rij.nWij}` : ''}{rij.nB ? ` · B ${rij.nB}` : ''}
-        </div>
-      )}
-    </div>
-  )
-}
+// ── Grafieken lazy geladen (`components/grafieken/MarktanalyseGrafieken.tsx`,
+// het énige bestand van de marktanalyse dat recharts importeert) — SSR
+// rendert `ResponsiveContainer` toch niets zichtbaars, dus de skeleton (in
+// exact dezelfde hoogte als de ChartCard-container, zie CLAUDE.md § hydratie-
+// les: nooit opacity:0 tot een effect het toont) voorkomt layout-verschuiving. ──
+const GRAFIEK_SKELETON = <Skeleton height="100%" rounded={10} />
+const LijnGrafiek = dynamic(
+  () => import('@/components/grafieken/MarktanalyseGrafieken').then(m => m.LijnGrafiek),
+  { ssr: false, loading: () => GRAFIEK_SKELETON },
+)
+const LooptijdGrafiek = dynamic(
+  () => import('@/components/grafieken/MarktanalyseGrafieken').then(m => m.LooptijdGrafiek),
+  { ssr: false, loading: () => GRAFIEK_SKELETON },
+)
+
+// Modal wordt pas geopend na een klik: pas dan de JS laden, de knop zelf
+// blijft meteen zichtbaar (geen loading-UI nodig, ssr niet relevant).
+const KwartaalberichtModal = dynamic(
+  () => import('@/components/KwartaalberichtModal').then(m => m.KwartaalberichtModal),
+  { ssr: false },
+)
 
 export function MarktanalyseExplorer({
   werkgebiedPlaatsen,
@@ -626,86 +616,6 @@ function PlaatsWijkKiezer({
             </div>
           )
         })}
-    </div>
-  )
-}
-
-// ── Lijngrafiek (prijs/m²) — recharts, thema uit lib/grafiekThema.ts ──
-function LijnGrafiek({
-  data,
-  yFmt,
-  ttFmt,
-  segmentB,
-}: {
-  data: { kwartaal: string; label: string; markt: number | null; wij: number | null; b: number | null; nMarkt: number; nWij: number; nB: number }[]
-  yFmt: (v: number) => string
-  ttFmt: (v: number) => string
-  segmentB: boolean
-}) {
-  const alleWaarden = data.flatMap(d => [d.markt, d.wij, d.b]).filter((v): v is number => v != null)
-  if (!alleWaarden.length) return <LegeGrafiek />
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <defs>
-          <linearGradient id="vlak-wij" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor={SERIE.wij} stopOpacity={0.26} />
-            <stop offset="1" stopColor={SERIE.wij} stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} />
-        <YAxis
-          tick={{ fontSize: 11, fill: colors.muted }}
-          tickLine={false}
-          axisLine={false}
-          tickFormatter={yFmt}
-          // Genoeg breedte voor "€ 1,2 mln" op één regel (fix review item 6.1,
-          // 24 sep 2026: brak eerder af over twee regels bij width={56}).
-          width={68}
-          tickCount={5}
-          allowDecimals={false}
-          domain={['dataMin', 'dataMax']}
-        />
-        <RTooltip content={<GrafiekTooltip fmt={ttFmt} />} />
-        <Line type="monotone" dataKey="markt" stroke={SERIE.markt} strokeWidth={1.5} dot={false} connectNulls name="markt" />
-        {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
-        <Area type="monotone" dataKey="wij" stroke="none" fill="url(#vlak-wij)" connectNulls name="wij-vlak" legendType="none" />
-        <Line type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
-      </ComposedChart>
-    </ResponsiveContainer>
-  )
-}
-
-// ── Looptijd: staven (markt) + lijnen (wij/B) ──
-function LooptijdGrafiek({
-  data,
-  segmentB,
-}: {
-  data: { kwartaal: string; label: string; markt: number | null; wij: number | null; b: number | null; nMarkt: number; nWij: number; nB: number }[]
-  segmentB: boolean
-}) {
-  const alleWaarden = data.flatMap(d => [d.markt, d.wij, d.b]).filter((v): v is number => v != null)
-  if (!alleWaarden.length) return <LegeGrafiek />
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <ComposedChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
-        <XAxis dataKey="label" tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} width={40} allowDecimals={false} />
-        <RTooltip content={<GrafiekTooltip fmt={v => dagen(v)} />} />
-        <Bar dataKey="markt" fill={SERIE.markt} fillOpacity={0.22} radius={[6, 6, 0, 0]} name="markt" />
-        <Line type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
-        {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
-      </ComposedChart>
-    </ResponsiveContainer>
-  )
-}
-
-function LegeGrafiek() {
-  return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: colors.muted, fontSize: 13 }}>
-      Nog te weinig data voor deze grafiek.
     </div>
   )
 }
