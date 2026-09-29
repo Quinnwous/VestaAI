@@ -9,9 +9,9 @@ import {
   vergelijkLooptijdMetMarkt,
   berekenMarktaandeel,
   filterOpPlaatsLaatste12Mnd,
-  plaatsVarianten,
   type EigenVerkoopPlaatsRow,
 } from '@/lib/kerncijfers'
+import { plaatsVarianten } from '@/lib/plaatsNormalisatie'
 import { haalEigenVerkopen, marktanalyseSamenvatting, dataTotEnMet } from '@/lib/transactiesQuery'
 import { KantoorInstellingenSchema } from '@/lib/schemas'
 import { begroetingVoor, datumVoor, contextregel } from '@/lib/begroeting'
