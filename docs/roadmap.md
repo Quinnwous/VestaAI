@@ -17,72 +17,46 @@
 
 ## 📍 Stand van zaken
 
-- **Rondes 28 sep (PR #41 `feat/sessie-28sep-h` en PR #42
-  `feat/sessie-28sep-i`, beide live):** fase 5 formaat-onafhankelijk
-  voorbereid — 5.2 importkern + `scripts/import-transacties.mjs` (CSV/XLSX,
-  RD → WGS84, kwaliteitsregels, ontdubbelen, rapport; kolomaliassen per bron
-  **voorlopig** in `lib/importProfielen.ts`), 5.3 geocodering
-  (`scripts/geocodeer-transacties.mjs`, PDOK), 5.4 `/admin/transacties` v2
-  (importhistorie, kwaliteitsrapport, terugdraaien — ook een mislukte import),
-  kantoor-aliassen in `/admin/kantoor/[id]`, admin-CSV via dezelfde pijplijn.
-  Verder: verkopersversie van de waardebepaling-pdf (`&voor=verkoper`),
-  hardening-migratie toegepast, i4 Housing: website, werkgebied (Wassenaar,
-  Den Haag) en courtage (1 %) ingevuld. Details: `docs/besluiten.md` 28 sep.
-- **Fase:** 6, 7, 9, 10 en 13 af; fase 5 klaar tot aan de exports (5.1 en 5.5
-  wachten). Open: 8.5 (staging-modelcheck, betaald), 12.1 (team-accounts, wacht
-  op Quinn), 12.5 rest (demo-dossiers, freeze, repetitie op i4housing).
-  Geblokkeerd: fase 11 (voorbeeld-verkoopadvies).
-- ⚠️ **Demo-realiteit (uit 12.5a):** het i4housing-kantoor heeft nul transacties
-  tot fase 5 — marktinzichten, kerncijfers en waardering tonen daar de lege
-  staat. Repetitie gebeurt op `/login/demo`; zonder de exports is er geen demo
-  op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
-  demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
+*Bijgewerkt 30 sep 2026 (ronde O, PR #48). Geschiedenis per ronde: `docs/besluiten.md`.*
+
+- **Af:** fases 0-4, 6, 7, 9, 10 en 13. Fase 5 is voorbereid tot aan de exports
+  (5.2-5.4 af, importpijplijn en geocodering liggen klaar). Next 16 + React 19
+  en functies in Frankfurt sinds 29 sep.
+- **Laatst opgeleverd (ronde O):** 12.6 performance mobiel ronde 2 —
+  recharts lazy, `react-dom/server` uit de kaartlagen, dossier-tabs pas mounten
+  bij het eerste bezoek, kantoorfonts zonder preload, Plausible `lazyOnload`,
+  ui-barrel tree-shakebaar. Initiële JS (gzip): marktanalyse 209 → 77 kB,
+  concurrentie 197 → 65, woningen 132 → 69, transacties 161 → 91, kaart
+  159 → 76, layout 66 → 37. Kwaliteit: A/B tegen `main` — wat de gebruiker
+  ziet verschijnt even snel, alle checks groen (dod:screens 33/33, e2e 10/10,
+  repetitie 0 fouten). Verder: meetscript `scripts/meet-lighthouse.mjs`,
+  kantoor-admin-achterdeur op `kantoren` gedicht (migratie toegepast),
+  roadmap/CLAUDE.md opgeschoond. Nameting Lighthouse: zie 12.6.
+- **Open en bouwbaar zonder input:** weinig. Kandidaten: dossier-LCP verder
+  omlaag (verkoopadvies-fase, `WaardebepalingPaneel` + kaart zijn de grootste
+  hydratie), landingspagina naar > 90 (nu 86, § 11-eis) en kantoorlogin (82),
+  31 react-hooks-lintmeldingen.
+- **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
+  voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), akkoord betaalde
+  testruns (8.5, smoke-generatie, EN-kwartaalbericht), opruimmigratie,
+  6 ongebruikte Stripe-/cron-geheimen op Vercel, Supabase-auth 2 klikken,
+  kantoorprofiel i4, pastelkleuren kaart, Vercel Pro.
+- ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
+  7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
+  Repetitie op `/login/demo`. Terugvalplan als de exports uitblijven: demo op
+  het demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Zodra de exports binnen zijn:** 5.1 exportanalyse → `lib/importProfielen.ts`
-  definitief maken → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
+  definitief → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
   export) → dry-run → `--write` → geocoderen → backtest → M1-tussencheck.
-- **Rondes 29 sep (J en K, PR #43 en #44):** J1 plaatsnormalisatie (import
-  schrijft "Den Haag", HOOFDLETTER-exports → "Wassenaar"; demo-kantoor omgezet),
-  J2 courtage per dossier (kantoorstandaard, btw-aanduiding), K1
-  verkoopadvies-datalaag (`lib/verkoopadvies.ts` + `lib/verkoopadviesLaden.ts`:
-  het fase-11-contract + `verkoopadviesGereedheid()`, live getest: 0,9 s), K2
-  dode importcode weg + "locatie benaderd" in Transacties opzoeken.
-- **Snelheid (29 sep):** functies naar Frankfurt (~3× snellere servertijd) en
-  Next 16 + React 19 live. Lighthouse mobiel blijft ~65-73 op dossier en
-  marktanalyse (LCP ~5 s op traag 4G) — volgende stap is client-JS per pagina,
-  niet de server. Team-accounts i4 klaar om aan te maken (`docs/i4housing-team.md`),
-  bewust nog niet gedaan.
-- **Bouwbaar zonder data is nu vrijwel op.** Wat overblijft vraagt een keuze of
-  input van Quinn: verkoopadvies-opbouw (voorbeeld), 8.5-testrun + smoke-generatie
-  + EN-kwartaalbericht (betaald, paar euro), Next 15-upgrade (mobiel ≥ 85),
-  team-accounts (namen), kantoorprofiel i4 ("over ons", opgericht, kenmerken —
-  de gereedheidscheck meldt het als ontbrekend), Sentry (account).
-- **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
-  de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
-  ging over een functie zonder aanroeper. Niet opnieuw oppakken.
-- **Performance:** a11y 100; mobiel dossier ~73 (bytes gehalveerd, maar de score
-  haalt 85 nog niet — rest zit in de Next 14-runtime en render-blocking CSS);
-  meting op deze machine instabiel → PSI op de productie-URL.
-- ⚠️ Contentgeneratie: kern-call sinds 8.3 kleiner (6.000 max_tokens); echte duur
-  nog niet gemeten — eerste generatie na deploy timen.
-- **Blokkades (geen van alle blokkeert het bouwen):**
-  - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`):
-    **uitgesteld tot het platform in gebruik is** (besluit Quinn 28 sep). ⚠️ Let
-    op: het importeren van hun Realworks-data is al verwerking namens i4housing
-    in de zin van de AVG — de overeenkomst hoort er formeel vóór 5.5 te liggen.
-  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; Quinn regelt ze
-    "zo snel mogelijk", 28 sep).
-  - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
-    regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
-  - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
-  - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
-    leaked-password-protection aan. Kan niet via de MCP (geen Auth-configtool),
-    niet via een beheertoken (classifier) en niet via Claude in Chrome (niet
-    verbonden) — Quinn zet ze zelf om. Het grootste risico (aanmelding →
-    automatisch een kantoor) is sinds de hardening-migratie weg.
-  - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
-  (`/marktanalyse/kaart`, nu de enige kaart)?
+- ⚠️ **Contentgeneratie:** kern-call sinds 8.3 kleiner (6.000 max_tokens), maar
+  de echte duur NL+EN tegen de Vercel-limiet van 300 s is nog niet gemeten —
+  zit in de betaalde testruns (§ 8 punt 6).
+- **Blokkades (geen ervan blokkeert het bouwen):** exports · Brainbay-licentie
+  · voorbeeld-verkoopadvies · verwerkersovereenkomst (uitgesteld tot in
+  gebruik, maar formeel vóór 5.5) · Vercel Hobby.
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
+  pastelkleuren van de kaart goed?
 
 ---
 

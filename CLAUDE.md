@@ -125,6 +125,8 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Een dynamic import beschermt de kinderen niet** — les 27 sep 2026 (12.3): `BasisKaart` was `dynamic(ssr:false)`, maar de laag-componenten (`VerkopenLaag`, `ReferentiesLaag`, `WoningenKaartLaag`) importeerden zelf `maplibre-gl`, dus 278 kB gzip zat alsnog in de hoofdbundel van elke kaartpagina. Zware libs in een laag: alleen het type statisch importeren, de runtime via `await import()` in het effect. Controleer met `ANALYZE=true npm run build`.
 
+⚠️ **Mobiele performance = JavaScript in de eerste lading** — les 30 sep 2026 (12.6): het LCP-element is overal de h1 uit de server-HTML, maar 87 % van de LCP was "render delay" — de LCP valt na de hydratie, dus telt Lighthouse de hele JS-download op traag 4G mee. Regels: `recharts` alleen in `components/grafieken/` en via `next/dynamic` (skelet met exact dezelfde hoogte); nooit `react-dom/server` statisch in client-code (`await import()` in het effect); dossier-tabs in `ObjectWorkspace` mounten pas bij het eerste bezoek (tests/scripts die een verborgen tab nodig hebben: eerst klikken); een nieuw font in `app/layout.tsx` krijgt `preload: false` tenzij élke pagina het gebruikt; externe scripts `lazyOnload`. Meten: `node --env-file=.env.local scripts/meet-lighthouse.mjs` (mediaan van 3, productie; `--anoniem` voor publiek). Bundel: `ANALYZE=true npm run build` (opent geen browser meer, rapporten in `.next/analyze/`).
+
 ⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
 
 ⚠️ **BAG-API (Kadaster): vrije tekst via `q`, `pageSize` ≥ 10** — les 27 sep 2026: de adres-autocomplete en het voorvullen van bouwjaar/oppervlakte deden ongemerkt niets (hoe lang precies is niet nagegaan), omdat `/adressen?zoekresultaat=…` een 400 gaf en de routes dat stil tot "leeg" opvouwden. Alles loopt nu via `lib/bag.ts` (`q`, `adressenuitgebreid` voor bouwjaar + oppervlakte in één call, header `Accept-Crs: epsg:28992`); een mislukte call wordt gelogd. Zelfde les als bij de verrijking: een externe bron die faalt mag nooit ongemerkt als "geen resultaat" doorgaan.
@@ -173,7 +175,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 | Virtual staging | Gemini API — `gemini-2.5-flash-image` ("Nano Banana", `app/api/fotos/staging/route.ts`) (`GOOGLE_AI_API_KEY`) |
 | Transactiedataset (waardering, marktinzichten, kaart) | i4housing's eigen Realworks-verkoopdata + overige verkopen, CSV-import via `/admin/transacties` |
 | Kaart | MapLibre GL + PDOK BRT-Achtergrondkaart-vectortiles (pastel), één stack in `components/kaart/` — Leaflet is weg sinds item 7.4 |
-| Grafieken | `recharts` |
+| Grafieken | `recharts` — alleen in `components/grafieken/`, lazy geladen (12.6) |
 | PDF export | react-pdf — ⚠️ de ingebouwde Helvetica is **WinAnsi**: `·` `•` `×` `²` `—` `€` renderen, maar `⚠` (U+26A0) en de meeste emoji niet. Styles worden pas tijdens het renderen gevalideerd, dus typecheck én build zien een kapotte style-prop níet — dek een nieuw pdf-document af met een test die hem écht rendert (`components/WaardebepalingPdfTemplate.test.ts`). Een logo-URL altijd eerst door `bruikbaarLogo()`: `<Image>` kent geen `onError` en een dode URL laat de hele generatie klappen |
 | Transactionele e-mail | Resend |
 | Styling | Tailwind CSS |
@@ -245,6 +247,7 @@ VestaAI/
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
 │   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
 │   ├── InlogFormulier.tsx      # gedeelde login (generiek VestaAI-groen of kantoorstijl)
+│   ├── grafieken/              # énige recharts-importeurs, lazy geladen door de explorers (12.6)
 │   ├── kaart/                  # MapLibre-stack (fase 7): BasisKaart, VerkopenLaag, StraalLaag, HoverKaart,
 │   │                           #   ReferentiesLaag/SubjectPin/ReferentiePin, KaderLaag (herkaderen na mount);
 │   │                           #   worker zelf gehost in public/maplibre-gl/ (guard-test)
