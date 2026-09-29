@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, useWatch, type Resolver } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ZodType } from 'zod'
-import { PropertyInputSchema, migreerOudWoningtype, type PropertyInput } from '@/lib/schemas'
+import { PropertyInputSchema, migreerOudWoningtype, type PropertyInput, type KantoorInstellingen } from '@/lib/schemas'
+import { courtagePercentageLabel, parseOptioneelGetal } from '@/lib/courtage'
 import { bouwWoningtypeOptieGroepen, woningtypeOptieWaarde, ontleedWoningtypeOptieWaarde } from '@/lib/woningtypeOpties'
 import { AddressAutocomplete } from '@/components/AddressAutocomplete'
 import { WoningdataPanel } from '@/components/WoningdataPanel'
@@ -61,6 +62,9 @@ export function clearDraft() {
 interface PropertyFormProps {
   onSubmit: (data: PropertyInput) => void
   disabled?: boolean
+  /** Instellingen van het kantoor van de ingelogde makelaar (item J2) — `courtage.percentage`
+   * vult het courtagevoorstel in stap 6 voor bij een nieuw dossier (zie app/(app)/object/new/). */
+  kantoorInstellingen?: KantoorInstellingen | null
 }
 
 const inputStyle: React.CSSProperties = {
@@ -83,7 +87,7 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 8,
 }
 
-export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
+export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: PropertyFormProps) {
   const draft = typeof window !== 'undefined' ? loadDraft() : {}
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [openHuisActief, setOpenHuisActief] = useState(
@@ -109,7 +113,13 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
     // dubbele cast (schema-argument én resolver-resultaat), via `unknown`
     // i.p.v. `any` (project blijft strict, geen `any`).
     resolver: zodResolver(PropertyInputSchema as unknown as ZodType<PropertyInput, PropertyInput>) as unknown as Resolver<PropertyInput>,
-    defaultValues: { taal: 'nl', ...draft },
+    // Courtagevoorstel start op de kantoorstandaard bij een nieuw dossier —
+    // stond er al een waarde in het (lokale) concept, dan wint die (item J2).
+    defaultValues: {
+      taal: 'nl',
+      ...draft,
+      courtagevoorstel_percentage: draft.courtagevoorstel_percentage ?? kantoorInstellingen?.courtage?.percentage,
+    },
   })
 
   const adresValue = useWatch({ control, name: 'adres' }) ?? ''
@@ -129,6 +139,10 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
   // Content komt sinds 16 sep 2026 altijd in NL + EN tegelijk (zie CLAUDE.md) —
   // geen taalkeuze meer nodig in de intake. Het formulier zelf blijft Nederlands.
   const isEn = false
+
+  // Courtage (item J2): kantoorstandaard voor het voorvullen/label van stap 6.
+  const kantoorCourtagePercentage = kantoorInstellingen?.courtage?.percentage
+  const kantoorCourtageBtwLabel = kantoorInstellingen?.courtage?.btw === 'inclusief' ? 'incl. btw' : 'excl. btw'
 
   // Stapsgewijze validatie: alleen de velden van de huidige stap controleren
   // vóór "Volgende", zodat een fout in een latere stap niet blokkeert.
@@ -672,12 +686,26 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
           <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>Wat de verkoper zelf verwacht — de vraagprijs staat pas vast als de opdracht binnen is.</p>
         </div>
         <div>
-          <label style={labelStyle}>Courtagevoorstel (%) <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
+          <label style={labelStyle}>
+            Courtage (%) — {kantoorCourtageBtwLabel} <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span>
+          </label>
           <input
-            {...register('courtagevoorstel_percentage', { valueAsNumber: true })}
-            type="number" step="0.01" min={0} max={10} disabled={disabled} placeholder="1.25"
+            {...register('courtagevoorstel_percentage', {
+              // Niet valueAsNumber: bij een leeg (nooit ingevuld) veld geeft
+              // dat NaN i.p.v. undefined, wat de optionele validatie zou
+              // laten falen — zelfde patroon als prijsverwachting_verkoper
+              // hierboven (lib/courtage.ts parseOptioneelGetal).
+              setValueAs: parseOptioneelGetal,
+            })}
+            type="number" step="0.01" min={0} max={10} disabled={disabled}
+            placeholder={kantoorCourtagePercentage != null ? String(kantoorCourtagePercentage) : '1.25'}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
           />
+          {kantoorCourtagePercentage != null && (
+            <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
+              Standaard van je kantoor: {courtagePercentageLabel(kantoorCourtagePercentage)}. Pas aan voor deze woning.
+            </p>
+          )}
         </div>
       </div>
 
@@ -801,7 +829,7 @@ export function PropertyForm({ onSubmit, disabled }: PropertyFormProps) {
         zie .intake-layout in app/globals.css), op smallere schermen blijft de
         wizard gestapeld zoals voorheen en verschijnt dit paneel niet. */}
     <aside className="intake-zijpaneel">
-      <DezeWoningPaneel control={control} />
+      <DezeWoningPaneel control={control} kantoorInstellingen={kantoorInstellingen} />
     </aside>
     </div>
   )
