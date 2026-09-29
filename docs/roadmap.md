@@ -47,6 +47,11 @@
   verkoopadvies-datalaag (`lib/verkoopadvies.ts` + `lib/verkoopadviesLaden.ts`:
   het fase-11-contract + `verkoopadviesGereedheid()`, live getest: 0,9 s), K2
   dode importcode weg + "locatie benaderd" in Transacties opzoeken.
+- **Snelheid (29 sep):** functies naar Frankfurt (~3× snellere servertijd) en
+  Next 16 + React 19 live. Lighthouse mobiel blijft ~65-73 op dossier en
+  marktanalyse (LCP ~5 s op traag 4G) — volgende stap is client-JS per pagina,
+  niet de server. Team-accounts i4 klaar om aan te maken (`docs/i4housing-team.md`),
+  bewust nog niet gedaan.
 - **Bouwbaar zonder data is nu vrijwel op.** Wat overblijft vraagt een keuze of
   input van Quinn: verkoopadvies-opbouw (voorbeeld), 8.5-testrun + smoke-generatie
   + EN-kwartaalbericht (betaald, paar euro), Next 15-upgrade (mobiel ≥ 85),
