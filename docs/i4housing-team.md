@@ -36,7 +36,10 @@ Namen bevestigd door Quinn (29 sep).
   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=3e1099e4-4684-42b7-8b1c-16bc0c39c1d7 --write
   ```
 
-  Standaard een eigen startwachtwoord per persoon (advies Opus: één gedeeld
-  wachtwoord laat iedereen als elkaar inloggen tot ze resetten); `--gedeeld`
-  voor één gezamenlijk. Wachtwoorden alléén in `backups/team-wachtwoorden-<datum>.txt` (buiten git).
+  **Ieder een eigen startwachtwoord, gebaseerd op de voornaam** (Quinn, 29 sep),
+  met een willekeurig deel zodat een collega het niet kan raden: `Voornaam-xxxx-xxxx`.
+- **Lijst al gemaakt (29 sep):** `backups/team-startwachtwoorden-i4housing-team.tsv`
+  — alleen op Quinns Mac, buiten git (`backups/` staat in `.gitignore`), rechten 600.
+  Het aanmaakcommando hierboven gebruikt precies deze wachtwoorden. **Accounts pas
+  later aanmaken** (besluit Quinn).
 - Bestaand: `quinn.berkouwer@icloud.com` (testaccount van Quinn bij i4 Housing).

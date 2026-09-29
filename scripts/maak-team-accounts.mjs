@@ -17,7 +17,9 @@
  * worden overgeslagen, dus opnieuw draaien is veilig.
  *
  * Gebruik:
+ *   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=<id> --genereer-lijst   (alleen de wachtwoordlijst maken)
  *   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=<id> [--bestand=docs/i4housing-team.md] [--gedeeld] [--wachtwoord=…] [--write]
+ * Bestaat backups/team-startwachtwoorden-<teamlijst>.tsv, dan gebruikt --write díe wachtwoorden.
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -34,18 +36,38 @@ const KANTOOR_ID = arg('kantoor')
 const BESTAND = path.resolve(ROOT, arg('bestand') ?? 'docs/i4housing-team.md')
 const SCHRIJVEN = vlag('write')
 const GEDEELD = vlag('gedeeld') || !!arg('wachtwoord')
+const GENEREER_LIJST = vlag('genereer-lijst')
+const LIJST = path.join(ROOT, 'backups', `team-startwachtwoorden-${path.basename(BESTAND, '.md')}.tsv`)
+
+/** Leest een eerder gemaakte lijst (naam, e-mail, wachtwoord per regel) → Map e-mail → wachtwoord. */
+function leesLijst() {
+  if (!fs.existsSync(LIJST)) return new Map()
+  const m = new Map()
+  for (const regel of fs.readFileSync(LIJST, 'utf-8').split('\n')) {
+    if (!regel || regel.startsWith('#')) continue
+    const [, email, wachtwoord] = regel.split('\t')
+    if (email && wachtwoord) m.set(email.toLowerCase(), wachtwoord)
+  }
+  return m
+}
 
 if (!KANTOOR_ID) {
   console.error('❌ --kantoor=<id> is verplicht')
   process.exit(1)
 }
 
-/** Leesbaar, sterk wachtwoord: 4 groepen van 4 tekens zonder verwarrende tekens (0/O, 1/l/I). */
-function maakWachtwoord() {
+/**
+ * Startwachtwoord: voornaam + twee willekeurige blokken ("Chita-k7Qm-4xRt").
+ * Herkenbaar voor de persoon (besluit Quinn: "gebaseerd op de naam"), maar
+ * het willekeurige deel (8 tekens, ~46 bits) maakt het niet te raden voor een
+ * collega die het patroon kent. Geen verwarrende tekens (0/O, 1/l/I).
+ */
+function maakWachtwoord(naam = '') {
   const tekens = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  const bytes = crypto.randomBytes(16)
+  const bytes = crypto.randomBytes(8)
   const s = Array.from(bytes, b => tekens[b % tekens.length]).join('')
-  return `${s.slice(0, 4)}-${s.slice(4, 8)}-${s.slice(8, 12)}-${s.slice(12, 16)}`
+  const voornaam = (naam.split(' ')[0] || 'Start').normalize('NFD').replace(/[^A-Za-z]/g, '')
+  return `${voornaam}-${s.slice(0, 4)}-${s.slice(4, 8)}`
 }
 
 /** Leest de markdown-tabel onder "## Makelaars (aanmaken)": | Naam | Functie | E-mail |. */
@@ -75,6 +97,17 @@ async function main() {
   const { data: bestaande } = await service.from('makelaars').select('email')
   const bestaandeEmails = new Set((bestaande ?? []).map(m => (m.email ?? '').toLowerCase()))
 
+  if (GENEREER_LIJST) {
+    if (fs.existsSync(LIJST)) throw new Error(`${path.relative(ROOT, LIJST)} bestaat al — niet overschreven (verwijder hem zelf als je nieuwe wachtwoorden wilt)`)
+    fs.mkdirSync(path.dirname(LIJST), { recursive: true })
+    const regels = team.map(p => `${p.naam}\t${p.email}\t${maakWachtwoord(p.naam)}`)
+    fs.writeFileSync(LIJST, `# ${kantoor.name} — startwachtwoorden (gemaakt ${new Date().toISOString().slice(0, 10)}); nog NIET aangemaakt. Zelf resetten via de kantoorlogin.\n${regels.join('\n')}\n`, { mode: 0o600 })
+    console.log(`🔐 Lijst met ${team.length} startwachtwoorden → ${path.relative(ROOT, LIJST)} (buiten git). Er is niets aangemaakt.`)
+    return
+  }
+  const lijst = leesLijst()
+  if (lijst.size) console.log(`🔐 Startwachtwoorden uit ${path.relative(ROOT, LIJST)}`)
+
   const gedeeldWachtwoord = GEDEELD ? (arg('wachtwoord') ?? maakWachtwoord()) : null
   if (gedeeldWachtwoord && gedeeldWachtwoord.length < 12) throw new Error('Gedeeld wachtwoord: minimaal 12 tekens')
 
@@ -90,7 +123,7 @@ async function main() {
       console.log(`  ➕ ${p.naam.padEnd(22)} ${p.email} — zou aangemaakt worden (${p.functie})`)
       continue
     }
-    const wachtwoord = gedeeldWachtwoord ?? maakWachtwoord()
+    const wachtwoord = gedeeldWachtwoord ?? lijst.get(p.email) ?? maakWachtwoord(p.naam)
     const { data: gemaakt, error } = await service.auth.admin.createUser({
       email: p.email,
       password: wachtwoord,
