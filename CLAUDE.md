@@ -165,7 +165,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 | Laag | Tech |
 |------|------|
-| Frontend + API routes | Next.js 14 (App Router) |
+| Frontend + API routes | Next.js 16 (App Router, React 19, Turbopack standaard voor `dev`/`build`) |
 | Database + Auth + Storage | Supabase (+ PostGIS-extensie voor `transacties.geo`) |
 | AI engine (contentsuite, AI USP-extractor) | Claude API — `claude-sonnet-4-6` |
 | Virtual staging | Gemini API — `gemini-2.5-flash-image` ("Nano Banana", `app/api/fotos/staging/route.ts`) (`GOOGLE_AI_API_KEY`) |
@@ -305,7 +305,7 @@ VestaAI/
 ## Commands
 
 - `npm run dev` — start lokale server
-- `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild en tsconfig's `jsx: preserve`.
+- `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild. (Sinds de Next 16-upgrade staat `tsconfig.json`'s `jsx` op `react-jsx` — dat schrijft Next zelf verplicht voor, en dekt dit niet: vitest blijft los via oxc lopen.)
 - `npm run typecheck` — TypeScript check
 - `npm run env:check` — ontbrekende omgevingsvariabelen (leest `.env.example` + `.env.local`, print nooit waarden)
 - `npm run build` — productie-build
