@@ -21,11 +21,8 @@ export type TransactieVeld =
   | 'bouwjaar' | 'energielabel' | 'kamers' | 'garage' | 'tuin' | 'buitenruimte'
   | 'eigen_verkoop' | 'verkopend_kantoor'
 
-// Geëxporteerd (was module-privaat) t.b.v. lib/importProfielen.ts (item 5.2):
-// de bron-profielen leggen per bron extra kolomaliassen bovenop deze
-// basislijst, zonder haar te dupliceren. Gedrag van parseTransactieCsv()
-// hieronder is ongewijzigd — alleen de zichtbaarheid van deze losse
-// bouwstenen is aangepast.
+// Basislijst van kolomaliassen; lib/importProfielen.ts legt per bron extra
+// aliassen hierbovenop, zonder deze lijst te dupliceren.
 export const ALIASSEN: Record<TransactieVeld, string[]> = {
   adres: ['adres', 'address', 'straat'],
   postcode: ['postcode', 'zip', 'zipcode'],
