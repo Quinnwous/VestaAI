@@ -26,12 +26,17 @@ Namen bevestigd door Quinn (29 sep).
 | Feline Keijzer | Office manager | idem |
 | Barbara Poldervaart | Property manager | beheer, geen verkoop |
 
-## Open keuzes vóór het aanmaken
+## Besluit (Quinn, 29 sep)
 
-1. **Welkomstmail.** `addMakelaarAccount` (`app/admin/actions.ts`) mailt de
-   persoon meteen "account toegevoegd". Advies: aanmaken zónder mail en de
-   uitnodiging bewust later versturen (bv. na de demo).
-2. **Wachtwoord.** Door Quinn uitgedeeld (sterk, willekeurig, lokaal buiten git)
-   of zelf kiezen via een reset-link in kantoorstijl (item 9.2) — dan hoeft
-   niemand een wachtwoord door te sturen.
-3. Bestaand: `quinn.berkouwer@icloud.com` (testaccount van Quinn bij i4 Housing).
+- **Geen welkomstmail.**
+- **Startwachtwoord**, daarna resetten ze zelf via de kantoorlogin (`/login/<slug>` → wachtwoord vergeten; reset-mail in kantoorstijl).
+- Aanmaken in één keer met het script (standaard dry-run, bestaande adressen worden overgeslagen):
+
+  ```
+  node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=3e1099e4-4684-42b7-8b1c-16bc0c39c1d7 --write
+  ```
+
+  Standaard een eigen startwachtwoord per persoon (advies Opus: één gedeeld
+  wachtwoord laat iedereen als elkaar inloggen tot ze resetten); `--gedeeld`
+  voor één gezamenlijk. Wachtwoorden alléén in `backups/team-wachtwoorden-<datum>.txt` (buiten git).
+- Bestaand: `quinn.berkouwer@icloud.com` (testaccount van Quinn bij i4 Housing).
