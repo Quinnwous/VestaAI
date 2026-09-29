@@ -33,6 +33,15 @@ describe('voerImportPijplijnUit — realworks', () => {
     expect(rapport.pctMetCoordinaat).toBe(100)
   })
 
+  it('normaliseert plaats naar de canonieke schrijfwijze (item J1: "Den Haag" i.p.v. "\'s-Gravenhage")', () => {
+    const ruweRijen = [
+      ['Dorpsstraat 2', '2511AB', "'s-Gravenhage", '52.08', '4.31', '500000', '15-03-2026', 'Appartement', '80', ''],
+    ]
+    const { rijen } = voerImportPijplijnUit(ruweRijen, headers, PROFIELEN.realworks, KANTOOR_ALIASSEN, { vandaag: VANDAAG })
+    expect(rijen).toHaveLength(1)
+    expect(rijen[0].plaats).toBe('Den Haag')
+  })
+
   it('slaat een rij zonder adres over (niet geïmporteerd, ook niet uitgesloten)', () => {
     const ruweRijen = [['', '2242AB', 'Wassenaar', '52.146', '4.402', '750000', '15-03-2026', 'Tussenwoning', '120', '']]
     const { rijen, rapport } = voerImportPijplijnUit(ruweRijen, headers, PROFIELEN.realworks, KANTOOR_ALIASSEN, { vandaag: VANDAAG })
