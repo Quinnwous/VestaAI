@@ -46,7 +46,13 @@ export async function sessieCookie(email = DOD_EMAIL) {
 export async function toontFoutstaat(page) {
   return page.evaluate(() => {
     const tekst = document.body?.innerText ?? ''
-    return tekst.includes('Er is iets misgegaan') || !!document.querySelector('nextjs-portal') || tekst.includes('Application error')
+    // Sinds Next 15 staat <nextjs-portal> (de dev-tools-knop) altijd op de pagina,
+    // ook zonder fout — alleen een geopende foutdialoog of een issue-telling in
+    // die portal telt nog als fout (les 29 sep 2026, Next 16-upgrade: 38 valse
+    // "foutstaten"). Echte browserfouten vangen de scripts daarnaast via pageerror.
+    const sr = document.querySelector('nextjs-portal')?.shadowRoot
+    const devOverlayFout = !!sr?.querySelector('[data-nextjs-dialog], [data-nextjs-dialog-overlay], [data-issues]')
+    return tekst.includes('Er is iets misgegaan') || devOverlayFout || tekst.includes('Application error')
   })
 }
 
