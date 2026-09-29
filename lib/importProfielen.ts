@@ -99,8 +99,8 @@ const REALWORKS: ImportProfiel = {
 // De CSV-upload op /admin/transacties: geen bron-specifieke aliassen (de
 // beheerder levert zelf een bestand aan, geen vast CRM-exportformaat), dus
 // alleen de gedeelde `ALIASSEN` uit lib/transactieImport.ts. Coördinaten
-// komen — net als voorheen in parseTransactieCsv() — als kant-en-klare
-// lat/lng-kolommen aan, nooit als RD X/Y.
+// komen — net als bij de andere bronnen — als kant-en-klare lat/lng-kolommen
+// aan, nooit als RD X/Y.
 const HANDMATIG: ImportProfiel = {
   bron: 'handmatig',
   extraAliassen: {},
@@ -168,7 +168,7 @@ export type BronRij = {
  * Mapt één ruwe rij (waarden in dezelfde volgorde als `headers`) naar een
  * `BronRij`, met de basisaliassen uit `lib/transactieImport.ts` aangevuld
  * met `profiel.extraAliassen`. Geeft `null` als er geen adres te vinden is
- * (net als parseTransactieCsv() — zo'n rij is niet bruikbaar).
+ * — zo'n rij is niet bruikbaar.
  */
 export function mapRij(ruweRij: string[], headers: string[], profiel: ImportProfiel): BronRij | null {
   const kolomIndex = {} as Record<TransactieVeld, number>
