@@ -41,7 +41,7 @@ export default async function MarktanalysePage() {
   if (!makelaar) return <AccountWordtKlaargezet />
 
   const service = createServiceSupabaseClient()
-  const sessie = createServerSupabaseClient()
+  const sessie = await createServerSupabaseClient()
 
   const [{ data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
     service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),

@@ -43,6 +43,10 @@ const nextConfig = {
 // Opt-in bundle-analyse (item 12.3): `ANALYZE=true npm run build` schrijft
 // .next/analyze/*.html met een treemap van elke client-/server-bundel.
 // Nooit actief in een gewone build — alleen devDependency, geen productie-impact.
+// ⚠️ Next 16-les: @next/bundle-analyzer werkt niet onder Turbopack (de nieuwe
+// standaard voor `next build`) — het `build`-script in package.json schakelt
+// daarom alleen bij ANALYZE=true terug naar `--webpack`, een gewone build
+// blijft Turbopack.
 import withBundleAnalyzerInit from '@next/bundle-analyzer'
 const withBundleAnalyzer = withBundleAnalyzerInit({
   enabled: process.env.ANALYZE === 'true',

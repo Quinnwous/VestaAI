@@ -18,7 +18,7 @@ function Kaart({ label, waarde, sub }: { label: string; waarde: string | number;
 }
 
 export default async function AdminPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')

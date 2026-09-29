@@ -19,7 +19,7 @@ const PUBLIC_PREFIX = [
   '/api/auth/kantoor-reset',
 ]
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Volledig publieke routes en statische assets overslaan

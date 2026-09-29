@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
     const body = VerzoekSchema.parse(await req.json())
 
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

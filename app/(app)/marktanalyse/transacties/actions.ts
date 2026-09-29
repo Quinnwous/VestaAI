@@ -32,7 +32,7 @@ export async function haalTransactiesData(
   sortering: Sortering,
   pagina: number,
 ): Promise<TransactiesData> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const [resultaat, samenvatting] = await Promise.all([
     zoekTransacties(supabase, filters, { sortering, limiet: PER_PAGINA, offset: (pagina - 1) * PER_PAGINA }),
     marktanalyseSamenvatting(supabase, filters),

@@ -135,6 +135,8 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Verouderde "nog niet toegepast"-commentaren kosten dubbel werk** — les 27 sep 2026 (op 28 sep opnieuw gezien bij de concurrentie-v2-RPC's; daarna systematisch opgeruimd — alleen `transacties.makelaar_id` is echt nog niet toegepast): een oud bestandscommentaar in `lib/transactiesQuery.ts` liet een performance-meting concluderen dat "Transacties opzoeken" nog een RPC nodig had, terwijl die al sinds 6.2 live stond. Werk bij het toepassen van een migratie ook de commentaren in code en migratiebestand bij; bij twijfel: `pg_get_functiondef()` op productie.
 
+⚠️ **Serverfuncties draaien in Frankfurt (`vercel.json` `regions: ["fra1"]`), naast de database (`eu-central-1`)** — les 29 sep 2026: zonder die regel draaide alles in Washington (Vercel-standaard) en ging elke databasevraag twee keer over de oceaan; de verhuizing haalde 56–73 % van de servertijd af. Meet met `node --env-file=.env.local scripts/meet-paginasnelheid.mjs --label=<naam>`.
+
 ⚠️ **Upsert met lege velden wist data** — les 28 sep 2026: supabase-js vult een ontbrekende sleutel binnen één batch aan met null, en een expliciete null overschrijft bij een conflict. Een herimport zonder coördinaten wiste zo alle geocodering. Velden die later worden aangevuld (`geo`, `geocode_status`, `wijk`, `buurt`) gaan via `maakUpsertBatches()` in `lib/importPijplijn.ts`: leeg = weglaten, upsert per kolomset. Zelfde categorie: sla `instellingen_json` samen op (`voegInstellingenSamen()`), nooit vervangen — dat wiste `demo: true`.
 
 ⚠️ **`xlsx` komt van cdn.sheetjs.com, niet van npm** (0.18.5 daar is verouderd, bekende kwetsbaarheden). In ESM heeft SheetJS geen fs-toegang: `XLSX.read(fs.readFileSync(pad))`, nooit `XLSX.readFile()`.
@@ -165,7 +167,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 | Laag | Tech |
 |------|------|
-| Frontend + API routes | Next.js 14 (App Router) |
+| Frontend + API routes | Next.js 16 (App Router, React 19, Turbopack standaard voor `dev`/`build`) |
 | Database + Auth + Storage | Supabase (+ PostGIS-extensie voor `transacties.geo`) |
 | AI engine (contentsuite, AI USP-extractor) | Claude API — `claude-sonnet-4-6` |
 | Virtual staging | Gemini API — `gemini-2.5-flash-image` ("Nano Banana", `app/api/fotos/staging/route.ts`) (`GOOGLE_AI_API_KEY`) |
@@ -305,10 +307,20 @@ VestaAI/
 ## Commands
 
 - `npm run dev` — start lokale server
-- `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild en tsconfig's `jsx: preserve`.
+- `npm run test` — unit tests (Vitest). Componenten (`.tsx`) mogen getest worden: `vitest.config.ts` zet JSX aan via `oxc: { jsx: { runtime: 'automatic' } }` — Vite 8 draait op oxc, dus de oude `esbuild`-optie doet níets meer, ook al noemt de foutmelding esbuild. (Sinds de Next 16-upgrade staat `tsconfig.json`'s `jsx` op `react-jsx` — dat schrijft Next zelf verplicht voor, en dekt dit niet: vitest blijft los via oxc lopen.)
 - `npm run typecheck` — TypeScript check
 - `npm run env:check` — ontbrekende omgevingsvariabelen (leest `.env.example` + `.env.local`, print nooit waarden)
 - `npm run build` — productie-build
 - `npm run e2e` — Playwright-suite in `e2e/` (zie `e2e/README.md`): kantoorlogin, dossier < 5 s, waardering + pdf, kaart zonder CSP-fout, admin, RLS-isolatie tussen kantoren. Content-tests alleen met `E2E_GENERATE=1` (kost API-geld). Maakt en verwijdert één testdossier, uitsluitend in het demo-kantoor.
 - `npm run demo:repetitie` — generale repetitie van `docs/demoscript.md`: loopt de zes scènes af met Playwright (demo-kantoor, 1920×1080), screenshots naar `screenshots/repetitie/`, exit 1 bij `pageerror`/lege staat/ontbrekend knoplabel. Alleen lezend: klikt niets aan dat schrijft of geld kost. Zelfde inlog en `.env.local`-eisen als `dod:screens` (hieronder).
 - `npm run dod:screens` — DoD-visueel: huisstijlcheck (VestaAI-groen, foutstaat, `pageerror`) op 390/1280/1920 px + screenshots van alle ingelogde routes naar `screenshots/`; exit 1 bij een fout. Gebruikt een draaiende server op `DOD_PORT` (standaard 3000) of start zelf `next dev`. Vereist in `.env.local`: `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (plus de gewone app-variabelen); optioneel `DOD_EMAIL` (standaard `demo@vestaai.nl`, het demo-kantoor met data; i4 Housing via `DOD_EMAIL=quinn.berkouwer@icloud.com`). Logt in via een sessiecookie (`scripts/lib/dodSessie.mjs`), niet via de magic-link-redirect — die wijst naar productie. Alleen lezend, maar ⚠️ `.env.local` wijst naar de productiedatabase.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

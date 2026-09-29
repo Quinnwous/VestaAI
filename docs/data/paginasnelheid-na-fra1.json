@@ -1,0 +1,71 @@
+{
+  "label": "na-fra1",
+  "basis": "https://www.vestaai.nl",
+  "n": 8,
+  "gemetenOp": "2026-09-29T08:45:07.794Z",
+  "resultaten": [
+    {
+      "pagina": "Overzicht",
+      "pad": "/dashboard",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 321,
+      "ttfbP75": 404,
+      "totaalMediaan": 480
+    },
+    {
+      "pagina": "Woningen",
+      "pad": "/woningen",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 217,
+      "ttfbP75": 277,
+      "totaalMediaan": 293
+    },
+    {
+      "pagina": "Dossier",
+      "pad": "/object/7ee41a72-efbf-4b7a-a0b6-c49da7cdc558",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 218,
+      "ttfbP75": 331,
+      "totaalMediaan": 584
+    },
+    {
+      "pagina": "Marktanalyse",
+      "pad": "/marktanalyse",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 184,
+      "ttfbP75": 286,
+      "totaalMediaan": 495
+    },
+    {
+      "pagina": "Transacties",
+      "pad": "/marktanalyse/transacties",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 213,
+      "ttfbP75": 338,
+      "totaalMediaan": 632
+    },
+    {
+      "pagina": "Concurrentie",
+      "pad": "/marktanalyse/concurrentie",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 186,
+      "ttfbP75": 243,
+      "totaalMediaan": 368
+    },
+    {
+      "pagina": "Zoeken (API)",
+      "pad": "/api/zoeken?q=dam",
+      "status": 200,
+      "regio": "fra1",
+      "ttfbMediaan": 191,
+      "ttfbP75": 206,
+      "totaalMediaan": 191
+    }
+  ]
+}

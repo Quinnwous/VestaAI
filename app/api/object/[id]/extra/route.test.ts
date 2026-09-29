@@ -87,46 +87,46 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
   })
 
   it('geeft 400 zonder ?type=', async () => {
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(400)
   })
 
   it('geeft 400 bij een onbekend type (bv. een kern-veldnaam of een oude, vervallen sleutel)', async () => {
     for (const ongeldig of ['funda_tekst', 'marktanalyse', 'bezichtiging_followup_positief', 'onzin']) {
-      const res = await POST(makeRequest(ongeldig) as never, { params: { id: 'object-1' } })
+      const res = await POST(makeRequest(ongeldig) as never, { params: Promise.resolve({ id: 'object-1' }) })
       expect(res.status).toBe(400)
     }
   })
 
   it('accepteert elk geldig extra-type', async () => {
     for (const geldig of ['open_huis', 'followup_positief', 'followup_negatief', 'video_script', 'kopersvragen_faq', 'energie_advies']) {
-      const res = await POST(makeRequest(geldig) as never, { params: { id: 'object-1' } })
+      const res = await POST(makeRequest(geldig) as never, { params: Promise.resolve({ id: 'object-1' }) })
       expect(res.status).toBe(200)
     }
   })
 
   it('geeft 401 als er niet is ingelogd', async () => {
     authGetUser.mockResolvedValue({ data: { user: null } })
-    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(401)
   })
 
   it('geeft 404 zonder makelaarsrecord', async () => {
     makelaarSingle.mockResolvedValue({ data: null })
-    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(404)
   })
 
   it('geeft 404 als de woning niet bij dit kantoor hoort', async () => {
     objectSingle.mockResolvedValue({ data: null })
-    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(404)
   })
 
   it('roept genereerExtraContent aan met het type, de input en de huisstijl, en slaat het resultaat op', async () => {
     kantoorSingle.mockResolvedValue({ data: { huisstijl_json: { schrijftoon: 'informeel', slogan: '', primaire_kleur: '#0080C8', voorbeelden: [] } } })
 
-    const res = await POST(makeRequest('video_script') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('video_script') as never, { params: Promise.resolve({ id: 'object-1' }) })
     const data = await res.json()
 
     expect(res.status).toBe(200)
@@ -147,7 +147,7 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
   it('geeft de anthropic_file_id\'s van bijgevoegde documenten door aan genereerExtraContent (energie_advies)', async () => {
     documentenLijst.mockResolvedValue({ data: [{ anthropic_file_id: 'file-abc' }, { anthropic_file_id: 'file-def' }, { anthropic_file_id: null }] })
 
-    const res = await POST(makeRequest('energie_advies') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('energie_advies') as never, { params: Promise.resolve({ id: 'object-1' }) })
 
     expect(res.status).toBe(200)
     expect(genereerExtraContent).toHaveBeenCalledWith(
@@ -162,7 +162,7 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
   it('geeft de anthropic_file_id\'s van bijgevoegde documenten door aan genereerExtraContent (kopersvragen_faq)', async () => {
     documentenLijst.mockResolvedValue({ data: [{ anthropic_file_id: 'file-abc' }] })
 
-    const res = await POST(makeRequest('kopersvragen_faq') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('kopersvragen_faq') as never, { params: Promise.resolve({ id: 'object-1' }) })
 
     expect(res.status).toBe(200)
     expect(genereerExtraContent).toHaveBeenCalledWith(
@@ -176,7 +176,7 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
 
   it('geeft 500 met een referentie als de generatie faalt', async () => {
     genereerExtraContent.mockRejectedValue(new Error('Claude-fout'))
-    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: Promise.resolve({ id: 'object-1' }) })
     const data = await res.json()
 
     expect(res.status).toBe(500)
@@ -185,7 +185,7 @@ describe('POST /api/object/[id]/extra — item 8.3 (outputset v2)', () => {
 
   it('geeft 409 zolang de kern-generatie loopt (anders overschrijft die de extra)', async () => {
     objectSingle.mockResolvedValue({ data: { input_json: {}, outputs_json: {}, content_status: 'bezig' } })
-    const res = await POST(makeRequest('open_huis') as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest('open_huis') as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(409)
     expect(genereerExtraContent).not.toHaveBeenCalled()
   })

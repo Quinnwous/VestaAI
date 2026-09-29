@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { LOGIN_SLUG_COOKIE, loginPadUitCookieWaarde } from '@/lib/loginSlugCookie'
 
 export async function POST(request: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   await supabase.auth.signOut()
 
   // Item 9.1: terug naar de kantoorspecifieke inlogpagina als die ooit

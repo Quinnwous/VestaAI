@@ -13,7 +13,7 @@ import { WachtwoordWijzigenSchema } from '@/lib/schemas'
 export async function slaProfielNaamOp(naam: string) {
   if (!naam.trim() || naam.length > 100) return { ok: false, error: 'Ongeldige naam' }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -39,7 +39,7 @@ export async function wijzigWachtwoord(
   const parsed = WachtwoordWijzigenSchema.safeParse(input)
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige invoer' }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user?.email) return { ok: false, error: 'Niet ingelogd' }
 

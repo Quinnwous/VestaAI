@@ -12,7 +12,7 @@ const MAX_BYTES = 10 * 1024 * 1024 // 10 MB
 // Haalt platte tekst uit een geüpload voorbeeld (Funda-tekst/brochure) zodat de makelaar
 // een bestand kan uploaden i.p.v. tekst te plakken. TXT direct; PDF via de Files API.
 export async function POST(req: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

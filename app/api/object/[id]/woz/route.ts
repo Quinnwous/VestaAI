@@ -8,11 +8,9 @@ import { valideerWozInvoer } from '@/lib/woz'
  * lib/woz.ts). Schrijft alleen `woz_waarde`/`woz_peiljaar` in `input_json` —
  * geen regeneratie van content, anders dan "Bewerk & regenereer".
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
-  const supabase = createServerSupabaseClient()
+export async function PATCH(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

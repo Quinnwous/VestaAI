@@ -36,7 +36,7 @@ export async function verstuurFeedback(input: { tekst: string; pagina: string })
     return { ok: false, error: parsed.error.issues[0]?.message ?? 'Ongeldige invoer.' }
   }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd.' }
 

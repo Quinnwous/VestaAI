@@ -32,7 +32,7 @@ export async function haalKantoorBrandingOpVoorSlug(ruweSlug: string): Promise<B
   if (!isGeldigeSlug(slug) || !isSupabaseConfigured()) return null
 
   try {
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { data, error } = await supabase.rpc('kantoor_branding_publiek', { p_slug: slug })
     if (error) return null
 

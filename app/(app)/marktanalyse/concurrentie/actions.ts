@@ -46,7 +46,7 @@ export async function haalConcurrentieData(
   filtersZonderPeriode: TransactieFilter,
   opWijkniveau: boolean,
 ): Promise<ConcurrentieData> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const [ranglijst, wijVsMarktData, aandeelJaar, matrix] = await Promise.all([
     concurrentieRanglijst(supabase, filters).catch(() => null),
     concurrentieWijVsMarkt(supabase, filters).catch(() => null),
@@ -58,6 +58,6 @@ export async function haalConcurrentieData(
 
 /** Concurrentprofiel voor de drawer, op aanvraag (klik op een kantoor) — `null` bij een mislukte RPC-aanroep. */
 export async function haalConcurrentProfiel(filters: TransactieFilter, kantoor: string): Promise<ConcurrentProfielV2 | null> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   return concurrentieProfiel(supabase, filters, kantoor).catch(() => null)
 }

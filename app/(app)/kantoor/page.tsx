@@ -20,7 +20,7 @@ export const metadata = { title: 'Kantoor' }
  * bereikbaar via datzelfde profielmenu.
  */
 export default async function KantoorPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

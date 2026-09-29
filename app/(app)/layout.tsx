@@ -17,7 +17,7 @@ type KantoorRij = {
 // avatarnaam in de pagina zelf) — React's cache() dedupt de Supabase-lookup binnen één
 // request, zodat het niet twee keer bevraagd wordt voor dezelfde requestcyclus.
 const haalMakelaarOp = cache(async (): Promise<{ naam: string | null; kantoor: KantoorRij }> => {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { naam: null, kantoor: null }
 
@@ -60,7 +60,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Zonder Supabase-config kunnen we niet authenticeren — render kaal door.
   if (!isSupabaseConfigured()) return <>{children}</>
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
