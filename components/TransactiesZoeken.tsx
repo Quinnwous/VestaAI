@@ -28,7 +28,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Badge, Button, Modal, EmptyState, Sheet,
+  Badge, Button, Modal, EmptyState, Sheet, Tooltip,
   FilterBar, FilterDropdown, FilterPills, RangeSlider, Chip, Checkbox,
   StatTile, SegmentedToggle, Switch, DataTable,
   type FilterPil, type DataTableKolom, type DataTableSortering,
@@ -48,6 +48,7 @@ import {
 } from '@/lib/transactiesZoeken'
 import { euro, euroKort, procent, dagen, datum, m2, nlNL } from '@/lib/opmaak'
 import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
+import { locatieAanduiding } from '@/lib/locatieAanduiding'
 import { typegroepLabel } from '@/lib/schemas'
 import type { TransactieRow } from '@/lib/supabase'
 import type { PlaatsWijkRij, ZoekTransactiesResultaat, MarktanalyseSamenvatting } from '@/lib/transactiesQuery'
@@ -240,7 +241,7 @@ export function TransactiesZoeken({
 
   // ── DataTable-kolommen ──
   const kolommen: DataTableKolom<TransactieRow>[] = [
-    { id: 'adres', header: 'Adres', meta: { sorteerbaar: true }, cell: ({ row }) => <b style={{ color: colors.text }}>{row.original.adres}</b> },
+    { id: 'adres', header: 'Adres', meta: { sorteerbaar: true }, cell: ({ row }) => <AdresCel rij={row.original} /> },
     { id: 'plaatswijk', header: 'Plaats / wijk', meta: { sorteerbaar: true }, cell: ({ row }) => `${row.original.wijk ?? '—'}, ${row.original.plaats ?? '—'}` },
     { id: 'type', header: 'Type', meta: { sorteerbaar: true }, cell: ({ row }) => row.original.woningtype_sub ?? '—' },
     { id: 'verkoopdatum', header: 'Verkoopdatum', meta: { num: true, sorteerbaar: true }, cell: ({ row }) => datum(row.original.verkoopdatum) },
@@ -771,6 +772,42 @@ function PlaatsWijkKiezer({
   )
 }
 
+// ── Locatie benaderd (item k2): klein muted icoon + tooltip in de adreskolom,
+// rustigste vorm — geen extra kolom die voor bijna elke rij leeg zou staan,
+// geen kleur/badge die als waarschuwing leest (het is geen fout, alleen een
+// precisie-verschil). Icoon zelf: kleine outline-pin met een streepje erdoor,
+// zodat hij ook zonder tooltip al "niet het precieze punt" suggereert. ──
+function BenaderdIcoon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M8 14.5s5-4.2 5-8.2A5 5 0 0 0 3 6.3c0 4 5 8.2 5 8.2Z"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinejoin="round"
+      />
+      <circle cx="8" cy="6.3" r="1.6" stroke="currentColor" strokeWidth="1.3" />
+      <path d="M2.5 2.5l11 11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+function AdresCel({ rij }: { rij: TransactieRow }) {
+  const aanduiding = locatieAanduiding(rij.geocode_status)
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+      <b style={{ color: colors.text }}>{rij.adres}</b>
+      {aanduiding && (
+        <Tooltip tekst={aanduiding}>
+          <span aria-label={aanduiding} style={{ display: 'inline-flex', color: colors.muted, cursor: 'default' }}>
+            <BenaderdIcoon />
+          </span>
+        </Tooltip>
+      )}
+    </span>
+  )
+}
+
 // ── Sheet-inhoud: alle velden + minikaart-placeholder (7.1 BasisKaart nog niet gemerged) ──
 function veld(label: string, waarde: React.ReactNode, kleur?: string) {
   return (
@@ -802,11 +839,18 @@ function SheetInhoud({
   minikaartCoordinaat: { lat: number; lng: number } | null
 }) {
   const ratio = ratioTovVraagprijs(rij)
+  const aanduiding = locatieAanduiding(rij.geocode_status)
   return (
     <div>
-      <div style={{ marginBottom: 4 }}>
+      <div style={{ marginBottom: aanduiding ? 6 : 4 }}>
         <TransactieMinikaart status={minikaartStatus} coordinaat={minikaartCoordinaat} adres={rij.adres} />
       </div>
+      {aanduiding && (
+        <p style={{ fontSize: 12, color: colors.muted, margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <BenaderdIcoon />
+          {aanduiding}
+        </p>
+      )}
       <SheetSectie titel="Woning">
         {veld('Plaats', rij.plaats ?? '—')}
         {veld('Wijk', rij.wijk ?? '—')}
