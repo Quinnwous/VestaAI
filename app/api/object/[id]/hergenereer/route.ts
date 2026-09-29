@@ -11,11 +11,12 @@ export const maxDuration = 300
 
 // Hergenereert de content van een bestaand object, nu mét de geüploade documenten
 // (meetrapport, keuring, taxatie) als extra feitelijke context. Overschrijft outputs_json.
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
   if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

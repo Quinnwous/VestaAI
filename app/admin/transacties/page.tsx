@@ -15,7 +15,7 @@ export const metadata = { title: 'Transacties importeren — VestaAI' }
  * herimport werkt als upsert, zie app/admin/transacties/actions.ts.
  */
 export default async function AdminTransactiesPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')
 

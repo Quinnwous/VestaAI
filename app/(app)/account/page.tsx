@@ -12,7 +12,7 @@ export const metadata = { title: 'Mijn account' }
  * de kantoorpagina, die sinds 16 sep 2026 verder platform-admin-beheerd is.
  */
 export default async function AccountPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 

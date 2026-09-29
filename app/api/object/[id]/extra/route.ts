@@ -18,7 +18,8 @@ export const maxDuration = 60
  * veld; het resultaat wordt direct in `outputs_json` opgeslagen zodat het
  * na een refresh blijft staan, net als de kernvelden.
  */
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
   if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
 
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: 'Ongeldig type' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

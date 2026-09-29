@@ -3,7 +3,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 
 // Lijst de (bewaarde) documenten van één object — inclusief de publiek-chatbaar-vlag.
 export async function GET(req: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

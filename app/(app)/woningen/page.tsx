@@ -34,12 +34,13 @@ const KAART_LIMIET = 500
  * betrouwbare route en werkt de tabel- én kaartweergave altijd op dezelfde,
  * server-gefilterde set (zie lib/woningenOverzicht.ts).
  */
-export default async function WoningenPage({
-  searchParams,
-}: {
-  searchParams: SearchParams
-}) {
-  const supabase = createServerSupabaseClient()
+export default async function WoningenPage(
+  props: {
+    searchParams: Promise<SearchParams>
+  }
+) {
+  const searchParams = await props.searchParams;
+  const supabase = await createServerSupabaseClient()
   const makelaar = await haalIngelogdeMakelaarOp()
   if (!makelaar) return <AccountWordtKlaargezet />
 

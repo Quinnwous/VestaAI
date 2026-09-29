@@ -11,7 +11,7 @@ const MIN_BEWERKINGEN = 4
 // Eigen kantoor van de ingelogde gebruiker — sinds 16 sep 2026 is er één rol
 // per kantoor (zie CLAUDE.md), dus geen rol-check meer, alleen kantoor-scoping.
 async function eigenKantoor() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase

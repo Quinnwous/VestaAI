@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { meldFout } from '@/lib/fouten'
 
-async function kantoorVanUser(supabase: ReturnType<typeof createServerSupabaseClient>): Promise<string | null> {
+async function kantoorVanUser(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
@@ -10,8 +10,12 @@ async function kantoorVanUser(supabase: ReturnType<typeof createServerSupabaseCl
 }
 
 // Foto uit de bibliotheek verwijderen (record + storage-bestand).
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string; fotoId: string } }) {
-  const supabase = createServerSupabaseClient()
+export async function DELETE(
+  _req: NextRequest,
+  props: { params: Promise<{ id: string; fotoId: string }> }
+) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const kantoorId = await kantoorVanUser(supabase)
   if (!kantoorId) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

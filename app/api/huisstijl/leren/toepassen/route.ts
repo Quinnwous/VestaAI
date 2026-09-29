@@ -6,7 +6,7 @@ import type { HuisstijlConfig } from '@/lib/schemas'
 // per kantoor (zie CLAUDE.md): het kantoor keurt zijn eigen geleerde regels
 // goed, geen aparte admin-rol meer nodig.
 async function eigenKantoor() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase

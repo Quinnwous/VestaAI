@@ -15,7 +15,7 @@ type ObjectStatus = 'draft' | 'published' | 'onder_bod' | 'verkocht'
  * archief-gelabeld.
  */
 export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -70,7 +70,7 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
 }
 
 export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatus) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -111,7 +111,7 @@ export async function toggleObjectStatus(objectId: string, huidigStatus: ObjectS
 }
 
 export async function deleteObject(objectId: string) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 

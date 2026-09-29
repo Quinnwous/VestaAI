@@ -13,6 +13,7 @@
  */
 
 import * as RadixSlider from '@radix-ui/react-slider'
+import type { JSX } from 'react'
 import { colors, radius } from './tokens'
 
 type SliderBereikProps = {

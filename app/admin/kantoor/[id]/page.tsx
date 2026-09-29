@@ -15,8 +15,9 @@ export const metadata = { title: 'Kantoor beheren — VestaAI' }
  * werkgebied en teambeheer — alles wat sinds 16 sep 2026 niet meer bij het
  * kantoor zelf staat (zie CLAUDE.md § Hoofdstructuur, "één rol per kantoor").
  */
-export default async function AdminKantoorPage({ params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export default async function AdminKantoorPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || !isPlatformAdmin(user.email)) redirect('/dashboard')
 

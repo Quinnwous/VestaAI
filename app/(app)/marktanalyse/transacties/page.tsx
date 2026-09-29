@@ -41,7 +41,7 @@ export default async function TransactiesPage() {
   if (!makelaar) return <AccountWordtKlaargezet />
 
   const service = createServiceSupabaseClient()
-  const sessie = createServerSupabaseClient()
+  const sessie = await createServerSupabaseClient()
 
   const [{ data: kantoorRow }, eigenVerkopen, dataTot] = await Promise.all([
     service.from('kantoren').select('name, instellingen_json').eq('id', makelaar.kantoorId).single(),

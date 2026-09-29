@@ -20,7 +20,7 @@ export type ZoekApiResultaat = { woningen: ZoekWoning[] }
  * bevraagt uitsluitend `makelaars`/`objecten`.
  */
 export async function GET(req: NextRequest) {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

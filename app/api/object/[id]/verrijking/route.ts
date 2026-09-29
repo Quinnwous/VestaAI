@@ -29,8 +29,9 @@ export const maxDuration = 30
  * Kolom `objecten.verrijking_json` (migratie `20260923_object_verrijking.sql`)
  * is live sinds 23 sep 2026.
  */
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

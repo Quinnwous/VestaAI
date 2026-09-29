@@ -83,19 +83,19 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
 
   it('geeft 401 als er niet is ingelogd', async () => {
     authGetUser.mockResolvedValue({ data: { user: null } })
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(401)
   })
 
   it('geeft 403 zonder makelaarsrecord', async () => {
     makelaarSingle.mockResolvedValue({ data: null })
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(403)
   })
 
   it('geeft 404 als de woning niet bij dit kantoor hoort', async () => {
     objectSingle.mockResolvedValue({ data: null })
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(404)
   })
 
@@ -106,7 +106,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
       return callCount === 1 ? selectChain() : updateChain({ error: null })
     }
 
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     const data = await res.json()
 
     expect(res.status).toBe(200)
@@ -126,7 +126,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
       vorig: { van: '2024-09-24', tot: '2025-09-23', n: 10, mediaanPrijs: 800000, mediaanM2: 5000, mediaanLooptijd: 50, pctTovVraag: -1.5 },
     })
 
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     const data = await res.json()
 
     expect(res.status).toBe(200)
@@ -149,7 +149,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     }
     marktanalyseSamenvatting.mockRejectedValue(new Error('relatie transacties bestaat niet'))
 
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     const data = await res.json()
 
     expect(res.status).toBe(200)
@@ -163,7 +163,7 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
       return callCount === 1 ? selectChain() : updateChain({ error: { code: 'XXOOO', message: 'iets anders' } })
     }
 
-    const res = await POST(makeRequest() as never, { params: { id: 'object-1' } })
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(500)
   })
 })

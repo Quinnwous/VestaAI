@@ -43,7 +43,7 @@ const JSON_LD = {
 
 export default async function LandingPage() {
   if (isSupabaseConfigured()) {
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user) redirect(isPlatformAdmin(user.email) ? '/admin' : '/dashboard')
   }

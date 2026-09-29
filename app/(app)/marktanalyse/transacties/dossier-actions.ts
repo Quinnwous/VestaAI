@@ -13,7 +13,7 @@ export type DossierOptie = { id: string; adres: string }
  * volledige objectrij nodig voor een kiezer.
  */
 export async function lijstEigenDossiers(): Promise<DossierOptie[] | { error: string }> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd' }
 

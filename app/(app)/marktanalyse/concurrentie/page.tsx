@@ -31,7 +31,7 @@ export default async function ConcurrentieAnalysePage() {
   if (!makelaar) return <AccountWordtKlaargezet />
 
   const service = createServiceSupabaseClient()
-  const sessie = createServerSupabaseClient()
+  const sessie = await createServerSupabaseClient()
 
   const [{ data: kantoorRow }, dataTot] = await Promise.all([
     service.from('kantoren').select('instellingen_json').eq('id', makelaar.kantoorId).single(),

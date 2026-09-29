@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
   if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

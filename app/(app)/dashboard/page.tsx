@@ -57,7 +57,7 @@ export default async function DashboardPage() {
   if (!makelaar) return <AccountWordtKlaargezet />
 
   const service = createServiceSupabaseClient()
-  const sessie = createServerSupabaseClient()
+  const sessie = await createServerSupabaseClient()
   const nu = new Date()
 
   const [{ data: objectenFase }, { data: kantoorRow }, eigenVerkopen, dataTot, recentBekekenRuw] = await Promise.all([

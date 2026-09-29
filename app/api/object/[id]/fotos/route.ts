@@ -5,7 +5,7 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 const SOORTEN = new Set(['origineel', 'verbeterd', 'gestaged'])
 const MAX_BYTES = 12 * 1024 * 1024
 
-async function kantoorVanUser(supabase: ReturnType<typeof createServerSupabaseClient>): Promise<string | null> {
+async function kantoorVanUser(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
   const { data: makelaar } = await supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single()
@@ -13,8 +13,9 @@ async function kantoorVanUser(supabase: ReturnType<typeof createServerSupabaseCl
 }
 
 // Foto's in de bibliotheek van dit object.
-export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const kantoorId = await kantoorVanUser(supabase)
   if (!kantoorId) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 
@@ -31,8 +32,9 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
 
 // Een geüploade of gestagede foto bewaren in de bibliotheek.
 // 'verbeterd' blijft toegestaan voor bestaande rijen uit de verwijderde foto-verbetering.
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const kantoorId = await kantoorVanUser(supabase)
   if (!kantoorId) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

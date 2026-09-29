@@ -159,7 +159,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'id ontbreekt' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })

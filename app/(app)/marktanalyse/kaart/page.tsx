@@ -20,7 +20,7 @@ export const metadata = { title: 'Verkoopkaart' }
  * eigen Leaflet-gebruik — beide draaien nu op `components/kaart/` (MapLibre).
  */
 export default async function VerkoopkaartPage() {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
