@@ -688,74 +688,94 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ## 8. Acties Quinn
 
-1. **Brainbay-licentievoorwaarden schriftelijk** laten bevestigen (tonen van
-   regionale NVM-data in VestaAI aan i4housing zelf). Verwerkersovereenkomst:
-   uitgesteld tot het platform in gebruik is (besluit 28 sep; zie ⚠️ in
-   § Stand van zaken — de import is formeel al verwerking).
-2. **Week 1-3:** volledige Brainbay- en Realworks-exports ophalen (liefst
-   XLSX/CSV, alle jaren, met verkopend én aankopend kantoor en coördinaten als
-   dat kan).
-3. **Supabase-dashboard (nog open, 2 klikken):** self-signup uit (Auth →
-   Providers → Email → "Allow new users to sign up") en
-   leaked-password-protection aan (Auth → Attack Protection / Policies).
-4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby; Quinn 28 sep:
-   "wachten we even mee").
-5. Teamfoto i4housing goedkeuren (12.1) en de vijf namen + wachtwoorden
-   aanleveren.
-6. **Tussencheck taxateur:** `docs/waardering-methode.md` (met het
-   rekenvoorbeeld en de vijf vragen in § 6) naar de taxateur van i4 Housing
-   sturen, samen met de link naar het prototype
-   https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling
-   aanzetten). Antwoorden verwerken in § 3.3 vóór item 4.3 het paneel omzet.
-6. Search Console + omleiding Vercel-alias (na 1.10).
-7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
-8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
-9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
-10. Akkoord op de opruimmigratie (na back-up). ~~Hardening-migratie~~ —
-    toegepast op 28 sep (na back-up).
-11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
-    verwerkersovereenkomst, prijsafspraak.
-13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
-    pusht, merget en zet live bij "rond af" (besluit 17 sep, CLAUDE.md).
-    Wel daarna: Search Console (punt 6).
-12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
-    bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
-    Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
-    doen in een sessie zonder auto-mode.
+Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
+
+1. **Brainbay- en Realworks-exports** aanleveren (liefst XLSX/CSV, alle jaren,
+   met verkopend én aankopend kantoor en coördinaten als dat kan). Het
+   i4-kantoor heeft nu 0 transacties (demo-kantoor: 7.996) — zonder exports
+   geen demo op eigen data. Deblokkeert 5.1 → 5.5 → M1.
+2. **Brainbay-licentie schriftelijk** laten bevestigen (tonen van regionale
+   NVM-data in VestaAI aan i4housing zelf) — vóór 5.5.
+3. **Voorbeeld-verkoopadvies** — deblokkeert fase 11 (datalaag staat klaar).
+
+**Klein, kan elk moment:**
+
+4. **Supabase-dashboard, 2 klikken** (nog open, advisor meldt het op 30 sep
+   nog): self-signup uit (Auth → Providers → Email → "Allow new users to sign
+   up") en leaked-password-protection aan (Auth → Attack Protection).
+5. **Team-accounts i4** (12.1): akkoord om de zes accounts aan te maken
+   (`docs/i4housing-team.md`), wachtwoorden, en teamfoto goedkeuren.
+6. **Akkoord betaalde testruns (paar euro):** smoke-generatie
+   (`E2E_GENERATE=1`, meet ook de echte duur NL+EN tegen de 300 s-limiet),
+   8.5 staging-testrun, EN-kwartaalbericht tegen de echte API.
+7. **Akkoord opruimmigratie** (`20260916_opruimen_ongebruikt.sql`, na
+   back-up): 4 legacy-tabellen (`post_planning`, `chatbot_leads`,
+   `chatbot_faq`, `referrals`) en 7 kolommen staan er op 30 sep nog. Kandidaat
+   om mee te nemen: tabel `wijken` (geen enkele code gebruikt hem meer).
+8. **Kantoorprofiel i4 aanvullen:** "opgericht" en kenmerken ontbreken nog
+   (de verkoopadvies-gereedheidscheck meldt het).
+9. **Oordeel pastelkleuren kaart** (`/marktanalyse/kaart`).
+10. **Akkoord: 6 ongebruikte geheimen van Vercel verwijderen** —
+    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/_PRO/_KANTOOR`
+    en `CRON_SECRET` (Stripe en de cron zijn sinds 15 sep uit de code; een
+    live Stripe-sleutel laten staan is onnodig risico). Claude kan het doen
+    via de Vercel-MCP zodra je ja zegt.
+
+**Vóór de demo / later:**
+
+11. **Vercel Pro** activeren (team staat op Hobby; "wachten we even mee", 28 sep).
+12. **Tussencheck taxateur:** `docs/waardering-methode.md` (rekenvoorbeeld +
+    vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
+    https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling aan);
+    contact noemen voor M1.
+13. **Blind oordeel content** (8.1, ± 30 min, betaalde calls) — bewust
+    uitgesteld (23 sep).
+14. **Search Console** + omleiding Vercel-alias (na 1.10).
+15. **Artifacts prototypes herpubliceren** (item 0.1): de gepubliceerde
+    versies zijn van vóór 0.1; upload werd door auto-mode geblokkeerd.
+16. **Vóór het eerste betaalde contract:** Supabase Pro, definitieve
+    verwerkersovereenkomst (⚠️ de import is formeel al verwerking — hoort er
+    vóór 5.5 te liggen), prijsafspraak. Sentry-account (backlog).
 
 ## 9. Backlog & geparkeerd
 
-**Vóór de demo oppakken (uit de sessie van 23-24 sep):** filter "Verkocht door"
-op de verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
-`20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
-makelaarsveld in de exports) · pastelkleuren van de kaart
-laten beoordelen door Quinn (`pdokPastelStijl()`).
+Opgeschoond op 30 sep 2026 (afgehandeld en daarom weg: Next-upgrade — Next 16
+live sinds 29 sep; status concurrentie-v2-RPC's — geverifieerd 27 sep;
+database-hardening — toegepast 28 sep; `PLATFORM_ADMIN_EMAILS` — staat lokaal
+én op Vercel niet, beide vallen terug op `lib/admin.ts`, dus gelijk).
 
-**Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
-content naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden · keukentafel-/
-presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
-Resend-melding — zie v1) · Next 15-upgrade · jaarlijkse
-CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
+**Vóór de demo, wacht op data of Quinn:** filter "Verkocht door" op de
+verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
+`20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
+makelaarsveld in de exports) · smoke-generatie, 8.5 en EN-kwartaalbericht één
+keer echt draaien (§ 8 punt 6).
+
+**Techniek, klein (bouwbaar zonder input):** 31 meldingen van
+`eslint-plugin-react-hooks` v7 op bestaande componenten (niet in de DoD) ·
+kantoor-reset
+rate-limit is in-memory per instance (zachte rem; tabel als het ooit nodig is) ·
+Gemini-modelstring staat in `app/api/fotos/staging/route.ts`, niet in
+`lib/aiModellen.ts` (§ 11 noemt alleen Claude-modellen; verhuizen bij 8.5). · preview-deploys hebben
+op Vercel alleen `STRIPE_*`/`CRON_SECRET`/`GOOGLE_AI_API_KEY`, de rest van de
+env-vars staat alleen op production — een PR-preview is dus niet bruikbaar
+om te testen (bewust laten zolang we direct naar `main` mergen).
+
+**Na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van content
+naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden ·
+keukentafel-/presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`,
+statusflow, Resend-melding — zie v1) · jaarlijkse CBS-jaargang
+(`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
 vernederlandsen · dossiers aanmaken uit een Realworks-objectexport (hun huidige
-aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjabloon (zie observatie Verhuur in
-`docs/besluiten.md`).
+aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjabloon
+(zie observatie Verhuur in `docs/besluiten.md`).
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
 
-**Uit de sessie van 26-27 sep:** EN-kwartaalbericht nog niet tegen de echte API getest ·
-`PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
-
-**Uit de sessie van 27 sep:** kantoor-reset rate-limit is
-in-memory per instance (zachte rem; tabel als het ooit nodig is) · smoke-generatietest
-(nieuwe flow, 27 sep) één keer echt draaien met `E2E_GENERATE=1` · CLAUDE.md-status van de
-concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
-
-**Database-hardening (security-advisor, 17 sep):** ✅ toegepast op 28 sep
-(migratie `20260924_hardening_security_definer.sql`, na back-up): trigger
-`handle_new_user` weg, `anon` heeft geen EXECUTE meer op de vier
-SECURITY DEFINER-functies. `object_fotos`/`stijl_bewerkingen` zonder policy is
-bewust (24 sep nagegaan). Rest: leaked-password-protection (§ 8 punt 3).
+**Database, bewust zo:** `object_fotos`/`stijl_bewerkingen` zonder policy
+(alleen via de service-client, 24 sep nagegaan) · PostGIS/`pg_trgm` in
+`public` en `spatial_ref_sys` zonder RLS (Supabase-standaard voor PostGIS,
+verplaatsen breekt meer dan het oplevert).
 
 **Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
 (staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee
