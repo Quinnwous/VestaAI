@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import type { PropertyInput } from '@/lib/schemas'
+import type { KantoorInstellingen, PropertyInput } from '@/lib/schemas'
 import { PropertyForm, clearDraft } from '@/components/PropertyForm'
 import { Eyebrow, SerifTitle } from '@/components/ui'
 
@@ -49,9 +49,12 @@ type Props = {
   /** true buiten productie, of als het kantoor van de ingelogde makelaar
    * instellingen_json.demo === true heeft (item 2.3, zie app/(app)/object/new/page.tsx). */
   toonDemoKnop: boolean
+  /** Instellingen van het kantoor van de ingelogde makelaar (item J2) — courtage.percentage
+   * vult het courtageveld in PropertyForm.tsx voor bij een nieuw dossier. */
+  kantoorInstellingen: KantoorInstellingen | null
 }
 
-export function NewObjectForm({ toonDemoKnop }: Props) {
+export function NewObjectForm({ toonDemoKnop, kantoorInstellingen }: Props) {
   const router = useRouter()
   const [state, setState] = useState<PageState>({ status: 'idle' })
   const [formKey, setFormKey] = useState(0)
@@ -163,7 +166,7 @@ export function NewObjectForm({ toonDemoKnop }: Props) {
                 </button>
               </div>
             )}
-            <PropertyForm key={formKey} onSubmit={handleSubmit} disabled={isLoading} />
+            <PropertyForm key={formKey} onSubmit={handleSubmit} disabled={isLoading} kantoorInstellingen={kantoorInstellingen} />
           </div>
         </div>
       )}

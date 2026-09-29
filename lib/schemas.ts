@@ -150,6 +150,11 @@ export const KantoorSlugSchema = z
 export const KantoorInstellingenSchema = z.object({
   courtage: z.object({
     percentage: z.number().min(0).max(10).optional(),
+    // Ontbreekt dit veld (bestaande kantoren, van vóór deze uitbreiding), dan
+    // is 'exclusief' de aanname — de NL-gewoonte (besluit Quinn 28 sep 2026,
+    // docs/specs/j2-courtage-per-dossier.md). lib/courtage.ts leest dit veld,
+    // nooit los overnemen.
+    btw: z.enum(['exclusief', 'inclusief']).optional(),
     opstartkosten: z.number().min(0).optional(),
     dienstverlening: z.string().max(2000).optional(),
   }).optional(),
