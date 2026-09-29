@@ -16,13 +16,16 @@
  *   </BasisKaart>
  */
 import { useEffect, useRef } from 'react'
-import { renderToStaticMarkup } from 'react-dom/server'
 // Alléén het type, geen runtime-import: anders trekt deze laag maplibre-gl
 // (~280 kB gzip) het hoofdbundel van elke pagina in die deze laag ergens
 // importeert, óók als <BasisKaart> zelf al dynamic (ssr:false) is — de
 // dynamic-import-grens beschermt alleen de module die hij zelf wrapt, niet
 // de children die er los naast worden geïmporteerd (les 12.3, performance).
 import type * as maplibregl from 'maplibre-gl'
+// Zelfde reden voor react-dom/server: renderToStaticMarkup + react-dom-server
+// trekken ~59 kB gzip in de hoofdbundel mee als ze statisch geïmporteerd
+// worden — ook hier alleen runtime via await import() in het effect.
+import type { renderToStaticMarkup as RenderToStaticMarkup } from 'react-dom/server'
 import { useKaartInstance } from '@/components/kaart/KaartContext'
 import { Pin } from '@/components/kaart'
 import type { ObjectFase } from '@/lib/schemas'
@@ -60,8 +63,9 @@ export function WoningenKaartLaag({
     if (!map) return
     let actief = true
 
-    import('maplibre-gl').then(({ Marker }) => {
+    Promise.all([import('maplibre-gl'), import('react-dom/server')]).then(([{ Marker }, serverModule]) => {
       if (!actief || !map) return
+      const renderToStaticMarkup: typeof RenderToStaticMarkup = serverModule.renderToStaticMarkup
 
       const nieuweMarkers: maplibregl.Marker[] = []
 
