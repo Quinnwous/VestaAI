@@ -41,7 +41,7 @@ import type {
 } from './concurrentie'
 
 /** Sessie-gebonden Supabase-client (RLS actief) — nooit de service-client. */
-export type SessieClient = ReturnType<typeof createServerSupabaseClient> | SupabaseClient
+export type SessieClient = Awaited<ReturnType<typeof createServerSupabaseClient>> | SupabaseClient
 
 const BLOK = 1000
 

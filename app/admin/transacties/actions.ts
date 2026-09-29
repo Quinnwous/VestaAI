@@ -15,7 +15,7 @@ import {
 import type { ImportSnapshotRij } from '@/lib/importSnapshot'
 
 async function vereisPlatformAdmin(): Promise<boolean> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   return isPlatformAdmin(user?.email)
 }

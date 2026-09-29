@@ -28,7 +28,7 @@ function top6VanUitkomst(referenties: WaarderingReferentie[]): WaarderingReferen
  * falen op de kaart (zelfde robuustheidsregel als CLAUDE.md § verrijking).
  */
 async function bouwKaartVoorPdf(
-  supabase: ReturnType<typeof createServerSupabaseClient>,
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   subject: { lat: number | null; lng: number | null },
   top6: WaarderingReferentie[],
 ): Promise<KaartVoorPdf | null> {
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'object_id vereist' }, { status: 400 })
   }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })

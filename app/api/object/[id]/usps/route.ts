@@ -11,8 +11,9 @@ export const maxDuration = 30
  * tekstveld uit de intake naar gestructureerde USP's. Los, klein Claude-
  * prompt-ontwerp naast de hoofdwaardering.
  */
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export async function POST(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

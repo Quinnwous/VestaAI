@@ -77,14 +77,12 @@ ${instructie ? `Herschrijfinstructie: ${instructie}` : 'Schrijf een volledig nie
 Geef ALLEEN de nieuwe tekst terug, verder niets. Geen uitleg, geen labels, geen aanhalingstekens.`
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function POST(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Contentsuite is vergrendeld (koerswijziging sept 2026) — zie lib/features.ts.
   if (CONTENT_VERGRENDELD) return contentVergrendeldAntwoord()
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

@@ -14,6 +14,6 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 import { haalTransactieCoordinaat, type TransactieCoordinaat } from '@/lib/transactiesQuery'
 
 export async function haalTransactieCoordinaatActie(id: string): Promise<TransactieCoordinaat> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   return haalTransactieCoordinaat(supabase, id)
 }

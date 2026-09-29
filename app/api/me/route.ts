@@ -5,7 +5,7 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 // statisch blijven en niet de hele Supabase-client hoeven te bundelen.
 export async function GET() {
   if (!isSupabaseConfigured()) return NextResponse.json({ ingelogd: false })
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   return NextResponse.json({ ingelogd: !!user })
 }

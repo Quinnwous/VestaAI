@@ -4,7 +4,7 @@ import { InlogFormulier } from '@/components/InlogFormulier'
 import { haalKantoorBrandingOpVoorSlug } from '@/lib/kantoorLoginBranding'
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 /**
@@ -16,7 +16,8 @@ interface Props {
  * toegepast: `haalKantoorBrandingOpVoorSlug` geeft dan `null` terug en we
  * vallen terug op de generieke `/login` — nooit een kapotte pagina.
  */
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const branding = await haalKantoorBrandingOpVoorSlug(params.slug)
   if (!branding) return { title: 'Inloggen' }
 
@@ -28,7 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function KantoorLoginPage({ params }: Props) {
+export default async function KantoorLoginPage(props: Props) {
+  const params = await props.params;
   const branding = await haalKantoorBrandingOpVoorSlug(params.slug)
   if (!branding) redirect('/login')
 

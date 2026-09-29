@@ -23,8 +23,9 @@ export const metadata = {
  * route.ts`) — er wordt hier niets herberekend, dus dit scherm kan nooit een
  * ander bedrag tonen dan de pdf of het waarderingspaneel.
  */
-export default async function PresentatiePagina({ params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export default async function PresentatiePagina(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

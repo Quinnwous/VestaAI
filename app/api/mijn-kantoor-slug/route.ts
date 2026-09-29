@@ -19,7 +19,7 @@ import { createServerSupabaseClient, isSupabaseConfigured } from '@/lib/supabase
 export async function GET() {
   if (!isSupabaseConfigured()) return NextResponse.json({ slug: null })
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ slug: null })
 

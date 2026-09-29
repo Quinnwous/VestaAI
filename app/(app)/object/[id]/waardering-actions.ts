@@ -39,7 +39,7 @@ type Result = { ok: true } | { ok: false; error: string }
 async function laadWaarderingContext(
   objectId: string,
 ): Promise<{ ok: true; service: ReturnType<typeof createServiceSupabaseClient>; waarderingJson: unknown } | { ok: false; error: string }> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -132,7 +132,7 @@ export async function zoekWaarderingReferenties(
   objectId: string,
   zoekterm: string,
 ): Promise<{ ok: true; kandidaten: Kandidaat[] } | { ok: false; error: string }> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -271,7 +271,7 @@ export async function berekenWaardering(
   objectId: string,
   opties: { correcties?: CorrectiesAan } = {},
 ): Promise<WaarderingBerekeningResultaat> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -389,7 +389,7 @@ export async function slaWaarderingCorrectieOp(
   if (!Number.isFinite(waarde) || waarde <= 0) return { ok: false, error: 'Ongeldige waarde' }
   if (!motivatie.trim()) return { ok: false, error: 'Geef een korte motivatie voor de bijstelling' }
 
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 
@@ -419,7 +419,7 @@ export async function slaWaarderingCorrectieOp(
 }
 
 export async function verwijderWaarderingCorrectie(objectId: string): Promise<Result> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { ok: false, error: 'Niet ingelogd' }
 

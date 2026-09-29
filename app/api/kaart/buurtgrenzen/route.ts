@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   // Zie app/api/bag/route.ts voor de reden van deze tweede laag: middleware
   // redirect een browser-navigatie al, maar geeft een fetch-aanroep vanuit de
   // client daarbij een HTML-redirect terug i.p.v. een nette 401.
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

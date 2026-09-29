@@ -19,7 +19,7 @@ export default async function NewObjectPage() {
   // NewObjectForm/PropertyForm gebruiken het om het courtageveld voor te vullen.
   let kantoorInstellingen: KantoorInstellingen | null = null
   if (isSupabaseConfigured()) {
-    const supabase = createServerSupabaseClient()
+    const supabase = await createServerSupabaseClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (user && isPlatformAdmin(user.email)) redirect('/admin')
 

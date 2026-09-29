@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   // de browser om. Expliciete check hier is de tweede laag (masterplan fase 0.5,
   // docs/roadmap.md): zonder deze check kon iedereen deze route aanroepen en
   // ongemerkt het Kadaster-quotum verbruiken.
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Niet ingelogd' }, { status: 401 })
 

@@ -47,7 +47,7 @@ export async function haalMarktanalyseData(
   filtersVerdeling: TransactieFilter,
   filtersB: TransactieFilter | null,
 ): Promise<MarktanalyseData> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   // De RPC-bug die `vorig.n` op 0 hield zodra `filtersA` een datum_van/datum_tot
   // had, is gefixt en toegepast (`20260924_fix_marktanalyse_samenvatting_vorige_periode.sql`,
   // geverifieerd tegen productie 27 sep 2026) — één aanroep levert nu zowel

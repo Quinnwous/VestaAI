@@ -13,7 +13,7 @@ import { voegInstellingenSamen } from '@/lib/instellingenSamenvoegen'
 type Result = { ok: true } | { ok: false; error: string }
 
 async function vereisPlatformAdmin(): Promise<boolean> {
-  const supabase = createServerSupabaseClient()
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   return isPlatformAdmin(user?.email)
 }

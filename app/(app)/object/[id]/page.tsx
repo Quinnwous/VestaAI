@@ -31,7 +31,8 @@ const getCachedObject = unstable_cache(
   { revalidate: 86400 },
 )
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const object = await getCachedObject(params.id)
   if (!object) return { title: 'Woning niet gevonden' }
   return {
@@ -40,8 +41,9 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 }
 
-export default async function ObjectDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createServerSupabaseClient()
+export default async function ObjectDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+  const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
