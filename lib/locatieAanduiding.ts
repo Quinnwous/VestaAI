@@ -1,6 +1,6 @@
 /**
  * Tekstuele aanduiding bij een benaderde geocodering (item k2,
- * docs/specs/k2-opruimen-benaderd.md). `lib/geocodering.ts` markeert een
+ * docs/archief/specs/k2-opruimen-benaderd.md). `lib/geocodering.ts` markeert een
  * transactie als `geocode_status = 'benaderd'` wanneer PDOK geen exacte
  * match op postcode + huisnummer vond, alleen straat + plaats — het
  * coördinaat (en dus de minikaart-pin) staat dan op straatniveau, niet op

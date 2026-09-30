@@ -1,6 +1,6 @@
 /**
  * Synthetische backtest van de waarderingskern v2 (vangrail voor de demo-lat
- * uit docs/roadmap.md § 3.3: mediaan absolute fout ≤ 7 %, ≥ 75 % van de
+ * uit docs/architectuur.md § 3: mediaan absolute fout ≤ 7 %, ≥ 75 % van de
  * werkelijke prijzen binnen de band). De echte backtest op de demo-fixture en
  * op i4housing-data is item 4.8 (`scripts/backtest-waardering.mjs`), die
  * dezelfde meetlogica gebruikt — zie `lib/backtest.ts`.

@@ -1,6 +1,6 @@
 /**
  * Maakt de team-accounts van een kantoor in één keer aan, uit de tabel
- * "## Makelaars (aanmaken)" in een teamlijst (standaard docs/i4housing-team.md).
+ * "## Makelaars (aanmaken)" in een teamlijst (standaard docs/i4housing/i4housing-team.md).
  *
  * Besluit Quinn (29 sep 2026): **geen welkomstmail** (anders dan
  * `addMakelaarAccount` in app/admin/actions.ts, die direct mailt), een
@@ -18,7 +18,7 @@
  *
  * Gebruik:
  *   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=<id> --genereer-lijst   (alleen de wachtwoordlijst maken)
- *   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=<id> [--bestand=docs/i4housing-team.md] [--gedeeld] [--wachtwoord=…] [--write]
+ *   node --env-file=.env.local scripts/maak-team-accounts.mjs --kantoor=<id> [--bestand=docs/i4housing/i4housing-team.md] [--gedeeld] [--wachtwoord=…] [--write]
  * Bestaat backups/team-startwachtwoorden-<teamlijst>.tsv, dan gebruikt --write díe wachtwoorden.
  */
 import fs from 'node:fs'
@@ -33,7 +33,7 @@ const vlag = (naam) => process.argv.includes(`--${naam}`)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const KANTOOR_ID = arg('kantoor')
-const BESTAND = path.resolve(ROOT, arg('bestand') ?? 'docs/i4housing-team.md')
+const BESTAND = path.resolve(ROOT, arg('bestand') ?? 'docs/i4housing/i4housing-team.md')
 const SCHRIJVEN = vlag('write')
 const GEDEELD = vlag('gedeeld') || !!arg('wachtwoord')
 const GENEREER_LIJST = vlag('genereer-lijst')

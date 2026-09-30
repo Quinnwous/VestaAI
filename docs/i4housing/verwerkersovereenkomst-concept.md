@@ -4,7 +4,7 @@
 > startpunt voor een gesprek met i4housing, niet om zonder toetsing te
 > ondertekenen. **Laat dit door een jurist (of een gespecialiseerde
 > AVG-dienst) beoordelen vóórdat het getekend wordt** — zie
-> `docs/roadmap.md` § 8, blokkade "verwerkersovereenkomst". Dit document
+> `docs/roadmap.md` § 2 (punt 16, verwerkersovereenkomst). Dit document
 > bevat bewust geen paragraafnummering of juridisch bindende taal; dat hoort
 > in de definitieve versie thuis.
 
@@ -89,7 +89,7 @@ hoe goed de techniek (RLS, encryptie, back-ups) is ingericht.
    afgeschermd via Row Level Security. i4housing's transactiedata is dus
    nooit zichtbaar voor een ander kantoor — ook niet voor het synthetische
    demo-kantoor dat gebruikt wordt om functies te bouwen en te testen (zie
-   `docs/roadmap.md` fase 0.3 en fase 4.9).
+   masterplan fase 0.3 en 4.9, `docs/besluiten.md`).
 
 ## Wat NOG moet gebeuren voordat dit een echt contract is
 
@@ -99,6 +99,6 @@ hoe goed de techniek (RLS, encryptie, back-ups) is ingericht.
       belegd worden?
 - [ ] Navragen bij i4housing of de Brainbay-licentie (NVM) toestaat dat hun
       data in een extern platform (VestaAI) wordt geladen — een licentievraag,
-      los van de AVG-verwerkersovereenkomst (zie `docs/roadmap.md` § 8).
+      los van de AVG-verwerkersovereenkomst (zie `docs/roadmap.md` § 2).
 - [ ] Ondertekening door beide partijen vóór de import van de volledige
       exports (fase 4.8).

@@ -1,7 +1,7 @@
 /**
  * Pure functies voor de kerncijfers op de startpagina (masterplan fase 1.6,
  * zie docs/roadmap.md). Los van React en Supabase, zodat ze zonder een
- * testdatabase te testen zijn — zie docs/ontwerpprincipes.md § Data: elke
+ * testdatabase te testen zijn — zie docs/ontwerp/principes.md § Data: elke
  * statistiek toont zijn n en geeft bij te weinig data een waarschuwing i.p.v.
  * een schijnzeker getal.
  *
@@ -17,7 +17,7 @@ import { plaatsenGelijk } from './plaatsNormalisatie'
 // lib/plaatsNormalisatie.ts.
 export { plaatsenGelijk }
 
-/** Onder dit aantal is een gemiddelde/percentage/aandeel niet betekenisvol genoeg om te tonen (zie docs/ontwerpprincipes.md § Data). */
+/** Onder dit aantal is een gemiddelde/percentage/aandeel niet betekenisvol genoeg om te tonen (zie docs/ontwerp/principes.md § Data). */
 export const MIN_N_VOOR_GEMIDDELDE = 3
 
 export type ObjectFaseRow = { fase: string }

@@ -32,15 +32,11 @@ import type { TransactieMetCoordinaten, TransactieRow } from './supabase'
  * range-lus, `lib/transactiesQuery.ts`) — draait alléén met `SUPABASE_TEST=1`
  * (live database, demo-kantoor), anders overgeslagen.
  *
- * ⚠️ `marktanalyse_reeks`/`marktanalyse_samenvatting` gebruiken `percentile_cont`
- * (mediaan, § 3.1 — bindend), terwijl de bestaande pure functies
- * `lib/marktanalyse.ts` `naarKwartaalReeks()`/`samenvatting()` het gemiddelde
- * gebruiken (`gemiddelde()`) — een andere statistiek, dus geen 1-op-1
- * referentie voor die twee RPC's. Deze test bouwt daarom zijn eigen
- * mediaan-referentie met de al bestaande primitieven `mediaan()`/`kwartaalVan()`
- * uit lib/prijsindex.ts. Zie de opleverrapportage van item 2.2 voor deze
- * afwijking — een mogelijke vervolgstap is lib/marktanalyse.ts zelf ook op
- * de mediaan te zetten.
+ * `marktanalyse_reeks`/`marktanalyse_samenvatting` gebruiken `percentile_cont`
+ * (mediaan, architectuur § 1 — bindend). Deze test bouwt daarom zijn eigen
+ * mediaan-referentie met de primitieven `mediaan()`/`kwartaalVan()` uit
+ * lib/prijsindex.ts. (De oude gemiddelde-functies in lib/marktanalyse.ts zijn
+ * op 30 sep 2026 als dode code verwijderd.)
  */
 const AAN = process.env.SUPABASE_TEST === '1'
 

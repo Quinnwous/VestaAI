@@ -12,7 +12,7 @@ import { MIN_N_VOOR_GEMIDDELDE, type VerkochtMetDelta, type LooptijdVergelijk, t
  * cannot be passed directly to Client Components", gevonden 17 sep 2026).
  * Rekenlogica in lib/kerncijfers.ts (pure functies, apart getest); dit
  * component toont alleen. Elke tegel toont n of een waarschuwing bij te
- * weinig data — zie docs/ontwerpprincipes.md § Data.
+ * weinig data — zie docs/ontwerp/principes.md § Data.
  *
  * Item 2.5 (docs/roadmap.md § 5 Fase 2): zes tegels uit de transactiedataset
  * i.p.v. de eerdere vijf — volgorde en inhoud volgens docs/ontwerp/startpagina.html

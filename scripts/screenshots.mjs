@@ -1,6 +1,6 @@
 /**
  * Screenshots van de ingelogde routes op 390/1280/1920 px, voor de Definition
- * of Done (docs/roadmap.md § 4). Schrijft screenshots/<route>-<breedte>.png.
+ * of Done (docs/werkwijze.md). Schrijft screenshots/<route>-<breedte>.png.
  *
  * Voor de DoD via `npm run dod:screens` draaien (start zo nodig zelf een
  * dev-server). Los:

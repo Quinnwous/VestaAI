@@ -1,5 +1,5 @@
 /**
- * Blinde A/B-evaluatie van de contentsuite (item 8.1, docs/roadmap.md § 3.6/8):
+ * Blinde A/B-evaluatie van de contentsuite (item 8.1, docs/architectuur.md § 6):
  * per dossier in docs/evaluatie/dossiers/ genereert dit script twee anonieme
  * varianten — één met het huidige CONTENT-model, één met de kandidaat
  * CONTENT_KANDIDAAT (lib/aiModellen.ts) — willekeurig gelabeld "A"/"B" en
@@ -23,7 +23,7 @@
  *
  * (tsx i.p.v. node: dit script importeert lib/claude.ts en lib/aiModellen.ts
  * rechtstreeks — zelfde patroon als scripts/backtest-waardering.mjs, zie
- * docs/waardering-backtest.md.)
+ * docs/waardering/backtest.md.)
  */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'

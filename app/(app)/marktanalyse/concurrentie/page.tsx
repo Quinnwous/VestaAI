@@ -12,7 +12,7 @@ export const metadata = { title: 'Concurrentie' }
 /**
  * Concurrentieanalyse v2 (item 6.3, docs/roadmap.md § 5 Fase 6 — port van
  * `docs/ontwerp/concurrentie.html`). Werkt volledig via de RPC's op
- * `verkopend_kantoor_norm` (patroon 2, § 3.1) — geen enkele rij komt meer
+ * `verkopend_kantoor_norm` (patroon 2, architectuur § 1) — geen enkele rij komt meer
  * client-side binnen (was ~5,5 s via `haalTransactiesVoorVerkenner`, nu de
  * geaggregeerde tegels/matrix/ranglijst al vóór de eerste paint). De
  * standaardfilter (werkgebied van het kantoor) wordt hier al opgehaald zodat

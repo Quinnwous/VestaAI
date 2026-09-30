@@ -11,7 +11,7 @@ export const metadata = { title: 'Transacties importeren — VestaAI' }
 /**
  * Importscherm voor de transactiedataset (F4, zie CLAUDE.md § Hoofdstructuur).
  * Concierge-model: Quinn importeert namens het kantoor, niet het kantoor zelf
- * (zie docs/goals.md § Bedieningsmodel). Herhaalbaar — een periodieke
+ * (zie docs/strategie/doelen.md § Bedieningsmodel). Herhaalbaar — een periodieke
  * herimport werkt als upsert, zie app/admin/transacties/actions.ts.
  */
 export default async function AdminTransactiesPage() {

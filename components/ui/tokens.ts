@@ -42,9 +42,6 @@ export const colors = {
   statusVerkocht: '#5C6470',
 } as const
 
-// Apart gedefinieerd omdat "Gepubliceerd" de merkkleur van het kantoor moet volgen.
-export const STATUS_PUBLISHED_COLOR = colors.primary
-
 export const serifFont = 'var(--merk-font-heading, var(--font-newsreader)), Georgia, serif'
 
 export const radius = {
@@ -65,13 +62,3 @@ export const shadow = {
   dropdown: 'var(--merk-shadow-dropdown, 0 12px 32px rgba(20,24,27,.14))',
   modal: 'var(--merk-shadow-modal, 0 24px 60px rgba(20,24,27,.24))',
 } as const
-
-/** Object-status → label + kleur (dashboardfilters, badges, StatusToggle). */
-export const STATUS_CFG: Record<string, { label: string; color: string }> = {
-  draft: { label: 'Concept', color: colors.statusDraft },
-  published: { label: 'Gepubliceerd', color: STATUS_PUBLISHED_COLOR },
-  onder_bod: { label: 'Onder bod', color: colors.statusOnderBod },
-  verkocht: { label: 'Verkocht', color: colors.statusVerkocht },
-}
-
-/** Plan → badge-kleuren (sidebar + account). */

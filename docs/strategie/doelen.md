@@ -43,14 +43,15 @@ geen wervingsplan voor andere kantoren. Toegang is puur admin-beheerd (zie § Pr
 
 **Koerswijziging masterplan 16-17 sep 2026:** i4housing zal uiteindelijk gaan betalen voor
 het platform — dat is inmiddels wél een doel, alleen nog zonder vastgesteld bedrag of
-contractvorm (zie `docs/roadmap.md` § Blokkades & acties Quinn). De kern van de propositie:
+contractvorm (zie `docs/roadmap.md` § 2 Wacht op Quinn). De kern van de propositie:
 een prachtig, interactief systeem bovenop i4housing's éígen Brainbay- en Realworks-data
 (waardering, marktinzicht, concurrentieanalyse), plus content die uren scheelt — niet een
 generiek contentplatform. Prioritering blijft gericht op één demo bij i4housing, niet op
 meerdere kantoren tegelijk. **De demo draait op i4housing's eigen data in hun eigen
 omgeving** (besluit 17 sep 2026); vóór de demo is er één gerichte tussencheck (een
 waardebepaling-pdf naar hun taxateur, mijlpaal M1 in `docs/roadmap.md`). Het demoscript
-in zes scènes staat in `docs/roadmap.md` § 2.
+in zes scènes staat in `docs/i4housing/demoscript.md` (samenvatting in
+`docs/roadmap.md` § 1).
 
 Dat betekent niet dat de deur voorgoed dicht is: het datamodel is al multi-tenant
 (`kantoren`/`makelaars` in Supabase) en het white-label-systeem (`lib/branding.ts`) werkt

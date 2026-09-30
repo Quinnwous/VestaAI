@@ -7,15 +7,15 @@
   woningdossier (fase acquisitie/in verkoop). Cijfers/rekenregel hieronder
   zijn een LOKALE, vereenvoudigde echo van lib/waardering.ts (berekenWaarderingV2)
   puur om dit prototype interactief te maken — in de app komt de uitkomst
-  altijd uit lib/waardering.ts + de RPC's uit § 3.1/3.3, nooit uit JS in de
+  altijd uit lib/waardering.ts + de RPC's uit architectuur § 1/3, nooit uit JS in de
   pagina zelf. De 8 referenties + 6 drawer-kandidaten zijn synthetisch maar
-  volgen exact het rekenvoorbeeld uit docs/waardering-methode.md § 3.
+  volgen exact het rekenvoorbeeld uit docs/waardering/methode.md § 3.
 
   Wat hieronder NIET in de app hoort:
   - De rekenfuncties gewogenPercentiel()/bereken() — vervangen door
     berekenWaarderingV2() uit lib/waardering.ts (4.3, al gebouwd).
   - Het synthetische datasetje REFS_BASIS/KANDIDATEN — vervangen door
-    referenties_in_straal (RPC, § 3.1) en de zoekactie in de Drawer.
+    referenties_in_straal (RPC, architectuur § 1) en de zoekactie in de Drawer.
   - De custom dossierheader-markup (adres/kenmerken/fasestappen/tabs) die
     hier na K.topbar() wordt ingevoegd: kit.js' topbar() is sinds item 0.1
     plat (zes pillen, geen subnav meer) en heeft geen dossier-tabs; die
@@ -331,7 +331,7 @@
       </div>
     </div>`);
 
-  // ── Vaste feiten uit docs/waardering-methode.md § 3 ──
+  // ── Vaste feiten uit docs/waardering/methode.md § 3 ──
   const PEILDATUM_LABEL = '1 sep 2026', DATA_TM = '12 sep 2026', INDEX_TM = '2026-Q3';
   const SUBJECT = { adres: 'Dorpsstraat 12, Wassenaar', m2: 120, bouwjaar: 1965 };
   const WOZ = { waarde: 695000, peildatum: '1 jan 2025' };
@@ -364,7 +364,7 @@
   let correctie = { vastgelegd: true, waarde: 760000, motivatie: 'dakkapel en nieuwe keuken' };
   let bewerkModus = false;
 
-  // ── Rekenkern (lokale, vereenvoudigde echo van lib/waardering.ts §3.3 — NIET porten) ──
+  // ── Rekenkern (lokale, vereenvoudigde echo van lib/waardering.ts, architectuur § 3 — NIET porten) ──
   const round1000 = x => Math.round(x / 1000) * 1000;
   function gewogenPercentiel(items, p) {
     const s = [...items].sort((a, b) => a.geimpliceerd - b.geimpliceerd);
@@ -510,7 +510,7 @@
     { key: 'garage', label: 'Garage', aan: true }, { key: 'tuin', label: 'Tuin', aan: true }, { key: 'energielabel', label: 'Energielabelklasse', aan: true },
     { key: 'bouwperiode', label: 'Bouwperiode', aan: true }, { key: 'grootte', label: 'Grootte (m²)', aan: true },
   ];
-  /** Alleen in de proto-staat "Met correcties" is er (in dit voorbeeld) genoeg regionale data voor de garage-correctie op Lindelaan 8 — exact het rekenvoorbeeld uit § 3 van docs/waardering-methode.md. */
+  /** Alleen in de proto-staat "Met correcties" is er (in dit voorbeeld) genoeg regionale data voor de garage-correctie op Lindelaan 8 — exact het rekenvoorbeeld uit § 3 van docs/waardering/methode.md. */
   function isToepasbaar(key) { return STAAT === 'met-correcties' && key === 'garage'; }
   function correctiesPil(correcties) {
     const keys = Object.keys(correcties || {});

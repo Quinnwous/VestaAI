@@ -1,6 +1,6 @@
 /**
  * Gedeelde meetlogica voor de backtest van de waarderingskern v2 (item 4.8,
- * docs/roadmap.md § 3.3 — demo-lat: mediaan absolute fout ≤ 7 %, ≥ 75 %
+ * docs/architectuur.md § 3 — demo-lat: mediaan absolute fout ≤ 7 %, ≥ 75 %
  * binnen de band). Pure functies, geen I/O: zowel `lib/waardering.backtest.test.ts`
  * (synthetische vitest-vangrail) als `scripts/backtest-waardering.mjs`
  * (fixture/echte data) roepen dezelfde `meetEen()`/`vatSamen()` aan, zodat er
@@ -17,7 +17,7 @@ import { mediaan } from './prijsindex'
 
 export { mediaan }
 
-/** Canonieke typegroep-volgorde voor rapportages (§ 3.3). */
+/** Canonieke typegroep-volgorde voor rapportages (architectuur § 3). */
 export const TYPEGROEPEN: readonly Typegroep[] = ['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand']
 
 /**
@@ -145,7 +145,7 @@ export function perTypegroep(metingen: Meting[], zonderWaarde: ZonderUitkomst[] 
   return TYPEGROEPEN.map(g => vatSamen(g, metingen.filter(m => m.groep === g), zonderWaarde.filter(z => z.groep === g)))
 }
 
-/** Groepeert metingen per gebruikte straal (verbredingstrede, § 3.3 `LADDER`). Subjecten zonder uitkomst hebben geen trede. */
+/** Groepeert metingen per gebruikte straal (verbredingstrede, architectuur § 3 `LADDER`). Subjecten zonder uitkomst hebben geen trede. */
 export function perTrede(metingen: Meting[]): Groepsstatistiek[] {
   const tredes = Array.from(new Set(metingen.map(m => m.straal_m))).sort((a, b) => (a ?? 0) - (b ?? 0))
   return tredes.map(t => vatSamen(t === null ? 'onbekend' : `${t} m`, metingen.filter(m => m.straal_m === t)))

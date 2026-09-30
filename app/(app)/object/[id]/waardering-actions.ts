@@ -178,7 +178,7 @@ export async function zoekWaarderingReferenties(
   }
 }
 
-/** Maximale straal uit de verbredingsladder (§ 3.3) — de kandidaatophaal-radius; `kiesReferenties()` past de ladder daarbinnen zelf toe. */
+/** Maximale straal uit de verbredingsladder (architectuur § 3) — de kandidaatophaal-radius; `kiesReferenties()` past de ladder daarbinnen zelf toe. */
 const MAX_STRAAL_M = LADDER[LADDER.length - 1].straal_m
 
 /**
@@ -197,9 +197,9 @@ function canoniekePlaats(ruw: string | null, werkgebied: string[]): string | nul
 }
 
 /**
- * Bouwt het `SubjectV2` uit een dossier (item 4.1, docs/roadmap.md § 3.3):
+ * Bouwt het `SubjectV2` uit een dossier (item 4.1, docs/architectuur.md § 3):
  * woningtype-groep/subtype en oppervlak/bouwjaar rechtstreeks uit de intake,
- * lat/lng uit het dossier zelf (verrijking bij aanmaken, zie § 3.2),
+ * lat/lng uit het dossier zelf (verrijking bij aanmaken, zie architectuur § 2),
  * garage/tuin afgeleid zoals `app/(app)/object/[id]/page.tsx` dat deed vóór
  * v2, plaats uit het adres (`plaatsUitAdres`, gecanonicaliseerd naar het
  * werkgebied) als terugval zonder lat/lng.
@@ -235,13 +235,13 @@ export type WaarderingBerekeningResultaat =
       handmatigUitgesloten: string[]
       /** Opgeslagen `handmatig.toegevoegd`-ids, opgelost naar volledige kandidaten (item 4.4). */
       handmatigToegevoegd: Kandidaat[]
-      /** WOZ-ijkpunt (§ 3.3) — nooit als invoer, puur een referentiegetal náást de waarde. */
+      /** WOZ-ijkpunt (architectuur § 3) — nooit als invoer, puur een referentiegetal náást de waarde. */
       woz: { waarde: number; peildatum: string } | null
     }
   | { ok: false; error: string }
 
 /**
- * "Bereken waardering" (item 4.1/4.2/4.3, docs/roadmap.md § 3.3): haalt het
+ * "Bereken waardering" (item 4.1/4.2/4.3, docs/architectuur.md § 3): haalt het
  * dossier op, bouwt het subject, haalt kandidaten + regionale set via de
  * sessie-gebonden client (`lib/transactiesQuery.ts`, RLS regelt de
  * kantoorscheiding), rekent met `berekenWaarderingV2()` en slaat de uitkomst
@@ -261,7 +261,7 @@ export type WaarderingBerekeningResultaat =
  * (`opties.index`): zonder die parameter bouwt `berekenWaarderingV2` de
  * index zelf via `bouwIndex()` op `regionaal` — en `regionaal` is al
  * gefilterd op werkgebied + typegroep, exact de "prijsindex_kwartaal
- * (werkgebied, typegroep)" uit § 3.3. De RPC `prijsindex_kwartaal` filtert
+ * (werkgebied, typegroep)" uit architectuur § 3. De RPC `prijsindex_kwartaal` filtert
  * alleen op subtype (`typen`), niet op groep, dus zou hier juist een minder
  * precieze index opleveren; de backtest (item 4.8, `scripts/backtest-waardering.mjs`)
  * rekent op dezelfde manier (geen `opties.index`), dus dit houdt productie en
@@ -329,7 +329,7 @@ export async function berekenWaardering(
   // hier opgelost naar volledige kandidaten, zodat berekenWaarderingV2() ze
   // kan meenemen. Handmatig-uitgesloten ids gaan als filter mee in
   // kiesReferenties() (lib/waardering.ts) — dat gebeurt al binnen de functie.
-  // WOZ (§ 3.3) is een los, niet-kritiek ijkpunt: een mislukte opzoeking mag
+  // WOZ (architectuur § 3) is een los, niet-kritiek ijkpunt: een mislukte opzoeking mag
   // de waardering nooit blokkeren.
   const [dataTm, handmatigToegevoegd, woz] = await Promise.all([
     dataTotEnMet(supabase),

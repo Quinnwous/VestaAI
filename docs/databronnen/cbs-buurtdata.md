@@ -1,9 +1,8 @@
----
-name: buurtanalyse-cbs
-description: Live CBS-buurtdata via de open OData-API — gemiddelde WOZ, inkomen, opleidingsniveau, woningtypen, huishoudens en bevolkingsdichtheid. Geïmplementeerd in lib/verrijking.ts. Per indicator wordt naar buurt-, wijk- of gemeenteniveau gezakt, en het gebruikte niveau reist altijd mee.
----
+# CBS-buurtdata — live koppeling
 
-# Buurtanalyse (CBS) — live koppeling
+> Naslag bij `lib/verrijking.ts` (`fetchCbs`): bron, valkuilen van de CBS-API,
+> welke velden we gebruiken en hoe de cascade buurt → wijk → gemeente werkt.
+> Jaarlijks bijwerken: zie "Waarom 2024" hieronder.
 
 **Status: geïmplementeerd** in `lib/verrijking.ts` (`fetchCbs`). Dit document beschrijft
 de werkende koppeling, geen toekomstplan. De vroegere hardgecodeerde referentietabel

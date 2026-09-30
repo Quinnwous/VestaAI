@@ -1,10 +1,33 @@
 # VestaAI — Besluitenlogboek & opleverlog
 
-> Logboek, geen werklijst. Het plan zelf staat in `docs/roadmap.md`. Nieuwe
-> besluiten komen hier bovenaan (nieuwste eerst); `/sessie-afronden` voegt ze
-> toe. `/sessie-start` leest alleen de bovenste datum-sectie.
+> Logboek, geen werklijst. Open werk staat in `docs/roadmap.md`, wat er staat in
+> `docs/productoverzicht.md`. Per ronde komt hier bovenaan één datumsectie met
+> een tabel `Onderwerp | Besluit | Door` — besluiten én opleveringen, nieuwste
+> eerst; `/sessie-afronden` voegt hem toe en `/sessie-start` leest alleen de
+> bovenste. Onderaan staan de oudere secties § Besluiten (16-17 sep) en
+> § Opgeleverd (lijst tot 30 sep, niet meer bijgehouden).
+>
+> Paden in dit logboek zijn op 30 sep 2026 bijgewerkt naar de nieuwe indeling
+> van `docs/`; "roadmap § 3.x" in oudere secties = `docs/architectuur.md` § x.
 
 ---
+
+### 30 sep 2026 (opschoning) — roadmap gesplitst, docs heringedeeld, dode code weg
+
+Opdracht Quinn: "de hele map opfrissen en opschonen; de roadmap alleen nog wat
+moet gebeuren, wat er staat in een nieuw document; wees kritisch". Toevoeging
+halverwege: "geen onnodige risico's, alleen als je 100 procent zeker weet hoe".
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Roadmap gesplitst | `docs/roadmap.md` bevat alleen nog open werk (stand van zaken, demo-doel, acties Quinn, sporen A-F, risico's, backlog). Nieuw: `docs/productoverzicht.md` (wat er staat, per onderdeel), `docs/architectuur.md` (was roadmap § 3, bijgewerkt: o.a. Leaflet/v1-teksten weg, `FaseToggle` bestaat niet meer → fasestepper, plus live gecontroleerd datamodel, stack, bronnen, beveiliging), `docs/werkwijze.md` (was § 4 + § 11 + het agentprotocol). Afspraak: een afgerond item gaat uit de roadmap en komt in het productoverzicht | Quinn + Opus |
+| Docs heringedeeld | `strategie/`, `i4housing/`, `ontwerp/principes.md`, `waardering/`, `metingen/` (was `data/`), `databronnen/`, `archief/specs/` (afgeronde agent-specs; code-commentaar verwijst ernaar). Wegwijzer `docs/README.md`, scriptoverzicht `scripts/README.md`. Vijf oude data-integratieprompts van de Python-pipeline weg. Schrijfpaden van drie scripts mee aangepast; `i4housing-team.md` hield zijn naam, omdat `maak-team-accounts.mjs` daar de naam van het wachtwoordbestand uit afleidt | Opus |
+| CLAUDE.md | 48,8 → 18,5 KB: feature-beschrijvingen naar het productoverzicht, alle regels en lessen behouden (gecontroleerd op 50 kernbegrippen), sectienamen waar code naar verwijst (Hoofdstructuur, Transactiedataset, Conventies, Datamodel) blijven bestaan | Opus |
+| Dode code | Weg: server action `toggleObjectStatus`, `components/ui/Tabs.tsx` (+ `.vui-tab`-CSS, `@radix-ui/react-tabs`), `StatusBadge`/`STATUS_CFG`, `Select` in `ui/Field`, de v1-gemiddelde-functies in `lib/marktanalyse.ts`, `@types/sharp`, `@eslint/eslintrc`, `@vitejs/plugin-react`, `e2e/smoke.mjs` + `npm run smoke`, `public/kantoren/i4housing/*` (geen code- of databaseverwijzing, gecontroleerd). Gevonden met knip (scripts en e2e als entry) + grep per geval | Opus |
+| Bewust níet gedaan | Codemappen `lib/` en `components/` herindelen: raakt honderden imports; na "geen onnodige risico's" als optioneel item F10 op de roadmap. Ook niet: database-opruiming (akkoord nodig, F7), GitHub-branches weghalen (extern, § 2 punt 10) | Quinn + Opus |
+| Verwijzingen | 134 commentaarregels "roadmap § 3.x"/"§ 4" → `docs/architectuur.md § x`/`docs/werkwijze.md` (alleen commentaar, testnamen en rapporttekst). Verouderd commentaar in `lib/ensureMakelaar.ts` (verwees naar de opgeruimde trigger `handle_new_user`) rechtgezet. e2e-README: opgeloste kanttekeningen weg — de "verouderde" generatietest in `smoke.spec.ts` bleek op 27 sep al bijgewerkt | Opus |
+| Kritische bevindingen → roadmap § 3 F | Geen CI (F1) · back-up mist `imports`, Storage en een actuele schemabaseline (F2) · 86 MB productiedata + wachtwoordbestand lokaal (F3) · geen foutmonitoring (F4) · 4 dev-kwetsbaarheden, productie 0 (F5) · docx-test draait nooit (F6) · `nps_responses`/`first_generated_at` ongebruikt (F7) · kostenschatting verouderd (F8). Vercel Pro kreeg zijn echte reden: Hobby is niet-commercieel. Uit de DoD-screenshots en de database: i4 heeft ook 0 dossiers (demo-dossiers staan in het demo-kantoor → 12.5), voorzieningen staan op `mislukt` bij alle gecontroleerde dossiers en CBS op `leeg` bij het scène-5-dossier (12.7), referentietabel breekt af op 1280 px (12.8) | Opus |
+| Lokaal | Vier `.tmp-*.mjs`, `test-results/`, lege `.claude/commands/` en 12 gemergde lokale branches opgeruimd. `backups/` bewust niet aangeraakt (productiedata, F3) | Opus |
 
 ### 30 sep 2026 (ronde Q) — fase 14 zonder 14.2, lint op 0, opruimmigratie, prototypes herpubliceerd
 
@@ -20,8 +43,8 @@ in worktrees (14.1, 14.3, 14.4, lint + ontwerp-kit), de hoofdsessie deed de rest
 | Lint | 31 react-hooks-fouten + 11 waarschuwingen → `npx eslint .` 0. Vooral "state tijdens render afleiden", lazy `useState`, sub-componenten op moduleniveau, nieuwe `hooks/useHeeftGemount.ts` (useSyncExternalStore). Eerlijk: op een paar plekken (`StatTile`, `WaardePresentatie`, `WaardebepalingPaneel`, `BuurtDataTab`, `KwartaalberichtModal`) is de setState naar `requestAnimationFrame`/`queueMicrotask` verplaatst — gedrag gelijk (één frame), maar dat is eerder omzeilen dan herstructureren; bij een volgende aanraking echt oplossen | Sonnet |
 | Ontwerp-kit | `K.sparkline()` gedeeld, `.btn:disabled` en de mobiele topbar in `kit.css` (pixel-diff 0 buiten de topbar). Alle zes prototypes op dezelfde artifact-URL's herpubliceerd (§ 8 punt 15 was geblokkeerd door de classifier; nu gelukt) | Sonnet + Opus |
 | Opruimmigratie | Akkoord Quinn (incl. `wijken`). Vooraf gecontroleerd: 5 tabellen leeg, 7 kolommen alleen standaardwaarden, geen code-gebruik. Gevonden en meegenomen: trigger `trg_referral_code` op `kantoren` (zonder dat was elke insert in `kantoren` gaan falen → `createKantoor` kapot) en de ontkoppelde functie `handle_new_user` (schreef `trial_ends_at`). Back-up vooraf, toegepast, insert-proef in een teruggedraaide transactie groen. Seed-script leunt niet meer op `trial_ends_at` | Quinn + Opus |
-| Kantoorprofiel i4 | "Opgericht" ontbrak (gereedheidscheck verkoopadvies) → `2013` (KvK-oprichtingsdatum 14-10-2013 uit `docs/i4housing-onderzoek.md`). Kenmerken stonden er al | Opus |
-| Demo-dossiers (12.5) | Drie vaste demo-dossiers gekozen en in `docs/demoscript.md` gezet. Gevonden: geen enkel demo-dossier heeft Engelse content of foto's — EN hoort bij de betaalde testruns | Opus |
+| Kantoorprofiel i4 | "Opgericht" ontbrak (gereedheidscheck verkoopadvies) → `2013` (KvK-oprichtingsdatum 14-10-2013 uit `docs/i4housing/onderzoek.md`). Kenmerken stonden er al | Opus |
+| Demo-dossiers (12.5) | Drie vaste demo-dossiers gekozen en in `docs/i4housing/demoscript.md` gezet. Gevonden: geen enkel demo-dossier heeft Engelse content of foto's — EN hoort bij de betaalde testruns | Opus |
 | Betaalde testruns | Quinn: "nog niet" (§ 8 punt 6 blijft open) | Quinn |
 | Worktree-les | Turbopack weigert een `node_modules`-symlink die buiten de projectroot wijst → `npm run build` faalt in élke worktree. Agents bouwen daar met `ANALYZE=true npm run build` (webpack); de echte Turbopack-build draait de hoofdsessie na de merge | Opus |
 
@@ -53,7 +76,7 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 | Nameting (live) | Productie na PR #48, mobiel, mediaan van 3: dashboard 87 → 91, marktanalyse 64 → 80, concurrentie 51 → 87, woningen 82 → 92, dossier 58 → 76, landing 86 → 90, kantoorlogin 82 → 85. Deploy READY, 0 runtime-errors | Opus |
 | Genoeg is genoeg | Quinn: "de score is op dit moment prima" — geen performance-ronde 3; marktanalyse (80) en dossier (76) blijven onder 85, reden gedocumenteerd in 12.6 | Quinn |
 | Vercel-geheimen | Akkoord Quinn om de 6 ongebruikte geheimen te verwijderen, maar Claude kan het niet: de Vercel-MCP heeft geen verwijder-actie en de CLI is niet ingelogd. Blijft handwerk voor Quinn (§ 8 punt 10, met stappen) | Quinn |
-| Meetscript | `scripts/meet-lighthouse.mjs` (ingelogd via sessiecookie, `--anoniem` voor publiek, mediaan van n runs, `--label` → `docs/data/lighthouse-<label>.json`). Productie is `www.vestaai.nl` (kale domein stuurt door) | Opus |
+| Meetscript | `scripts/meet-lighthouse.mjs` (ingelogd via sessiecookie, `--anoniem` voor publiek, mediaan van n runs, `--label` → `docs/metingen/lighthouse-<label>.json`). Productie is `www.vestaai.nl` (kale domein stuurt door) | Opus |
 | Browsertabbladen | `@next/bundle-analyzer` opende bij elke analyse-build 3 tabbladen bij Quinn → `openAnalyzer: false` | Quinn + Opus |
 | Kantoor-admin-achterdeur | Policy "admin mag kantoor bijwerken" liet de ene makelaar met `role = 'admin'` zijn kantoorrij (huisstijl, instellingen, naam) via REST wijzigen — in strijd met "platform-admin-beheerd". De app schrijft nergens met de sessie-client naar `kantoren`. Policy + `is_kantoor_admin()` weg (`20260929230000_kantoor_admin_rest_weg.sql`, toegepast; raakt geen data; rooktest productie groen) | Opus |
 | Checks | Security-advisor: alleen bekende/bewuste meldingen + leaked-password (open, § 8). `npm audit` productie 0. Schema-check groen. Vercel: 0 runtime-errors (24 u); `PLATFORM_ADMIN_EMAILS` staat lokaal én op Vercel niet (gelijk). Gevonden: 6 ongebruikte geheimen op Vercel (5× `STRIPE_*`, `CRON_SECRET`) → § 8, verwijderen na akkoord | Opus |
@@ -66,7 +89,7 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 | Next 16 live | 14.2 → 16.3.6 / React 19.3 via de officiële codemods (Sonnet), nagelopen en gemerged door Opus. Runtime-checks in de hoofdsessie: `dod:screens` 33/33, `demo:repetitie` groen, e2e 10/10; geen runtime-errors op productie | Sonnet + Opus |
 | Valse foutstaten | Na de upgrade meldden `dod:screens`/repetitie 38 "foutstaten": Next 15+ zet `<nextjs-portal>` (dev-tools-knop) altijd neer en `toontFoutstaat()` telde dat als fout. Nu alleen een foutdialoog of issue-telling; tegenproef met een echte fout gedaan | Opus |
 | Kwetsbaarheden | Productie 8 → 0: `@xmldom/xmldom` 0.8.15 (via `mammoth`) en `baseline-browser-mapping` via `overrides`, ongebruikte `@types/react-pdf` weg (trok `pdfjs-dist` ≤ 4.1 mee). `npm audit fix` crasht op het URL-geïnstalleerde `xlsx` — gericht met overrides | Opus |
-| Meting servertijd | TTFB na Next 16 (fra1): Overzicht 286, Woningen 208, Dossier 194, Marktanalyse 179, Transacties 228, Concurrentie 180 ms; volledige pagina 0,28–0,57 s. T.o.v. alleen fra1 nog 5–15 % winst op de volledige pagina; t.o.v. vanochtend (iad1) ~3× sneller. `docs/data/paginasnelheid-na-next16.json` | Opus |
+| Meting servertijd | TTFB na Next 16 (fra1): Overzicht 286, Woningen 208, Dossier 194, Marktanalyse 179, Transacties 228, Concurrentie 180 ms; volledige pagina 0,28–0,57 s. T.o.v. alleen fra1 nog 5–15 % winst op de volledige pagina; t.o.v. vanochtend (iad1) ~3× sneller. `docs/metingen/paginasnelheid-na-next16.json` | Opus |
 | Meting Lighthouse mobiel | Ingelogd op productie, 3 runs (deze machine is ruisgevoelig — TBT varieerde 140–1.135 ms): dossier 50/66/73 (LCP ~5,2 s), dashboard 82/89/93, marktanalyse 65–68 (LCP ~5,4 s). **Next 16 bracht mobiel niet naar 85**: de rem is het client-JavaScript en de LCP op gesimuleerd traag 4G, niet de server. Vervolg (voorstel, niet gestart): gerichte ronde per pagina met de bundle-analyzer — grafieken en kaart pas laden als ze in beeld komen, minder hydratie boven de vouw | Opus |
 | Lint | 31 meldingen van `eslint-plugin-react-hooks` v7 op bestaande componenten; niet in de DoD, bewust niet meegenomen in de upgrade | Opus |
 
@@ -74,10 +97,10 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 
 | Onderwerp | Besluit | Door |
 |---|---|---|
-| Functieregio | Database in `eu-central-1` (Frankfurt), functies draaiden in `iad1` (Washington, Vercel-standaard, nooit bewust gekozen) → elke databasevraag twee keer over de oceaan. `vercel.json` `regions: ["fra1"]` (PR #45). Gemeten met `scripts/meet-paginasnelheid.mjs` (ingelogd, productie, mediaan van 8): TTFB Overzicht 737 → 321 ms, Woningen 592 → 217, Dossier 584 → 218, Marktanalyse 538 → 184, Transacties 519 → 213, Concurrentie 494 → 186, Zoeken 704 → 191 ms (−56 tot −73 %); volledige pagina 1,0–1,8 s → 0,3–0,6 s. JSON in `docs/data/paginasnelheid-{voor-iad1,na-fra1}.json` | Quinn + Opus |
+| Functieregio | Database in `eu-central-1` (Frankfurt), functies draaiden in `iad1` (Washington, Vercel-standaard, nooit bewust gekozen) → elke databasevraag twee keer over de oceaan. `vercel.json` `regions: ["fra1"]` (PR #45). Gemeten met `scripts/meet-paginasnelheid.mjs` (ingelogd, productie, mediaan van 8): TTFB Overzicht 737 → 321 ms, Woningen 592 → 217, Dossier 584 → 218, Marktanalyse 538 → 184, Transacties 519 → 213, Concurrentie 494 → 186, Zoeken 704 → 191 ms (−56 tot −73 %); volledige pagina 1,0–1,8 s → 0,3–0,6 s. JSON in `docs/metingen/paginasnelheid-{voor-iad1,na-fra1}.json` | Quinn + Opus |
 | Kantoorprofiel i4 | Tekst op basis van i4housing.nl (je-vorm, zoals hun site), lidmaatschap NVM, opgericht leeg (niet op de site). Geen zin over wie het kantoor leidt (Quinn: niet nodig; Ton van Soest leidt het niet meer). Namen in de teamlijst bevestigd, o.a. Nicole van Dijk | Quinn + Opus |
-| Team-accounts | Zes makelaars vastgelegd in `docs/i4housing-team.md`, nog niet aangemaakt. Let op: `addMakelaarAccount` mailt de persoon direct; advies: aanmaken zonder mail | Quinn |
-| Next 16 | Upgrade 14.2 → 16 (React 19) in stappen via de officiële gidsen, spec `docs/specs/l1-next16-upgrade.md`. Waarom niet vanaf het begin: het project startte op de versie die het model het best kende; bij een nieuw project expliciet de nieuwste stabiele versies en de regio naast de database kiezen | Quinn + Opus |
+| Team-accounts | Zes makelaars vastgelegd in `docs/i4housing/i4housing-team.md`, nog niet aangemaakt. Let op: `addMakelaarAccount` mailt de persoon direct; advies: aanmaken zonder mail | Quinn |
+| Next 16 | Upgrade 14.2 → 16 (React 19) in stappen via de officiële gidsen, spec `docs/archief/specs/l1-next16-upgrade.md`. Waarom niet vanaf het begin: het project startte op de versie die het model het best kende; bij een nieuw project expliciet de nieuwste stabiele versies en de regio naast de database kiezen | Quinn + Opus |
 
 ### 29 sep 2026 (dertiende en veertiende ronde) — plaatsnormalisatie, courtage per dossier, verkoopadvies-datalaag (PR #43, #44)
 
@@ -134,7 +157,7 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 |---|---|---|
 | Segmentvergelijking | Zodra segment B aan staat: kaart "Segment A vs. segment B" onder de kerncijfers (mediaan prijs, €/m², looptijd, t.o.v. vraagprijs, aantal), n per segment in de kop, verschil neutraal (▲/▼, geen groen/rood). Drempel `MIN_N_BETROUWBAAR = 6` nu gedeeld in `lib/marktanalyse.ts`. Eigen component i.p.v. `DumbbellStat` (die kleurt wij/markt en semantisch). B-samenvatting met eigen `.catch` → A blijft werken | Sonnet + Opus |
 | Schakelaar segment B | Kiest automatisch een plaats buiten A; zitten alle plaatsen al in A, dan blijft B op "Kies een plaats…" (gezien bij het demo-kantoor, correct gedrag) | Opus |
-| Presentatiemodus | Stap 1 zonder foto toont het kantoorlogo; contactregel en logo-keuze gedeeld (`kantoorContactregel`, `logoWeergave`). Website ontbreekt in het datamodel → item G1 (spec in `docs/specs/`) | Sonnet |
+| Presentatiemodus | Stap 1 zonder foto toont het kantoorlogo; contactregel en logo-keuze gedeeld (`kantoorContactregel`, `logoWeergave`). Website ontbreekt in het datamodel → item G1 (spec in `docs/archief/specs/`) | Sonnet |
 | Agent-opdrachten | Lange prompts laten de auto-mode-classifier time-outen (agent start niet). Spec als bestand, prompt van één regel (CLAUDE.md) | Opus |
 | Automatisering rondes | Headless lus (`claude -p` per ronde) besproken; Quinn: handmatig blijven doen | Quinn |
 
@@ -194,7 +217,7 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 
 | Onderwerp | Besluit | Door |
 |---|---|---|
-| 12.5a demoscript | `docs/demoscript.md`: klik-voor-klik per scène met terugvalplan, labels geverifieerd in de code. Geschreven op `/login/demo` (~8.000 transacties): het i4housing-kantoor heeft nul transacties tot fase 5, dus alle marktinzichten tonen daar de lege staat. Overzetten naar `/login/i4housing` zodra fase 5 live is | Sonnet |
+| 12.5a demoscript | `docs/i4housing/demoscript.md`: klik-voor-klik per scène met terugvalplan, labels geverifieerd in de code. Geschreven op `/login/demo` (~8.000 transacties): het i4housing-kantoor heeft nul transacties tot fase 5, dus alle marktinzichten tonen daar de lege staat. Overzetten naar `/login/i4housing` zodra fase 5 live is | Sonnet |
 | § 2 bijgesteld | Scène 1 zonder "deze week" (geschrapt onder 10.4) en met merkverloop i.p.v. teamfoto zolang 12.1 open is; knop heet "Kwartaalbericht schrijven" | Opus |
 | Eén dossierkaart | `StraalKaartPaneel` verwijderd; de kaart in `WaarderingKaart.tsx` (via `WaardebepalingPaneel`) heeft twee lagen: "Referenties (n)" en "Eigen verkopen (n)" met straal 250/500/1000 m in de kaartkop (niet óp de kaart: rechtsboven zitten de zoomknoppen). Standaardlaag via `bepaalStandaardLaag()` (`lib/dossierKaart.ts`): referenties, tenzij die er niet zijn maar eigen verkopen wel. Eén MapLibre-instantie per dossier | Sonnet |
 | NL-zoomknoppen | `locale` op de `maplibregl.Map` ("Inzoomen", "Uitzoomen", "Noorden boven") | Sonnet |
@@ -344,7 +367,7 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 | Prijsindex-bron | `prijsindexKwartaal` (RPC) wordt **niet** gebruikt: die filtert alleen op subtype. `berekenWaarderingV2` bouwt de index zelf uit de regionale set (werkgebied + typegroep), gelijk aan § 3.3 en aan de backtest — productie en kalibratie blijven zo identiek | Sonnet |
 | CBS-terugval | `scripts/haal-cbs-prijsindex.mjs` haalt tabel 85792NED op (regio GM0518 's-Gravenhage, code uit de metadata); `lib/cbsPrijsindexData.json` wordt **wel** gecommit — er is geen build-stap die het script draait, anders heeft productie nooit een terugval | Sonnet + Opus |
 | Bug plaatsnamen | Werkgebied zegt "'s-Gravenhage", adressen zeggen "Den Haag": zonder normalisatie woog `plaatsFactorVoor()` elke referentie in dezelfde stad half mee en vond de terugval-zonder-locatie 0 kandidaten. Subject-plaats wordt nu gecanoniseerd met `plaatsenGelijk()` | Sonnet |
-| 4.8 backtest | `scripts/backtest-waardering.mjs` + `lib/backtest.ts` (meetlogica gedeeld met de vitest-vangrail) + `docs/waardering-backtest.md`: 400 woningen, peildatum = dag vóór verkoop, **mediane fout 6,1 %, 76 % binnen de band** — demo-lat (≤ 7 % / ≥ 75 %) gehaald, geen aanpassing aan de bandregels. Per typegroep blijft vrijstaand het zwakst (8 %) | Sonnet |
+| 4.8 backtest | `scripts/backtest-waardering.mjs` + `lib/backtest.ts` (meetlogica gedeeld met de vitest-vangrail) + `docs/waardering/backtest.md`: 400 woningen, peildatum = dag vóór verkoop, **mediane fout 6,1 %, 76 % binnen de band** — demo-lat (≤ 7 % / ≥ 75 %) gehaald, geen aanpassing aan de bandregels. Per typegroep blijft vrijstaand het zwakst (8 %) | Sonnet |
 | Mac wakker houden | Automatische hook ingetrokken op verzoek van Quinn (zie 17 sep); hij zet `caffeinate` zelf aan voor een gekozen duur | Quinn |
 
 ---
@@ -419,7 +442,7 @@ schreef alleen de statistisch lastige module zelf en deed de reviews.
 
 | Onderwerp | Besluit | Door |
 |---|---|---|
-| Rekenkern waardering (fase 4) | Gebouwd als pure TypeScript naast de `@deprecated` v1: `lib/waardering.ts` v2, `lib/prijsindex.ts`, `lib/cbsPrijsindex.ts`, schema's in `lib/schemas.ts`, 22 + 13 tests, synthetische backtest als vitest-vangrail (`lib/waardering.backtest.test.ts`, generator `lib/waardering.synthetisch.ts`). Methode in makelaarstaal met rekenvoorbeeld (= testcase) in `docs/waardering-methode.md`; dat document gaat naar de taxateur van i4 Housing voor de tussencheck (§ 8 actie 6) | Fable |
+| Rekenkern waardering (fase 4) | Gebouwd als pure TypeScript naast de `@deprecated` v1: `lib/waardering.ts` v2, `lib/prijsindex.ts`, `lib/cbsPrijsindex.ts`, schema's in `lib/schemas.ts`, 22 + 13 tests, synthetische backtest als vitest-vangrail (`lib/waardering.backtest.test.ts`, generator `lib/waardering.synthetisch.ts`). Methode in makelaarstaal met rekenvoorbeeld (= testcase) in `docs/waardering/methode.md`; dat document gaat naar de taxateur van i4 Housing voor de tussencheck (§ 8 actie 6) | Fable |
 | Bandbreedte | Gewogen **P10–P90** i.p.v. P25–P75: een interkwartielband dekt per definitie maar de helft van de uitkomsten en haalde in de backtest 72 %; P10–P90 haalt 78 %. `BAND_PERCENTIELEN` is de kalibratieknop voor de echte backtest (4.8). Minimale marge ± 5 / 10 / 15 % bij n ≥ 6 / 4-5 / < 4 (de "+5/+10 punt"-regel was dubbelzinnig) | Fable |
 | Correcties per referentie | Zonder correcties werden slecht gelabelde woningen 9 % en grotere woningen 3,6 % overschat. Daarom correcties zoals in een taxatierapport: prijsniveau per klasse (garage, tuin, labelklasse, bouwperiode) op de regionale set + Theil-Sen-helling voor grootte; alleen bij ≥ 30 verkopen per klasse, begrensd ± 15 % per kenmerk / ± 30 % totaal, per kenmerk schakelbaar en per referentie zichtbaar. Geen multivariate regressie (§ 3.3 blijft staan) | Fable |
 | Plaatsfactor | Een verkoop in een andere plaats telt voor de helft mee in het gewicht (prijsniveaus verschillen per gemeente meer dan afstand verklaart) | Fable |
@@ -507,7 +530,7 @@ morgen in één keer goed gaat.
 | Onderwerp | Besluit | Door |
 |---|---|---|
 | Vorm i4 Housing | `huisstijl_json.vorm` van `strak` naar **`zacht`** (radius 10-20 px). Wordt gezet in item 1.9 via het repair-script; CLAUDE.md-tekst "knoppen zonder afronding" is achterhaald | Quinn |
-| Stijlrichting | **Apple-achtig**: frosted balken, segmented met schuivende thumb, dropdown-filters als pillen, zachte schaduw met zweem merkkleur, hero-tegel in blauw verloop, ambient-verlopen op de achtergrond. Vastgelegd in `docs/ontwerp/README.md` § 1 en `docs/ontwerpprincipes.md` | Quinn / plan v2 |
+| Stijlrichting | **Apple-achtig**: frosted balken, segmented met schuivende thumb, dropdown-filters als pillen, zachte schaduw met zweem merkkleur, hero-tegel in blauw verloop, ambient-verlopen op de achtergrond. Vastgelegd in `docs/ontwerp/README.md` § 1 en `docs/ontwerp/principes.md` | Quinn / plan v2 |
 | Rood terug | Accentkleur zichtbaar: echt logo in de topbar, live-stip, tel-badges op filters, segment B, pin-omlijning + stokje, schakelaar-aan. Nooit semantisch (ongunstig = amber) | plan v2 |
 | Filtermodel | Dropdown-popovers met samenvatting en tel-badge; plaats/wijk met zoekveld; woningtype-taxonomie (4 groepen × 20 subtypes); schuivers voor prijs/oppervlak/bouwjaar/perceel; energielabel-chips; kamers; kenmerken; t.o.v. vraagprijs; looptijd; verkocht door (teamlid); verkopend kantoor; actieve filterpillen; alles in de URL. Tabel per verkenner in `README.md` § 4; `TransactieFilterSchema` en kolom `woningtype_sub` volgen eruit (roadmap § 3.1, 2.1, 3.2) | plan v2 |
 | Kaart | PDOK **pastel** i.p.v. grijs; pin = **mini-beeldmerk** (blauwe ruit, rode omlijning, wit hart, rood stokje) afgeleid van het i4-logo (`i4-Housing-logo-231x77-1.png` van i4housing.nl); hover-kaart met makelaar; filter "Verkocht door" | Quinn / plan v2 |
@@ -531,7 +554,7 @@ niet tekstueel/amateuristisch, in i4housing-huisstijl.
 
 ### 17 sep 2026 — klantvoorstel v1 voor i4housing opgesteld (nog niet verstuurd)
 
-`docs/voorstel-i4housing.html` (bron, logo inline) + `.pdf` (Playwright-render,
+`docs/i4housing/voorstel.html` (bron, logo inline) + `.pdf` (Playwright-render,
 2 pagina's A4, i4housing-huisstijl, informele toon, "ik"-vorm). Pagina 1:
 datakoppeling (Realworks + NVM/Brainbay + open data → dataset alleen van
 i4housing → waardering, marktanalyse, concurrentie, i4housing-kaart), het
@@ -654,7 +677,7 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 - Content genereert standaard **NL + EN** tegelijk.
 - Kantoor-admin-rol vervangen — niet terugzetten.
 - Regressie voor kenmerk-effecten bewust vermeden — vergelijkbare-paren-methode
-  blijft de standaard (zie `docs/goals.md` § Risico's).
+  blijft de standaard (zie `docs/strategie/doelen.md` § Risico's).
 - Koperskant expliciet buiten scope — VestaAI dient de verkoperskant.
 
 ### 15 sep 2026 — koerswijziging naar waardering
@@ -719,7 +742,7 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 - 16-17 sep 2026 — masterplan herzien naar v2 (demo-backwards, data eerst,
   Sonnet-klare item-specs); besluitenlogboek naar `docs/besluiten.md`;
   `goals.md`/`CLAUDE.md`/sessieskills in lijn gebracht. Geen code gewijzigd.
-- 17 sep 2026 — fase 1.1 t/m 1.8: `docs/ontwerpprincipes.md`,
+- 17 sep 2026 — fase 1.1 t/m 1.8: `docs/ontwerp/principes.md`,
   `scripts/screenshots.mjs`, ui-primitives (`AppPagina`/`StatTile`/
   `EmptyState`/`Skeleton`); topbar herbouwd (groter logo, Verhuur weg,
   avatarmenu); blauwe contactbalk weg; volle breedte op `/woningen`,

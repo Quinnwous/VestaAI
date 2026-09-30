@@ -1,7 +1,7 @@
 // ===========================================================================
-// v2 — rekenkern § 3.3 (Fable, 17 sep 2026; v1 verwijderd item 4.3, 18 sep
+// v2 — rekenkern architectuur § 3 (Fable, 17 sep 2026; v1 verwijderd item 4.3, 18 sep
 // 2026). Het rekenvoorbeeld hieronder is hetzelfde als in
-// docs/waardering-methode.md; wijzigt de uitkomst, werk dan beide bij.
+// docs/waardering/methode.md; wijzigt de uitkomst, werk dan beide bij.
 // ===========================================================================
 
 import { describe, it, expect } from 'vitest'
@@ -62,7 +62,7 @@ const VOORBEELD: Kandidaat[] = [
 ]
 const PEILDATUM = '2026-09-01'
 
-describe('berekenWaarderingV2 — rekenvoorbeeld uit docs/waardering-methode.md', () => {
+describe('berekenWaarderingV2 — rekenvoorbeeld uit docs/waardering/methode.md', () => {
   const u = berekenWaarderingV2(SUBJECT_V2, VOORBEELD, { peildatum: PEILDATUM, index: INDEX })
 
   it('kiest precies de 8 passende referenties binnen 750 m, gesorteerd op gewicht', () => {

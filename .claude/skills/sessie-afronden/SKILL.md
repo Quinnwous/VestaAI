@@ -1,61 +1,58 @@
 ---
 name: sessie-afronden
-description: Einde van een VestaAI-werksessie. Loopt de Definition of Done na, werkt docs/roadmap.md (checkboxen, Stand van zaken) en docs/besluiten.md (opgeleverd, besluiten) bij, en committeert het werk. Gebruik dit wanneer Quinn aangeeft te stoppen, wanneer een fase-item af is, of vlak vóór een /clear.
+description: Einde van een VestaAI-werksessie. Loopt de Definition of Done na, haalt afgeronde items uit docs/roadmap.md, beschrijft ze in docs/productoverzicht.md, logt besluiten in docs/besluiten.md, en commit, pusht, merget en controleert de deploy. Gebruik dit wanneer Quinn aangeeft te stoppen, wanneer een ronde of item af is, of vlak vóór een /clear.
 ---
 
 # Sessie afronden
 
 Doel: nooit een sessie eindigen waarbij het werk in de chat blijft hangen. Alles
-wat telt (voortgang, besluiten, blokkades) moet in `docs/roadmap.md`,
-`docs/besluiten.md` en git staan, zodat een volgende sessie — ook een andere
-chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
+wat telt (voortgang, besluiten, blokkades) moet in de docs en in git staan,
+zodat een volgende sessie — ook een andere chat, ook na contextverlies —
+feilloos verder kan via `sessie-start`.
 
 ## Stappen
 
-1. **Loop de Definition of Done na** (volledige versie: `docs/roadmap.md` § 4):
-   - `npm run typecheck && npm run lint && npm run test && npm run build` groen (lint = 0 problemen).
+1. **Loop de Definition of Done na** (volledige versie: `docs/werkwijze.md` § 4):
+   - `npm run typecheck && npm run lint && npm run test && npm run build` groen
+     (lint = 0 problemen).
    - Huisstijl-hook schoon (geen waarschuwingen van
      `.claude/hooks/huisstijl-check.sh` op de gewijzigde bestanden; geen
      `var(--merk…, #hex)`-fallbacks).
    - `npm run dod:screens` groen en de screenshots in `screenshots/`
-     beoordeeld tegen `docs/ontwerpprincipes.md`. Elke geraakte route echt
+     beoordeeld tegen `docs/ontwerp/principes.md`. Elke geraakte route echt
      bekeken (open de png's): geen foutstaat, geen Next-error-overlay.
    - Lege/laad/foutstaat aanwezig waar relevant; geen console-errors; elke
      statistiek toont n en "data t/m".
-   - `transacties` uitsluitend via `lib/transactiesQuery.ts` (guard-test
-     groen, vanaf fase 2).
+   - `transacties` uitsluitend via `lib/transactiesQuery.ts` (guard-test groen).
    - Elke nieuwe tabel met RLS per kantoor; elke nieuwe view met
      `security_invoker = true`.
    - Bij een schemawijziging: via `apply_migration` (Supabase-MCP), nooit los
-     `execute_sql` voor DDL — anders raakt de migratiehistorie los van de
-     werkelijke database (zie de aanleiding in
-     `supabase/schema-baseline.sql`). Daarna `scripts/controleer-schema.mjs`.
-2. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen, automatisch aan het einde van elke ronde (Quinn 26 sep)**
-   (besluit Quinn 17 sep 2026, zie CLAUDE.md). Commitbericht in het
-   Nederlands zoals de rest van de geschiedenis. Push de featurebranch, maak
-   of werk de PR naar `main` bij, merge hem, en controleer daarna: deploy
-   READY en geen runtime-errors (Vercel-MCP). Tijdens de sessie zelf niet
-   tussendoor pushen. Uitzondering: een migratie die echte data raakt blijft
-   akkoord-plichtig.
-3. **Werk `docs/roadmap.md` bij:**
-   - Vink afgeronde items af (`- [ ]` → `- [x]`) in het fase-blok. Is een
-     hele fase af, klap hem in tot één regel met ✅ (zoals fase 0) en zet de
-     details in `docs/besluiten.md` § Opgeleverd.
-   - Werk § 📍 Stand van zaken bij: fase, laatst opgeleverd (dit item), het
-     nieuwe volgende item, blokkades (verwijder wat is opgelost, voeg nieuwe
-     toe), open vragen, en afwijkingen van de spec die je bent tegengekomen.
-   - Nieuwe ideeën of uitgestelde deelklussen → § 9 Backlog, niet in het
-     lopende item.
-4. **Werk `docs/besluiten.md` bij:**
-   - Voeg een regel toe aan § Opgeleverd: `- <datum> — <één-regel-omschrijving>`
-     (nieuwste bovenaan).
-   - Nieuwe besluiten tijdens deze sessie (ook keuzes die je zelf maakte omdat
-     Quinn er niet was)? Voeg een datum-sectie toe bovenaan § Besluiten
-     (tabel of opsomming, met "Door: Quinn / plan v2 / sessie").
-5. **Nieuwe leerpunten over de codebase** (een valkuil, een patroon, een
-   niet-vanzelfsprekende aanname) horen in `CLAUDE.md`, niet alleen in de
-   chat — zie de kennisregel in de root-`CLAUDE.md` van de werkplaats.
-6. **Bevestig aan Quinn** in een paar regels: wat is er gedaan, wat staat er
-   nu in Opgeleverd, wat is het voorgestelde volgende item. Geen uitgebreid
-   verslag — dat staat al in git en in de roadmap.
-7. Pas hierna is `/clear` veilig.
+     `execute_sql` voor DDL. Daarna `scripts/controleer-schema.mjs`.
+2. **Werk de docs bij** (regels: `docs/werkwijze.md` § 1):
+   - **`docs/roadmap.md`:** haal afgeronde items **weg** (niet afvinken en
+     laten staan). Werk § 📍 Stand van zaken bij: laatst opgeleverd, de
+     volgende ronde, blokkades (opgeloste weg, nieuwe erbij) en afwijkingen van
+     de spec. Nieuwe ideeën of uitgestelde deelklussen → § 5 Backlog.
+   - **`docs/productoverzicht.md`:** beschrijf wat er nieuw staat of veranderd
+     is in de sectie van dat onderdeel (wat het doet, waar het zit,
+     beperkingen), werk de tabel "In één oogopslag" en de stand-datum bij.
+   - **`docs/besluiten.md`:** voeg bovenaan een datumsectie toe
+     (`### <datum> (ronde X) — <titel>`) met een tabel
+     `Onderwerp | Besluit | Door` — opleveringen én besluiten, ook keuzes die je
+     zelf maakte omdat Quinn er niet was.
+   - **Structureel iets veranderd** (nieuwe tabel, nieuwe bron, andere
+     datastroom)? → `docs/architectuur.md`.
+   - **Nieuwe les** (een valkuil, een niet-vanzelfsprekende aanname) → kort in
+     `CLAUDE.md` bij de valkuilen; de details horen in architectuur of
+     werkwijze. Houd `CLAUDE.md` compact: hij laadt elke sessie.
+3. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen,
+   automatisch aan het einde van elke ronde** (besluit Quinn 17 en 26 sep, zie
+   CLAUDE.md). Commitbericht in het Nederlands. Push de featurebranch
+   (`feat/…`), maak of werk de PR naar `main` bij, merge hem, en controleer
+   daarna: deploy READY en geen runtime-errors (Vercel-MCP). Tijdens de sessie
+   zelf niet tussendoor pushen. Uitzondering: een migratie die echte data raakt
+   blijft akkoord-plichtig.
+4. **Bevestig aan Quinn** in een paar regels: wat er gedaan is, wat nu live
+   staat, wat de voorgestelde volgende ronde is. Geen uitgebreid verslag — dat
+   staat al in git en in de docs.
+5. Pas hierna is `/clear` veilig.

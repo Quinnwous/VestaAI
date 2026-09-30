@@ -2,7 +2,6 @@ import type {
   CSSProperties,
   InputHTMLAttributes,
   ReactNode,
-  SelectHTMLAttributes,
   TextareaHTMLAttributes,
 } from 'react'
 import { colors } from './tokens'
@@ -78,22 +77,5 @@ export function Textarea({
       style={fieldStyle({ resize: 'vertical', lineHeight: 1.55, ...style })}
       {...rest}
     />
-  )
-}
-
-export function Select({
-  className,
-  style,
-  children,
-  ...rest
-}: SelectHTMLAttributes<HTMLSelectElement>) {
-  return (
-    <select
-      className={['vui-input', className].filter(Boolean).join(' ')}
-      style={fieldStyle({ cursor: 'pointer', ...style })}
-      {...rest}
-    >
-      {children}
-    </select>
   )
 }

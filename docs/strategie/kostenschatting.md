@@ -1,5 +1,10 @@
 # VestaAI — Kostenschatting
 
+> ⚠️ **Deels verouderd (stand 16 sep 2026).** Rekent nog met 17 contenttypes
+> per run (nu: 7 kernteksten + extra's op aanvraag), gratis Gemini 2.0 (nu
+> `gemini-2.5-flash-image`, betaald) en de Vercel-limieten van toen. Bijwerken
+> vóór het prijsgesprek met i4 Housing — roadmap F8.
+
 > Doel: inzicht in de variabele API-kosten per pand en de infrastructuurkosten bij het
 > huidige gebruik door i4housing, de enige klant.
 > Gaat over kosten die VestaAI zelf maakt, niet over wat klanten betalen — zie `goals.md` § Prijzen.

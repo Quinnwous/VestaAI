@@ -3,7 +3,7 @@ import { colors, radius } from './tokens'
 
 /**
  * Gedeelde lege staat: elke lege staat wijst naar een volgende actie
- * (docs/ontwerpprincipes.md § Data) i.p.v. alleen "geen resultaten" te
+ * (docs/ontwerp/principes.md § Data) i.p.v. alleen "geen resultaten" te
  * melden. Vervangt de losse, net-iets-andere lege-staat-blokken die eerder
  * per explorer apart geschreven werden (marktanalyse/transacties/
  * concurrentie/kaart).

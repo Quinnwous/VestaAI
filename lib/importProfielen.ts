@@ -95,7 +95,7 @@ const REALWORKS: ImportProfiel = {
   coordinatenType: 'wgs84',
 }
 
-// ── Handmatig (item i2, docs/specs/i2-admin-csv-via-pijplijn.md) ───────────
+// ── Handmatig (item i2, docs/archief/specs/i2-admin-csv-via-pijplijn.md) ───────────
 // De CSV-upload op /admin/transacties: geen bron-specifieke aliassen (de
 // beheerder levert zelf een bestand aan, geen vast CRM-exportformaat), dus
 // alleen de gedeelde `ALIASSEN` uit lib/transactieImport.ts. Coördinaten

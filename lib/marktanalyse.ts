@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import type { TransactieRow } from './supabase'
-import { gemiddelde } from './utils'
 import { mediaan, kwartaalVan } from './prijsindex'
 import type { TransactieFilter } from './schemas'
 import { woningtypeTaxonomie } from './transactieNormalisatie'
@@ -16,97 +15,12 @@ import { canoniekePlaats } from './plaatsNormalisatie'
  */
 
 /**
- * Ondergrens voor een "betrouwbaar" cijfer (docs/ontwerpprincipes.md § Data:
+ * Ondergrens voor een "betrouwbaar" cijfer (docs/ontwerp/principes.md § Data:
  * "te weinig data → een waarschuwing, geen schijnzeker getal"). Gedeeld door
  * de kerncijfer-tegels en de segment-A-vs-B-vergelijking (F1) zodat beide
  * exact dezelfde drempel hanteren.
  */
 export const MIN_N_BETROUWBAAR = 6
-
-export type MarktFilter = {
-  woningtype?: string
-  wijk?: string
-  vanaf?: string // ISO-datum
-  tot?: string // ISO-datum
-}
-
-export function filterTransacties(rijen: TransactieRow[], filter: MarktFilter): TransactieRow[] {
-  return rijen.filter(r => {
-    if (filter.woningtype && r.woningtype !== filter.woningtype) return false
-    if (filter.wijk && r.wijk !== filter.wijk) return false
-    if (filter.vanaf && (!r.verkoopdatum || r.verkoopdatum < filter.vanaf)) return false
-    if (filter.tot && (!r.verkoopdatum || r.verkoopdatum > filter.tot)) return false
-    return true
-  })
-}
-
-export type KwartaalPunt = {
-  kwartaal: string // "2026-K1"
-  aantal: number
-  gemiddeldeVerkoopprijs: number | null
-  gemiddeldeM2Prijs: number | null
-  gemiddeldeLooptijd: number | null
-  gemiddeldPrijsverschilPct: number | null // (verkoop - vraag) / vraag * 100
-}
-
-function kwartaalLabel(iso: string): string {
-  const d = new Date(iso)
-  const q = Math.floor(d.getMonth() / 3) + 1
-  return `${d.getFullYear()}-K${q}`
-}
-
-/** Groepeert transacties per kwartaal en berekent de kerncijfers voor de grafieken. */
-export function naarKwartaalReeks(rijen: TransactieRow[]): KwartaalPunt[] {
-  const groepen = new Map<string, TransactieRow[]>()
-  for (const r of rijen) {
-    if (!r.verkoopdatum) continue
-    const key = kwartaalLabel(r.verkoopdatum)
-    const groep = groepen.get(key) ?? []
-    groep.push(r)
-    groepen.set(key, groep)
-  }
-
-  return Array.from(groepen.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([kwartaal, groep]) => {
-      const prijzen = groep.map(r => r.verkoopprijs).filter((v): v is number => v !== null)
-      const m2prijzen = groep
-        .filter(r => r.verkoopprijs && r.woonoppervlak_m2)
-        .map(r => r.verkoopprijs! / r.woonoppervlak_m2!)
-      const looptijden = groep.map(r => r.looptijd_dagen).filter((v): v is number => v !== null)
-      const verschillen = groep
-        .filter(r => r.verkoopprijs && r.vraagprijs)
-        .map(r => ((r.verkoopprijs! - r.vraagprijs!) / r.vraagprijs!) * 100)
-
-      return {
-        kwartaal,
-        aantal: groep.length,
-        gemiddeldeVerkoopprijs: gemiddelde(prijzen),
-        gemiddeldeM2Prijs: gemiddelde(m2prijzen),
-        gemiddeldeLooptijd: gemiddelde(looptijden),
-        gemiddeldPrijsverschilPct: gemiddelde(verschillen),
-      }
-    })
-}
-
-export type MarktSamenvatting = {
-  aantal: number
-  gemiddeldeVerkoopprijs: number | null
-  gemiddeldeM2Prijs: number | null
-  gemiddeldeLooptijd: number | null
-}
-
-/** Combineert twee kwartaalreeksen (segmentvergelijking) tot één rij-per-kwartaal dataset voor de grafiek. */
-export function combineerReeksen(
-  a: KwartaalPunt[],
-  b: KwartaalPunt[],
-  veld: keyof Pick<KwartaalPunt, 'gemiddeldeVerkoopprijs' | 'gemiddeldeM2Prijs' | 'gemiddeldeLooptijd'>,
-): { kwartaal: string; a: number | null; b: number | null }[] {
-  const kwartalen = Array.from(new Set([...a.map(p => p.kwartaal), ...b.map(p => p.kwartaal)])).sort()
-  const aMap = new Map(a.map(p => [p.kwartaal, p[veld]]))
-  const bMap = new Map(b.map(p => [p.kwartaal, p[veld]]))
-  return kwartalen.map(k => ({ kwartaal: k, a: aMap.get(k) ?? null, b: bMap.get(k) ?? null }))
-}
 
 // ─────────────────────────────────────────────────────────────────────────
 // v2 (item 6.1, docs/roadmap.md § 5 Fase 6): pure helpers voor de
@@ -179,7 +93,7 @@ export function prijsklasseFilter(key: string): { prijs_min?: number; prijs_max?
 
 /**
  * Filtermodel voor de eigen-verkopenreeks in de explorer v2 ("wij" — patroon 1,
- * docs/roadmap.md § 3.1: client-side, want ≤ 2.000 rijen). Zelfde velden als
+ * docs/architectuur.md § 1: client-side, want ≤ 2.000 rijen). Zelfde velden als
  * `TransactieFilterSchema` (lib/schemas.ts) op de RPC-kant, zodat "wij" en
  * "markt" met exact dezelfde definitie filteren. `wijken` is
  * `"plaats|wijk"`, zoals in de URL-state en `docs/ontwerp/kit.js`.
@@ -281,18 +195,6 @@ export function wijKwartaalReeks(rijen: TransactieRow[]): ReeksRijV2[] {
     })
 }
 
-export function samenvatting(rijen: TransactieRow[]): MarktSamenvatting {
-  const alleM2 = rijen.filter(r => r.verkoopprijs && r.woonoppervlak_m2).map(r => r.verkoopprijs! / r.woonoppervlak_m2!)
-  const allePrijzen = rijen.map(r => r.verkoopprijs).filter((v): v is number => v !== null)
-  const alleLooptijden = rijen.map(r => r.looptijd_dagen).filter((v): v is number => v !== null)
-  return {
-    aantal: rijen.length,
-    gemiddeldeVerkoopprijs: gemiddelde(allePrijzen),
-    gemiddeldeM2Prijs: gemiddelde(alleM2),
-    gemiddeldeLooptijd: gemiddelde(alleLooptijden),
-  }
-}
-
 // ─────────────────────────────────────────────────────────────────────────
 // FilterBar-staat → RPC-filter (item 6.1): de URL-state (`useFilterState`)
 // gebruikt bereiken (`[min, max]`) en presets (periode, prijsklasse) die
@@ -307,7 +209,7 @@ export const BOUWJAAR_BEREIK: [number, number] = [1900, 2030]
 export const PERCEEL_BEREIK: [number, number] = [0, 5000]
 
 /**
- * Zod-schema voor `useFilterState` (item 6.1, docs/roadmap.md § 3.7) —
+ * Zod-schema voor `useFilterState` (item 6.1, docs/architectuur.md § 7) —
  * bereiken als 2-tallen (schuivers), lijsten als arrays (multi-select),
  * `klasse`/`b`/`bPlaats`/`bGroep` voor de prijsklasse-crossfilter resp.
  * segment B. `kamers: 0` = geen ondergrens.
@@ -454,7 +356,7 @@ export function segmentBFilter(f: MarktanalyseFilterState, opts: { datumTot: str
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// F1: kerncijfers segment A vs. B (docs/roadmap.md § 3.1/3.7) — Segment B
+// F1: kerncijfers segment A vs. B (docs/architectuur.md § 1/7) — Segment B
 // stond tot nu toe alleen als extra reeks in de grafieken; deze functie
 // bouwt de compacte vergelijkingstabel onder de tegels (waarde A, waarde B,
 // verschil B t.o.v. A). Puur, geen React — `components/SegmentVergelijking.tsx`
@@ -495,7 +397,7 @@ export type SegmentVergelijkingRij = {
  * mislukt" — in beide gevallen blijft segment A gewoon werken (`a` en
  * `teWeinigA` zijn onafhankelijk van `b`). Hergebruikt dezelfde
  * `berekenDelta` als de periode-delta in de kerncijfer-tegels, en dezelfde
- * `MIN_N_BETROUWBAAR`-drempel (docs/ontwerpprincipes.md § Data).
+ * `MIN_N_BETROUWBAAR`-drempel (docs/ontwerp/principes.md § Data).
  */
 export function segmentVergelijking(
   a: MarktanalyseSamenvattingRij,

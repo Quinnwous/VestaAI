@@ -7,7 +7,7 @@
  *
  * 1. controleer-huisstijl.mjs op 390, 1280 en 1920 px (runtime-fouten + VestaAI-groen)
  * 2. screenshots.mjs (alle routes × drie breedtes → screenshots/, beoordelen tegen
- *    docs/ontwerpprincipes.md en, voor hero-schermen, skill `ontwerpreview`)
+ *    docs/ontwerp/principes.md en, voor hero-schermen, skill `ontwerpreview`)
  * 3. axe-scan (item 14.4, `scripts/lib/axeCheck.mjs`): elke ingelogde route op
  *    390/1280/1920 px tegen wcag2a/wcag2aa/wcag21a/wcag21aa. `serious`/`critical`
  *    laat de DoD falen; `moderate`/`minor` worden alleen gelogd. Volledige
@@ -142,7 +142,7 @@ async function main() {
     console.error(`\n❌ dod:screens: ${fouten} stap(pen) gefaald`)
     process.exit(1)
   }
-  console.log('\n✅ dod:screens groen — beoordeel nu screenshots/ tegen docs/ontwerpprincipes.md')
+  console.log('\n✅ dod:screens groen — beoordeel nu screenshots/ tegen docs/ontwerp/principes.md')
 }
 
 main().catch((e) => {

@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 
 /**
  * Recharts-thema voor élke interactieve verkenner (item 6.1, docs/roadmap.md
- * § 3.7/3.8 — bindend): geen library-defaults. "Wij" = merkkleur met een
+ * architectuur § 7/8 — bindend): geen library-defaults. "Wij" = merkkleur met een
  * licht verloopvlak, "markt" = donker neutraal dun (context/referentielijn,
  * bewust geen categoriekleur), segment B = accentkleur. Nooit een dubbele
  * as. Kleuren lopen via `var(--merk*)` zodat elk kantoor zijn eigen palet

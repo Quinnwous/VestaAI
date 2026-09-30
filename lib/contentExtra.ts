@@ -1,7 +1,7 @@
 import { woningtypeLabel, type PropertyInput } from './schemas'
 
 /**
- * Extra contentvormen (item 8.3, docs/roadmap.md § 3.4 "Outputset v2"): los
+ * Extra contentvormen (item 8.3, docs/architectuur.md § 4 "Outputset v2"): los
  * van de kern-call (funda/brochure/instagram/linkedin/sneak_preview/koper-
  * e-mail/buurt, altijd gegenereerd) genereert de makelaar deze alleen op
  * knopdruk via het "Meer…"-menu in `ResultTabs` → `POST

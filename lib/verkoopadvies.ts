@@ -1,5 +1,5 @@
 /**
- * Verkoopadvies — datalaag (item K1, docs/specs/k1-verkoopadvies-datalaag.md).
+ * Verkoopadvies — datalaag (item K1, docs/archief/specs/k1-verkoopadvies-datalaag.md).
  *
  * Fase 11 (verkoopadvies) is bewust geblokkeerd tot Quinns voorbeelddocument
  * er is: de opbouw en vormgeving van het advies zelf hangen daarvan af. Het

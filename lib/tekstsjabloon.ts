@@ -33,7 +33,7 @@ function slotzinVoorTaal(sjabloon: TekstsjabloonConfig, taal: Taal): string | nu
 
 /**
  * Rendert het tekstsjabloon als verplichte, harde structuur voor funda_tekst
- * (item 8.2, roadmap § 3.4). Pure functie, geen Claude-aanroep — wordt in
+ * (item 8.2, architectuur § 4). Pure functie, geen Claude-aanroep — wordt in
  * lib/claude.ts als los, cachebaar systeemprompt-blok toegevoegd ná de
  * taalspecifieke basisregels (BASE_SYSTEM_PROMPT_NL/_EN), zodat deze
  * override — die de generieke lengte-/alinea-eisen van funda_tekst

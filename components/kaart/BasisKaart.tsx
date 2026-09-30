@@ -1,8 +1,8 @@
 'use client'
 
 /**
- * BasisKaart — de ene MapLibre-kaartstack voor de hele app (§ 3.5 van
- * docs/roadmap.md): dynamic import zonder SSR (MapLibre raakt canvas/
+ * BasisKaart — de ene MapLibre-kaartstack voor de hele app (§ 5 van
+ * docs/architectuur.md): dynamic import zonder SSR (MapLibre raakt canvas/
  * `window` aan tijdens het eerste render), PDOK BRT-vectortiles in
  * pastelstijl. Geef lagen als children mee — die lezen de kaartinstantie
  * zelf via context (zie `KaartContext.ts`).

@@ -1,6 +1,6 @@
 # docs/ontwerp — de prototypes zijn de spec
 
-> Roadmap v2 § 3.8: voor elk hero-scherm bestaat vóór de bouw een interactief
+> Architectuur § 8: voor elk hero-scherm bestaat vóór de bouw een interactief
 > HTML-prototype in deze map. Sonnet port het 1-op-1 (layout, spacing, staten,
 > interacties, formattering); alleen de datalaag wordt `lib/transactiesQuery.ts`.
 > Bekijken: open het `.html`-bestand in de browser (`file://`) — `kit.css` en
@@ -14,7 +14,7 @@
 | `verkoopkaart.html` | Items 7.1-7.3 — kit-tegelrij (hero "in beeld" + 4 tegels met n en sparkline), kaart en lijst elk in een kaart met kaartkop, leeg-overlay zonder blur | klaar (0.1 bijgewerkt, AKKOORD na 1 ronde, 17 sep) |
 | `concurrentie.html` | Item 6.3 — hero marktaandeel, wij vs. markt, trend per jaar (alle jaren), matrix "wie wint waar", ranglijst + concurrentprofiel-drawer met verbergen, lege staat "verkopend kantoor onbekend" | klaar — referentiebeeld |
 | `transacties.html` | Item 6.2 — tegelrij (hero "transacties in selectie" + mediaan prijs/€ per m²/looptijd/% boven vraagprijs, elk met n, delta en sparkline), tabel in een kaart met kaartkop en segmented sortering, notificatie-stip op "Exporteer CSV", volledige filterset § 4, dichte tabel 50/pagina met sticky kop, detail-sheet met minikaart en "gebruik als referentie", CSV alleen eigen, skeleton bij serverlatency | klaar (0.1 bijgewerkt, AKKOORD na 1 ronde, 17 sep) |
-| `waardebepaling.html` | Item 4.6 — dossierheader (fasestap "Verkoopadvies"), hero met band en badges, WOZ-ijkpunt, makelaarscorrectie, SVG-referentiekaart met straalcirkel en beeldmerk-pins, referentietabel met uitsluiten/herstel, correctie-chips (drie standen), drawer referentie toevoegen, staten laden/weinig data/leeg/zonder locatie/met correcties; cijfers = rekenvoorbeeld `docs/waardering-methode.md` | klaar — referentiebeeld |
+| `waardebepaling.html` | Item 4.6 — dossierheader (fasestap "Verkoopadvies"), hero met band en badges, WOZ-ijkpunt, makelaarscorrectie, SVG-referentiekaart met straalcirkel en beeldmerk-pins, referentietabel met uitsluiten/herstel, correctie-chips (drie standen), drawer referentie toevoegen, staten laden/weinig data/leeg/zonder locatie/met correcties; cijfers = rekenvoorbeeld `docs/waardering/methode.md` | klaar — referentiebeeld |
 | `startpagina.html` | Dashboard + dossierheader (2.5, 3.4, 10.2) — banner (teamfoto-placeholder neutraal), kerncijfers met hero (o.a. "Prijs t.o.v. vraagprijs", "Lopende verkoopadviezen"), recent bekeken, deze week; dossierheader met fasestepper (Verkoopadvies · In verkoop · Verkocht), waarde/content-blok, tabs; geen snelkoppelingen en geen pitch-uitslag meer (1.9c); staten laden/weinig data/nieuw kantoor/in verkoop/verkocht/zonder foto | klaar — referentiebeeld (0.1 content bijgewerkt) |
 
 Artifact-links (zelfde bestanden, gepubliceerd): zie `docs/besluiten.md` 17 sep.
@@ -38,8 +38,8 @@ app `lib/waardering.ts`).
 > uitgangspunt voor de stijl van élk scherm — ook voor de eerder gemaakte
 > `marktanalyse.html` en `verkoopkaart.html`, en voor `transacties.html`, dat
 > stilistisch afwijkt (kale tabelpagina zonder hero/tegelrij). Bijwerken
-> daarvan is een kleine ontwerpsessie (zie roadmap § Stand van zaken); daarna
-> geldt: nieuw scherm = zelfde opbouw als die drie.
+> daarvan was een kleine ontwerpsessie (gedaan, item 0.1, 17 sep); nu geldt:
+> nieuw scherm = zelfde opbouw als die drie.
 >
 > Wat die drie gemeen hebben en wat dus de norm is: (a) kop met eyebrow, titel
 > en databadge; (b) één merkblauwe hero-tegel met verloop en daarnaast witte
@@ -117,7 +117,7 @@ app `lib/waardering.ts`).
 | `TAXONOMIE` | `lib/transactieNormalisatie.ts` | `woningtype_groep` + `woningtype_sub` |
 | `protoStrip()` | — | **niet porten** |
 
-## 4. Filtermodel (vult `TransactieFilterSchema`, § 3.1)
+## 4. Filtermodel (vult `TransactieFilterSchema`, architectuur § 1)
 
 | Filter | Control | Schema-veld | Marktanalyse | Transacties | Concurrentie | Verkoopkaart |
 |---|---|---|---|---|---|---|
@@ -145,7 +145,7 @@ reageert client-side binnen 100 ms (eigen verkopen) of met skeleton (RPC).
 
 ## 5. Woningtype-taxonomie (`woningtype_groep` × `woningtype_sub`)
 
-| Groep (waardering § 3.3) | Subtypes (filter, intake, import-normalisatie) |
+| Groep (waardering: architectuur § 3) | Subtypes (filter, intake, import-normalisatie) |
 |---|---|
 | appartement | Bovenwoning, Benedenwoning, Maisonnette, Portiekflat, Galerijflat, Penthouse, Studio |
 | rijwoning ("Eengezinswoning") | Tussenwoning, Hoekwoning, Eindwoning, Geschakelde woning, Herenhuis, Drive-in woning |

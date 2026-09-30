@@ -116,7 +116,7 @@
 @media (max-width: 640px) { .vui-wij-vs-markt { grid-template-columns: minmax(0, 1fr); } }
 
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
-   zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
+   zie docs/ontwerp/principes.md § Data. Neutraal grijs, geen merkkleur: een
    laadstaat is geen statusmelding. */
 .vui-skeleton {
   position: relative;
@@ -167,26 +167,15 @@
 @keyframes vui-pop-in { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
 
 /* Staten die inline styles niet kunnen uitdrukken (:hover, :focus-visible,
-   [data-highlighted], [data-state=active]) — merkkleurige focusring overal. */
+   [data-highlighted], [data-state]) — merkkleurige focusring overal. */
 .vui-sliderknop:focus-visible { box-shadow: 0 0 0 3px var(--merk-zacht), 0 1px 4px rgba(20,24,27,.18); }
 .vui-sliderknop:active { cursor: grabbing; }
 
 .vui-menu-item[data-highlighted] { background: var(--merk-zacht); color: var(--merk-diep); }
 .vui-menu-item[data-state='checked'] { font-weight: 700; }
 
-.vui-tab[data-state='active'] { color: var(--merk-diep); }
-.vui-tab[data-state='active']::after {
-  content: '';
-  position: absolute;
-  left: 10px; right: 10px; bottom: -1px;
-  height: 2px;
-  background: var(--merk);
-  border-radius: 2px;
-}
-.vui-tab:hover { color: var(--merk); }
 /* Avatarknop: de inline outline (menu open) overschrijft anders elke focusring */
 .vui-avatarknop:focus-visible { outline: 2px solid var(--merk) !important; outline-offset: 2px !important; }
-.vui-tab:focus-visible { outline: 2px solid var(--merk); outline-offset: -3px; border-radius: var(--merk-radius-sm, 10px); }
 
 /* Welkomstblok startpagina (app/(app)/dashboard/StartBanner.tsx, ontwerp uit
    docs/ontwerp/startpagina.html § .kantoorbanner). Als CSS en niet als inline

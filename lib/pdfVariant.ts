@@ -1,6 +1,6 @@
 /**
  * Item H4 — verkopersversie van de waardebepaling-pdf ("handout" van de
- * presentatiemodus, `docs/specs/h4-verkopersversie-pdf.md`). Kleine, pure
+ * presentatiemodus, `docs/archief/specs/h4-verkopersversie-pdf.md`). Kleine, pure
  * hulpfuncties voor `app/api/pdf/waardebepaling/route.ts` (parameter-parsing
  * en bestandsnaam) — los van de route zodat ze met vitest te testen zijn.
  * Een routebestand mag zelf geen geëxporteerde hulpfuncties hebben (CLAUDE.md:

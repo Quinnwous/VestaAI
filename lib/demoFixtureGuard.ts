@@ -1,6 +1,6 @@
 /**
  * Pure vangrail-functies voor scripts/seed-demo-kantoor.mjs (item 2.3, zie
- * docs/roadmap.md § 4 "Vangrails productiedatabase"). Los van Supabase/React
+ * docs/werkwijze.md § 5 "Vangrails productiedatabase"). Los van Supabase/React
  * zodat ze zonder database-verbinding getest kunnen worden — zie
  * scripts/seed-demo-kantoor.test.ts.
  *

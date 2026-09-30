@@ -10,7 +10,7 @@
  * (zelfde voorrang als in `components/WaardebepalingPaneel.tsx`); zonder
  * correctie geldt de berekende uitkomst. `null` als er nog helemaal geen
  * waardering is (bv. een net aangemaakt dossier) — de tegel toont dan een
- * waarschuwing i.p.v. een schijnzeker getal (docs/ontwerpprincipes.md §
+ * waarschuwing i.p.v. een schijnzeker getal (docs/ontwerp/principes.md §
  * Data-weergave).
  */
 export function bepaalWeergaveWaarde(

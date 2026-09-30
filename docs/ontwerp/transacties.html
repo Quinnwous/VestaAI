@@ -14,8 +14,8 @@
   - de prototype-strip onderaan en de alert()-stub voor CSV-export;
   - de hash-state (#...) — wordt useFilterState met useSearchParams;
   - KANTOREN + de kantoor-toewijzing per rij: lokaal verzonnen omdat de
-    dataset nog geen bevestigd `verkopend_kantoor`-veld heeft (zie roadmap
-    §3.1/§6 — komt zodra Brainbay dat veld blijkt te leveren, dan wordt dit
+    dataset nog geen bevestigd `verkopend_kantoor`-veld heeft (zie docs/architectuur.md
+    § 1 — komt zodra Brainbay dat veld blijkt te leveren, dan wordt dit
     `verkopend_kantoor_norm` uit de echte tabel);
   - STRATEN + de straatnaam/huisnummer-generator: kit.js genereert geen
     straatadres, dus lokaal toegevoegd (vergelijkbaar met verkoopkaart.html);
@@ -261,7 +261,7 @@
   ];
   const PIN_SVG = '<svg viewBox="0 0 26 32"><circle class="halo" cx="13" cy="13" r="15"/><path class="ring" d="M13 2.5 23.5 13 13 23.5 2.5 13Z"/><path class="ruit" d="M13 6.5 19.5 13 13 19.5 6.5 13Z"/><circle class="hart" cx="13" cy="13" r="2.1"/><path d="M13 23.5v6" stroke="#C61E45" stroke-width="2" stroke-linecap="round"/></svg>';
 
-  // ── Data: hele markt, ± 2.500 rijen (roadmap §3.1: transacties_zoeken-RPC in de app) ──
+  // ── Data: hele markt, ± 2.500 rijen (architectuur § 1: transacties_zoeken-RPC in de app) ──
   const DATA = K.genereerTransacties({ perKwartaal: [70, 20] });
   const rndKantoor = K.seed(778899), kiesKantoor = K.kiesVan(rndKantoor);
   DATA.forEach(r => {

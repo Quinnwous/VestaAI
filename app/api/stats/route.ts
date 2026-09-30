@@ -88,7 +88,7 @@ export async function GET() {
   const dezeMaand = dezeMaandResult.count ?? 0
 
   // API-kosten schatting (€0,24 per content-set op Sonnet 4.6, sinds 16 sep
-  // 2026 NL+EN parallel — zie docs/kostenschatting.md § Hoofdgeneratie) —
+  // 2026 NL+EN parallel — zie docs/strategie/kostenschatting.md § Hoofdgeneratie) —
   // intern referentiecijfer, geen abonnementsprijs of -budget aan gekoppeld.
   const KOSTEN_PER_OBJECT = 0.24
   const kostenschatting = {

@@ -4,7 +4,7 @@
  * Transacties opzoeken v2 (item 6.2, docs/roadmap.md § 5 Fase 6 — port van
  * `docs/ontwerp/transacties.html`, spec: `docs/ontwerp/README.md`).
  *
- * Databronnen (§ 3.1): de DataTable is server-gepagineerd via de RPC
+ * Databronnen (architectuur § 1): de DataTable is server-gepagineerd via de RPC
  * `transacties_zoeken` (patroon 2, 50/pagina) — de server action
  * `app/(app)/marktanalyse/transacties/actions.ts` haalt op elke filter-/
  * sorteer-/paginawijziging een nieuwe pagina + de tegelrij-samenvatting

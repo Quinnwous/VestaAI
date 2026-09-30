@@ -27,7 +27,7 @@ const knopStijl: React.CSSProperties = {
 }
 
 /**
- * Teksten-tab van het woningdossier (item 3.1, docs/roadmap.md § 3.2 "Dossier
+ * Teksten-tab van het woningdossier (item 3.1, docs/architectuur.md § 2 "Dossier
  * los van content"): content komt niet meer synchroon bij het aanmaken, maar
  * op knopdruk of bij de fase-overgang naar In verkoop. Toont de vier standen
  * van `objecten.content_status` — pollt elke 3s op `/api/object/[id]/status`

@@ -81,7 +81,7 @@ export function HuisstijlForm({ kantoor }: Props) {
   const addBrochure = () => setBrochureVoorbeelden(prev => (prev.length >= 10 ? prev : [...prev, '']))
   const removeBrochure = (i: number) => setBrochureVoorbeelden(prev => prev.filter((_, idx) => idx !== i))
 
-  // Tekstsjabloon (item 8.2, roadmap § 3.4): schrijft de opbouw van funda_tekst
+  // Tekstsjabloon (item 8.2, architectuur § 4): schrijft de opbouw van funda_tekst
   // hard voor (bv. i4housing's 4SALE! → WOONCOMFORT → ... → vaste slotzin).
   // Optioneel — een kantoor zonder sjabloon houdt het bestaande, vrije format.
   const bestaandSjabloon = huidig?.tekstsjabloon

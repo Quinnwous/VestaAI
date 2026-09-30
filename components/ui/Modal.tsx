@@ -5,7 +5,7 @@ import { colors, radius, serifFont, shadow } from './tokens'
 
 /**
  * Overlay-modal (design: donkere backdrop, witte kaart, serif-titel + ×).
- * Sluit bij een klik buiten het paneel én met Escape (docs/ontwerpprincipes.md
+ * Sluit bij een klik buiten het paneel én met Escape (docs/ontwerp/principes.md
  * § Interactie: elke modal sluit met Escape).
  */
 export function Modal({

@@ -8,7 +8,7 @@ import { Popover, Skeleton } from '@/components/ui'
 import { TabContent } from './TabContent'
 import { HerschrijfKnop } from './HerschrijfKnop'
 
-// Kern-tabs (item 8.3, roadmap § 3.4 Outputset v2) — altijd zichtbaar, komen
+// Kern-tabs (item 8.3, architectuur § 4 Outputset v2) — altijd zichtbaar, komen
 // uit de kern-call die bij "Genereer content" altijd draait.
 type KernTab = 'funda' | 'brochure' | 'instagram' | 'linkedin' | 'sneak' | 'email' | 'buurt'
 // Extra-tabs — verschijnen pas zodra er content is, een generatie loopt, of

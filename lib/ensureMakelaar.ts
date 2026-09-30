@@ -4,8 +4,9 @@ import { isPlatformAdmin } from '@/lib/admin'
 
 /**
  * Zorgt dat een uitgenodigd account zijn makelaar-record krijgt. Vangnet voor
- * het geval de DB-trigger handle_new_user() niet liep (bv. een tijdelijke
- * search_path-bug, zie migratiegeschiedenis).
+ * het geval `plaatsInKantoor()` in `addMakelaarAccount` (app/admin/actions.ts)
+ * na het aanmaken van de auth-user mislukte. (De vroegere DB-trigger
+ * `handle_new_user()` bestaat sinds de opruimmigratie van 30 sep 2026 niet meer.)
  *
  * Toegang is sinds 15 sep 2026 puur admin-beheerd (zie CLAUDE.md): dit vangnet
  * koppelt een gebruiker alléén aan het kantoor waarvoor de platform-admin hem

@@ -40,7 +40,7 @@ const BASIS_TRANSACTIE_KOLOMMEN = [
   'created_at',
 ]
 
-// Nieuwe pijplijn-kolommen op transacties, item 2.1 (§ 3.1 van docs/roadmap.md,
+// Nieuwe pijplijn-kolommen op transacties, item 2.1 (§ 1 van docs/architectuur.md,
 // migratie supabase/migrations/20260917_transacties_pijplijn.sql).
 const PIJPLIJN_KOLOMMEN = [
   'bron', 'import_id', 'adres_sleutel', 'huisnummer', 'toevoeging',

@@ -3,7 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase'
 
 /**
  * Pollingroute voor de content-generatiestatus van een dossier (item 3.1,
- * docs/roadmap.md § 3.2) — `ContentTekstenTab` (components/ObjectWorkspace.tsx)
+ * docs/architectuur.md § 2) — `ContentTekstenTab` (components/ObjectWorkspace.tsx)
  * pollt hier elke 3s zolang `content_status = 'bezig'`. Via de sessie-
  * gebonden client (RLS regelt de kantoorscheiding), met een expliciete
  * `.eq('kantoor_id', …)` als defense-in-depth, consistent met de rest van de

@@ -4,7 +4,7 @@
  * Marktanalyse-explorer v2 (item 6.1, docs/roadmap.md § 5 Fase 6 — port van
  * `docs/ontwerp/marktanalyse.html`, spec: `docs/ontwerp/README.md`).
  *
- * Databronnen (§ 3.1): eigen verkopen komen één keer mee met de pagina
+ * Databronnen (architectuur § 1): eigen verkopen komen één keer mee met de pagina
  * (patroon 1, client-side gefilterd, < 100 ms — `filterEigenRijen`/
  * `wijKwartaalReeks` in `lib/marktanalyse.ts`) en voeden de "wij"-lijn plus de
  * tegel-sparklines. De regionale ("markt") cijfers komen van de RPC's

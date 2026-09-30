@@ -76,6 +76,11 @@ tests zichzelf over (`test.skip`) in plaats van te falen — zie
 - `admin.spec.ts` — spec 6: `/admin/transacties`-importhistorie, alleen lezen.
 - `rls.spec.ts` — spec 7: RLS-isolatie tussen kantoren via REST (anon-key +
   sessie-JWT), op `transacties` én `objecten`, beide richtingen.
+- `smoke.spec.ts` — publieke pagina's, beschermde routes zonder sessie,
+  ingelogd dashboard en `/woningen`, en de generatie-flow via de UI (alleen
+  met `E2E_GENERATE=1`).
+- `primitives.spec.ts` — de Radix-primitives (focus-trap, Escape,
+  scroll-lock, focus-herstel) in een echte browser.
 
 ## Wat wordt opgeruimd
 
@@ -86,28 +91,15 @@ tests zichzelf over (`test.skip`) in plaats van te falen — zie
 - Alle overige specs zijn puur lezend: geen schrijfacties, dus niets om op te
   ruimen.
 
-## Kanttekeningen bij de opdracht (spec vs. code-realiteit)
+## Goed om te weten
 
-- **Platform-admin-e-mail.** De opdracht (en CLAUDE.md) noemt
-  `quinn.berkouwer@icloud.com` als platform-admin. `lib/admin.ts` erkent lokaal
-  echter alleen het vaste `quinn.berkouwer@gmail.com` — `PLATFORM_ADMIN_EMAILS`
-  staat niet in `.env.local`, dus het icloud-adres is hier geen platform-admin
-  (wel een gewone makelaar bij i4housing). `admin.spec.ts` logt daarom in als
-  het gmail-adres. Als `PLATFORM_ADMIN_EMAILS` ook lokaal gezet wordt, werkt
-  het icloud-adres net zo goed — dan hoeft dit bestand niet aangepast.
-- **`objecten.fase`-waarde.** CLAUDE.md § Hoofdstructuur zegt dat de interne
-  fase-waarde nog `acquisitie` is tot schema v2 (2.1) hem hernoemt naar
-  `verkoopadvies`. In de praktijk gebruiken zowel `POST /api/object`
-  (`app/api/object/route.ts`) als de productiedata al `'verkoopadvies'` als
-  waarde — geverifieerd via een read-only query op het demo-kantoor. De tests
-  hier gaan uit van de code-/data-realiteit (`fase = 'verkoopadvies'`), niet
-  van de (ogenschijnlijk verouderde) documentatie.
-- **`e2e/smoke.spec.ts`'s generatie-test lijkt stale.** Die test verwacht dat
-  het klikken op "Woning aanmaken" een `POST /api/generate`-call triggert. Sinds
-  de ontkoppeling van dossier en content (item 3.1, "Dossier los van content")
-  roept `NewObjectForm.tsx` alleen `POST /api/object` aan; content komt apart
-  via een losse knop/`POST /api/generate`. Deze test draait sowieso alleen met
-  `E2E_GENERATE=1`, dus hij faalt niet in een gewone run, maar zal wel falen
-  zodra hij ooit wél gedraaid wordt. Niet aangepast (buiten de scope van dit
-  item; alleen gesignaleerd) — zie ook `content.spec.ts` hierboven voor de
-  actuele architectuur.
+- **Platform-admin:** `admin.spec.ts` logt in als `quinn.berkouwer@gmail.com`
+  (vaste waarde in `lib/admin.ts`). `quinn.berkouwer@icloud.com` is een gewone
+  makelaar bij i4 Housing, tenzij het via `PLATFORM_ADMIN_EMAILS` wordt
+  toegevoegd.
+- **Generatietests kosten geld.** Twee specs doen een echte generatie, beide
+  alleen met `E2E_GENERATE=1`: `content.spec.ts` via de API en
+  `smoke.spec.ts` via de UI (dossier aanmaken → fasestepper naar In verkoop →
+  `POST /api/generate`, bijgewerkt op 27 sep). Beide wachten maximaal 220 s op
+  het resultaat, onder de functielimiet van 300 s. De echte duur is nog nooit
+  gemeten (roadmap D2).

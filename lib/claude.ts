@@ -16,7 +16,7 @@ import { bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } f
 
 export { PropertyInputSchema, ContentOutputSchema, type PropertyInput, type ContentOutput }
 
-// Kern-only sinds item 8.3 (Outputset v2, roadmap § 3.4): de kern-call
+// Kern-only sinds item 8.3 (Outputset v2, architectuur § 4): de kern-call
 // genereert nog maar 7 velden (was 17) — de zes "extra" velden (open_huis,
 // followup_positief/negatief, video_script, kopersvragen_faq, energie_advies)
 // verhuisden naar losse, kleine calls op knopdruk (`genereerExtraContent`
@@ -143,7 +143,7 @@ function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
 /**
  * Bouwt het systeemprompt op als (maximaal) twee cachebare tekstblokken, zodat
  * een NL- en een EN-generatie voor hetzelfde kantoor een gedeelde cache-
- * prefix kunnen delen (prompt caching, item 8.1, roadmap § 3.6):
+ * prefix kunnen delen (prompt caching, item 8.1, architectuur § 6):
  *
  * 1. **Gedeeld blok** (huisstijl, alleen als geconfigureerd) — voorop gezet
  *    en met een eigen `cache_control`-breekpunt, zodat `generateContentBeideTalen`
@@ -169,7 +169,7 @@ function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
  * de ondergrens duiken — geen fout, gewoon geen besparing voor dát blok
  * (`cache_creation_input_tokens: 0`).
  *
- * **Tekstsjabloon-blok (item 8.2, roadmap § 3.4):** is een kantoor
+ * **Tekstsjabloon-blok (item 8.2, architectuur § 4):** is een kantoor
  * geconfigureerd met `huisstijl.tekstsjabloon`, dan komt er een derde
  * cachebare blok bij, ná het taalspecifieke basisblok — bewust laatste
  * (zwaarst wegende) instructie, omdat dit blok de generieke lengte-/
@@ -541,7 +541,7 @@ export async function generateContent(
 }
 
 /**
- * Genereert één "extra" contentveld op knopdruk (item 8.3, roadmap § 3.4
+ * Genereert één "extra" contentveld op knopdruk (item 8.3, architectuur § 4
  * Outputset v2): `POST /api/object/[id]/extra?type=` roept dit aan. Los van
  * de kern-call — kleine, snelle, platte-tekst-call (geen JSON) per veld.
  * NL-only voor nu; EN is een latere uitbreiding (zie lib/contentExtra.ts).

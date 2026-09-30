@@ -1,6 +1,6 @@
 /* ─────────────────────────────────────────────────────────────────────────
    VestaAI ontwerp-kit · kantoorstijl i4 Housing, vorm "zacht" (Apple-achtig)
-   Dit bestand is de spec voor globals.css + components/ui (roadmap § 3.8).
+   Dit bestand is de spec voor globals.css + components/ui (architectuur § 8).
    Tokens = wat lib/branding.ts straks als --merk* zet voor i4 Housing.
    ───────────────────────────────────────────────────────────────────────── */
 :root {

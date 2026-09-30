@@ -155,7 +155,7 @@ function correctiesPil(correcties: Partial<Record<CorrectieNaam, number>>) {
 
 /**
  * Waardebepalingspaneel (item 4.6, premium port van `docs/ontwerp/waardebepaling.html`
- * — het prototype ís de spec, docs/roadmap.md § 3.8) + item 4.4 (referenties
+ * — het prototype ís de spec, docs/architectuur.md § 8) + item 4.4 (referenties
  * handmatig uitsluiten/toevoegen). Rekenkern blijft `lib/waardering.ts`
  * (v2, ongewijzigd): op mount haalt `berekenWaardering()` éénmalig kandidaten +
  * regionale set + cbs-index + WOZ-ijkpunt + de opgeslagen handmatige selectie

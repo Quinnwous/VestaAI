@@ -16,7 +16,7 @@
  * Standaard: productie (https://www.vestaai.nl — de kale domeinnaam stuurt door), 3 runs, mobiel, routes dashboard ·
  * marktanalyse · concurrentie · woningen · dossier (eerste dossier met
  * waardering van het DoD-kantoor). Met --label schrijft het de ruwe mediaan
- * naar docs/data/lighthouse-<label>.json.
+ * naar docs/metingen/lighthouse-<label>.json.
  *
  * Vereist: .env.local met NEXT_PUBLIC_SUPABASE_URL en SUPABASE_SERVICE_ROLE_KEY,
  * en een Chromium — standaard die van Playwright, anders CHROME_PATH.
@@ -140,7 +140,7 @@ async function main() {
   }
 
   if (args.label) {
-    const pad = `docs/data/lighthouse-${args.label}.json`
+    const pad = `docs/metingen/lighthouse-${args.label}.json`
     await writeFile(pad, JSON.stringify({
       datum: new Date().toISOString(), basis: BASIS, preset: DESKTOP ? 'desktop' : 'mobiel', runs: RUNS, routes: resultaat,
     }, null, 2) + '\n')

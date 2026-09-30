@@ -4,7 +4,7 @@ import { join } from 'path'
 import { PropertyInputSchema } from '../../lib/schemas'
 
 /**
- * Valideert de 5 evaluatiedossiers (item 8.1, docs/roadmap.md § 3.6) tegen
+ * Valideert de 5 evaluatiedossiers (item 8.1, docs/architectuur.md § 6) tegen
  * `PropertyInputSchema` — dit zijn de vaste testwoningen waarmee
  * `scripts/evalueer-content.mjs` de blinde A/B-vergelijking tussen CONTENT en
  * CONTENT_KANDIDAAT draait. Ongeldige fixtures zouden de evaluatieronde pas

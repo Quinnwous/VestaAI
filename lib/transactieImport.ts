@@ -4,7 +4,7 @@
  * herkend via een aliaslijst per veld (zie ALIASSEN), zodat een gewone
  * Realworks/Excel-export met redelijk voorspelbare kopnamen meteen werkt.
  *
- * Sinds item i2 (docs/specs/i2-admin-csv-via-pijplijn.md) is dit geen eigen
+ * Sinds item i2 (docs/archief/specs/i2-admin-csv-via-pijplijn.md) is dit geen eigen
  * importroute meer, maar een bibliotheek met bouwstenen (CSV-parser,
  * kolomherkenning, veldconversies) die `lib/importPijplijn.ts`
  * (`voerImportPijplijnUit`) en `lib/importProfielen.ts` hergebruiken — alle

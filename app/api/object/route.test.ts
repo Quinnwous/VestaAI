@@ -18,7 +18,7 @@ vi.mock('@/lib/schemas', () => ({
 }))
 
 // Mock Claude expliciet — deze route mag 'm nooit aanroepen (item 3.1: dossier
-// aanmaken zonder Claude, zie docs/roadmap.md § 3.2).
+// aanmaken zonder Claude, zie docs/architectuur.md § 2).
 vi.mock('@/lib/claude', () => ({
   generateContent: vi.fn(),
   generateContentBeideTalen: vi.fn(),

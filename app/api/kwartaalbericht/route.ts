@@ -23,7 +23,7 @@ import type { TransactieRow } from '@/lib/supabase'
  * kwartaalbericht op basis van de huidige marktanalyse-selectie. Auth +
  * kantoor via de sessie-gebonden Supabase-client (RLS regelt de
  * kantoorscheiding); alle transactiedata komt uitsluitend via
- * `lib/transactiesQuery.ts` (§ 3.1, guard-test).
+ * `lib/transactiesQuery.ts` (architectuur § 1, guard-test).
  *
  * Body: `{ filter: MarktanalyseFilterState, taal?: 'nl' | 'en' }` — dezelfde
  * `MarktanalyseFilterSchema` als de explorer, zodat de knop simpelweg de

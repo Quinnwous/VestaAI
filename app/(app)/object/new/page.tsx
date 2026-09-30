@@ -13,7 +13,7 @@ export default async function NewObjectPage() {
   // item 2.3), dan mag de demo-knop in NewObjectForm ook buiten NODE_ENV
   // !== 'production' getoond worden.
   let toonDemoKnop = process.env.NODE_ENV !== 'production'
-  // Kantoorstandaard courtage (item J2, docs/specs/j2-courtage-per-dossier.md):
+  // Kantoorstandaard courtage (item J2, docs/archief/specs/j2-courtage-per-dossier.md):
   // dezelfde kantoor-lookup als hierboven levert ook instellingen_json.courtage,
   // dus voortaan altijd ophalen (niet alleen als toonDemoKnop nog false is) —
   // NewObjectForm/PropertyForm gebruiken het om het courtageveld voor te vullen.

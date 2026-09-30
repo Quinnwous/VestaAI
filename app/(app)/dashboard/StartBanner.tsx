@@ -3,7 +3,7 @@ import { colors } from '@/components/ui/tokens'
 /**
  * Welkomstblok bovenaan de startpagina (masterplan fase 1.6, ontwerp uit
  * `docs/ontwerp/startpagina.html` § .kantoorbanner — dat prototype is de spec,
- * zie roadmap § 3.8).
+ * zie architectuur § 8).
  *
  * Geen foto meer (besluit Quinn 19 sep 2026): de aangeleverde teamfoto was
  * 399 px breed en werd op desktop ~3x opgeschaald, dus zichtbaar zacht. In

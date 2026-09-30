@@ -7,7 +7,7 @@
  * `getCoreRowModel` meer — zie `node_modules/@tanstack/react-table/skills/
  * getting-started/SKILL.md`). Deze tabel gebruikt bewust **geen**
  * sorteer-/pagineerfeature van TanStack: sortering en paginering gebeuren
- * server-side via de RPC `transacties_zoeken` (§ 3.1), TanStack levert alleen
+ * server-side via de RPC `transacties_zoeken` (architectuur § 1), TanStack levert alleen
  * het kolom-/rij-/celmodel en `FlexRender`. Zie
  * `node_modules/@tanstack/table-core/skills/client-vs-server/SKILL.md`.
  *

@@ -1,6 +1,6 @@
 # Backtest waardering v2
 
-> Item 4.8 (`docs/roadmap.md` § 3.3 + § 5 Fase 4). Elke steekproefwoning wordt gewaardeerd met peildatum = de dag vóór haar eigen verkoopdatum, uitsluitend met transacties van daarvóór — precies zoals de synthetische vitest-vangrail (`lib/waardering.backtest.test.ts`), maar dan op de demo-fixture. Meetlogica gedeeld met de test via `lib/backtest.ts`. Dit rapport wordt bij elke run overschreven; in item 5.5 draait hetzelfde script opnieuw op echte i4housing-data.
+> Item 4.8 (`docs/architectuur.md` § 3; masterplan fase 4). Elke steekproefwoning wordt gewaardeerd met peildatum = de dag vóór haar eigen verkoopdatum, uitsluitend met transacties van daarvóór — precies zoals de synthetische vitest-vangrail (`lib/waardering.backtest.test.ts`), maar dan op de demo-fixture. Meetlogica gedeeld met de test via `lib/backtest.ts`. Dit rapport wordt bij elke run overschreven; in item 5.5 draait hetzelfde script opnieuw op echte i4housing-data.
 
 - **Datum:** 2026-09-17
 - **Dataset:** demo-account `demo@vestaai.nl` (kantoor Demo Makelaardij, RLS) — 7829 niet-uitgesloten transacties, waarvan 2066 recent (24 maanden t/m 2026-09-17) met coördinaten
@@ -44,7 +44,7 @@
 
 | | Mediaan fout | Binnen band |
 |---|---|---|
-| Demo-lat (roadmap § 3.3) | ≤ 7 % | ≥ 75 % |
+| Demo-lat (architectuur § 3) | ≤ 7 % | ≥ 75 % |
 | Synthetisch (17 sep 2026, 400 woningen, `lib/waardering.backtest.test.ts`) | 5.2 % | 78 % |
 | **Dit rapport (demo-fixture)** | **6.1 %** | **76 %** |
 

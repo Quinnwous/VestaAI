@@ -4,7 +4,7 @@ import type { KantoorInstellingen } from './schemas'
  * Courtage: kantoorstandaard (`instellingen_json.courtage`, platform-admin-
  * beheerd via app/admin/kantoor/InstellingenForm.tsx), per dossier aanpasbaar
  * via het courtagevoorstel in stap 6 van de intake (besluit Quinn 28 sep
- * 2026, docs/specs/j2-courtage-per-dossier.md). Voedt straks het
+ * 2026, docs/archief/specs/j2-courtage-per-dossier.md). Voedt straks het
  * verkoopadvies (fase 11).
  */
 

@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { colors, STATUS_CFG } from './tokens'
+import { colors } from './tokens'
 
 /** Pill-badge. `dot` toont een gekleurd bolletje ervoor. */
 export function Badge({
@@ -45,16 +45,5 @@ export function Badge({
       )}
       {children}
     </span>
-  )
-}
-
-/** Object-statusbadge (dot + label), gedreven door STATUS_CFG. */
-export function StatusBadge({ status, style }: { status: string; style?: CSSProperties }) {
-  const cfg = STATUS_CFG[status]
-  if (!cfg) return null
-  return (
-    <Badge color={cfg.color} bg={`${cfg.color}14`} dot style={style}>
-      {cfg.label}
-    </Badge>
   )
 }

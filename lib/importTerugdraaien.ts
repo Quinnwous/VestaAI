@@ -10,7 +10,7 @@
  * alleen gelezen, nooit gewijzigd.
  *
  * De snapshot die een import bewaart wordt sinds item i2
- * (docs/specs/i2-admin-csv-via-pijplijn.md) uitsluitend gebouwd door
+ * (docs/archief/specs/i2-admin-csv-via-pijplijn.md) uitsluitend gebouwd door
  * `bouwSnapshot()` in `lib/importPijplijn.ts` — dit bestand had eerder een
  * eigen, bijna-identieke `bouwSnapshotUitBestaande()` voor de admin-CSV-
  * import, maar twee bouwers voor één contract liepen uit elkaar. Die is

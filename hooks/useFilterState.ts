@@ -2,7 +2,7 @@
 
 /**
  * `useFilterState(schema, defaults)` — Zod-getypte querystring voor élke
- * interactieve verkenner (item 6.1, docs/roadmap.md § 3.7 — bindend). Poort
+ * interactieve verkenner (item 6.1, docs/architectuur.md § 7 — bindend). Poort
  * van `docs/ontwerp/kit.js` `leesHash()`/`schrijfHash()`, maar op
  * `useSearchParams`/`router.replace` i.p.v. een hash, zodat de filterstand
  * een gewone, deelbare URL is (`?plaatsen=wassenaar&periode=24&...`).

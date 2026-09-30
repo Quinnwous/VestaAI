@@ -1,5 +1,5 @@
 /**
- * Kaartstack (§ 3.5 van docs/roadmap.md) — MapLibre + PDOK BRT-vectortiles
+ * Kaartstack (§ 5 van docs/architectuur.md) — MapLibre + PDOK BRT-vectortiles
  * in pastelstijl. Eén kaart voor de hele app: de verkoopkaart, het
  * straalpaneel (item 7.3) en de referentiekaart in de waardering (item 7.3,
  * `components/WaarderingKaart.tsx`) gebruiken allemaal `<BasisKaart>` met

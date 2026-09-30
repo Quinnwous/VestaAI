@@ -44,7 +44,7 @@ export async function setObjectFase(objectId: string, nieuweFase: ObjectFase) {
   if (nieuweFase !== huidig.fase) update.fase_sinds = new Date().toISOString()
 
   // content_status wordt hier niet gewijzigd — .select() erna geeft dus de
-  // ongewijzigde huidige waarde terug (item 3.1, docs/roadmap.md § 3.2): de
+  // ongewijzigde huidige waarde terug (item 3.1, docs/architectuur.md § 2): de
   // aanroeper (DossierHeader.tsx) gebruikt die om te bepalen of de fire-and-
   // forget-trigger naar /api/generate nodig is (alleen als er nog niets
   // staat, i.e. 'geen').
@@ -101,13 +101,6 @@ export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatu
   revalidatePath('/woningen')
 
   return { ok: true, status: nieuwStatus }
-}
-
-export async function toggleObjectStatus(objectId: string, huidigStatus: ObjectStatus) {
-  const volgorde: ObjectStatus[] = ['draft', 'published', 'onder_bod', 'verkocht']
-  const huidigIndex = volgorde.indexOf(huidigStatus)
-  const nieuwStatus = volgorde[(huidigIndex + 1) % volgorde.length]
-  return setObjectStatus(objectId, nieuwStatus)
 }
 
 export async function deleteObject(objectId: string) {

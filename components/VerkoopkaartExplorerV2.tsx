@@ -7,7 +7,7 @@
  * tijdlijn met afspeelknop, dropdown-filters, kerncijfers "in beeld", een
  * zijlijst die met de kaart meebeweegt.
  *
- * Databron (§ 3.1 patroon 1): `transacties` komt één keer mee met de pagina
+ * Databron (architectuur § 1 patroon 1): `transacties` komt één keer mee met de pagina
  * (`haalEigenVerkopen`/`MET_COORDINATEN_KOLOMMEN`, al ≤ 2.000 rijen voor één
  * kantoor) en wordt hierna volledig client-side gefilterd/gesorteerd via de
  * pure functies in `lib/verkoopkaart.ts` (< 100 ms, geen server-aanroep per
@@ -97,7 +97,7 @@ export function VerkoopkaartExplorerV2({
     setSpeelt(true)
   }
 
-  // ── Filteren/sorteren (client-side, < 100 ms — § 3.1 patroon 1) ──
+  // ── Filteren/sorteren (client-side, < 100 ms — architectuur § 1 patroon 1) ──
   const gefilterd = useMemo(() => filterVerkoopkaartRijen(transacties, filter), [transacties, filter])
   const kern = useMemo(() => berekenVerkoopkaartKerncijfers(gefilterd), [gefilterd])
   const reeks = useMemo(() => verkoopkaartSparklineReeks(gefilterd, filter.van, filter.tot), [gefilterd, filter.van, filter.tot])

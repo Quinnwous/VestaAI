@@ -1,7 +1,7 @@
 /**
  * Back-up van de belangrijkste tabellen naar lokale JSON-bestanden, vóór elke
  * risicovolle actie op de productiedatabase (migratie, import, bulk-update,
- * opruimen) — zie CLAUDE.md § Vangrails en docs/roadmap.md § 4 Werkwijze.
+ * opruimen) — zie CLAUDE.md § Vangrails en docs/werkwijze.md
  *
  * We draaien op het gratis Supabase-plan zonder herstelbare back-ups, dus dit
  * script is de enige vangnet vóór een destructieve actie. Standaard alléén
