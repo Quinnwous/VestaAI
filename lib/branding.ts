@@ -247,6 +247,18 @@ function geldigeVorm(waarde: unknown): VormKeuze {
 }
 
 /**
+ * De merkkleur zoals hij op knoppen en vlakken met tekst erop komt (item 14.4,
+ * besluit 30 sep 2026). Haalt noch wit noch donker 4,5 : 1 op de ingestelde
+ * kleur, dan verdonkeren we hem net zo ver dat witte tekst het wél haalt —
+ * bij i4-blauw #0080C8 (4,27 : 1) wordt dat #007BC0, met het oog niet te
+ * onderscheiden. Kleuren die al AA halen blijven exact zoals ingesteld.
+ */
+export function knopKleur(hex: string): string {
+  if (contrastRatio(besteTekstOp(hex), hex) >= 4.5) return hex
+  return verdonkerTotContrast(hex, '#FFFFFF', 4.5)
+}
+
+/**
  * Bouwt het merkpalet van een kantoor. Ontbreekt er iets, dan valt dat onderdeel
  * terug op de VestaAI-stijl — nooit op een half ingevuld palet.
  */
@@ -256,8 +268,9 @@ export function bouwBranding(kantoor: {
   huisstijl_json?: Record<string, unknown> | null
 } | null): Branding {
   const huisstijl = kantoor?.huisstijl_json ?? null
-  const primair = geldigeHex(huisstijl?.primaire_kleur, VESTA_MERK.primair)
-  const accent = geldigeHex(huisstijl?.accent_kleur, primair === VESTA_MERK.primair ? VESTA_MERK.accent : lichter(primair, 0.25))
+  const ingesteld = geldigeHex(huisstijl?.primaire_kleur, VESTA_MERK.primair)
+  const primair = knopKleur(ingesteld)
+  const accent = geldigeHex(huisstijl?.accent_kleur, ingesteld === VESTA_MERK.primair ? VESTA_MERK.accent : lichter(ingesteld, 0.25))
   const lettertype = geldigeLettertype(huisstijl?.lettertype)
   const vorm = geldigeVorm(huisstijl?.vorm)
   const tekst = (waarde: unknown): string | null =>

@@ -6,6 +6,7 @@ import {
   besteTekstOp,
   contrastRatio,
   verdonkerTotContrast,
+  knopKleur,
   donkerder,
   lichter,
   luminantie,
@@ -225,7 +226,7 @@ describe('brandingRootCss (portals erven de kantoorkleuren)', () => {
     const { bouwBranding, brandingRootCss } = await import('./branding')
     const css = brandingRootCss(bouwBranding({ name: 'Test', logo_url: null, huisstijl_json: { primaire_kleur: '#0080C8', accent_kleur: '#C61E45' } } as never))
     expect(css.startsWith(':root{')).toBe(true)
-    expect(css).toContain('--merk:#0080C8;')
+    expect(css).toContain(`--merk:${knopKleur('#0080C8')};`)
     expect(css).toContain('--merk-accent:#C61E45;')
     expect(css).not.toContain('<')
   })
@@ -310,11 +311,20 @@ describe('verdonkerTotContrast', () => {
 })
 
 describe('bouwBranding — opPrimair en merkTekst (item 14.4)', () => {
-  it('zet opPrimair via besteTekstOp en voegt merkTekst toe', () => {
+  it('verdonkert i4-blauw net genoeg zodat de knoptekst AA haalt', () => {
     const b = bouwBranding({ name: 'i4 Housing', huisstijl_json: { primaire_kleur: I4_BLAUW } })
-    expect(b.opPrimair).toBe(besteTekstOp(I4_BLAUW))
+    expect(b.primair).toBe(knopKleur(I4_BLAUW))
+    expect(b.primair).not.toBe(I4_BLAUW)
+    expect(b.opPrimair).toBe('#FFFFFF')
+    expect(contrastRatio(b.opPrimair, b.primair)).toBeGreaterThanOrEqual(4.5)
     expect(b.merkTekst).toBe(verdonkerTotContrast(I4_BLAUW))
     expect(contrastRatio(b.merkTekst, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('laat knopKleur ongemoeid bij kleuren die al AA halen (rood, groen, geel met donkere tekst)', () => {
+    expect(knopKleur(I4_ROOD)).toBe(I4_ROOD)
+    expect(knopKleur('#1A6B45')).toBe('#1A6B45')
+    expect(knopKleur('#FFD500')).toBe('#FFD500')
   })
 
   it('laat merkTekst gelijk aan primair voor kleuren die al AA halen', () => {
