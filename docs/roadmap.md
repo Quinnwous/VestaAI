@@ -45,7 +45,7 @@
   6 ongebruikte Stripe-/cron-geheimen op Vercel verwijderen (akkoord gegeven,
   handwerk — § 8 punt 10), Supabase-auth 2 klikken,
   kantoorprofiel i4, pastelkleuren kaart, Vercel Pro, bedrijfsgegevens +
-  zakelijk mailadres (14.2), Gemini betaalde laag, beeldrechten i4.
+  zakelijk mailadres (14.2 — nog geen KvK-inschrijving).
 - ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
   7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
   Repetitie op `/login/demo`. Terugvalplan als de exports uitblijven: demo op
@@ -820,17 +820,21 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
 
 **Juridisch (fase 14, 30 sep 2026):**
 
-17. **Bedrijfsgegevens** — staat VestaAI ingeschreven bij de KvK (bv. als
-    eenmanszaak)? Nodig: KvK-nummer, vestigingsadres (moet een bezoekbaar
-    adres zijn; bij een eenmanszaak mag dat een zakelijk postadres/
+17. **Bedrijfsgegevens** — nog geen KvK-inschrijving (Quinn, 30 sep); blijft
+    open tot die er is. Dan nodig: KvK-nummer, vestigingsadres (moet een
+    bezoekbaar adres zijn; bij een eenmanszaak mag dat een zakelijk postadres/
     kantoorservice zijn als je je huisadres niet online wilt), btw-id en een
     **zakelijk mailadres** (bv. `info@vestaai.nl` — het domein bestaat al;
-    nu staat overal je gmail). Deblokkeert 14.2.
-18. **Gemini-API: betaalde laag?** Op de gratis laag mag Google ingestuurde
-    foto's gebruiken om zijn producten te verbeteren — dan klopt de
-    privacyverklaring niet en gaan klantfoto's verder dan afgesproken. Check in
-    Google AI Studio → API-sleutel → billing ingeschakeld. Claude kan dat niet
-    zien.
+    nu staat overal je gmail). Deblokkeert 14.2. Uiterlijk vóór het eerste
+    betaalde contract.
+18. **Gemini-API: betaalde laag** — draait volgens Quinn al betaald (30 sep).
+    Eén keer bevestigen bij gelegenheid (Google AI Studio → API-sleutel →
+    billing ingeschakeld): op de gratis laag mag Google ingestuurde foto's
+    gebruiken voor productverbetering, en dan klopt de privacyverklaring niet.
+    Geen blokkade.
+
+**Later (geen haast, Quinn 30 sep):**
+
 19. **Beeldrechten** — sfeerbeelden, teamfoto en logo van i4 Housing staan in
     hun omgeving: laat in het contract/de verwerkersovereenkomst opnemen dat
     i4 de rechten heeft en ze aan VestaAI ter beschikking stelt. Eigen beelden

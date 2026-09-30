@@ -17,6 +17,8 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 | Niet van toepassing | Cookiebanner en losse cookiepagina (alleen functionele cookies + cookieloze Plausible), retourbeleid (geen betalingen), formulier-toestemming/-validatie/spamfilter (geen publieke formulieren), third-party embeds (geen; alleen PDOK-tegels en Plausible). Vastgelegd in roadmap § 10 met het moment waarop het wél nodig wordt | Opus |
 | Gevonden → fase 14 | Voorwaarden noemen VestaAI "verwerkingsverantwoordelijke" (moet: verwerker voor kantoordata); onwaarmaakbare beloftes (99,5 % uptime, "volledig AVG-proof"); geen doorgifte buiten de EER in de privacyverklaring; Plausible draait ook achter de login terwijl de verklaring "publieke pagina's" zegt; geen KvK/adres/zakelijk mailadres op de site; gestagede foto's ongelabeld (AI Act art. 50 lid 4); tekst op i4-blauw 4,3 : 1 (< AA); geen automatische a11y-check | Opus |
 | Voor Quinn | § 8 punten 17-19: bedrijfsgegevens, Gemini betaalde laag, beeldrechten i4; juridische toets door een jurist bij punt 16 | Opus |
+| Reactie Quinn | Nog geen KvK-nummer → 14.2 blijft geblokkeerd op de roadmap staan. Gemini draait volgens Quinn al op de betaalde laag (alleen nog bevestigen, geen blokkade). Beeldrechten i4: later | Quinn |
+| Volgende ronde | 14.1, 14.3 en 14.4 parallel met agents (nul bestandsoverlap); 14.4 vraagt bij het contrast een keuze van Quinn op een screenshot | Opus |
  — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
 
 | Onderwerp | Besluit | Door |
@@ -647,6 +649,8 @@ schemawijziging via `apply_migration` (zie sessie-afronden-skill).
 
 ## Opgeleverd
 
+- 30 sep 2026 — website-checklist van Quinn gefilterd → roadmap fase 14
+  (juridisch & toegankelijk) + § 8 punten 17-19. Alleen docs.
 - 28 sep 2026 — PR `feat/sessie-28sep-g`: G1 websiteveld in de huisstijl
   (admin-formulier, brochure-pdf, presentatiemodus).
 - 28 sep 2026 — PR `feat/sessie-28sep-f`: segmentvergelijking A vs. B op
