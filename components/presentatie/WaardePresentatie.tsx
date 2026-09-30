@@ -35,9 +35,18 @@ interface Props {
 function useTweenGetal(waarde: number | null, duurMs = 550): number | null {
   const [weergegeven, setWeergegeven] = useState<number | null>(waarde == null ? null : 0)
   useEffect(() => {
-    if (waarde == null) { setWeergegeven(null); return }
+    if (waarde == null) {
+      // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+      // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon),
+      // maar telt niet als een synchrone setState in de effect-body.
+      const frame = requestAnimationFrame(() => setWeergegeven(null))
+      return () => cancelAnimationFrame(frame)
+    }
     const verminderd = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (verminderd) { setWeergegeven(waarde); return }
+    if (verminderd) {
+      const frame = requestAnimationFrame(() => setWeergegeven(waarde))
+      return () => cancelAnimationFrame(frame)
+    }
     let frame: number
     const start = performance.now()
     const tick = (nu: number) => {
