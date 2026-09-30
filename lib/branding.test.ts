@@ -1,5 +1,25 @@
 import { describe, it, expect } from 'vitest'
-import { bouwBranding, brandingCssVars, tekstOp, donkerder, lichter, luminantie, VESTA_MERK, websiteWeergave } from './branding'
+import {
+  bouwBranding,
+  brandingCssVars,
+  tekstOp,
+  besteTekstOp,
+  contrastRatio,
+  verdonkerTotContrast,
+  donkerder,
+  lichter,
+  luminantie,
+  VESTA_MERK,
+  websiteWeergave,
+} from './branding'
+
+/** De zes referentiekleuren uit roadmap-item 14.4 (toegankelijkheid). */
+const I4_BLAUW = '#0080C8'
+const I4_ROOD = '#C61E45'
+const DEMO_GROEN = '#1A6B45'
+const ZWART = '#000000'
+const WIT = '#FFFFFF'
+const GEEL = '#FFD500'
 
 describe('bouwBranding', () => {
   it('valt terug op de VestaAI-stijl zonder kantoorgegevens', () => {
@@ -208,5 +228,97 @@ describe('brandingRootCss (portals erven de kantoorkleuren)', () => {
     expect(css).toContain('--merk:#0080C8;')
     expect(css).toContain('--merk-accent:#C61E45;')
     expect(css).not.toContain('<')
+  })
+
+  it('bevat ook --merk-tekst (item 14.4)', async () => {
+    const { brandingRootCss } = await import('./branding')
+    const css = brandingRootCss(bouwBranding({ name: 'Test', huisstijl_json: { primaire_kleur: I4_BLAUW } }))
+    expect(css).toContain('--merk-tekst:#007bc0;')
+  })
+})
+
+// Item 14.4 (toegankelijkheid): contrastRatio/besteTekstOp/verdonkerTotContrast
+// vervangen tekstOp()'s vaste luminantie-drempel voor opPrimair/--merk-op en
+// voegen --merk-tekst toe voor links/merkgekleurde tekst die altijd AA moet halen.
+describe('contrastRatio', () => {
+  it('is symmetrisch en geeft 21:1 voor zwart-op-wit', () => {
+    expect(contrastRatio(ZWART, WIT)).toBeCloseTo(21, 0)
+    expect(contrastRatio(WIT, ZWART)).toBeCloseTo(21, 0)
+  })
+
+  it('geeft 1:1 voor een kleur met zichzelf', () => {
+    expect(contrastRatio(I4_BLAUW, I4_BLAUW)).toBeCloseTo(1, 6)
+  })
+
+  it('ligt voor i4-blauw net onder de AA-drempel van 4,5:1 voor wit én donker', () => {
+    // Roadmap-constatering die tot dit item leidde: geen van beide tekstkleuren
+    // haalt op #0080C8 de 4,5:1 die gewone tekst nodig heeft.
+    expect(contrastRatio(I4_BLAUW, WIT)).toBeLessThan(4.5)
+    expect(contrastRatio(I4_BLAUW, '#0E1A13')).toBeLessThan(4.5)
+    expect(contrastRatio(I4_BLAUW, WIT)).toBeGreaterThan(4)
+  })
+})
+
+describe('besteTekstOp', () => {
+  it('kiest de tekstkleur met het hoogste contrast, niet een vaste luminantie-drempel', () => {
+    expect(besteTekstOp(I4_BLAUW)).toBe('#FFFFFF')
+    expect(besteTekstOp(I4_ROOD)).toBe('#FFFFFF')
+    expect(besteTekstOp(DEMO_GROEN)).toBe('#FFFFFF')
+    expect(besteTekstOp(ZWART)).toBe('#FFFFFF')
+    expect(besteTekstOp(WIT)).toBe('#0E1A13')
+    expect(besteTekstOp(GEEL)).toBe('#0E1A13')
+  })
+
+  it('kiest altijd de kleur met het aantoonbaar hoogste contrast', () => {
+    for (const hex of [I4_BLAUW, I4_ROOD, DEMO_GROEN, ZWART, WIT, GEEL]) {
+      const gekozen = besteTekstOp(hex)
+      const ander = gekozen === '#FFFFFF' ? '#0E1A13' : '#FFFFFF'
+      expect(contrastRatio(hex, gekozen)).toBeGreaterThanOrEqual(contrastRatio(hex, ander))
+    }
+  })
+})
+
+describe('verdonkerTotContrast', () => {
+  it('haalt voor elke referentiekleur minstens 4,5:1 op wit', () => {
+    for (const hex of [I4_BLAUW, I4_ROOD, DEMO_GROEN, ZWART, WIT, GEEL]) {
+      const resultaat = verdonkerTotContrast(hex)
+      expect(contrastRatio(resultaat, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it('laat een kleur die het doel al haalt ongewijzigd (i4-rood, demo-groen, zwart)', () => {
+    expect(verdonkerTotContrast(I4_ROOD)).toBe(I4_ROOD)
+    expect(verdonkerTotContrast(DEMO_GROEN)).toBe(DEMO_GROEN)
+    expect(verdonkerTotContrast(ZWART)).toBe(ZWART)
+  })
+
+  it('verdonkert i4-blauw en behoudt de blauwe tint (B-kanaal blijft het hoogst)', () => {
+    const resultaat = verdonkerTotContrast(I4_BLAUW)
+    expect(resultaat).not.toBe(I4_BLAUW)
+    const b = parseInt(resultaat.slice(5, 7), 16)
+    const g = parseInt(resultaat.slice(3, 5), 16)
+    const r = parseInt(resultaat.slice(1, 3), 16)
+    expect(b).toBeGreaterThan(g)
+    expect(g).toBeGreaterThan(r)
+  })
+
+  it('respecteert een aangepast doel en achtergrond', () => {
+    // Een lager doel is sneller gehaald, dus minder (of geen) verdonkering nodig.
+    const licht = verdonkerTotContrast(I4_BLAUW, '#FFFFFF', 3)
+    expect(contrastRatio(licht, '#FFFFFF')).toBeGreaterThanOrEqual(3)
+  })
+})
+
+describe('bouwBranding — opPrimair en merkTekst (item 14.4)', () => {
+  it('zet opPrimair via besteTekstOp en voegt merkTekst toe', () => {
+    const b = bouwBranding({ name: 'i4 Housing', huisstijl_json: { primaire_kleur: I4_BLAUW } })
+    expect(b.opPrimair).toBe(besteTekstOp(I4_BLAUW))
+    expect(b.merkTekst).toBe(verdonkerTotContrast(I4_BLAUW))
+    expect(contrastRatio(b.merkTekst, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
+  })
+
+  it('laat merkTekst gelijk aan primair voor kleuren die al AA halen', () => {
+    const b = bouwBranding({ name: 'Kantoor', huisstijl_json: { primaire_kleur: I4_ROOD } })
+    expect(b.merkTekst).toBe(I4_ROOD)
   })
 })

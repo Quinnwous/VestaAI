@@ -35,6 +35,8 @@
     --merk-accent-rand: #C3DED1;
     --merk-accent-rgb: 42,138,92;
     --merk-op: #FFFFFF;
+    /* Item 14.4: VestaAI-groen (#1A6B45) haalt al ≥ 4,5 : 1 op wit, dus gelijk aan --merk. */
+    --merk-tekst: #1A6B45;
   }
 
   html {
