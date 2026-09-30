@@ -159,7 +159,14 @@ export function TransactiesZoeken({
 
   // ── Zoekveld: lokale state + debounce (200 ms, zoals het prototype) ──
   const [zoekInput, setZoekInput] = useState(filter.zoek)
-  useEffect(() => setZoekInput(filter.zoek), [filter.zoek])
+  // Volgt filter.zoek (bv. na terugnavigeren) via "state aanpassen tijdens
+  // render" i.p.v. een effect (React-docs "Adjusting some state when a prop
+  // changes").
+  const [prevFilterZoek, setPrevFilterZoek] = useState(filter.zoek)
+  if (filter.zoek !== prevFilterZoek) {
+    setPrevFilterZoek(filter.zoek)
+    setZoekInput(filter.zoek)
+  }
   useEffect(() => {
     if (zoekInput === filter.zoek) return
     const t = setTimeout(() => zetFilterDeel({ zoek: zoekInput }), 200)
