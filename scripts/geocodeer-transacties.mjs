@@ -51,7 +51,6 @@ const DRY_RUN_MAX = 20
 const SELECT_BATCH = 500
 
 function log(...a) {
-  // eslint-disable-next-line no-console
   console.log(...a)
 }
 

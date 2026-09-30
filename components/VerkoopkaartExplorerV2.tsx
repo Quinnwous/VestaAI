@@ -73,12 +73,16 @@ export function VerkoopkaartExplorerV2({
   // ── Afspelen door de tijd (docs/ontwerp/README.md § 6, "schrapbaar" in de
   // item-spec — hier wél gebouwd: eenvoudig bovenop de bestaande RangeSlider). ──
   const [speelt, setSpeelt] = useState(false)
+  // Stopt zichzelf zodra het einde bereikt is — tijdens render i.p.v. in het
+  // effect: zo stopt het meteen (geen extra 320ms-tik) en is de aanroep
+  // zelfterminerend (na de eerste keer is `speelt` al false, dus de guard
+  // vuurt niet opnieuw).
+  if (speelt && filter.tot >= bereik.tot) {
+    setSpeelt(false)
+  }
   useEffect(() => {
     if (!speelt) return
-    if (filter.tot >= bereik.tot) {
-      setSpeelt(false)
-      return
-    }
+    if (filter.tot >= bereik.tot) return
     const id = setTimeout(() => zetFilterDeel({ tot: filter.tot + 1 }), 320)
     return () => clearTimeout(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -176,11 +180,17 @@ export function VerkoopkaartExplorerV2({
 
   const geenData = transacties.length === 0
   const sliderMax = bereik.tot > bereik.van ? bereik.tot : bereik.van + 1
+  // `max` hier inline herberekend (i.p.v. de `sliderMax`-variabele hierboven)
+  // en de deps-array op het hele `bereik`-object (i.p.v. losse `.van`/`.tot`)
+  // — de React Compiler infereert anders zelf een bredere afhankelijkheid
+  // dan handmatig opgegeven en kan de memoisatie dan niet bewaren
+  // (react-hooks/preserve-manual-memoization).
   const tijdlijnTicks = useMemo(() => {
+    const max = bereik.tot > bereik.van ? bereik.tot : bereik.van + 1
     const uit: string[] = []
-    for (let n = bereik.van; n <= sliderMax; n++) if (n % 4 === 0) uit.push(jaarVan(n))
+    for (let n = bereik.van; n <= max; n++) if (n % 4 === 0) uit.push(jaarVan(n))
     return uit.length ? uit : [jaarVan(bereik.van)]
-  }, [bereik.van, sliderMax])
+  }, [bereik])
 
   return (
     <>

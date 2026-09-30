@@ -60,7 +60,6 @@ const BATCH = 500
 const SLEUTEL_CHUNK = 200 // PostgREST/URL-limiet voor .in(): veel sleutels in stukken opvragen
 
 function log(...a) {
-  // eslint-disable-next-line no-console
   console.log(...a)
 }
 

@@ -52,9 +52,11 @@ export function BuurtDataTab({
   const [laden, setLaden] = useState(isVerouderd(initieel))
   const [fout, setFout] = useState('')
 
-  const ververs = async () => {
-    setLaden(true)
-    setFout('')
+  // Puur async: geen synchrone setState vóór de fetch, zodat dit ook
+  // rechtstreeks vanuit het mount-effect hieronder mag (react-hooks/
+  // set-state-in-effect) — alle state-updates zitten in de afhandeling ná
+  // de fetch.
+  const haalOp = async () => {
     try {
       const res = await fetch(`/api/object/${objectId}/verrijking`, { method: 'POST' })
       const json = await res.json().catch(() => null) as { verrijking?: VerrijkingOpslag; error?: string } | null
@@ -71,8 +73,19 @@ export function BuurtDataTab({
     }
   }
 
+  // Knop "Ververs": reset eerst zichtbaar de laad-/foutstaat, dan dezelfde fetch.
+  const ververs = () => {
+    setLaden(true)
+    setFout('')
+    haalOp()
+  }
+
   useEffect(() => {
-    if (isVerouderd(initieel)) ververs()
+    // laden/fout staan via de lazy initial state hierboven al goed
+    // (isVerouderd(initieel)), dus geen reset nodig — alleen ophalen. Via
+    // queueMicrotask zodat de aanroep van `haalOp` (die pas ná zijn eigen
+    // `await` setState raakt) niet als synchrone effect-code wordt gezien.
+    if (isVerouderd(initieel)) queueMicrotask(() => { haalOp() })
     // Eenmalig bij mount — zie toelichting hierboven.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

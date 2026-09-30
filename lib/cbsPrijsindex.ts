@@ -44,7 +44,6 @@ try {
   // Geen top-level await nodig (JSON-import is synchroon te bundelen); ontbreekt
   // het bestand (script nog niet gedraaid), dan valt dit terug op een lege reeks
   // i.p.v. de build te breken — zie bestandscommentaar hierboven.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports -- huidige regelnaam (was no-var-requires)
   cbsData = require('./cbsPrijsindexData.json')
 } catch {
   cbsData = null

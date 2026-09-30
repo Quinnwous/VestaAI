@@ -170,7 +170,6 @@ export function BuurtgrenzenLaag({ onStatus }: { onStatus?: (status: Buurtgrenze
         toegevoegdRef.current = false
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, onStatus])
 
   return null

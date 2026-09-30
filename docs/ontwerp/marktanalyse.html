@@ -134,7 +134,6 @@
   }
 
   // ── Tegels ──
-  function sparkline(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = glad(pts); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
   function renderTegels(nu, vorig, reeksWij) {
     const host = $('#tegels');
     const defs = [
@@ -152,11 +151,10 @@
       if (dl == null || vorig.n < 6) { de.textContent = 'geen vergelijking'; de.className = 'delta num'; } else { const r = dl > 0 ? 1 : dl < 0 ? -1 : 0; de.className = 'delta num' + (d.gunstig && r ? (r === d.gunstig ? ' op' : ' neer') : ''); de.innerHTML = `${r > 0 ? '▲' : r < 0 ? '▼' : '•'} ${d.eenheid ? (dl > 0 ? '+' : '') + dl.toLocaleString('nl-NL', { maximumFractionDigits: 1 }) + ' ' + d.eenheid : K.procent(dl)}`; }
       $('.n', el).textContent = `n = ${K.nl.format(nu.n)} · vs vorige periode`;
       el.classList.toggle('warn', weinig && !d.hero); let wa = $('.waarschuwing', el); if (weinig) { if (!wa) { wa = document.createElement('div'); wa.className = 'waarschuwing'; el.insertBefore(wa, $('.voet', el)); } wa.innerHTML = `<span>⚠︎</span><span>Te weinig verkopen (${nu.n}) voor een betrouwbaar cijfer — verbreed de filters.</span>`; } else if (wa) wa.remove();
-      let s = $('.spark', el); if (s) s.remove(); if (!weinig) el.insertAdjacentHTML('beforeend', sparkline(reeksWij.map(r => r[d.key]))); });
+      let s = $('.spark', el); if (s) s.remove(); if (!weinig) el.insertAdjacentHTML('beforeend', K.sparkline(reeksWij.map(r => r[d.key]))); });
   }
 
   // ── Grafieken (ChartCard + lib/grafiekThema.ts): vloeiende lijnen, verloopvlak, crosshair, eindlabels ──
-  function glad(pts) { return gladSegmenten(pts).map(s => s.d).join(''); }
   function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d, eerste: seg[0], laatste: seg[seg.length - 1] }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
   function lijnGrafiek(card, series, opt) {
     const svg = $('svg', card), tt = $('.tooltip', card), id = card.dataset.chart; const W = svg.clientWidth || 600, H = 236, m = { t: 14, r: 66, b: 26, l: 60 };

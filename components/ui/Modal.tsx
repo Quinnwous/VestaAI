@@ -22,9 +22,14 @@ export function Modal({
   bodyStyle?: CSSProperties
 }) {
   // Ref, zodat een nieuwe onClose-functie per render de listener niet steeds
-  // opnieuw hoeft te registreren.
+  // opnieuw hoeft te registreren. De toewijzing zelf staat in een eigen
+  // effect (react-hooks/refs: een ref schrijven tijdens render mag niet
+  // meer) — dat effect draait bij élke render van `onClose`, de listener
+  // zelf blijft mount-only.
   const sluit = useRef(onClose)
-  sluit.current = onClose
+  useEffect(() => {
+    sluit.current = onClose
+  }, [onClose])
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') sluit.current() }
     document.addEventListener('keydown', handler)

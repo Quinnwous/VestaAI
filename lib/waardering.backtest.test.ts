@@ -51,7 +51,6 @@ describe('backtest waarderingskern v2 (synthetisch)', () => {
 
   const totaal = vatSamen('totaal', metingen, zonderWaarde)
   const perGroep = perTypegroep(metingen, zonderWaarde)
-  // eslint-disable-next-line no-console
   console.log('backtest v2 (synthetisch):', JSON.stringify({ totaal, perGroep }))
 
   it('gebruikt nooit een referentie van op of na de peildatum', () => {

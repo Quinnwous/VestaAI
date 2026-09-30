@@ -12,6 +12,7 @@ import {
 import { BasisKaart } from '@/components/kaart'
 import { WoningenKaartLaag, type WoningKaartPunt, type WoningHoverInfo } from '@/components/WoningenKaartLaag'
 import { WoningenKaartHover } from '@/components/WoningenKaartHover'
+import { useHeeftGemount } from '@/hooks/useHeeftGemount'
 import { relatieveDatum, formatDatum } from '@/lib/utils'
 import { berekenKaartBounds, WONINGEN_SORTEER_OPTIES, type WoningenSortering } from '@/lib/woningenOverzicht'
 import type { ObjectFase } from '@/lib/supabase'
@@ -137,11 +138,14 @@ export function WoningenOverzicht({
     if (debounceRef.current) clearTimeout(debounceRef.current)
   }, [])
 
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => { setNow(Date.now()) }, [])
+  // Relatieve datums ("2 uur geleden") verschillen per omgeving (Date.now())
+  // en mogen dus nooit in de eerste render staan — hydratiemismatch, zie
+  // CLAUDE.md. `useHeeftGemount` (useSyncExternalStore) levert `true` pas na
+  // mount, zonder een setState in een effect-body.
+  const gemount = useHeeftGemount()
   const formatRelatief = useCallback(
-    (iso: string) => (now !== null ? relatieveDatum(iso) : formatDatum(iso)),
-    [now],
+    (iso: string) => (gemount ? relatieveDatum(iso) : formatDatum(iso)),
+    [gemount],
   )
 
   const makelaarNaamPerId = useMemo(() => new Map(makelaars.map((m) => [m.id, m.name])), [makelaars])
