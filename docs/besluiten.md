@@ -6,6 +6,25 @@
 
 ---
 
+### 30 sep 2026 (ronde Q) — fase 14 zonder 14.2, lint op 0, opruimmigratie, prototypes herpubliceerd
+
+Opdracht Quinn: "alles wat je zou kunnen doen, pak het op". Vier Sonnet-agents
+in worktrees (14.1, 14.3, 14.4, lint + ontwerp-kit), de hoofdsessie deed de rest.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 14.1 juridisch | Voorwaarden: rolsplitsing (VestaAI verwerker voor dossier- en transactiedata, verantwoordelijke voor account/website), nieuw art. 5 "AI-uitvoer en waardebepaling" (indicatie, geen NWWI-taxatie; makelaar controleert AI-tekst; staging als impressie), 99,5 %/24 u → inspanningsverplichting, versie 1.1 van 30 sep. Privacy: doorgifte buiten de EER per leverancier met bron (Vercel, Resend, Google: EU-VS DPF; Anthropic en Supabase: modelbepalingen; Plausible: EU), Anthropic-retentie 30 dagen, transactiedata als persoonsgegeven. "Volledig AVG-proof" weg (over-ons, landing) → "per kantoor afgeschermd". Plausible alleen nog op de 8 publieke pagina's (`components/PlausibleScript.tsx`); gecontroleerd: geen request naar plausible.io op `/dashboard`. ⚠️ Nog geen jurist-toets (§ 8 punt 16) | Sonnet + Opus |
+| 14.3 staging | Server-side label "Virtueel ingericht" (halftransparante pil rechtsonder, schaalt mee) via `lib/stagingLabel.ts` + test; regel "Publiceer dit als impressie" bij de download; `#4A9970` → merkvariabele; ongebruikte `public/staging-*.jpg` weg; Gemini-modelstring naar `lib/aiModellen.ts` (`GEMINI_STAGING`), guard-test bewaakt nu ook `gemini-*`. Echte staging-run blijft betaald (§ 8 punt 6) | Sonnet |
+| 14.4 a11y | `dod:screens` draait nu ook axe (wcag2a/aa + 2.1, `serious`/`critical` = exit 1, rapport `screenshots/axe-rapport.json`, uit met `DOD_AXE=0`), een linkcheck over de sitemap en een toetsenbordronde (waarschuwing). Eerste run vond 12 echte bevindingen: kaartpins met `aria-label` zonder rol → `role="img"`; lichtgrijze tekst op `/kantoor` (`gray-400` → `gray-500`); PDOK-attributielink niet onderstreept; `404` op `text-gray-100`; avatarknop zonder focusring (inline `outline: none`) → `.vui-avatarknop:focus-visible` | Sonnet + Opus |
+| Contrast i4 (ontwerpkeuze) | Wit op `#0080C8` = 4,27 : 1, donker = 4,19 : 1 — geen van beide haalt AA. De keuze "donkere knoptekst of iets donkerder blauw" bleek geen echte keuze: `knopKleur()` verdonkert alleen kleuren waarbij geen tekstkleur 4,5 haalt, en net genoeg — i4 `#0080C8` → `#007BC0` (± 4 %, met het oog niet te zien). Kleuren die al AA halen (rood, groen, geel met donkere tekst) blijven exact. Plus `--merk-tekst` (doel 5 : 1 op wit, marge voor lichtgrijze vlakken) voor alle merkgekleurde tekst (43 plekken, sweep in 28 bestanden) en in de huisstijl-skill. Quinn kan terug naar exact `#0080C8` met één regel in `bouwBranding` | Opus |
+| Lint | 31 react-hooks-fouten + 11 waarschuwingen → `npx eslint .` 0. Vooral "state tijdens render afleiden", lazy `useState`, sub-componenten op moduleniveau, nieuwe `hooks/useHeeftGemount.ts` (useSyncExternalStore). Eerlijk: op een paar plekken (`StatTile`, `WaardePresentatie`, `WaardebepalingPaneel`, `BuurtDataTab`, `KwartaalberichtModal`) is de setState naar `requestAnimationFrame`/`queueMicrotask` verplaatst — gedrag gelijk (één frame), maar dat is eerder omzeilen dan herstructureren; bij een volgende aanraking echt oplossen | Sonnet |
+| Ontwerp-kit | `K.sparkline()` gedeeld, `.btn:disabled` en de mobiele topbar in `kit.css` (pixel-diff 0 buiten de topbar). Alle zes prototypes op dezelfde artifact-URL's herpubliceerd (§ 8 punt 15 was geblokkeerd door de classifier; nu gelukt) | Sonnet + Opus |
+| Opruimmigratie | Akkoord Quinn (incl. `wijken`). Vooraf gecontroleerd: 5 tabellen leeg, 7 kolommen alleen standaardwaarden, geen code-gebruik. Gevonden en meegenomen: trigger `trg_referral_code` op `kantoren` (zonder dat was elke insert in `kantoren` gaan falen → `createKantoor` kapot) en de ontkoppelde functie `handle_new_user` (schreef `trial_ends_at`). Back-up vooraf, toegepast, insert-proef in een teruggedraaide transactie groen. Seed-script leunt niet meer op `trial_ends_at` | Quinn + Opus |
+| Kantoorprofiel i4 | "Opgericht" ontbrak (gereedheidscheck verkoopadvies) → `2013` (KvK-oprichtingsdatum 14-10-2013 uit `docs/i4housing-onderzoek.md`). Kenmerken stonden er al | Opus |
+| Demo-dossiers (12.5) | Drie vaste demo-dossiers gekozen en in `docs/demoscript.md` gezet. Gevonden: geen enkel demo-dossier heeft Engelse content of foto's — EN hoort bij de betaalde testruns | Opus |
+| Betaalde testruns | Quinn: "nog niet" (§ 8 punt 6 blijft open) | Quinn |
+| Worktree-les | Turbopack weigert een `node_modules`-symlink die buiten de projectroot wijst → `npm run build` faalt in élke worktree. Agents bouwen daar met `ANALYZE=true npm run build` (webpack); de echte Turbopack-build draait de hoofdsessie na de merge | Opus |
+
 ### 30 sep 2026 — website-checklist van Quinn gefilterd → fase 14
 
 Twee generieke "laat je vibe-coded site niet aanklagen"-lijsten (±30 punten,
@@ -19,7 +38,8 @@ deels dubbel, deels voor webshops) nagelopen tegen de code.
 | Voor Quinn | § 8 punten 17-19: bedrijfsgegevens, Gemini betaalde laag, beeldrechten i4; juridische toets door een jurist bij punt 16 | Opus |
 | Reactie Quinn | Nog geen KvK-nummer → 14.2 blijft geblokkeerd op de roadmap staan. Gemini draait volgens Quinn al op de betaalde laag (alleen nog bevestigen, geen blokkade). Beeldrechten i4: later | Quinn |
 | Volgende ronde | 14.1, 14.3 en 14.4 parallel met agents (nul bestandsoverlap); 14.4 vraagt bij het contrast een keuze van Quinn op een screenshot | Opus |
- — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
+
+### 29-30 sep 2026 (ronde O) — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
 
 | Onderwerp | Besluit | Door |
 |---|---|---|

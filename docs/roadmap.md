@@ -17,35 +17,25 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 30 sep 2026 (ronde O, PR #48 + #49). Geschiedenis per ronde: `docs/besluiten.md`.*
+*Bijgewerkt 30 sep 2026 (ronde Q). Geschiedenis per ronde: `docs/besluiten.md`.*
 
-- **Af:** fases 0-4, 6, 7, 9, 10 en 13. Fase 5 is voorbereid tot aan de exports
-  (5.2-5.4 af, importpijplijn en geocodering liggen klaar). Next 16 + React 19
-  en functies in Frankfurt sinds 29 sep.
-- **Laatst opgeleverd (ronde O):** 12.6 performance mobiel ronde 2 —
-  recharts lazy, `react-dom/server` uit de kaartlagen, dossier-tabs pas mounten
-  bij het eerste bezoek, kantoorfonts zonder preload, Plausible `lazyOnload`,
-  ui-barrel tree-shakebaar. Initiële JS (gzip): marktanalyse 209 → 77 kB,
-  concurrentie 197 → 65, woningen 132 → 69, transacties 161 → 91, kaart
-  159 → 76, layout 66 → 37. Kwaliteit: A/B tegen `main` — wat de gebruiker
-  ziet verschijnt even snel, alle checks groen (dod:screens 33/33, e2e 10/10,
-  repetitie 0 fouten). Verder: meetscript `scripts/meet-lighthouse.mjs`,
-  kantoor-admin-achterdeur op `kantoren` gedicht (migratie toegepast),
-  roadmap/CLAUDE.md opgeschoond. Lighthouse mobiel na de ronde: dashboard 91,
-  marktanalyse 80, concurrentie 87, woningen 92, dossier 76, landing 90,
-  kantoorlogin 85 (was 87/64/51/82/58/86/82) — Quinn: "prima", geen ronde 3.
-- **Open en bouwbaar zonder input:** fase 14 (juridisch & toegankelijk, uit
-  Quinns checklist van 30 sep): 14.1 juridische teksten, 14.3 staging-label,
-  14.4 axe + contrast in de DoD — nul bestandsoverlap, één ronde met agents.
-  14.2 wacht op bedrijfsgegevens (§ 8 punt 17). Verder klein onderhoud:
-  31 react-hooks-lintmeldingen (§ 9). Performance is afgerond (besluit Quinn).
+- **Af:** fases 0-4, 6, 7, 9, 10 en 13; fase 14 op 14.2 na. Fase 5 is voorbereid
+  tot aan de exports (5.2-5.4 af). Next 16 + React 19, functies in Frankfurt.
+- **Laatst opgeleverd (ronde Q):** 14.1 juridische teksten (rollen, AI-artikel,
+  doorgifte buiten de EER per leverancier, geen onwaarmaakbare beloftes,
+  Plausible alleen publiek), 14.3 staging-label "Virtueel ingericht", 14.4 axe +
+  linkcheck + toetsenbordronde in `dod:screens` en AA-contrast per kantoor
+  (`knopKleur`, `--merk-tekst`), lint op 0, ontwerp-kit opgeschoond en alle zes
+  prototypes herpubliceerd, opruimmigratie toegepast, kantoorprofiel i4
+  compleet, demo-dossiers gekozen (`docs/demoscript.md`).
+- **Open en bouwbaar zonder input:** niets meer. Alles wat nog op de roadmap
+  staat wacht op Quinn (§ 8) of op data.
 - **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
-  voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), akkoord betaalde
-  testruns (8.5, smoke-generatie, EN-kwartaalbericht), opruimmigratie,
-  6 ongebruikte Stripe-/cron-geheimen op Vercel verwijderen (akkoord gegeven,
-  handwerk — § 8 punt 10), Supabase-auth 2 klikken,
-  kantoorprofiel i4, pastelkleuren kaart, Vercel Pro, bedrijfsgegevens +
-  zakelijk mailadres (14.2 — nog geen KvK-inschrijving).
+  voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), betaalde testruns
+  (8.5, smoke-generatie + EN-content demo-dossier, EN-kwartaalbericht), 6
+  Stripe-/cron-geheimen op Vercel verwijderen (handwerk), Supabase-auth 2
+  klikken, pastelkleuren kaart, Vercel Pro, bedrijfsgegevens + zakelijk
+  mailadres (14.2), juristtoets teksten 14.1, nieuwe teksten 14.1 lezen.
 - ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
   7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
   Repetitie op `/login/demo`. Terugvalplan als de exports uitblijven: demo op
@@ -54,14 +44,14 @@
 - **Zodra de exports binnen zijn:** 5.1 exportanalyse → `lib/importProfielen.ts`
   definitief → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
   export) → dry-run → `--write` → geocoderen → backtest → M1-tussencheck.
-- ⚠️ **Contentgeneratie:** kern-call sinds 8.3 kleiner (6.000 max_tokens), maar
-  de echte duur NL+EN tegen de Vercel-limiet van 300 s is nog niet gemeten —
-  zit in de betaalde testruns (§ 8 punt 6).
+- ⚠️ **Contentgeneratie:** de echte duur NL+EN tegen de Vercel-limiet van 300 s
+  is nog niet gemeten — zit in de betaalde testruns (§ 8 punt 6).
 - **Blokkades (geen ervan blokkeert het bouwen):** exports · Brainbay-licentie
   · voorbeeld-verkoopadvies · verwerkersovereenkomst (uitgesteld tot in
-  gebruik, maar formeel vóór 5.5) · Vercel Hobby.
+  gebruik, maar formeel vóór 5.5) · Vercel Hobby · KvK-inschrijving (14.2).
 - **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
-  pastelkleuren van de kaart goed?
+  pastelkleuren van de kaart goed? · i4-blauw op knoppen `#007BC0` i.p.v.
+  `#0080C8` (voor AA-contrast, met het oog niet te zien) akkoord?
 
 ---
 
@@ -380,7 +370,7 @@ hook en skills niet):**
 5. `/sessie-afronden` — DoD, commit/PR, Stand van zaken, `docs/besluiten.md`.
 
 **Definition of Done (elk item):**
-- `npm run typecheck && npm run test && npm run build` groen.
+- `npm run typecheck && npm run lint && npm run test && npm run build` groen (lint = 0 problemen).
 - Huisstijl-hook schoon: `var(--merk*)`, "je/jouw", geen "VestaAI" achter de
   login, geen groene grijzen, geen `var(--merk…, #hex)`-fallbacks.
 - `npm run dod:screens` groen (huisstijlcheck + screenshots op 390/1280/1920 px;
@@ -613,7 +603,7 @@ Wat al klopt of niet van toepassing is: `docs/besluiten.md` 30 sep (checklist)
 en § 10. ⚠️ Claude is geen jurist: de teksten van 14.1/14.2 gaan vóór het
 eerste betaalde contract langs een jurist (§ 8 punt 16).
 
-- [ ] **14.1 Juridische teksten kloppend maken** —
+- [x] **14.1 Juridische teksten kloppend maken** *(30 sep, ronde Q; jurist-toets en meelezen Quinn nog open)* —
   *Doel:* voorwaarden, privacyverklaring en publieke claims beloven niets wat
   niet waar of niet waar te maken is. *Raakt:* `app/voorwaarden/page.tsx`,
   `app/privacy/page.tsx`, `app/over-ons/page.tsx`, `app/vertrouwen/page.tsx`,
@@ -659,7 +649,7 @@ eerste betaalde contract langs een jurist (§ 8 punt 16).
   (contact, privacy, voorwaarden) — scheelt ook spam op een gmail dat nu
   publiek staat. *Klaar als:* grep op het gmail-adres in `app/` en
   `components/` geeft niets meer (behalve `lib/admin.ts`).
-- [ ] **14.3 Virtual staging herkenbaar als impressie** — *Doel:* een gestagede
+- [x] **14.3 Virtual staging herkenbaar als impressie** *(30 sep, ronde Q; echte Gemini-run = § 8 punt 6)* — *Doel:* een gestagede
   foto kan niet voor een echte foto doorgaan. EU AI Act art. 50 lid 4
   (transparantie bij gemanipuleerd beeld, van kracht sinds 2 aug 2026, geldt
   voor de makelaar als gebruiker — wij maken het hem makkelijk) en misleiding
@@ -675,8 +665,8 @@ eerste betaalde contract langs een jurist (§ 8 punt 16).
   labelfunctie (uitvoer heeft dezelfde afmetingen, is een geldige jpeg).
   *Klaar als:* een gedownloade staging toont het label; huisstijl-hook schoon.
   (Test tegen de echte Gemini-API = betaalde run, § 8 punt 6.)
-- [ ] **14.4 Toegankelijkheid en dode links in de DoD** *(ontwerpkeuze bij
-  het contrast)* — *Doel:* WCAG 2.1 AA automatisch bewaken, per kantoorkleur.
+- [x] **14.4 Toegankelijkheid en dode links in de DoD** *(30 sep, ronde Q;
+  contrast opgelost met `knopKleur`, zie besluiten)* — *Doel:* WCAG 2.1 AA automatisch bewaken, per kantoorkleur.
   Wettelijk hoeft het niet (de European Accessibility Act geldt voor
   consumentendiensten, niet voor een B2B-tool van een micro-onderneming), maar
   het is kwaliteit en een makelaar met een brilletje is ook een gebruiker.
@@ -784,12 +774,8 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
 6. **Akkoord betaalde testruns (paar euro):** smoke-generatie
    (`E2E_GENERATE=1`, meet ook de echte duur NL+EN tegen de 300 s-limiet),
    8.5 staging-testrun, EN-kwartaalbericht tegen de echte API.
-7. **Akkoord opruimmigratie** (`20260916_opruimen_ongebruikt.sql`, na
-   back-up): 4 legacy-tabellen (`post_planning`, `chatbot_leads`,
-   `chatbot_faq`, `referrals`) en 7 kolommen staan er op 30 sep nog. Kandidaat
-   om mee te nemen: tabel `wijken` (geen enkele code gebruikt hem meer).
-8. **Kantoorprofiel i4 aanvullen:** "opgericht" en kenmerken ontbreken nog
-   (de verkoopadvies-gereedheidscheck meldt het).
+7. ✅ ~~Akkoord opruimmigratie~~ — toegepast 30 sep (ronde Q), incl. `wijken`.
+8. ✅ ~~Kantoorprofiel i4~~ — "opgericht 2013" aangevuld (KvK), 30 sep.
 9. **Oordeel pastelkleuren kaart** (`/marktanalyse/kaart`).
 10. **6 ongebruikte geheimen van Vercel verwijderen** (akkoord Quinn 30 sep,
     maar Claude kan het niet: de Vercel-MCP heeft geen verwijder-actie en de
@@ -810,8 +796,7 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
 13. **Blind oordeel content** (8.1, ± 30 min, betaalde calls) — bewust
     uitgesteld (23 sep).
 14. **Search Console** + omleiding Vercel-alias (na 1.10).
-15. **Artifacts prototypes herpubliceren** (item 0.1): de gepubliceerde
-    versies zijn van vóór 0.1; upload werd door auto-mode geblokkeerd.
+15. ✅ ~~Artifacts prototypes herpubliceren~~ — alle zes op dezelfde URL's, 30 sep.
 16. **Vóór het eerste betaalde contract:** Supabase Pro, definitieve
     verwerkersovereenkomst (⚠️ de import is formeel al verwerking — hoort er
     vóór 5.5 te liggen), prijsafspraak. Sentry-account (backlog). Plus een
@@ -854,12 +839,12 @@ verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
 makelaarsveld in de exports) · smoke-generatie, 8.5 en EN-kwartaalbericht één
 keer echt draaien (§ 8 punt 6).
 
-**Techniek, klein (bouwbaar zonder input):** 31 meldingen van
-`eslint-plugin-react-hooks` v7 op bestaande componenten (niet in de DoD) ·
-kantoor-reset
-rate-limit is in-memory per instance (zachte rem; tabel als het ooit nodig is) ·
-Gemini-modelstring staat in `app/api/fotos/staging/route.ts`, niet in
-`lib/aiModellen.ts` (§ 11 noemt alleen Claude-modellen; verhuizen bij 8.5). · preview-deploys hebben
+**Techniek, bewust zo / bij aanraking:** kantoor-reset rate-limit is
+in-memory per instance (zachte rem; tabel als het ooit nodig is) · een paar
+lint-fixes van ronde Q zetten een setState in `requestAnimationFrame`/
+`queueMicrotask` (`StatTile`, `WaardePresentatie`, `WaardebepalingPaneel`,
+`BuurtDataTab`, `KwartaalberichtModal`) — werkt, maar herstructureer het als
+je het bestand toch aanraakt · preview-deploys hebben
 op Vercel alleen `STRIPE_*`/`CRON_SECRET`/`GOOGLE_AI_API_KEY`, de rest van de
 env-vars staat alleen op production — een PR-preview is dus niet bruikbaar
 om te testen (bewust laten zolang we direct naar `main` mergen).
@@ -880,12 +865,6 @@ aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjablo
 (alleen via de service-client, 24 sep nagegaan) · PostGIS/`pg_trgm` in
 `public` en `spatial_ref_sys` zonder RLS (Supabase-standaard voor PostGIS,
 verplaatsen breekt meer dan het oplevert).
-
-**Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
-(staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee
-prototypes definiëren het lokaal) · mobiele stand van de kit-topbar
-(`startpagina.html` heeft een lokale workaround). Alleen de prototypes; de app
-heeft eigen componenten.
 
 **Geparkeerd (16 sep):** waardecheck-widget op hun site · ROI-dashboard ·
 prijsadvies bij lange looptijd.
@@ -921,7 +900,7 @@ prijsadvies bij lange looptijd.
 
 ## 11. Permanente kwaliteit
 
-- `npm run typecheck && npm run test` groen vóór elke commit; `build` vóór
+- `npm run typecheck && npm run lint && npm run test` groen vóór elke commit; `build` vóór
   elke PR.
 - `transacties` uitsluitend via `lib/transactiesQuery.ts` (guard-test).
 - Elke nieuwe tabel met persoons- of transactiedata: RLS per kantoor; elke

@@ -13,7 +13,7 @@ chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
 ## Stappen
 
 1. **Loop de Definition of Done na** (volledige versie: `docs/roadmap.md` § 4):
-   - `npm run typecheck && npm run test && npm run build` groen.
+   - `npm run typecheck && npm run lint && npm run test && npm run build` groen (lint = 0 problemen).
    - Huisstijl-hook schoon (geen waarschuwingen van
      `.claude/hooks/huisstijl-check.sh` op de gewijzigde bestanden; geen
      `var(--merk…, #hex)`-fallbacks).
