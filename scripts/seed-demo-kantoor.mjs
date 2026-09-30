@@ -283,10 +283,10 @@ for (let i = 0; i < transacties.length; i += BATCH) {
 }
 
 kop('6. Demo-account')
-// De trigger handle_new_user (erfenis van zelf-aanmelden) maakt bij elke nieuwe
-// auth-user al een makelaars-rij plus een eigen proefkantoor aan. Zelfde aanpak
-// als plaatsInKantoor() in app/admin/actions.ts: de rij verplaatsen en het
-// zwerfkantoor opruimen — maar alleen als het leeg is en door de trigger komt.
+// Stond de demo-user nog in een ander kantoor (erfenis van de signup-trigger
+// handle_new_user, sinds 30 sep 2026 weg), dan de rij verplaatsen en dat
+// zwerfkantoor opruimen — zelfde aanpak als plaatsInKantoor() in
+// app/admin/actions.ts, maar alleen als het leeg is en geen demo-kantoor.
 async function plaatsDemoMakelaar(id, huidigKantoorId) {
   const { error } = await supabase
     .from('makelaars')
@@ -294,8 +294,8 @@ async function plaatsDemoMakelaar(id, huidigKantoorId) {
     .eq('id', id)
   if (error) { console.error('❌', error.message); process.exit(1) }
   if (!huidigKantoorId || huidigKantoorId === kantoorId) return
-  const { data: zwerf } = await supabase.from('kantoren').select('id, trial_ends_at, instellingen_json').eq('id', huidigKantoorId).maybeSingle()
-  if (!zwerf || zwerf.instellingen_json?.demo === true || !zwerf.trial_ends_at) return
+  const { data: zwerf } = await supabase.from('kantoren').select('id, instellingen_json').eq('id', huidigKantoorId).maybeSingle()
+  if (!zwerf || zwerf.instellingen_json?.demo === true) return
   const tel = async (tabel) => (await supabase.from(tabel).select('id', { count: 'exact', head: true }).eq('kantoor_id', huidigKantoorId)).count ?? 0
   if ((await tel('makelaars')) === 0 && (await tel('objecten')) === 0 && (await tel('transacties')) === 0) {
     await supabase.from('kantoren').delete().eq('id', huidigKantoorId)

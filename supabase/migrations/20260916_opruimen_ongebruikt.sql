@@ -19,3 +19,13 @@ alter table kantoren
   drop column if exists trial_ends_at,
   drop column if exists stripe_id,
   drop column if exists referral_code;
+
+-- Toegevoegd 30 sep 2026 (akkoord Quinn, alle tabellen leeg, kolommen alleen
+-- standaardwaarden): trigger + functie die referral_code vullen (anders faalt
+-- elke insert in kantoren zodra de kolom weg is), de ontkoppelde signup-functie
+-- handle_new_user (schreef trial_ends_at; hangt aan geen enkele trigger meer)
+-- en de tabel wijken (publieke SEO-content van pagina's die niet meer bestaan).
+drop trigger if exists trg_referral_code on kantoren;
+drop function if exists generate_referral_code();
+drop function if exists handle_new_user();
+drop table if exists wijken;
