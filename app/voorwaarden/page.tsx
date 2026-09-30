@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
 import { PublicFooter } from '@/components/PublicFooter'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'Algemene voorwaarden — VestaAI',
@@ -13,13 +14,14 @@ export const metadata: Metadata = {
 export default function VoorwaardenPage() {
   return (
     <div style={{ background: '#FBFCFB', color: '#0E1A13', minHeight: '100vh' }}>
+      <PlausibleScript />
       <PublicNav />
 
       <main style={{ maxWidth: 720, margin: '0 auto', padding: '72px 28px 100px' }}>
         <h1 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,44px)', lineHeight: 1.1, color: '#0E1A13', margin: '0 0 8px' }}>
           Algemene voorwaarden
         </h1>
-        <p style={{ fontSize: 14, color: '#9AA6A0', marginBottom: 48 }}>Versie 1.0 · Ingangsdatum: 1 januari 2026</p>
+        <p style={{ fontSize: 14, color: '#9AA6A0', marginBottom: 48 }}>Versie 1.1 · Laatst bijgewerkt: 30 september 2026</p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
           {[
@@ -40,23 +42,27 @@ export default function VoorwaardenPage() {
               tekst: 'De door VestaAI gegenereerde teksten worden eigendom van de Gebruiker op het moment van generatie. VestaAI behoudt alle rechten op de software, algoritmen, interfaces en documentatie. U mag de door u gegenereerde content vrijelijk gebruiken voor professionele makelaarsdoeleinden.',
             },
             {
-              nr: '5', titel: 'Beschikbaarheid en aansprakelijkheid',
-              tekst: 'VestaAI streeft naar een beschikbaarheid van 99,5% per jaar. Bij gepland onderhoud wordt u minimaal 24 uur van tevoren geïnformeerd. VestaAI is niet aansprakelijk voor gevolgschade, gederfde inkomsten of indirecte schade. De aansprakelijkheid is beperkt conform de wettelijke grenzen die voor deze dienst gelden.',
+              nr: '5', titel: 'AI-uitvoer en waardebepaling',
+              tekst: 'De woningwaardering die het Platform toont is een onderbouwde indicatie op basis van vergelijkbare verkopen uit de eigen transactiedata van uw kantoor — geen taxatie in de zin van het NRVT en geen garantie voor de daadwerkelijk te realiseren verkoopprijs. Voor een formele taxatie schakelt u een erkend taxateur in. Teksten, afbeeldingen (waaronder virtual staging) en overige content die het Platform genereert zijn conceptmateriaal: u controleert deze content vóór publicatie op juistheid en blijft zelf verantwoordelijk voor wat u publiceert, ook richting Funda, NVM en andere partijen. Een virtueel ingerichte foto wordt herkenbaar gelabeld en dient als impressie gepubliceerd te worden, niet als weergave van de werkelijke staat van de woning.',
             },
             {
-              nr: '6', titel: 'Privacy en gegevensbescherming',
-              tekst: 'De verwerking van persoonsgegevens is beschreven in de Privacyverklaring op vestaai.nl/privacy. VestaAI is de verwerkingsverantwoordelijke. Alle data wordt versleuteld opgeslagen op servers in de EU en is AVG-proof.',
+              nr: '6', titel: 'Beschikbaarheid en aansprakelijkheid',
+              tekst: 'VestaAI spant zich in om het Platform beschikbaar te houden, maar garandeert geen specifiek beschikbaarheidspercentage. Bij gepland onderhoud spant VestaAI zich in u hierover vooraf te informeren. VestaAI is niet aansprakelijk voor gevolgschade, gederfde inkomsten of indirecte schade. De aansprakelijkheid is beperkt conform de wettelijke grenzen die voor deze dienst gelden.',
             },
             {
-              nr: '7', titel: 'Toepasselijk recht',
+              nr: '7', titel: 'Privacy en gegevensbescherming',
+              tekst: 'De verwerking van persoonsgegevens is beschreven in de Privacyverklaring op vestaai.nl/privacy. Voor uw accountgegevens en uw bezoek aan deze website is VestaAI verwerkingsverantwoordelijke. Voor de woningdossiers en de transactiedataset van uw kantoor is uw kantoor verwerkingsverantwoordelijke en treedt VestaAI op als verwerker, conform de verwerkersovereenkomst tussen uw kantoor en VestaAI. Data wordt versleuteld opgeslagen op servers binnen de EU.',
+            },
+            {
+              nr: '8', titel: 'Toepasselijk recht',
               tekst: 'Op deze voorwaarden is Nederlands recht van toepassing. Geschillen worden voorgelegd aan de bevoegde rechter in het arrondissement waar VestaAI is gevestigd.',
             },
             {
-              nr: '8', titel: 'Wijzigingen',
+              nr: '9', titel: 'Wijzigingen',
               tekst: 'VestaAI behoudt het recht deze voorwaarden te wijzigen. Wijzigingen worden minimaal 14 dagen van tevoren per e-mail aangekondigd. Bij voortgezet gebruik na de ingangsdatum gaat u akkoord met de nieuwe voorwaarden.',
             },
             {
-              nr: '9', titel: 'Contact',
+              nr: '10', titel: 'Contact',
               tekst: 'Voor vragen over deze voorwaarden kunt u contact opnemen via quinn.berkouwer@gmail.com.',
             },
           ].map(({ nr, titel, tekst }) => (
