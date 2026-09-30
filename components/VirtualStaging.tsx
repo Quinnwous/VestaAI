@@ -183,7 +183,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             <span className="w-5 h-5 border-2 border-[var(--merk-rand)] border-t-[var(--merk)] rounded-full animate-spin flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-[var(--merk)]">Gemini AI is aan het werk…</p>
-              <p className="text-xs text-[#4A9970] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
+              <p className="text-xs text-[var(--merk)] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
             </div>
           </div>
         </div>
@@ -226,12 +226,15 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
                   Gestaged
                 </button>
               </div>
-              <button
-                onClick={() => downloadGestaged(huidig)}
-                className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5"
-              >
-                Download ↓
-              </button>
+              <div className="flex flex-col items-end">
+                <button
+                  onClick={() => downloadGestaged(huidig)}
+                  className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5"
+                >
+                  Download ↓
+                </button>
+                <span className="text-[11px] text-gray-400 px-2 -mt-1">Publiceer dit als impressie</span>
+              </div>
               {objectId && actief !== null && (
                 <button
                   onClick={() => bewaarInBibliotheek(huidig, actief)}

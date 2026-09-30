@@ -73,3 +73,12 @@ export const HERSCHRIJF = 'claude-haiku-4-5'
  * interpretatie/analyse die de kwaliteit van Sonnet vraagt.
  */
 export const SAMENVATTING = 'claude-sonnet-4-6'
+
+/**
+ * Virtual staging (`app/api/fotos/staging/route.ts`) — enige niet-Claude-model
+ * hier, maar dezelfde regel geldt: nergens anders een letterlijke modelstring.
+ * gemini-2.5-flash-image ("Nano Banana"): het huidige GA-model voor
+ * beeldbewerking — fotorealistisch meubels toevoegen met behoud van de
+ * architectuur. Vervangt het verouderde experimentele gemini-2.0-flash-exp.
+ */
+export const GEMINI_STAGING = 'gemini-2.5-flash-image'
