@@ -19,6 +19,11 @@
 
 *Bijgewerkt 30 sep 2026 (ronde Q). Geschiedenis per ronde: `docs/besluiten.md`.*
 
+> ⏭️ **Eerst doen in de volgende sessie:** controleren of PR #51 (ronde Q) gemerged is
+> (merge door Quinn — de auto-mode-classifier blokkeerde `gh pr merge`) en of de
+> Vercel-deploy READY is zonder runtime-errors. Staging-label visueel checken bij de
+> eerste echte staging-run (§ 8 punt 6).
+
 - **Af:** fases 0-4, 6, 7, 9, 10 en 13; fase 14 op 14.2 na. Fase 5 is voorbereid
   tot aan de exports (5.2-5.4 af). Next 16 + React 19, functies in Frankfurt.
 - **Laatst opgeleverd (ronde Q):** 14.1 juridische teksten (rollen, AI-artikel,
