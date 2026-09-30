@@ -109,8 +109,18 @@ export function AppTopbar({
     }
   }, [profielOpen])
 
-  // Navigeren sluit alles.
-  useEffect(() => { setProfielOpen(false); setMobiel(false); setZoekOpen(false) }, [pathname])
+  // Navigeren sluit alles — state-aanpassing tijdens render i.p.v. een effect
+  // (React-docs "Adjusting some state when a prop changes"): `prevPathname`
+  // bewaart de vorige render, en zodra die afwijkt zetten we alles in
+  // dezelfde render terug, zonder de synchrone setState-in-effect die de
+  // linter hier anders zou signaleren.
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
+    setProfielOpen(false)
+    setMobiel(false)
+    setZoekOpen(false)
+  }
 
   // Laadt het logo niet (verlopen URL, bucket weg), dan valt hij terug op de merkletter —
   // nooit het gebroken-afbeelding-icoon van de browser.

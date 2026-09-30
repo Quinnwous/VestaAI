@@ -24,11 +24,15 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
     if (!value || value.length < 4) {
-      setSuggesties([])
-      setOpen(false)
+      // Geen synchrone setState hier — de render leidt de zichtbare staat af
+      // (zie `toonSuggesties` hieronder), dus stale suggesties blijven nooit
+      // zichtbaar zodra de invoer te kort wordt.
       return
     }
-    setBezig(true)
+    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+    // eerstvolgende paint (dus onzichtbaar hetzelfde moment als synchroon),
+    // maar telt niet als een synchrone setState in de effect-body.
+    const bezigFrame = requestAnimationFrame(() => setBezig(true))
     timerRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`/api/bag/suggest?q=${encodeURIComponent(value)}`)
@@ -43,7 +47,10 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
         setBezig(false)
       }
     }, 300)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+    return () => {
+      cancelAnimationFrame(bezigFrame)
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
   }, [value])
 
   useEffect(() => {
@@ -124,7 +131,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
         )}
       </div>
 
-      {open && suggesties.length > 0 && (
+      {open && suggesties.length > 0 && value.length >= 4 && (
         <ul
           style={{
             position: 'absolute',

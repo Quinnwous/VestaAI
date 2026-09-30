@@ -40,6 +40,34 @@ function splitsAdres(address: string): { straat: string; stad: string | undefine
   return { straat, stad }
 }
 
+type Styles = ReturnType<typeof makeStyles>
+
+/** Op moduleniveau i.p.v. binnen `BrochurePdfTemplate` (react-hooks/static-components):
+ * een component die tijdens render wordt aangemaakt, verliest zijn identiteit
+ * (en dus interne state) bij elke render. */
+function Header({ s, kantoor, address }: { s: Styles; kantoor: Props['kantoor']; address: string }) {
+  return (
+    <View style={s.pageHeader}>
+      {kantoor.logoUrl ? (
+        // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image heeft geen alt-prop
+        <Image src={kantoor.logoUrl} style={s.pageHeaderLogoImg} />
+      ) : (
+        <Text style={s.pageHeaderNaam}>{kantoor.naam}</Text>
+      )}
+      <Text style={s.pageHeaderAdres}>{address}</Text>
+    </View>
+  )
+}
+
+function Footer({ s, kantoor, makelaarNaam, opgesteldOp }: { s: Styles; kantoor: Props['kantoor']; makelaarNaam: string; opgesteldOp: string }) {
+  return (
+    <View style={s.footer} fixed>
+      <Text>Opgesteld door {makelaarNaam}, {kantoor.naam} · {datumLang(opgesteldOp)}</Text>
+      <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
+    </View>
+  )
+}
+
 function makeStyles(kleur: string, vorm: 'zacht' | 'strak') {
   const cardRadius = vorm === 'zacht' ? 14 : 2
   const imgRadius = vorm === 'zacht' ? 8 : 0
@@ -100,25 +128,6 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
     ? [fotoGrid.slice(0, 4), fotoGrid.slice(4, 8)].filter(p => p.length > 0)
     : []
 
-  const Header = () => (
-    <View style={s.pageHeader}>
-      {kantoor.logoUrl ? (
-        // eslint-disable-next-line jsx-a11y/alt-text -- react-pdf's Image heeft geen alt-prop
-        <Image src={kantoor.logoUrl} style={s.pageHeaderLogoImg} />
-      ) : (
-        <Text style={s.pageHeaderNaam}>{kantoor.naam}</Text>
-      )}
-      <Text style={s.pageHeaderAdres}>{address}</Text>
-    </View>
-  )
-
-  const Footer = () => (
-    <View style={s.footer} fixed>
-      <Text>Opgesteld door {makelaarNaam}, {kantoor.naam} · {datumLang(opgesteldOp)}</Text>
-      <Text render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`} />
-    </View>
-  )
-
   return (
     <Document title={`Brochure — ${address}`} author={kantoor.naam} creator={kantoor.naam}>
       {/* Cover */}
@@ -163,17 +172,17 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
       {/* Intro (brochure_tekst, of funda_tekst als terugval — leeg = pagina vervalt) */}
       {introTekst && (
         <Page size="A4" style={s.page}>
-          <Header />
+          <Header s={s} kantoor={kantoor} address={address} />
           <Text style={s.sectieTitel}>Over deze woning</Text>
           <Text style={s.body}>{introTekst}</Text>
-          <Footer />
+          <Footer s={s} kantoor={kantoor} makelaarNaam={makelaarNaam} opgesteldOp={opgesteldOp} />
         </Page>
       )}
 
       {/* Fotopagina's — tot 8 foto's, 4 per pagina */}
       {fotoPaginas.map((paginaFotos, i) => (
         <Page key={`fotos-${i}`} size="A4" style={s.page}>
-          <Header />
+          <Header s={s} kantoor={kantoor} address={address} />
           <Text style={s.sectieTitel}>Foto&apos;s</Text>
           <View style={s.fotoGrid}>
             {paginaFotos.map((url, j) => (
@@ -181,13 +190,13 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
               <Image key={j} src={url} style={s.foto} />
             ))}
           </View>
-          <Footer />
+          <Footer s={s} kantoor={kantoor} makelaarNaam={makelaarNaam} opgesteldOp={opgesteldOp} />
         </Page>
       ))}
 
       {/* Kenmerkentabel */}
       <Page size="A4" style={s.page}>
-        <Header />
+        <Header s={s} kantoor={kantoor} address={address} />
         <Text style={s.sectieTitel}>Kenmerken</Text>
         <View style={s.tabel}>
           {kenmerken.map((k, i) => (
@@ -197,12 +206,12 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
             </View>
           ))}
         </View>
-        <Footer />
+        <Footer s={s} kantoor={kantoor} makelaarNaam={makelaarNaam} opgesteldOp={opgesteldOp} />
       </Page>
 
       {/* Slotpagina: kantoorstijl slot_tekst, anders kantoorcontact */}
       <Page size="A4" style={s.page}>
-        <Header />
+        <Header s={s} kantoor={kantoor} address={address} />
         <Text style={s.sectieTitel}>{kantoor.naam}</Text>
         {slotTekst ? (
           <View style={s.slotBlok}>
@@ -216,7 +225,7 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
             {kantoor.website && <Text style={s.slotContactRegel}>{kantoor.website}</Text>}
           </View>
         )}
-        <Footer />
+        <Footer s={s} kantoor={kantoor} makelaarNaam={makelaarNaam} opgesteldOp={opgesteldOp} />
       </Page>
     </Document>
   )
