@@ -35,6 +35,7 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 
 import { useRouter } from 'next/navigation'
 import * as Dialog from '@radix-ui/react-dialog'
 import { colors, radius, shadow } from '@/components/ui/tokens'
+import { useHeeftGemount } from '@/hooks/useHeeftGemount'
 import {
   ZOEK_PAGINAS, rangschikWoningen, zoekPaginas, faseLabel,
   toonTransactieSnelkoppeling, transactiesZoekHref,
@@ -89,12 +90,14 @@ function TransactieIcon() {
 
 /** Klein zoekknopje voor de topbar — altijd zichtbaar, ook op 390 px. */
 export function ZoekKnop({ onClick }: { onClick: () => void }) {
-  const [toetsLabel, setToetsLabel] = useState<string | null>(null)
-
-  useEffect(() => {
-    const mac = /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent)
-    setToetsLabel(mac ? '⌘K' : 'Ctrl K')
-  }, [])
+  // `navigator` verschilt per omgeving en mag dus nooit in de eerste render
+  // gelezen worden (hydratiemismatch, zie CLAUDE.md) — `useHeeftGemount`
+  // (useSyncExternalStore) levert `true` pas na mount, zonder een setState
+  // in een mount-effect.
+  const gemount = useHeeftGemount()
+  const toetsLabel = gemount
+    ? (/mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent) ? '⌘K' : 'Ctrl K')
+    : null
 
   return (
     <button
@@ -150,16 +153,20 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
   // Woningen ophalen: gedebouncet, alleen vanaf MIN_ZOEKLENGTE (via
   // toonTransactieSnelkoppeling — zelfde grens als app/api/zoeken/route.ts),
   // dus geen nutteloze call op één teken.
+  // `kanZoeken` is een pure functie van `query` (zelfde grens als hierboven):
+  // gebruikt hieronder om nooit stale woningen/foutmeldingen te tonen zodra
+  // de invoer te kort wordt, zonder dat daar een synchrone setState in het
+  // effect voor nodig is (de interne `woningen`/`bezig`/`fout`-state hoeft
+  // dan niet meteen gereset — ze zijn toch overal achter deze guard gelezen).
+  const kanZoeken = toonTransactieSnelkoppeling(query)
+
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
-    if (!toonTransactieSnelkoppeling(query)) {
-      setWoningen([])
-      setBezig(false)
-      setFout(false)
-      return
-    }
-    setBezig(true)
-    setFout(false)
+    if (!kanZoeken) return
+    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+    // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon), maar
+    // telt niet als een synchrone setState in de effect-body.
+    const bezigFrame = requestAnimationFrame(() => { setBezig(true); setFout(false) })
     const controller = new AbortController()
     timerRef.current = setTimeout(async () => {
       try {
@@ -175,8 +182,12 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
         setBezig(false)
       }
     }, DEBOUNCE_MS)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); controller.abort() }
-  }, [query])
+    return () => {
+      cancelAnimationFrame(bezigFrame)
+      if (timerRef.current) clearTimeout(timerRef.current)
+      controller.abort()
+    }
+  }, [query, kanZoeken])
 
   // Reset bij sluiten — kleine vertraging zodat de sluitanimatie niet
   // halverwege al leeg oogt (zelfde patroon als components/FeedbackKnop.tsx).
@@ -208,7 +219,10 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
     return () => { if (resetTimerRef.current) clearTimeout(resetTimerRef.current) }
   }, [open])
 
-  const woningenGerangschikt = useMemo(() => rangschikWoningen(woningen, query), [woningen, query])
+  const woningenGerangschikt = useMemo(
+    () => (kanZoeken ? rangschikWoningen(woningen, query) : []),
+    [kanZoeken, woningen, query],
+  )
   const paginaResultaten = useMemo(() => (heeftQuery ? zoekPaginas(query) : ZOEK_PAGINAS), [query, heeftQuery])
   const transactieSnelkoppeling = heeftQuery && toonTransactieSnelkoppeling(query)
 
@@ -228,8 +242,18 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
     return lijst
   }, [heeftQuery, woningenGerangschikt, paginaResultaten, transactieSnelkoppeling, query])
 
-  useEffect(() => setActief(0), [query])
-  useEffect(() => { if (actief > rijen.length - 1) setActief(Math.max(0, rijen.length - 1)) }, [rijen.length, actief])
+  // Beide via "state aanpassen tijdens render" i.p.v. een effect (React-docs
+  // "Adjusting some state when a prop changes"): reset `actief` naar 0 zodra
+  // de zoekterm verandert, en klem 'm anders binnen de (gekrompen) rijenlijst
+  // — zelfterminerend, dus geen oneindige render-lus.
+  const [prevQuery, setPrevQuery] = useState(query)
+  if (query !== prevQuery) {
+    setPrevQuery(query)
+    setActief(0)
+  }
+  if (actief > rijen.length - 1) {
+    setActief(Math.max(0, rijen.length - 1))
+  }
 
   const kies = (rij: PlatteRij) => {
     sluit(false)
@@ -255,7 +279,7 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
   const woningenRijen = rijen.filter(r => r.groep === 'woningen')
   const paginaRijen = rijen.filter(r => r.groep === 'paginas')
   const transactieRijen = rijen.filter(r => r.groep === 'transacties')
-  const toonWoningenSkeleton = heeftQuery && bezig && woningenRijen.length === 0
+  const toonWoningenSkeleton = heeftQuery && kanZoeken && bezig && woningenRijen.length === 0
   // De transactiesnelkoppeling staat bij élke zoekterm van voldoende lengte
   // klaar (ook zonder directe treffer) — telt dus niet mee als "resultaat"
   // voor de lege staat, anders verschijnt "Geen resultaten voor…" nooit meer.
@@ -343,7 +367,7 @@ export function ZoekPalet({ open, onOpenChange }: { open: boolean; onOpenChange:
               </div>
             )}
 
-            {heeftQuery && fout && (
+            {heeftQuery && kanZoeken && fout && (
               <p style={{ margin: '2px 12px 8px', fontSize: 12.5, color: colors.body }}>
                 Zoeken naar woningen lukt nu niet — pagina&apos;s blijven wel doorzoekbaar.
               </p>
