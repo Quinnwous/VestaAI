@@ -6,12 +6,9 @@ import type { ObjectFase } from './schemas'
  * makelaar iets deed in de app — vooralsnog alleen het openen van een
  * dossier — en voedt daarmee "Recent bekeken" op /dashboard.
  *
- * Tabel `gebruik_events` bestaat pas nadat de hoofdsessie de bijbehorende
- * migratie (`supabase/migrations/20260923_gebruik_events.sql`) toepast via
- * `apply_migration` — dit bestand schrijft die migratie, past hem niet toe.
- * Tot die tijd faalt elke query hier op "relation … does not exist"; alle
- * functies vangen dat stil af (console.warn, nooit een pagina laten
- * crashen) zodat de rest van de app gewoon blijft werken.
+ * Tabel `gebruik_events` (migratie `20260923_gebruik_events.sql`, live sinds
+ * 23 sep 2026). Een mislukte query wordt stil afgevangen (console.warn, nooit
+ * een pagina laten crashen) zodat de rest van de app gewoon blijft werken.
  */
 
 /** Vaste set — moet gelijk blijven aan de check-constraint in de migratie. */

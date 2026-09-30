@@ -51,8 +51,8 @@ export default async function ObjectDetailPage(props: { params: Promise<{ id: st
     getCachedObject(params.id),
     supabase.from('makelaars').select('kantoor_id').eq('id', user.id).single().then(r => r.data),
     // Item 10.3: losse, ongecachete query t.o.v. getCachedObject hierboven —
-    // faalt gracieus (catch) zolang de migratie voor objecten.verrijking_json
-    // nog niet is toegepast, zonder de rest van deze pagina te raken. De
+    // faalt gracieus (catch) als de query mislukt (kolom live sinds 23 sep),
+    // zonder de rest van deze pagina te raken. De
     // verwerking (validatie/undefined_column-afhandeling) is een pure functie
     // in lib/verrijkingOpslag.ts, los te testen.
     (async () => {

@@ -17,72 +17,46 @@
 
 ## 📍 Stand van zaken
 
-- **Rondes 28 sep (PR #41 `feat/sessie-28sep-h` en PR #42
-  `feat/sessie-28sep-i`, beide live):** fase 5 formaat-onafhankelijk
-  voorbereid — 5.2 importkern + `scripts/import-transacties.mjs` (CSV/XLSX,
-  RD → WGS84, kwaliteitsregels, ontdubbelen, rapport; kolomaliassen per bron
-  **voorlopig** in `lib/importProfielen.ts`), 5.3 geocodering
-  (`scripts/geocodeer-transacties.mjs`, PDOK), 5.4 `/admin/transacties` v2
-  (importhistorie, kwaliteitsrapport, terugdraaien — ook een mislukte import),
-  kantoor-aliassen in `/admin/kantoor/[id]`, admin-CSV via dezelfde pijplijn.
-  Verder: verkopersversie van de waardebepaling-pdf (`&voor=verkoper`),
-  hardening-migratie toegepast, i4 Housing: website, werkgebied (Wassenaar,
-  Den Haag) en courtage (1 %) ingevuld. Details: `docs/besluiten.md` 28 sep.
-- **Fase:** 6, 7, 9, 10 en 13 af; fase 5 klaar tot aan de exports (5.1 en 5.5
-  wachten). Open: 8.5 (staging-modelcheck, betaald), 12.1 (team-accounts, wacht
-  op Quinn), 12.5 rest (demo-dossiers, freeze, repetitie op i4housing).
-  Geblokkeerd: fase 11 (voorbeeld-verkoopadvies).
-- ⚠️ **Demo-realiteit (uit 12.5a):** het i4housing-kantoor heeft nul transacties
-  tot fase 5 — marktinzichten, kerncijfers en waardering tonen daar de lege
-  staat. Repetitie gebeurt op `/login/demo`; zonder de exports is er geen demo
-  op eigen data. Voorstel als de exports uitblijven: terugvaldemo op het
-  demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
+*Bijgewerkt 30 sep 2026 (ronde O, PR #48). Geschiedenis per ronde: `docs/besluiten.md`.*
+
+- **Af:** fases 0-4, 6, 7, 9, 10 en 13. Fase 5 is voorbereid tot aan de exports
+  (5.2-5.4 af, importpijplijn en geocodering liggen klaar). Next 16 + React 19
+  en functies in Frankfurt sinds 29 sep.
+- **Laatst opgeleverd (ronde O):** 12.6 performance mobiel ronde 2 —
+  recharts lazy, `react-dom/server` uit de kaartlagen, dossier-tabs pas mounten
+  bij het eerste bezoek, kantoorfonts zonder preload, Plausible `lazyOnload`,
+  ui-barrel tree-shakebaar. Initiële JS (gzip): marktanalyse 209 → 77 kB,
+  concurrentie 197 → 65, woningen 132 → 69, transacties 161 → 91, kaart
+  159 → 76, layout 66 → 37. Kwaliteit: A/B tegen `main` — wat de gebruiker
+  ziet verschijnt even snel, alle checks groen (dod:screens 33/33, e2e 10/10,
+  repetitie 0 fouten). Verder: meetscript `scripts/meet-lighthouse.mjs`,
+  kantoor-admin-achterdeur op `kantoren` gedicht (migratie toegepast),
+  roadmap/CLAUDE.md opgeschoond. Nameting Lighthouse: zie 12.6.
+- **Open en bouwbaar zonder input:** weinig. Kandidaten: dossier-LCP verder
+  omlaag (verkoopadvies-fase, `WaardebepalingPaneel` + kaart zijn de grootste
+  hydratie), landingspagina naar > 90 (nu 86, § 11-eis) en kantoorlogin (82),
+  31 react-hooks-lintmeldingen.
+- **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
+  voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), akkoord betaalde
+  testruns (8.5, smoke-generatie, EN-kwartaalbericht), opruimmigratie,
+  6 ongebruikte Stripe-/cron-geheimen op Vercel, Supabase-auth 2 klikken,
+  kantoorprofiel i4, pastelkleuren kaart, Vercel Pro.
+- ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
+  7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
+  Repetitie op `/login/demo`. Terugvalplan als de exports uitblijven: demo op
+  het demo-kantoor in i4housing-huisstijl (beslissing Quinn, pas nodig als half
   december in gevaar komt).
 - **Zodra de exports binnen zijn:** 5.1 exportanalyse → `lib/importProfielen.ts`
-  definitief maken → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
+  definitief → `kantoor_aliassen` van i4 Housing zetten (naam zoals in de
   export) → dry-run → `--write` → geocoderen → backtest → M1-tussencheck.
-- **Rondes 29 sep (J en K, PR #43 en #44):** J1 plaatsnormalisatie (import
-  schrijft "Den Haag", HOOFDLETTER-exports → "Wassenaar"; demo-kantoor omgezet),
-  J2 courtage per dossier (kantoorstandaard, btw-aanduiding), K1
-  verkoopadvies-datalaag (`lib/verkoopadvies.ts` + `lib/verkoopadviesLaden.ts`:
-  het fase-11-contract + `verkoopadviesGereedheid()`, live getest: 0,9 s), K2
-  dode importcode weg + "locatie benaderd" in Transacties opzoeken.
-- **Snelheid (29 sep):** functies naar Frankfurt (~3× snellere servertijd) en
-  Next 16 + React 19 live. Lighthouse mobiel blijft ~65-73 op dossier en
-  marktanalyse (LCP ~5 s op traag 4G) — volgende stap is client-JS per pagina,
-  niet de server. Team-accounts i4 klaar om aan te maken (`docs/i4housing-team.md`),
-  bewust nog niet gedaan.
-- **Bouwbaar zonder data is nu vrijwel op.** Wat overblijft vraagt een keuze of
-  input van Quinn: verkoopadvies-opbouw (voorbeeld), 8.5-testrun + smoke-generatie
-  + EN-kwartaalbericht (betaald, paar euro), Next 15-upgrade (mobiel ≥ 85),
-  team-accounts (namen), kantoorprofiel i4 ("over ons", opgericht, kenmerken —
-  de gereedheidscheck meldt het als ontbrekend), Sentry (account).
-- **Let op, gecorrigeerd 27 sep:** "Transacties opzoeken" draait al sinds 6.2 op
-  de RPC `transacties_zoeken` (163 ms); de 866 ms uit `docs/data/performance.md`
-  ging over een functie zonder aanroeper. Niet opnieuw oppakken.
-- **Performance:** a11y 100; mobiel dossier ~73 (bytes gehalveerd, maar de score
-  haalt 85 nog niet — rest zit in de Next 14-runtime en render-blocking CSS);
-  meting op deze machine instabiel → PSI op de productie-URL.
-- ⚠️ Contentgeneratie: kern-call sinds 8.3 kleiner (6.000 max_tokens); echte duur
-  nog niet gemeten — eerste generatie na deploy timen.
-- **Blokkades (geen van alle blokkeert het bouwen):**
-  - Verwerkersovereenkomst i4housing (concept: `docs/verwerkersovereenkomst-concept.md`):
-    **uitgesteld tot het platform in gebruik is** (besluit Quinn 28 sep). ⚠️ Let
-    op: het importeren van hun Realworks-data is al verwerking namens i4housing
-    in de zin van de AVG — de overeenkomst hoort er formeel vóór 5.5 te liggen.
-  - Brainbay- en Realworks-exports nog niet ontvangen (fase 5.1; Quinn regelt ze
-    "zo snel mogelijk", 28 sep).
-  - Brainbay-licentievoorwaarden: schriftelijk bevestigen dat tonen van
-    regionale NVM-data in een platform van een derde (VestaAI) is toegestaan.
-  - Voorbeeld-verkoopadvies van Quinn (fase 11 — bewust geblokkeerd).
-  - Twee handmatige Supabase Auth-instellingen (dashboard): self-signup uit,
-    leaked-password-protection aan. Kan niet via de MCP (geen Auth-configtool),
-    niet via een beheertoken (classifier) en niet via Claude in Chrome (niet
-    verbonden) — Quinn zet ze zelf om. Het grootste risico (aanmelding →
-    automatisch een kantoor) is sinds de hardening-migratie weg.
-  - Vercel-team staat op **Hobby**: vóór de demo naar Pro, zie § 8.
-- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? · pastelkleuren van de kaart goed
-  (`/marktanalyse/kaart`, nu de enige kaart)?
+- ⚠️ **Contentgeneratie:** kern-call sinds 8.3 kleiner (6.000 max_tokens), maar
+  de echte duur NL+EN tegen de Vercel-limiet van 300 s is nog niet gemeten —
+  zit in de betaalde testruns (§ 8 punt 6).
+- **Blokkades (geen ervan blokkeert het bouwen):** exports · Brainbay-licentie
+  · voorbeeld-verkoopadvies · verwerkersovereenkomst (uitgesteld tot in
+  gebruik, maar formeel vóór 5.5) · Vercel Hobby.
+- **Open vragen voor Quinn:** blinde evaluatieronde content (8.1) draaien? ·
+  pastelkleuren van de kaart goed?
 
 ---
 
@@ -445,140 +419,27 @@ RLS-datalek en SECURITY DEFINER-view gefixt, import-upsert gefixt, auth-checks,
 CSP, back-upscript, schemabaseline, sessieskills, concept-verwerkersovereenkomst.
 Details: `docs/besluiten.md`.
 
-### Fase 1 — UI-fundament + nieuwe schil (1.1-1.8 ✅ · rest 1 sessie)
-
-- [x] **1.9 Bugs + fallback-opruiming**
-  *Doel:* laatste zichtbare groen weg en het fallback-lek dichten.
-  *Raakt:* `components/StatusToggle.tsx:10` (kapotte class),
-  `components/FaseToggle.tsx:15,81` en `StatistiekenPaneel.tsx:89`
-  (hardgecodeerd groen), demo-knop alleen in dev/demo, `app/globals.css`,
-  `.claude/hooks/huisstijl-check.sh`.
-  *Spec:* (a) alle `var(--merk…, #hex)`-fallbacks in `app/(app)/` en
-  `components/` (behalve de uitzonderingen uit CLAUDE.md) → `var(--merk…)`;
-  (b) de fallbacks één keer centraal in `globals.css` op `:root` (VestaAI-groen
-  als default, zodat een kapotte kantoor-lookup wél zichtbaar groen wordt maar
-  niet meer per component verstopt zit); (c) hook uitbreiden met een check op
-  `var\(--merk[a-z-]*,\s*#`. Doe (a) met één zoek-vervang plus visuele controle
-  op 3 pagina's. (d) Verouderde verwijzingen in code-comments bijwerken:
-  `components/ui/StatTile.tsx:11` (`motion` fase 2.2 → geen library, zie
-  ontwerpprincipes) en `app/globals.css:8` (`roadmap.md § Besluitenlogboek` →
-  `docs/besluiten.md`). (e) **i4 Housing `huisstijl_json.vorm` van `strak`
-  naar `zacht`** (besluit 17 sep, Apple-achtig) via
-  `scripts/repair-i4housing-branding.mjs --write`, en `lib/branding.ts`
-  uitbreiden met `--merk-diep`, `--merk-licht`, `--merk-accent-zacht/-rand/-rgb`
-  (afgeleid uit primaire/accentkleur; zie `docs/ontwerp/README.md` § 2).
-  *Klaar als:* `scripts/controleer-huisstijl.mjs` meldt niets; grep op
-  `var(--merk` met een hex erin geeft 0 buiten de uitzonderingen.
-- [x] **0.1 Prototypes bijtrekken naar het referentiebeeld** *(feedback
-  Quinn 17 sep; 1 korte sessie, Sonnet-agents per bestand, geen app-code)*
-  *Doel:* alle zes prototypes in `docs/ontwerp/` zien eruit als
-  `concurrentie.html` / `startpagina.html` / `waardebepaling.html`
-  (README § 1 referentiebeeld + regel 2b), zodat "prototype = spec" één stijl
-  betekent.
-  *Raakt:* `docs/ontwerp/transacties.html` (grootste afwijking), `marktanalyse.html`,
-  `verkoopkaart.html`; README-bestandstabel; artifacts opnieuw publiceren
-  (zelfde URL's via `url`, links in `docs/besluiten.md` 17 sep).
-  *Spec transacties:* boven de tabel een tegelrij zoals concurrentie: hero
-  "n transacties in selectie" (merkverloop, delta t.o.v. vorige periode,
-  sparkline) + tegels mediaan prijs, mediaan € per m², mediaan looptijd, %
-  boven vraagprijs (elk met n); tabel in een kaart met kaartkop (titel +
-  ondertitel "gesorteerd op …"); sortering als segmented in de kaartkop i.p.v.
-  losse dropdown; rode microdetails: live-stip, tel-badges, notificatie-stip
-  op "Exporteer CSV" als er een export klaarstaat. De dichte tabel, sheet en
-  filters blijven zoals ze zijn.
-  *Spec navigatie en startpagina (besluit Quinn 17 sep, avond):* `kit.js`
-  `topbar()` wordt plat — zes pillen Overzicht · Woningdossier · Marktanalyse ·
-  Transacties · Concurrentie · Verkoopkaart, geen subnav meer (centraal in de
-  kit, want het raakt alle prototypes); `startpagina.html` zonder
-  snelkoppelingen, zonder winratio-tegel (→ "Prijs t.o.v. vraagprijs"), zonder
-  "pitches deze week"/"pitch gewonnen" (→ "verkoopadvies verstuurd"), en de
-  dossierheader zonder pitch-uitslag-schakelaar en met fasestap "Verkoopadvies"
-  i.p.v. "Acquisitie"; `waardebepaling.html` dossierheader idem.
-  *Spec marktanalyse/verkoopkaart:* kaartkoppen en tegels op de norm brengen,
-  placeholders neutraal, 2-3 rode microdetails per scherm (databadge-stip,
-  tel-badges, pin-ring op de kaart, accentstreepje bij het kwartaalbericht),
-  overlays dimmen zonder blur.
-  *Klaar als:* per bestand een screenshot op 1280 px naast het referentiebeeld
-  beoordeeld (vision-subagent, checklist `ontwerpreview`) met AKKOORD in
-  `docs/besluiten.md`; geen console-fouten; kit.css/kit.js alleen aangepast
-  als een regel in álle prototypes terugkomt (dan centraal, met notitie).
-- [x] **1.9c Geen pitch-concept, platte navigatie, startpagina zonder snelkoppelingen** *(besluit Quinn 17 sep, avond)*
-  *Doel:* het product vertelt niet meer dat er een pitch gewonnen moet worden;
-  de opdracht is zo goed als binnen zodra het verkoopadvies op papier staat.
-  Navigatie wordt plat en de startpagina rustiger.
-  *Raakt:* `components/AppTopbar.tsx`, `app/(app)/dashboard/page.tsx` +
-  `Snelkoppelingen.tsx` (weg) + `Kerncijfers.tsx`, `lib/kerncijfers.ts` (+ test),
-  `app/(app)/woningen/page.tsx` + `WoningenClient.tsx` + `PitchScorebord.tsx`
-  (weg), `app/(app)/object/[id]/FaseToggle.tsx` + `actions.ts` + `page.tsx`,
-  `lib/schemas.ts` (`PitchUitslagSchema` weg), `lib/supabase.ts` (type),
-  `app/(app)/marktanalyse/layout*` (subnav weg), CLAUDE.md § Fasemodel.
-  *Spec:* (a) topbar plat, zes pillen zonder dropdowns: Overzicht ·
-  Woningdossier (→ `/woningen`) · Marktanalyse · Transacties · Concurrentie ·
-  Verkoopkaart; de subnav van marktinzichten vervalt; actieve pil zoals in de
-  prototypes (`docs/ontwerp/kit.js` `topbar()` na item 0.1). (b) "Woning
-  toevoegen" verhuist naar de kop van `/woningen` als primaire knop; de
-  snelkoppelingen op de startpagina verdwijnen. (c) Pitch-concept weg:
-  `PitchScorebord`, winratio-tegel, uitslag-schakelaar in `FaseToggle`, de
-  server action voor de uitslag, `PitchUitslagSchema`; de kolom
-  `objecten.pitch_uitslag` blijft tot 2.1 in de database staan (geen migratie
-  nu) maar wordt nergens meer gelezen of geschreven. (f) **Fase "Acquisitie"
-  heet overal "Verkoopadvies"** (besluit Quinn 17 sep): labels in
-  `FaseToggle`, `ObjectWorkspace`, `/woningen`-filters, lege staten, seed-
-  content en hints; de interne waarde `acquisitie` blijft tot 2.1. De fasestap Verkoopadvies →
-  In verkoop zet de makelaar handmatig (bestaande `FaseToggle`). (d) De
-  vrijgekomen kerncijfer-tegel wordt "Prijs t.o.v. vraagprijs" (eigen verkopen,
-  12 mnd, met n). (e) Teksten die "pitch" zeggen (hints, lege staten,
-  seed-content) herschrijven naar "verkoopadvies".
-  *Klaar als:* `grep -ri pitch app components lib` geeft 0 treffers buiten
-  historische comments; typecheck/test groen; screenshots van dashboard,
-  woningen en topbar op 1280 px; CLAUDE.md-boom klopt.
-- [x] **1.9b DoD-tooling lokaal werkend** *(oogst van de proefrit, 17 sep)*
-  *Doel:* de Definition of Done moet zonder handwerk uitvoerbaar zijn, anders
-  wordt hij overgeslagen — precies wat de proefrit liet zien.
-  *Raakt:* `scripts/screenshots.mjs`, `scripts/controleer-huisstijl.mjs`,
-  `CLAUDE.md` § Omgeving, `.claude/skills/sessie-afronden/SKILL.md`,
-  `.claude/skills/ontwerpreview/SKILL.md`.
-  *Spec:* (a) `screenshots.mjs` draait lokaal niet: `E2E_TEST_EMAIL` ontbreekt
-  in `.env.local` en de magic-link-redirect wijst naar productie i.p.v.
-  `localhost` — laat het script inloggen zoals `controleer-huisstijl.mjs`
-  (sessiecookie via `sessieCookie()`, deel die helper) en documenteer de
-  vereiste env-variabelen bovenin het script én in CLAUDE.md; (b) beide
-  scripts falen (exit 1) op een runtime-fout (foutstaat "Er is iets
-  misgegaan", `nextjs-portal`, `pageerror`) — in `controleer-huisstijl.mjs`
-  op 17 sep gedaan, `screenshots.mjs` volgt; (c) één npm-script
-  `npm run dod:screens` dat beide op 390/1280/1920 px draait; (d) de
-  DoD-regel in § 4 en de twee skills verwijzen daarna alleen nog naar dat
-  commando.
-  *Klaar als:* `npm run dod:screens` slaagt op een schone checkout met
-  `.env.local`, en faalt aantoonbaar als een pagina de foutstaat toont.
-- [x] **1.10 Google-logo & SEO-basis** — `app/icon.png`, `favicon.ico`,
-  `apple-icon.png`; manifest repareren; canonical + JSON-LD; opengraph-image;
-  robots/sitemap (met `/woningen`, `/account`, `/dashboard` in disallow).
-  *Klaar als:* alle icoon-URL's geven 200 op productie.
-- [x] **1.11 PR `feat/nieuwe-schil` → `main`**; deploy READY; screenshots van
-  dashboard, woningen, dossier, marktanalyse bewaard als referentie.
-  *Gedaan 18 sep:* PR #20 gemerged (25 commits, fases 2.2 t/m 4), productie-
-  deploy READY op vestaai.nl, rooktest op alle ingelogde routes + de pdf-route
-  groen, geen runtime-fouten. Hiermee draait `main` weer op hetzelfde schema
-  als de database.
-- **Klaar als:** 1.9-1.11 gedaan en de "klaar als"-lijst van v1 (geen blauwe
-  balk/Verhuur, avatarmenu, startpagina, `/woningen`, account, kantoorpagina)
-  blijft groen.
+### Fase 1 — UI-fundament + nieuwe schil ✅ (18 sep 2026)
+Nieuwe schil (1.1-1.8), bugs + fallback-opruiming (1.9), geen pitch-concept en
+platte navigatie (1.9c), DoD-tooling (1.9b), prototypes bijgetrokken (0.1),
+Google-logo & SEO-basis (1.10), PR `feat/nieuwe-schil` live (1.11). Details:
+`docs/besluiten.md` 16-18 sep.
 
 ### Fase 2 — Datafundament & demo-fixture ✅ (17 sep 2026)
 
 Schema v2 + `imports` (2.1), `lib/transactiesQuery.ts` met RPC's en guard (2.2),
 demo-fixture "Demo Makelaardij" (2.3), foutlogging `meldFout` (2.4), kerncijfers
 op transactiedata (2.5). Details en besluiten: `docs/besluiten.md` 17 sep.
-**Open tussenfase:** verkenners krijgen nog alle rijen via
-`haalTransactiesVoorVerkenner`; fase 6 zet ze op de RPC's.
+De tussenfase (verkenners kregen alle rijen) is met fase 6 afgesloten: alles
+draait op de RPC's.
 
 ### Fase 3 — Dossierkern: aanmaken zonder wachten ✅ (17 sep 2026)
 
 Dossier aanmaken zonder Claude + `content_status`-lock (3.1), intake met
 woningtype-groep/-subtype (3.2), `object/new` niet meer vergrendeld (3.3),
 `DossierHeader` met klikbare fasestepper en `fase_sinds` (3.4). Details:
-`docs/besluiten.md` 17 sep. ⚠️ NL+EN-generatie ~3 min tegen 300 s limiet → fase 8.
+`docs/besluiten.md` 17 sep. ⚠️ NL+EN-generatie was ~3 min tegen 300 s limiet;
+sinds 8.3 is de kern-call kleiner, maar de echte duur is nog niet gemeten (§ 8).
 
 ### Fase 4 — Waardering die taxateurs overtuigt ✅ (18 sep 2026)
 
@@ -637,87 +498,11 @@ waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
   terugdraaien werkt; alle verkenners tonen echte, plausibele cijfers;
   backtest op echte data gedocumenteerd; tussencheck gedaan.
 
-### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht (7 sessies)
-
-- [x] **6.0 Primitives-basis uit Radix** (1 sessie, § 3.8) — `npm i` van de
-  Radix-primitives via het shadcn/ui-patroon (`components/ui/` blijft de
-  barrel; geen aparte `ui`-map ernaast), thema-mapping van shadcn's CSS-
-  variabelen op `--merk*` (kleur, `--merk-radius-*`, font) in `globals.css`,
-  `Sheet`/`Popover`/`Slider`/`Tooltip`/`Select`/`Tabs` beschikbaar en
-  gethemed, TanStack Table geïnstalleerd. Eén werkend voorbeeld: de `Drawer`
-  (Sheet) die 6.2 en 4.4 gebruiken. ⚠️ De Tailwind-`blue`-remap in
-  `tailwind.config.ts` blijft staan; shadcn gebruikt semantische tokens, geen
-  `blue`-schaal.
-  *Klaar als:* elk van deze primitives rendert in i4housing-stijl (strak,
-  merkkleur) én in VestaAI-stijl (zacht, groen) zonder hardgecodeerde kleur.
-  *Opgeleverd 19 sep, mét één afwijking van deze spec.* **Wél** de zes Radix-
-  primitives + TanStack Table; **niet** het shadcn-class-patroon. Reden: shadcn
-  stuurt kleur via Tailwind-classes op een eigen tokenlaag
-  (`--background`/`--primary`/…), en die laag zou naast `components/ui/tokens.ts`
-  een tweede waarheid worden die synchroon gehouden moet blijven — precies de
-  drift waar de VestaAI-groen-bugs vandaan kwamen. Bovendien verbiedt de
-  bouwregel in CLAUDE.md Tailwind-kleurclasses achter de login (de `blue`-schaal
-  rendert groen). De primitives zijn daarom inline gestyled met `tokens.ts` +
-  `var(--merk*)`, net als alle bestaande primitives; alleen wat een inline style
-  niet kán uitdrukken (`[data-state]`, `:focus-visible`, `[data-highlighted]`)
-  staat als `.vui-*` in `globals.css`, inclusief `prefers-reduced-motion`.
-  Geen `clsx`/`cva`/`tailwind-merge` toegevoegd. De Radix-winst (focus-trap,
-  Escape, scroll-lock, focus-herstel, botsingscorrectie, toetsenbordnavigatie)
-  is volledig binnen. Bewijs in productie: de drawer "Referentie toevoegen"
-  (4.4) draait nu op `Sheet`, met de handmatige Escape-listener eruit.
-- [x] **6.1 Marktanalyse-explorer v2** *(port van `docs/ontwerp/marktanalyse.html`
-  — bouwt daarbij `FilterBar`, `ChartCard`, `useFilterState`, `lib/opmaak.ts`,
-  `lib/grafiekThema.ts`)*
-  *Raakt:* `components/MarktanalyseExplorer.tsx`, `app/(app)/marktanalyse/page.tsx`,
-  nieuwe primitives in `components/ui/`, `lib/opmaak.ts` (+ tests),
-  `lib/grafiekThema.ts`, `hooks/useFilterState.ts` (+ test).
-  *Ontwerp:* het prototype (+ `kit.css`/`kit.js`, `docs/ontwerp/README.md`)
-  is leidend voor layout, staten en interactie: frosted filterbalk met
-  dropdown-filters (plaats/wijk met zoekveld, woningtype-taxonomie met
-  subtypes, prijs- en oppervlakschuivers, "Meer filters" met bouwjaar/
-  energielabel/kamers/perceel/kenmerken/t.o.v. vraagprijs), periode-segmented,
-  actieve filterpillen, segment B; hero-tegel in merkblauw + 4 tegels met
-  delta en sparkline; 2 vloeiende lijngrafieken met verloopvlak/crosshair/
-  eindlabels; looptijd-staven met wij-lijn; prijsklasse-balken met
-  crossfilter; kwartaalbericht-modal. Onderstaande tekst is de samenvatting,
-  niet de bron.
-  *Spec boven de vouw:* `FilterBar` (plaats/wijk multi-select met chips,
-  typegroep-`SegmentedToggle`, periode-presets 12/24/36 mnd + eigen bereik,
-  "vergelijk met segment B" als tweede rij) → rij van 5 `StatTile`s met delta
-  t.o.v. de vorige periode (mediaan prijs, mediaan € per m², mediaan looptijd,
-  % t.o.v. vraagprijs, aantal) → twee `ChartCard`s naast elkaar (prijs & € per
-  m² per kwartaal; looptijd per kwartaal), daaronder verdeling naar
-  prijsklasse (staven, klik = filter → crossfilter) en typegroep. Elke kaart:
-  n, "data t/m", skeleton bij laden. Standaardfilter = werkgebied van het
-  kantoor. Filterstand in de URL.
-  *Data:* `marktanalyseReeks` + `marktanalyseSamenvatting` (regionaal),
-  `haalEigenVerkopen` voor de eigen lijn in dezelfde grafiek ("wij" vs
-  "markt").
-- [x] **6.2 Transacties opzoeken v2** *(ontwerpsessie gedaan 17 sep →
-  `docs/ontwerp/transacties.html`, § 3.8)* — `DataTable` (TanStack,
-  server-gepagineerd via `zoekTransacties`, 50/pagina, sorteerbaar, dichte
-  rijen zoals Stripe), `Sheet` met alle velden + minikaart, "gebruik als
-  referentie" (4.4), CSV-export uitsluitend eigen verkopen (client-side uit
-  `haalEigenVerkopen`). URL-state.
-- [x] **6.3 Concurrentie v2** *(ontwerpsessie gedaan 17 sep →
-  `docs/ontwerp/concurrentie.html`, § 3.8)* — marktaandeel per plaats/typegroep/prijsklasse
-  met het eigen kantoor uitgelicht (merkkleur) en trend per jaar; matrix "wie
-  wint waar" (plaats × typegroep → top-kantoor + aandeel); "wij vs. markt"
-  (looptijd, prijs t.o.v. vraagprijs, € per m²); concurrentprofiel in een
-  `Drawer` (top 8, schrapbaar). Werkt op `verkopend_kantoor_norm`; eerlijke
-  lege staat als dat veld leeg is. *Hergebruik:* `lib/concurrentie.ts` als
-  referentie-implementatie voor de RPC-tests.
-- [x] **6.4 Kwartaalbericht** — knop "Schrijf kwartaalbericht" in de
-  marktanalyse: `lib/kwartaalbericht.ts` bouwt een feitenblad (uitsluitend
-  cijfers uit `marktanalyseSamenvatting` + reeks: mediaan prijs, € per m²,
-  looptijd, aantal, delta's, eigen aandeel), Claude schrijft 250-350 woorden in
-  de kantoortoon (stijlprofiel), NL en optioneel EN; **guardrail:** elk getal
-  in de tekst moet in het feitenblad voorkomen (controle na generatie; anders
-  één keer opnieuw); resultaat in een `Modal` met kopiëren en download `.md`.
-  Geen opslag. Model via `lib/aiModellen.ts`.
-- **Klaar als:** de kernvragen uit scène 2 en 3 in ≤ 3 klikken; filters in de
-  URL; delta's kloppen (test tegen pure functie); kwartaalbericht bevat geen
-  cijfer dat niet in het feitenblad staat.
+### Fase 6 — Marktinzichten, concurrentie & kwartaalbericht ✅ (26 sep 2026)
+Radix-primitives (6.0, zonder shadcn-classlaag — zie besluiten 19 sep),
+marktanalyse-explorer v2 (6.1), transacties opzoeken v2 op de RPC
+`transacties_zoeken` (6.2), concurrentie v2 met vijf RPC's (6.3),
+kwartaalbericht met cijfer-guardrail (6.4). Details: `docs/besluiten.md`.
 
 ### Fase 7 — Kaart ✅ (26 sep 2026)
 MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart v2, straal per woning, referentiekaart, `/woningen`-kaart; Leaflet verwijderd. Details: `docs/besluiten.md`.
@@ -743,8 +528,9 @@ MapLibre + PDOK-pastel als enige kaartstack (`components/kaart/`): verkoopkaart 
 - [x] **8.4 Brochure-pdf in kantoorstijl** — logo, kleuren, lettertype, foto's
   uit `FotoBibliotheek`, kenmerkentabel uit de intake, `brochure_stijl.slot_tekst`;
   vergelijk naast een echte i4housing-brochure (uit `seed-i4housing-content.mjs`).
-- [ ] **8.5 Virtual staging model-check** (schrapbaar) — `gemini-2.0-flash-exp`
-  pinnen of vervangen door het huidige stabiele beeldmodel; één testrun.
+- [ ] **8.5 Virtual staging model-check** (schrapbaar) — model is al vervangen
+  (`gemini-2.5-flash-image` i.p.v. `gemini-2.0-flash-exp`, 29 sep); rest: één
+  betaalde testrun met een echte foto (wacht op akkoord Quinn, § 8).
 - **Klaar als:** blinde vergelijking gewonnen (Quinn); i4housing-tekst volgt het
   sjabloon 1-op-1 in NL en EN; brochure niet te onderscheiden van hun eigen werk;
   scène 5 loopt met timer.
@@ -767,8 +553,10 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 
 ### Fase 12 — Demo-klaar & productierijp (3 sessies)
 
-- [ ] **12.1 Team-accounts i4housing** — via `/admin/kantoor/[id]` de vijf
-  makelaars met hun echte naam (wachtwoorden van Quinn); begroeting op
+- [ ] **12.1 Team-accounts i4housing** — via `/admin/kantoor/[id]` de zes
+  makelaars uit `docs/i4housing-team.md` (namen bevestigd 29 sep; wachtwoorden
+  van Quinn; ⚠️ `addMakelaarAccount` mailt direct — aanmaken zonder mail, of pas
+  vlak voor de demo); begroeting op
   `/dashboard` met voornaam; teamfoto als banner via het bestaande
   `achtergrond_url`-veld in `HuisstijlForm.tsx` (geen apart `bannerfoto`-veld
   nodig; Quinn keurt de foto goed).
@@ -779,6 +567,19 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 - [x] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
   (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
   op echte data gelogd in `docs/data/performance.md`.
+  Desktop > 85 en a11y 100 gehaald; **mobiel > 85 niet** (alleen het
+  dashboard) → vervolg in 12.6.
+- [ ] **12.6 Performance mobiel, ronde 2** *(29-30 sep, loopt)* — meten met
+  `scripts/meet-lighthouse.mjs` (ingelogd, productie, mediaan van 3 runs;
+  nulmeting `docs/data/lighthouse-voor-perfronde.json`: dashboard 87,
+  marktanalyse 64, concurrentie 51, woningen 82, dossier 58). Diagnose: het
+  LCP-element is overal de h1 uit de server-HTML, 87 % van de LCP is render
+  delay (wachten op JS-download en hydratie op traag 4G). Aanpak: recharts lazy
+  (P1), `react-dom/server` uit de kaartlagen en dossier-tabs pas mounten bij
+  het eerste bezoek (P2), kantoorfonts zonder preload, Plausible `lazyOnload`,
+  `sideEffects` + directe imports voor de ui-barrel.
+  *Klaar als:* nameting op productie vastgelegd naast de nulmeting; wat de 85
+  nog tegenhoudt benoemd.
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
 - [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/demoscript.md` (§ 2 uitgewerkt tot
@@ -861,74 +662,94 @@ zodra fase 1 is gemerged; binnen fase 5 mag 5.3 (geocodering) naast 5.4.
 
 ## 8. Acties Quinn
 
-1. **Brainbay-licentievoorwaarden schriftelijk** laten bevestigen (tonen van
-   regionale NVM-data in VestaAI aan i4housing zelf). Verwerkersovereenkomst:
-   uitgesteld tot het platform in gebruik is (besluit 28 sep; zie ⚠️ in
-   § Stand van zaken — de import is formeel al verwerking).
-2. **Week 1-3:** volledige Brainbay- en Realworks-exports ophalen (liefst
-   XLSX/CSV, alle jaren, met verkopend én aankopend kantoor en coördinaten als
-   dat kan).
-3. **Supabase-dashboard (nog open, 2 klikken):** self-signup uit (Auth →
-   Providers → Email → "Allow new users to sign up") en
-   leaked-password-protection aan (Auth → Attack Protection / Policies).
-4. **Vercel Pro** activeren vóór fase 12 (team staat op Hobby; Quinn 28 sep:
-   "wachten we even mee").
-5. Teamfoto i4housing goedkeuren (12.1) en de vijf namen + wachtwoorden
-   aanleveren.
-6. **Tussencheck taxateur:** `docs/waardering-methode.md` (met het
-   rekenvoorbeeld en de vijf vragen in § 6) naar de taxateur van i4 Housing
-   sturen, samen met de link naar het prototype
-   https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling
-   aanzetten). Antwoorden verwerken in § 3.3 vóór item 4.3 het paneel omzet.
-6. Search Console + omleiding Vercel-alias (na 1.10).
-7. Blind oordeel in de evaluatieset (8.1) — één keer, ± 30 minuten.
-8. Contact voor de tussencheck M1 (welke taxateur, welk adres).
-9. Voorbeeld-verkoopadvies (deblokkeert fase 11).
-10. Akkoord op de opruimmigratie (na back-up). ~~Hardening-migratie~~ —
-    toegepast op 28 sep (na back-up).
-11. Vóór het eerste betaalde contract: Supabase Pro, definitieve
-    verwerkersovereenkomst, prijsafspraak.
-13. ~~Branch pushen + PR #17 mergen~~ — geen actie meer voor Quinn: Claude
-    pusht, merget en zet live bij "rond af" (besluit 17 sep, CLAUDE.md).
-    Wel daarna: Search Console (punt 6).
-12. **Artifacts prototypes herpubliceren** (item 0.1): de zes bijgewerkte
-    bestanden staan lokaal, de gepubliceerde versies zijn nog van vóór 0.1.
-    Toestemming geven voor de upload (auto-mode blokkeerde hem), of zelf laten
-    doen in een sessie zonder auto-mode.
+Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
+
+1. **Brainbay- en Realworks-exports** aanleveren (liefst XLSX/CSV, alle jaren,
+   met verkopend én aankopend kantoor en coördinaten als dat kan). Het
+   i4-kantoor heeft nu 0 transacties (demo-kantoor: 7.996) — zonder exports
+   geen demo op eigen data. Deblokkeert 5.1 → 5.5 → M1.
+2. **Brainbay-licentie schriftelijk** laten bevestigen (tonen van regionale
+   NVM-data in VestaAI aan i4housing zelf) — vóór 5.5.
+3. **Voorbeeld-verkoopadvies** — deblokkeert fase 11 (datalaag staat klaar).
+
+**Klein, kan elk moment:**
+
+4. **Supabase-dashboard, 2 klikken** (nog open, advisor meldt het op 30 sep
+   nog): self-signup uit (Auth → Providers → Email → "Allow new users to sign
+   up") en leaked-password-protection aan (Auth → Attack Protection).
+5. **Team-accounts i4** (12.1): akkoord om de zes accounts aan te maken
+   (`docs/i4housing-team.md`), wachtwoorden, en teamfoto goedkeuren.
+6. **Akkoord betaalde testruns (paar euro):** smoke-generatie
+   (`E2E_GENERATE=1`, meet ook de echte duur NL+EN tegen de 300 s-limiet),
+   8.5 staging-testrun, EN-kwartaalbericht tegen de echte API.
+7. **Akkoord opruimmigratie** (`20260916_opruimen_ongebruikt.sql`, na
+   back-up): 4 legacy-tabellen (`post_planning`, `chatbot_leads`,
+   `chatbot_faq`, `referrals`) en 7 kolommen staan er op 30 sep nog. Kandidaat
+   om mee te nemen: tabel `wijken` (geen enkele code gebruikt hem meer).
+8. **Kantoorprofiel i4 aanvullen:** "opgericht" en kenmerken ontbreken nog
+   (de verkoopadvies-gereedheidscheck meldt het).
+9. **Oordeel pastelkleuren kaart** (`/marktanalyse/kaart`).
+10. **Akkoord: 6 ongebruikte geheimen van Vercel verwijderen** —
+    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/_PRO/_KANTOOR`
+    en `CRON_SECRET` (Stripe en de cron zijn sinds 15 sep uit de code; een
+    live Stripe-sleutel laten staan is onnodig risico). Claude kan het doen
+    via de Vercel-MCP zodra je ja zegt.
+
+**Vóór de demo / later:**
+
+11. **Vercel Pro** activeren (team staat op Hobby; "wachten we even mee", 28 sep).
+12. **Tussencheck taxateur:** `docs/waardering-methode.md` (rekenvoorbeeld +
+    vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
+    https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling aan);
+    contact noemen voor M1.
+13. **Blind oordeel content** (8.1, ± 30 min, betaalde calls) — bewust
+    uitgesteld (23 sep).
+14. **Search Console** + omleiding Vercel-alias (na 1.10).
+15. **Artifacts prototypes herpubliceren** (item 0.1): de gepubliceerde
+    versies zijn van vóór 0.1; upload werd door auto-mode geblokkeerd.
+16. **Vóór het eerste betaalde contract:** Supabase Pro, definitieve
+    verwerkersovereenkomst (⚠️ de import is formeel al verwerking — hoort er
+    vóór 5.5 te liggen), prijsafspraak. Sentry-account (backlog).
 
 ## 9. Backlog & geparkeerd
 
-**Vóór de demo oppakken (uit de sessie van 23-24 sep):** filter "Verkocht door"
-op de verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
-`20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
-makelaarsveld in de exports) · pastelkleuren van de kaart
-laten beoordelen door Quinn (`pdokPastelStijl()`).
+Opgeschoond op 30 sep 2026 (afgehandeld en daarom weg: Next-upgrade — Next 16
+live sinds 29 sep; status concurrentie-v2-RPC's — geverifieerd 27 sep;
+database-hardening — toegepast 28 sep; `PLATFORM_ADMIN_EMAILS` — staat lokaal
+én op Vercel niet, beide vallen terug op `lib/admin.ts`, dus gelijk).
 
-**Backlog na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van
-content naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden · keukentafel-/
-presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`, statusflow,
-Resend-melding — zie v1) · Next 15-upgrade · jaarlijkse
-CBS-jaargang (`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
+**Vóór de demo, wacht op data of Quinn:** filter "Verkocht door" op de
+verkoopkaart zodra `transacties.makelaar_id` gevuld kan worden (migratie
+`20260924190000_transacties_makelaar_id.sql` klaar, niet toegepast; vraagt een
+makelaarsveld in de exports) · smoke-generatie, 8.5 en EN-kwartaalbericht één
+keer echt draaien (§ 8 punt 6).
+
+**Techniek, klein (bouwbaar zonder input):** 31 meldingen van
+`eslint-plugin-react-hooks` v7 op bestaande componenten (niet in de DoD) ·
+kantoor-reset
+rate-limit is in-memory per instance (zachte rem; tabel als het ooit nodig is) ·
+Gemini-modelstring staat in `app/api/fotos/staging/route.ts`, niet in
+`lib/aiModellen.ts` (§ 11 noemt alleen Claude-modellen; verhuizen bij 8.5). · preview-deploys hebben
+op Vercel alleen `STRIPE_*`/`CRON_SECRET`/`GOOGLE_AI_API_KEY`, de rest van de
+env-vars staat alleen op production — een PR-preview is dus niet bruikbaar
+om te testen (bewust laten zolang we direct naar `main` mergen).
+
+**Na de demo:** Sentry of vergelijkbare foutmonitoring · streaming van content
+naar de UI (nu: timer + skeletons) · A/B-segmentvergelijking uitbreiden ·
+keukentafel-/presentatiemodus · maatwerkverzoeken-flow (tabel `verzoeken`,
+statusflow, Resend-melding — zie v1) · jaarlijkse CBS-jaargang
+(`lib/verrijking.ts`, tabel `85984NED`) · Supabase-mailonderwerpen
 vernederlandsen · dossiers aanmaken uit een Realworks-objectexport (hun huidige
-aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjabloon (zie observatie Verhuur in
-`docs/besluiten.md`).
+aanbod in één keer als dossiers "In verkoop") · 4RENT!-variant van het sjabloon
+(zie observatie Verhuur in `docs/besluiten.md`).
 
 **Periodieke actie (geen bouwwerk):** herimport Brainbay/Realworks met
 `scripts/import-transacties.mjs` + geocodering — terugkerend voor Quinn.
 
-**Uit de sessie van 26-27 sep:** EN-kwartaalbericht nog niet tegen de echte API getest ·
-`PLATFORM_ADMIN_EMAILS` lokaal gelijktrekken met Vercel.
-
-**Uit de sessie van 27 sep:** kantoor-reset rate-limit is
-in-memory per instance (zachte rem; tabel als het ooit nodig is) · smoke-generatietest
-(nieuwe flow, 27 sep) één keer echt draaien met `E2E_GENERATE=1` · CLAUDE.md-status van de
-concurrentie-v2-RPC's controleren (antwoordden gewoon in de meting).
-
-**Database-hardening (security-advisor, 17 sep):** ✅ toegepast op 28 sep
-(migratie `20260924_hardening_security_definer.sql`, na back-up): trigger
-`handle_new_user` weg, `anon` heeft geen EXECUTE meer op de vier
-SECURITY DEFINER-functies. `object_fotos`/`stijl_bewerkingen` zonder policy is
-bewust (24 sep nagegaan). Rest: leaked-password-protection (§ 8 punt 3).
+**Database, bewust zo:** `object_fotos`/`stijl_bewerkingen` zonder policy
+(alleen via de service-client, 24 sep nagegaan) · PostGIS/`pg_trgm` in
+`public` en `spatial_ref_sys` zonder RLS (Supabase-standaard voor PostGIS,
+verplaatsen breekt meer dan het oplevert).
 
 **Ontwerp-kit (oogst item 0.1, 17 sep):** `K.sparkline(waarden)` in `kit.js`
 (staat nu gekopieerd in vijf prototypes) · `.btn:disabled` in `kit.css` (twee

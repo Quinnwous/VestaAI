@@ -2,7 +2,11 @@
 
 import { useState, useTransition, type CSSProperties } from 'react'
 import { usePathname } from 'next/navigation'
-import { Sheet, Button, Textarea, Label, colors } from '@/components/ui'
+// Directe imports i.p.v. de barrel: via AppTopbar zit dit bestand op élke pagina.
+import { Sheet } from '@/components/ui/Sheet'
+import { Button } from '@/components/ui/Button'
+import { Textarea, Label } from '@/components/ui/Field'
+import { colors } from '@/components/ui/tokens'
 import { verstuurFeedback } from '@/app/(app)/feedback-actions'
 
 const MAX_TEKENS = 2000

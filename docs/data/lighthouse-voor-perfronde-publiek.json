@@ -1,0 +1,74 @@
+{
+  "datum": "2026-09-29T22:12:38.948Z",
+  "basis": "https://www.vestaai.nl",
+  "preset": "mobiel",
+  "runs": 3,
+  "routes": {
+    "/": {
+      "score": 86,
+      "scores": [
+        71,
+        89,
+        86
+      ],
+      "fcp": 1870,
+      "lcp": 3525,
+      "tbt": 228,
+      "si": 1931,
+      "cls": 0,
+      "jsKb": 238,
+      "lcpElement": "Eén platform voor het woningdossier: een uitlegbare waardebepaling op vergelijk… (section > div.vhg > div > p)",
+      "bootup": [
+        {
+          "url": "/",
+          "ms": 1704
+        },
+        {
+          "url": "/_next/static/immutable/chunks/2mahcckpm5_m3.js",
+          "ms": 468
+        },
+        {
+          "url": "Unattributable",
+          "ms": 387
+        },
+        {
+          "url": "/_next/static/immutable/chunks/125usdta-56nj.js",
+          "ms": 123
+        }
+      ]
+    },
+    "/login/i4housing": {
+      "score": 82,
+      "scores": [
+        81,
+        82,
+        84
+      ],
+      "fcp": 1662,
+      "lcp": 4343,
+      "tbt": 119,
+      "si": 2949,
+      "cls": 0,
+      "jsKb": 220,
+      "lcpElement": "div > div > div > img (div > div > div > img)",
+      "bootup": [
+        {
+          "url": "Unattributable",
+          "ms": 239
+        },
+        {
+          "url": "/_next/static/immutable/chunks/2mahcckpm5_m3.js",
+          "ms": 216
+        },
+        {
+          "url": "/login/i4housing",
+          "ms": 211
+        },
+        {
+          "url": "/_next/static/immutable/chunks/125usdta-56nj.js",
+          "ms": 127
+        }
+      ]
+    }
+  }
+}

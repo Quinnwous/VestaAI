@@ -19,7 +19,7 @@
  */
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip } from 'recharts'
+import dynamic from 'next/dynamic'
 import {
   Badge, EmptyState, Skeleton, SkeletonRij,
   FilterBar, FilterDropdown, FilterPills, Checkbox, SegmentedToggle,
@@ -36,6 +36,7 @@ import {
 import { PRIJSKLASSEN } from '@/lib/marktanalyse'
 import { euro, procent, dagen, datum, nlNL } from '@/lib/opmaak'
 import { woningtypeTaxonomie } from '@/lib/transactieNormalisatie'
+import type { TrendSerie } from '@/components/grafieken/ConcurrentieTrendGrafiek'
 import { typegroepLabel, type Typegroep } from '@/lib/schemas'
 import type { PlaatsWijkRij } from '@/lib/transactiesQuery'
 import { haalConcurrentieData, haalConcurrentProfiel, type ConcurrentieData } from '@/app/(app)/marktanalyse/concurrentie/actions'
@@ -58,6 +59,15 @@ function Onbeschikbaar({ tekst = 'Deze cijfers kunnen we nu niet laden. Probeer 
     <p style={{ fontSize: 12.5, color: colors.muted, margin: '4px 0', fontStyle: 'italic' }}>{tekst}</p>
   )
 }
+
+// Trendgrafiek lazy geladen (`components/grafieken/ConcurrentieTrendGrafiek.tsx`,
+// het énige bestand van de concurrentie-explorer dat recharts importeert) —
+// SSR rendert `ResponsiveContainer` toch niets zichtbaars. De skeleton krijgt
+// exact de hoogte van de omringende ChartCard-container.
+const TrendGrafiek = dynamic(
+  () => import('@/components/grafieken/ConcurrentieTrendGrafiek').then(m => m.TrendGrafiek),
+  { ssr: false, loading: () => <Skeleton height="100%" rounded={10} /> },
+)
 
 export function ConcurrentieExplorer({
   werkgebiedPlaatsen,
@@ -480,8 +490,6 @@ function PlaatsWijkKiezer({
   )
 }
 
-type TrendSerie = { key: string; naam: string; label: string; kleur: string; punten: { jaar: number; pct: number | null; n: number }[] }
-
 /** Wij + top 3 concurrenten (op totaal aantal over alle jaren) — puur presentatie, de data zelf komt al gevalideerd van de RPC. */
 function bouwTrendSeries(rijen: AandeelJaarRij[] | null): TrendSerie[] {
   if (!rijen || rijen.length === 0) return []
@@ -505,55 +513,6 @@ function bouwTrendSeries(rijen: AandeelJaarRij[] | null): TrendSerie[] {
       return { jaar, pct: totaal >= 3 ? ((rij?.aantal ?? 0) / totaal) * 100 : null, n: rij?.aantal ?? 0 }
     }),
   }))
-}
-
-function TrendGrafiek({ series }: { series: TrendSerie[] }) {
-  if (series.length === 0) return <Onbeschikbaar tekst="Onvoldoende data voor een trend." />
-  const jaren = series[0].punten.map(p => p.jaar)
-  const data = jaren.map((jaar, i) => {
-    const rij: Record<string, number | string | null> = { jaar: String(jaar) }
-    series.forEach(s => { rij[s.key] = s.punten[i]?.pct ?? null })
-    return rij
-  })
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 6, right: 12, bottom: 0, left: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
-        <XAxis dataKey="jaar" tick={{ fontSize: 11, fill: colors.muted }} axisLine={false} tickLine={false} />
-        <YAxis tick={{ fontSize: 11, fill: colors.muted }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} width={38} />
-        <RTooltip content={<TrendTooltip series={series} />} />
-        {series.map(s => (
-          <Line
-            key={s.key} type="monotone" dataKey={s.key} name={s.key} stroke={s.kleur}
-            strokeWidth={s.naam === ONS ? 2.5 : 1.5} dot={s.naam === ONS ? { r: 3, fill: s.kleur, strokeWidth: 0 } : false}
-            connectNulls
-          />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
-  )
-}
-
-function TrendTooltip({ active, payload, label, series }: { active?: boolean; payload?: { dataKey: string; value: number | null }[]; label?: string; series: TrendSerie[] }) {
-  if (!active || !payload?.length) return null
-  return (
-    <div style={{ background: 'rgba(255,255,255,.92)', backdropFilter: 'blur(12px)', border: `1px solid ${colors.border}`, borderRadius: radius.md, padding: '10px 12px', fontSize: 12, minWidth: 180 }}>
-      <div style={{ fontWeight: 800, color: colors.text, marginBottom: 5 }}>{label}</div>
-      {series.map(s => {
-        const punt = payload.find(p => p.dataKey === s.key)
-        if (!punt) return null
-        return (
-          <div key={s.key} style={{ display: 'flex', justifyContent: 'space-between', gap: 14, padding: '2px 0', color: colors.bodyStrong }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-              <i style={{ width: 8, height: 8, borderRadius: '50%', background: s.kleur, display: 'inline-block' }} />
-              {s.naam}
-            </span>
-            <b style={{ fontVariantNumeric: 'tabular-nums' }}>{punt.value == null ? '—' : procent(punt.value, false)}</b>
-          </div>
-        )
-      })}
-    </div>
-  )
 }
 
 function WieWintWaarMatrix({ matrix, onKies }: { matrix: MatrixCel[]; onKies: (kantoor: string) => void }) {

@@ -6,6 +6,23 @@
 
 ---
 
+### 30 sep 2026 (zeventiende ronde, O) — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48)
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Diagnose | Nulmeting productie (ingelogd, mobiel, mediaan van 3): dashboard 87, marktanalyse 64, concurrentie 51, woningen 82, dossier 58; landing 86, kantoorlogin 82. Het LCP-element is overal de h1 uit de server-HTML; 87 % van de LCP is **render delay** (de LCP valt na hydratie, dus rekent Lighthouse de volledige JS-download op traag 4G mee). Minder JS in de eerste lading is de hefboom, niet de server | Opus |
+| Recharts lazy (P1) | Grafieken naar `components/grafieken/` (enige recharts-importeurs), `next/dynamic` met skelet van exact dezelfde hoogte; `KwartaalberichtModal` ook lazy | Sonnet |
+| Kaartlagen + dossier (P2) | `react-dom/server` via `await import()` in de kaartlagen (59 kB weg van woningen/transacties/kaart); `ObjectWorkspace` mount secties en content-subtabs pas bij het eerste bezoek en houdt ze daarna gemount (bewerkingen blijven staan); Media/Documenten/Export-componenten via `next/dynamic` | Sonnet |
+| Layout | Kantoorfonts (Gantari, Nunito) zonder preload — een kantoor gebruikt er één, preload haalde alle 5 fontbestanden (217 kB) op élke pagina; Plausible `lazyOnload` (was een lange taak van ~0,5 s midden in de hydratie); `"sideEffects": ["*.css"]` + directe ui-imports in de layout-boom | Opus |
+| Resultaat bundel | Initieel gzip (webpack-analyse): marktanalyse 209 → 77 kB, concurrentie 197 → 65, woningen 132 → 69, transacties 161 → 91, kaart 159 → 76, layout 66 → 37, dossier 121 → 120 (winst daar: minder hydratie/fetches) | Opus |
+| Kwaliteit bewaakt | Vraag Quinn: "gaat dit ten koste van de kwaliteit?" — Nee: niets weggehaald, alleen laadvolgorde. A/B met productiebuilds van deze branch en `main` (mediaan van 4): inhoud zichtbaar even snel op alle vier pagina's (verschil ≤ 60 ms); networkidle dossier In verkoop 2,4 → 1,3 s. Merkbaar voor een gebruiker: grafiek verschijnt met een skelet ervoor, Media/Documenten/Export laden bij de eerste klik, kantoorfont kan bij het allereerste bezoek heel kort in de terugvalletter staan, Plausible telt een bezoek < 1 s mogelijk niet | Quinn + Opus |
+| Repetitie-waarschuwingen | De 3 "traag > 3 s"-waarschuwingen in scène 4 bestonden al op `main` (gemeten): ze meten tot networkidle incl. kaarttegels, niet wat de gebruiker ziet | Opus |
+| Meetscript | `scripts/meet-lighthouse.mjs` (ingelogd via sessiecookie, `--anoniem` voor publiek, mediaan van n runs, `--label` → `docs/data/lighthouse-<label>.json`). Productie is `www.vestaai.nl` (kale domein stuurt door) | Opus |
+| Browsertabbladen | `@next/bundle-analyzer` opende bij elke analyse-build 3 tabbladen bij Quinn → `openAnalyzer: false` | Quinn + Opus |
+| Kantoor-admin-achterdeur | Policy "admin mag kantoor bijwerken" liet de ene makelaar met `role = 'admin'` zijn kantoorrij (huisstijl, instellingen, naam) via REST wijzigen — in strijd met "platform-admin-beheerd". De app schrijft nergens met de sessie-client naar `kantoren`. Policy + `is_kantoor_admin()` weg (`20260929230000_kantoor_admin_rest_weg.sql`, toegepast; raakt geen data; rooktest productie groen) | Opus |
+| Checks | Security-advisor: alleen bekende/bewuste meldingen + leaked-password (open, § 8). `npm audit` productie 0. Schema-check groen. Vercel: 0 runtime-errors (24 u); `PLATFORM_ADMIN_EMAILS` staat lokaal én op Vercel niet (gelijk). Gevonden: 6 ongebruikte geheimen op Vercel (5× `STRIPE_*`, `CRON_SECRET`) → § 8, verwijderen na akkoord | Opus |
+| Opschoning docs | Roadmap: fases 1 en 6 ingeklapt, Stand van zaken herschreven, § 8 geverifieerd en geordend (blokkerend / klein / later), § 9 opgeschoond. CLAUDE.md: datamodel `objecten` klopte niet (`pitch_uitslag` bestaat niet meer), `content_keuzes`-regel en migratiestatus bijgewerkt. Verouderde "nog niet toegepast"-commentaren in 6 bestanden rechtgezet. Opgeruimd: een gemergde, vergeten worktree van 28 sep (H4) | Opus |
+
 ### 29 sep 2026 (zestiende ronde) — Next.js 16 + React 19 live (PR #46), meting
 
 | Onderwerp | Besluit | Door |

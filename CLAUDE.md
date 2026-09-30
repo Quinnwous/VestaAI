@@ -125,6 +125,8 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 ⚠️ **Een dynamic import beschermt de kinderen niet** — les 27 sep 2026 (12.3): `BasisKaart` was `dynamic(ssr:false)`, maar de laag-componenten (`VerkopenLaag`, `ReferentiesLaag`, `WoningenKaartLaag`) importeerden zelf `maplibre-gl`, dus 278 kB gzip zat alsnog in de hoofdbundel van elke kaartpagina. Zware libs in een laag: alleen het type statisch importeren, de runtime via `await import()` in het effect. Controleer met `ANALYZE=true npm run build`.
 
+⚠️ **Mobiele performance = JavaScript in de eerste lading** — les 30 sep 2026 (12.6): het LCP-element is overal de h1 uit de server-HTML, maar 87 % van de LCP was "render delay" — de LCP valt na de hydratie, dus telt Lighthouse de hele JS-download op traag 4G mee. Regels: `recharts` alleen in `components/grafieken/` en via `next/dynamic` (skelet met exact dezelfde hoogte); nooit `react-dom/server` statisch in client-code (`await import()` in het effect); dossier-tabs in `ObjectWorkspace` mounten pas bij het eerste bezoek (tests/scripts die een verborgen tab nodig hebben: eerst klikken); een nieuw font in `app/layout.tsx` krijgt `preload: false` tenzij élke pagina het gebruikt; externe scripts `lazyOnload`. Meten: `node --env-file=.env.local scripts/meet-lighthouse.mjs` (mediaan van 3, productie; `--anoniem` voor publiek). Bundel: `ANALYZE=true npm run build` (opent geen browser meer, rapporten in `.next/analyze/`).
+
 ⚠️ **Kaarten laden lazy** (sinds 27 sep 2026): `BasisKaart` mount MapLibre pas als de kaart binnen 200 px van de viewport komt. Staat een kaart boven de vouw (hoofdinhoud van de pagina), geef dan `direct` mee — anders ziet de gebruiker eerst een skelet.
 
 ⚠️ **BAG-API (Kadaster): vrije tekst via `q`, `pageSize` ≥ 10** — les 27 sep 2026: de adres-autocomplete en het voorvullen van bouwjaar/oppervlakte deden ongemerkt niets (hoe lang precies is niet nagegaan), omdat `/adressen?zoekresultaat=…` een 400 gaf en de routes dat stil tot "leeg" opvouwden. Alles loopt nu via `lib/bag.ts` (`q`, `adressenuitgebreid` voor bouwjaar + oppervlakte in één call, header `Accept-Crs: epsg:28992`); een mislukte call wordt gelogd. Zelfde les als bij de verrijking: een externe bron die faalt mag nooit ongemerkt als "geen resultaat" doorgaan.
@@ -159,7 +161,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 
 **Landingspagina** (`components/LandingPageClient.tsx`) — het oorspronkelijke, uitgebreide marketingontwerp. Geen prijzen, geen zelf-aanmelden — CTA's wijzen naar `/contact` (toegang aanvragen) of `/login`. Nieuwe kantoren worden handmatig klaargezet via `/admin`.
 
-**Content-vlag** (`lib/features.ts`, `CONTENT_VERGRENDELD`) — momenteel `false` (ontgrendeld). Zet 'm op `true` om de contentsuite in één keer weer op slot te zetten. Content genereert sinds 16 sep 2026 altijd **NL + EN parallel** (`generateContentBeideTalen` in `lib/claude.ts`, draait de bestaande generateContent-pipeline twee keer — Engels is best-effort en blokkeert NL niet bij falen); `ResultTabs.tsx` toont een NL/EN-toggle zodra Engelse content bestaat, bewerken/herschrijven blijft uitsluitend op NL werken. De vinkjes in intakestap 5 (`content_keuzes`) filteren sinds 8.3 niets meer (`toepassenContentKeuzes()` is weg) — opruimen staat als volgend item in de roadmap. **Tekstsjabloon** (item 8.2): `huisstijl_json.tekstsjabloon` schrijft de opbouw van `funda_tekst` hard voor (openingslabel, koppen in volgorde, slotzin, richtlengte, EN-koppen/-slotzin); `lib/tekstsjabloon.ts` rendert het als derde cachebaar systeemblok en valideert de output, met bij een afwijking één gerichte herkansing van alleen `funda_tekst` (sinds 8.3; alleen als de kern-call < 110 s duurde). Beheer via `/admin/kantoor/[id]` → Tekstsjabloon. **Outputset v2** (item 8.3): de kern-call levert 7 velden (Funda, brochure, Instagram, LinkedIn, WhatsApp-sneak-preview, koper-e-mail, buurt); extra's (open huis, follow-ups, videoscript, energieadvies, FAQ) komen op knopdruk via `POST /api/object/[id]/extra?type=` (409 zolang de kern loopt) en blijven bij opnieuw genereren staan (`behoudExtras()` in `lib/contentExtra.ts`). Lees `outputs_json` in de UI altijd via `metLegacyFallback()` (`ResultTabs.tsx`) — het komt ongevalideerd uit de database en oude dossiers missen de nieuwe velden.
+**Content-vlag** (`lib/features.ts`, `CONTENT_VERGRENDELD`) — momenteel `false` (ontgrendeld). Zet 'm op `true` om de contentsuite in één keer weer op slot te zetten. Content genereert sinds 16 sep 2026 altijd **NL + EN parallel** (`generateContentBeideTalen` in `lib/claude.ts`, draait de bestaande generateContent-pipeline twee keer — Engels is best-effort en blokkeert NL niet bij falen); `ResultTabs.tsx` toont een NL/EN-toggle zodra Engelse content bestaat, bewerken/herschrijven blijft uitsluitend op NL werken. De vinkjes in intakestap 5 zijn weg; `content_keuzes` bestaat alleen nog als optioneel schemaveld voor oude dossiers (bewust, 29 sep). **Tekstsjabloon** (item 8.2): `huisstijl_json.tekstsjabloon` schrijft de opbouw van `funda_tekst` hard voor (openingslabel, koppen in volgorde, slotzin, richtlengte, EN-koppen/-slotzin); `lib/tekstsjabloon.ts` rendert het als derde cachebaar systeemblok en valideert de output, met bij een afwijking één gerichte herkansing van alleen `funda_tekst` (sinds 8.3; alleen als de kern-call < 110 s duurde). Beheer via `/admin/kantoor/[id]` → Tekstsjabloon. **Outputset v2** (item 8.3): de kern-call levert 7 velden (Funda, brochure, Instagram, LinkedIn, WhatsApp-sneak-preview, koper-e-mail, buurt); extra's (open huis, follow-ups, videoscript, energieadvies, FAQ) komen op knopdruk via `POST /api/object/[id]/extra?type=` (409 zolang de kern loopt) en blijven bij opnieuw genereren staan (`behoudExtras()` in `lib/contentExtra.ts`). Lees `outputs_json` in de UI altijd via `metLegacyFallback()` (`ResultTabs.tsx`) — het komt ongevalideerd uit de database en oude dossiers missen de nieuwe velden.
 
 **Toegang** (`app/admin/`) — puur admin-beheerd, geen plan of proefperiode. De platform-admin maakt via `/admin` een kantoor aan (`createKantoor`) en koppelt daar accounts aan met een zelfgekozen wachtwoord (`addMakelaarAccount`), ook voor extra teamleden bij een bestaand kantoor (via `/admin/kantoor/[id]`, `VoegTeamlidToe.tsx`/`TeamBeheer.tsx`). Intrekken van toegang gaat via `setActief` (bant/ontbant alle auth-users van een kantoor). Zelf-aanmelden en self-serve teamuitnodigingen bestaan niet meer (geen `/auth/verify`-flow meer).
 
@@ -173,7 +175,7 @@ Eerste pilotkantoor: **i4 Housing** (Wassenaar, NVM). Geverifieerd uit hun eigen
 | Virtual staging | Gemini API — `gemini-2.5-flash-image` ("Nano Banana", `app/api/fotos/staging/route.ts`) (`GOOGLE_AI_API_KEY`) |
 | Transactiedataset (waardering, marktinzichten, kaart) | i4housing's eigen Realworks-verkoopdata + overige verkopen, CSV-import via `/admin/transacties` |
 | Kaart | MapLibre GL + PDOK BRT-Achtergrondkaart-vectortiles (pastel), één stack in `components/kaart/` — Leaflet is weg sinds item 7.4 |
-| Grafieken | `recharts` |
+| Grafieken | `recharts` — alleen in `components/grafieken/`, lazy geladen (12.6) |
 | PDF export | react-pdf — ⚠️ de ingebouwde Helvetica is **WinAnsi**: `·` `•` `×` `²` `—` `€` renderen, maar `⚠` (U+26A0) en de meeste emoji niet. Styles worden pas tijdens het renderen gevalideerd, dus typecheck én build zien een kapotte style-prop níet — dek een nieuw pdf-document af met een test die hem écht rendert (`components/WaardebepalingPdfTemplate.test.ts`). Een logo-URL altijd eerst door `bruikbaarLogo()`: `<Image>` kent geen `onError` en een dode URL laat de hele generatie klappen |
 | Transactionele e-mail | Resend |
 | Styling | Tailwind CSS |
@@ -188,7 +190,9 @@ Geen betalingsverwerker meer — Stripe is volledig verwijderd (zie "Prijzen" hi
 kantoren:     id, name, logo_url, huisstijl_json, instellingen_json
 makelaars:    id, kantoor_id, name, email, role  -- role stuurt sinds 16 sep geen rechten meer
 objecten:     id, kantoor_id, makelaar_id, address, input_json, outputs_json, outputs_json_en,
-              created_at, status, fase, pitch_uitslag, lat, lng, waardering_json, usps_structuur
+              created_at, status, fase, lat, lng, waardering_json, usps_structuur,
+              notitie, verrijking_json, content_status, content_gegenereerd_op,
+              content_bezig_sinds, fase_sinds
 transacties:  id, kantoor_id, adres, postcode, plaats, wijk, buurt, geo (geography),
               verkoopprijs, vraagprijs, verkoopdatum, looptijd_dagen, woningtype,
               woonoppervlak_m2, perceel_m2, inhoud_m3, bouwjaar, energielabel, kamers,
@@ -199,7 +203,7 @@ transacties:  id, kantoor_id, adres, postcode, plaats, wijk, buurt, geo (geograp
 
 `huisstijl_json.primaire_kleur` + `.accent_kleur` voeden `lib/branding.ts`. `instellingen_json` (courtage, kantoorprofiel, werkgebied) volgt `lib/schemas.ts` `KantoorInstellingenSchema`.
 
-Nog niet toegepast op de database (migraties staan klaar in `supabase/migrations/`, vereisen Quinns akkoord): het opruimen van `post_planning`/`chatbot_leads`/`chatbot_faq`/`referrals` en de kolommen `kantoren.plan`/`trial_ends_at`/`stripe_id`/`referral_code`/`objecten.chat_publiek`/`chat_foto_url`/`object_documenten.publiek_chatbaar` — allemaal ongebruikt sinds de koerswijzigingen van 15 en 16 sep 2026.
+Nog niet toegepast op de database (migraties staan klaar in `supabase/migrations/`, vereisen Quinns akkoord; gecontroleerd 30 sep 2026): het opruimen van `post_planning`/`chatbot_leads`/`chatbot_faq`/`referrals` en de kolommen `kantoren.plan`/`trial_ends_at`/`stripe_id`/`referral_code`/`objecten.chat_publiek`/`chat_foto_url`/`object_documenten.publiek_chatbaar` — allemaal ongebruikt sinds de koerswijzigingen van 15 en 16 sep 2026 — en `transacties.makelaar_id` (wacht op een makelaarsveld in de exports). De tabel `wijken` wordt door geen code meer gebruikt (kandidaat voor de opruimmigratie).
 
 ## Prijzen
 
@@ -243,6 +247,7 @@ VestaAI/
 │   ├── LandingPageClient.tsx   # uitgebreide marketing-landingspagina
 │   ├── InAanbouw.tsx           # herbruikbaar paneel voor bewust vergrendelde functies
 │   ├── InlogFormulier.tsx      # gedeelde login (generiek VestaAI-groen of kantoorstijl)
+│   ├── grafieken/              # énige recharts-importeurs, lazy geladen door de explorers (12.6)
 │   ├── kaart/                  # MapLibre-stack (fase 7): BasisKaart, VerkopenLaag, StraalLaag, HoverKaart,
 │   │                           #   ReferentiesLaag/SubjectPin/ReferentiePin, KaderLaag (herkaderen na mount);
 │   │                           #   worker zelf gehost in public/maplibre-gl/ (guard-test)

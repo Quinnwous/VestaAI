@@ -50,11 +50,10 @@ create table if not exists kantoren (
   -- verwijderd 15 sep 2026) — verwijderen via de goedgekeurde opruimmigratie
   -- 20260916_opruimen_ongebruikt.sql (nog niet uitgevoerd, vereist akkoord Quinn).
 );
--- Policies: "makelaar ziet eigen kantoor" (select, authenticated, id = my_kantoor_id()),
---           "admin mag kantoor bijwerken" (update, authenticated, id = my_kantoor_id() AND is_kantoor_admin())
--- ⚠️ is_kantoor_admin() checkt makelaars.role='admin', maar sinds 16 sep 2026
---    stuurt role geen rechten meer binnen de app-laag — controleren of dit
---    beleidsverschil ergens een functionele blokkade geeft (fase 8-onderzoek).
+-- Policies: "makelaar ziet eigen kantoor" (select, authenticated, id = my_kantoor_id()).
+-- Geen schrijf-policy: kantoren wordt alleen via de service-client gewijzigd
+-- (platform-admin). "admin mag kantoor bijwerken" + is_kantoor_admin() zijn
+-- weggehaald in 20260929230000_kantoor_admin_rest_weg.sql.
 
 -- makelaars (RLS: aan)
 create table if not exists makelaars (
@@ -112,8 +111,9 @@ create table if not exists objecten (
 --           "makelaar mag eigen object verwijderen" (delete, public, makelaar_id = auth.uid()),
 --           "admin mag kantoor-objecten wijzigen" (update, authenticated, kantoor_id = my_kantoor_id() AND is_kantoor_admin()),
 --           "admin mag kantoor-objecten verwijderen" (delete, authenticated, kantoor_id = my_kantoor_id() AND is_kantoor_admin())
--- ⚠️ TE VERIFIËREN (fase 8): update/delete zijn beperkt tot makelaar_id = auth.uid()
---    (eigen dossier) of role='admin' (kantoor-admin, sinds 16 sep afgeschaft).
+-- ⚠️ Achterhaald: sinds 20260928100000_rls_kantoorbreed_en_initplan.sql zijn
+--    select/insert/update/delete kantoorbreed ((select my_kantoor_id())), zonder
+--    eigenaar- of admin-voorwaarde.
 --    Bij "één rol per kantoor" zou elke collega elk dossier moeten kunnen
 --    bewerken — check of app-mutaties via service-role lopen (dan is dit geen
 --    probleem) of via de sessie-gebonden client (dan faalt een collega-edit
@@ -226,8 +226,8 @@ create table if not exists imports (
 -- handle_new_user()   — vroegere signup-trigger; GEEN trigger meer aanwezig
 --                        op auth.users (geverifieerd 17 sep 2026 — pg_trigger
 --                        bevat geen enkele trigger met deze naam)
--- is_kantoor_admin(), my_kantoor_id() — nog actief gebruikt in RLS-policies,
---                        NIET dood, blijven staan
+-- my_kantoor_id()     — actief gebruikt in RLS-policies, blijft staan.
+--                        (is_kantoor_admin() weg sinds 20260929230000.)
 
 -- ── Overige advisory-bevindingen (17 sep 2026, niet met dit account op te
 --    lossen of bewust uitgesteld) ─────────────────────────────────────────
