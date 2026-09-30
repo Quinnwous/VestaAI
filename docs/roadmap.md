@@ -2,7 +2,7 @@
 
 > **Dit is het leidende plan.** Begin elke sessie bij § 📍 Stand van zaken.
 > Besluiten en opleveringen staan in `docs/besluiten.md` (logboek), strategie in
-> `docs/goals.md`, ontwerpregels in `docs/ontwerpprincipes.md`.
+> `docs/strategie/doelen.md`, ontwerpregels in `docs/ontwerp/principes.md`.
 >
 > **Voor Sonnet — zo gebruik je dit document.** Neem het item dat in Stand van
 > zaken als "volgende" staat. Elk item heeft *Doel · Raakt · Hergebruik · Spec ·
@@ -30,7 +30,7 @@
   linkcheck + toetsenbordronde in `dod:screens` en AA-contrast per kantoor
   (`knopKleur`, `--merk-tekst`), lint op 0, ontwerp-kit opgeschoond en alle zes
   prototypes herpubliceerd, opruimmigratie toegepast, kantoorprofiel i4
-  compleet, demo-dossiers gekozen (`docs/demoscript.md`).
+  compleet, demo-dossiers gekozen (`docs/i4housing/demoscript.md`).
 - **Open en bouwbaar zonder input:** niets meer. Alles wat nog op de roadmap
   staat wacht op Quinn (§ 8) of op data.
 - **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
@@ -80,7 +80,7 @@ eerste gebruiker, en liet de demo pas in de laatste fase vorm krijgen. v2:
    WOZ als ijkpunt, handmatige referenties, backtest, en één tussencheck bij
    hun taxateur.
 6. **Content in hún format** (§ 3.4): het 4SALE!-sjabloon uit
-   `docs/i4housing-onderzoek.md` wordt een gestructureerd model, de outputset
+   `docs/i4housing/onderzoek.md` wordt een gestructureerd model, de outputset
    is teruggesnoeid tot wat ze gebruiken, en er komt een
    sneak-preview-WhatsApp-bericht en een kwartaalbericht op echte cijfers bij.
 7. **Import via script** (concierge-model), niet via een 1 MB-upload.
@@ -180,7 +180,7 @@ schrapvolgorde.
 > `WaarderingOpslagSchema` in `lib/schemas.ts`, 22 + 13 tests en een
 > synthetische backtest (`lib/waardering.backtest.test.ts`, generator
 > `lib/waardering.synthetisch.ts`). Uitleg in makelaarstaal met rekenvoorbeeld:
-> `docs/waardering-methode.md`. De regels hieronder zijn daarop bijgewerkt;
+> `docs/waardering/methode.md`. De regels hieronder zijn daarop bijgewerkt;
 > Sonnet sluit in fase 4 alleen RPC's, actions en UI aan.
 
 - **Kandidaten:** `referenties_in_straal`, zelfde `woningtype_groep`
@@ -238,7 +238,7 @@ schrapvolgorde.
   v1-json (`{ correctie }`) wordt bij lezen gemigreerd (`migreerWaarderingJson`).
 - **Backtest** (`scripts/backtest-waardering.mjs`): elke eigen verkoop van de
   laatste 24 maanden wordt gewaardeerd met uitsluitend transacties van vóór
-  haar verkoopdatum. Rapport in `docs/waardering-backtest.md`: mediaan
+  haar verkoopdatum. Rapport in `docs/waardering/backtest.md`: mediaan
   absolute fout, % binnen bandbreedte, per typegroep. Demo-lat: mediaan fout
   ≤ 7 %, ≥ 75 % binnen de band. Niet gehaald → bandbreedte verbreden
   (`BAND_PERCENTIELEN`), geen schijnzekerheid. Synthetisch (17 sep, 400
@@ -379,7 +379,7 @@ hook en skills niet):**
 - `npm run dod:screens` groen (huisstijlcheck + screenshots op 390/1280/1920 px;
   start zelf een dev-server als er geen draait; faalt op VestaAI-groen, foutstaat,
   `pageerror` en niet-2xx), en de screenshots in `screenshots/` beoordeeld tegen
-  `docs/ontwerpprincipes.md`; op 390 px breekt niets.
+  `docs/ontwerp/principes.md`; op 390 px breekt niets.
 - **Elke geraakte route is écht bekeken**: geen foutstaat, geen
   Next-error-overlay. Een check die "schoon" meldt op een gecrashte pagina
   telt niet (proefrit 17 sep: de startpagina crashte terwijl alles groen was).
@@ -447,7 +447,7 @@ handmatig uitsluiten/toevoegen (4.4), kenmerk-effecten via vergelijkbare paren
 (4.5), paneel geport uit het prototype incl. referentiekaart (4.6),
 waardebepaling-pdf van één pagina in kantoorstijl (4.7), backtest (4.8).
 **Backtest: mediane fout 6,1 % · 76 % binnen de band** — demo-lat (≤ 7 % /
-≥ 75 %) gehaald, `docs/waardering-backtest.md`. Details: `docs/besluiten.md`
+≥ 75 %) gehaald, `docs/waardering/backtest.md`. Details: `docs/besluiten.md`
 17-18 sep.
 
 ### Fase 5 — Echte data: import i4housing (4 sessies; start zodra de exports er zijn, parallel aan fase 4 vanaf 4.3)
@@ -552,7 +552,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 ### Fase 12 — Demo-klaar & productierijp (3 sessies)
 
 - [ ] **12.1 Team-accounts i4housing** — via `/admin/kantoor/[id]` de zes
-  makelaars uit `docs/i4housing-team.md` (namen bevestigd 29 sep; wachtwoorden
+  makelaars uit `docs/i4housing/i4housing-team.md` (namen bevestigd 29 sep; wachtwoorden
   van Quinn; ⚠️ `addMakelaarAccount` mailt direct — aanmaken zonder mail, of pas
   vlak voor de demo); begroeting op
   `/dashboard` met voornaam; teamfoto als banner via het bestaande
@@ -564,12 +564,12 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   (fixture + i4housing) via REST: kantoor A ziet 0 rijen van B.
 - [x] **12.3 Performance** — Lighthouse op dashboard/marktanalyse/dossier
   (> 85 performance, > 95 accessibility), `@next/bundle-analyzer`, RPC-timings
-  op echte data gelogd in `docs/data/performance.md`.
+  op echte data gelogd in `docs/metingen/performance.md`.
   Desktop > 85 en a11y 100 gehaald; **mobiel > 85 niet** (alleen het
   dashboard) → vervolg in 12.6.
 - [x] **12.6 Performance mobiel, ronde 2** *(29-30 sep, PR #48 live)* — meten met
   `scripts/meet-lighthouse.mjs` (ingelogd, productie, mediaan van 3 runs;
-  nulmeting `docs/data/lighthouse-voor-perfronde.json`: dashboard 87,
+  nulmeting `docs/metingen/lighthouse-voor-perfronde.json`: dashboard 87,
   marktanalyse 64, concurrentie 51, woningen 82, dossier 58). Diagnose: het
   LCP-element is overal de h1 uit de server-HTML, 87 % van de LCP is render
   delay (wachten op JS-download en hydratie op traag 4G). Aanpak: recharts lazy
@@ -586,7 +586,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   kaart). **Besluit Quinn 30 sep: dit is voor nu prima, geen ronde 3.**
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
-- [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/demoscript.md` (§ 2 uitgewerkt tot
+- [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/i4housing/demoscript.md` (§ 2 uitgewerkt tot
   klik-voor-klik, met terugvalplan per scène; 27 sep) · ✅ 12.5b
   `npm run demo:repetitie` (27 sep). Rest: drie demo-dossiers uit echte
   recente adressen (één per fase), Vercel Pro actief, Supabase-check de dag
@@ -773,7 +773,7 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
    nog): self-signup uit (Auth → Providers → Email → "Allow new users to sign
    up") en leaked-password-protection aan (Auth → Attack Protection).
 5. **Team-accounts i4** (12.1): akkoord om de zes accounts aan te maken
-   (`docs/i4housing-team.md`), wachtwoorden, en teamfoto goedkeuren.
+   (`docs/i4housing/i4housing-team.md`), wachtwoorden, en teamfoto goedkeuren.
 6. **Akkoord betaalde testruns (paar euro):** smoke-generatie
    (`E2E_GENERATE=1`, meet ook de echte duur NL+EN tegen de 300 s-limiet),
    8.5 staging-testrun, EN-kwartaalbericht tegen de echte API.
@@ -792,7 +792,7 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
 **Vóór de demo / later:**
 
 11. **Vercel Pro** activeren (team staat op Hobby; "wachten we even mee", 28 sep).
-12. **Tussencheck taxateur:** `docs/waardering-methode.md` (rekenvoorbeeld +
+12. **Tussencheck taxateur:** `docs/waardering/methode.md` (rekenvoorbeeld +
     vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
     https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm (deel-instelling aan);
     contact noemen voor M1.

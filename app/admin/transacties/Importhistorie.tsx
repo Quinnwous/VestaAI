@@ -167,7 +167,7 @@ function ImportRij({ imp }: { imp: ImportHistorieRij }) {
 
 /**
  * Toont het kwaliteitsrapport (`ImportRapport`, lib/importPijplijn.ts)
- * typeveilig — sinds item i2 (docs/specs/i2-admin-csv-via-pijplijn.md) geen
+ * typeveilig — sinds item i2 (docs/archief/specs/i2-admin-csv-via-pijplijn.md) geen
  * `unknown`-gegok meer: `importHistorieData.ts` heeft het al door
  * `leesImportRapport()` gehaald, dus hier hoeft alleen "geen rapport"
  * (`null`) te worden afgevangen.

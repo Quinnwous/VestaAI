@@ -2,7 +2,7 @@
  * Pure orkestratie van de importpijplijn (item 5.2, docs/roadmap.md § Fase
  * 5): ruwe rijen → mappen (`lib/importProfielen.ts` `mapRij()`) →
  * normaliseren (adres_sleutel, plaats (`canoniekePlaats()`, item J1,
- * docs/specs/j1-plaatsnormalisatie.md), woningtype-groep/sub,
+ * docs/archief/specs/j1-plaatsnormalisatie.md), woningtype-groep/sub,
  * verkopend_kantoor_norm, eigen_verkoop) → kwaliteit (`lib/transactieKwaliteit.ts`) → ontdubbelen
  * (`lib/ontdubbelen.ts`) → `{ rijen, rapport }`. Geen Supabase-afhankelijkheid
  * hier — `scripts/import-transacties.mjs` roept dit aan en doet zelf de
@@ -82,7 +82,7 @@ export type PijplijnResultaat = {
 
 /**
  * Leest `imports.kwaliteitsrapport_json` typeveilig — het komt ongevalideerd
- * uit de database (jsonb) terug (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+ * uit de database (jsonb) terug (item i2, docs/archief/specs/i2-admin-csv-via-pijplijn.md).
  * `null` bij afwezige/onherkenbare vorm (bv. een import van vóór dit rapport
  * bestond), zodat de UI (`app/admin/transacties/Importhistorie.tsx`) nooit op
  * `unknown` hoeft te gokken. Zelfde patroon als `leesImportSnapshot()` in
@@ -189,7 +189,7 @@ export function voerImportPijplijnUit(
       tuin: bronRij.tuin,
       buitenruimte: bronRij.buitenruimte,
       // Een expliciete eigen_verkoop-kolom in het bestand wint altijd van de
-      // kantoor-aliassen-afleiding (item i2, docs/specs/i2-admin-csv-via-pijplijn.md).
+      // kantoor-aliassen-afleiding (item i2, docs/archief/specs/i2-admin-csv-via-pijplijn.md).
       eigen_verkoop: bronRij.eigen_verkoop_expliciet ?? isEigenKantoor(bronRij.verkopend_kantoor, kantoorAliassen),
       verkopend_kantoor: bronRij.verkopend_kantoor,
       bron: bronRij.bron,

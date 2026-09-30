@@ -10,7 +10,7 @@
  *
  * Gebruik:
  *   node --env-file=.env.local scripts/meet-paginasnelheid.mjs [--label=voor] [--basis=https://www.vestaai.nl] [--n=8]
- * Resultaat: tabel in de terminal + JSON in docs/data/paginasnelheid-<label>.json
+ * Resultaat: tabel in de terminal + JSON in docs/metingen/paginasnelheid-<label>.json
  */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -77,7 +77,7 @@ async function main() {
     console.log(`${naam.padEnd(14)} ${String(status).padEnd(4)} regio ${regio.padEnd(11)} TTFB mediaan ${String(r.ttfbMediaan).padStart(5)} ms · p75 ${String(r.ttfbP75).padStart(5)} ms · volledig ${String(r.totaalMediaan).padStart(5)} ms`)
   }
 
-  const uitDir = path.resolve(__dirname, '..', 'docs', 'data')
+  const uitDir = path.resolve(__dirname, '..', 'docs', 'metingen')
   fs.mkdirSync(uitDir, { recursive: true })
   const uit = path.join(uitDir, `paginasnelheid-${LABEL}.json`)
   fs.writeFileSync(uit, JSON.stringify({ label: LABEL, basis: BASIS, n: N, gemetenOp: new Date().toISOString(), resultaten }, null, 2) + '\n')

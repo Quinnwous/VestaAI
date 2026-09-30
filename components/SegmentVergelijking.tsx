@@ -7,14 +7,14 @@
  * `segmentVergelijking()` en de getallen formatteert (`lib/opmaak.ts`).
  * Puur presentatie: geen fetch, geen berekening.
  *
- * Kleur (CLAUDE.md § Conventies, docs/ontwerpprincipes.md § Kleur): A =
+ * Kleur (CLAUDE.md § Conventies, docs/ontwerp/principes.md § Kleur): A =
  * `var(--merk)`, B = `var(--merk-accent)` — het verschil zelf krijgt bewust
  * géén groen/rood, alleen een neutraal teken/pijltje (een ander segment is
  * geen "goed"/"fout", zie ook `DumbbellStat`'s `gunstig={0}`-geval).
  *
  * Layout: flex-wrap i.p.v. een grid met vaste kolombreedtes, zodat de rij op
  * 390 px vanzelf naar een tweede regel breekt — geen media query nodig en
- * (docs/ontwerpprincipes.md § Layout) geen horizontale scroll van de pagina.
+ * (docs/ontwerp/principes.md § Layout) geen horizontale scroll van de pagina.
  */
 
 import { colors, radius, shadow, Skeleton, Legenda } from '@/components/ui'

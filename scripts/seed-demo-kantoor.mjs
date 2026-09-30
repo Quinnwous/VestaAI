@@ -42,7 +42,7 @@ const RESET = process.argv.includes('--reset')
 const KANTOOR_NAAM = DEMO_KANTOOR_NAAM // 'Demo Makelaardij'
 const DEMO_EMAIL = 'demo@vestaai.nl'
 const BATCH = 500
-// Canonieke schrijfwijze (item J1, docs/specs/j1-plaatsnormalisatie.md): "Den Haag", zoals lib/waardering.synthetisch.ts nu ook voor de gegenereerde transacties schrijft.
+// Canonieke schrijfwijze (item J1, docs/archief/specs/j1-plaatsnormalisatie.md): "Den Haag", zoals lib/waardering.synthetisch.ts nu ook voor de gegenereerde transacties schrijft.
 const WERKGEBIED_PLAATSEN = ['Wassenaar', 'Den Haag', 'Voorschoten', 'Leidschendam', 'Rijswijk']
 
 const log = (...a) => console.log(...a)

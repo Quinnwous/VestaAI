@@ -328,7 +328,7 @@ ${interpretatie(totaal, mediaanHaalt, bandHaalt, perGroep, trede)}
 ${mediaanHaalt && bandHaalt ? 'Beide demo-lat-doelen zijn gehaald.' : 'Niet elk doel is gehaald — zie de interpretatie hierboven voor het concrete voorstel. `lib/waardering.ts` is door dit script niet gewijzigd; een aanpassing aan de bandregels is een besluit voor de orchestrator.'}
 `
 
-  const uitpad = path.join(PROJECT_ROOT, 'docs', 'waardering-backtest.md')
+  const uitpad = path.join(PROJECT_ROOT, 'docs', 'waardering', 'backtest.md')
   fs.writeFileSync(uitpad, md)
   log(`\nrapport geschreven: ${path.relative(PROJECT_ROOT, uitpad)}`)
 }

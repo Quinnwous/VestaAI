@@ -121,7 +121,7 @@ klikken.
 Minimaal één keer het hele script van scène 1 t/m 6 doorlopen **zonder te
 pauzeren voor uitleg**, met een stopwatch per scène (streeftijden staan bij
 elke scène hieronder), en **screenshots van elk scherm** die je erna naast
-`docs/ontwerpprincipes.md` en de prototypes in `docs/ontwerp/` legt. Noteer
+`docs/ontwerp/principes.md` en de prototypes in `docs/ontwerp/` legt. Noteer
 elke hapering (trage laadtijd, afwijkende tekst, gebroken layout op het
 gebruikte scherm) en fix of plan een terugval vóórdat de echte demo begint.
 

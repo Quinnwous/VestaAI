@@ -5,11 +5,11 @@ import type { ReactNode } from 'react'
 import { colors, radius, shadow } from './tokens'
 
 /**
- * Telt op van 0 naar `waarde` in ~400ms (ease-out), zie docs/ontwerpprincipes.md
+ * Telt op van 0 naar `waarde` in ~400ms (ease-out), zie docs/ontwerp/principes.md
  * § Beweging. Respecteert `prefers-reduced-motion` — toont dan meteen de
  * eindwaarde zonder te animeren. Geen aparte animatiebibliotheek nodig voor
  * één getal-tween; die komt er pas als een concreet item hem nodig heeft
- * (zie docs/ontwerpprincipes.md § Beweging — roadmap v2 kent geen losse
+ * (zie docs/ontwerp/principes.md § Beweging — roadmap v2 kent geen losse
  * primitives-fase meer).
  */
 function useGetalTween(waarde: number, duurMs = 400) {
@@ -80,7 +80,7 @@ function Sparkline({ waarden, kleur }: { waarden: (number | null)[]; kleur: stri
 /**
  * Kerncijfer-tegel: label + geanimeerd getal + optioneel bijschrift (bv. "n=12").
  * Toont bewust géén schijnzeker getal bij weinig data — geef in dat geval
- * `waarschuwing` mee i.p.v. `waarde` (zie docs/ontwerpprincipes.md § Data).
+ * `waarschuwing` mee i.p.v. `waarde` (zie docs/ontwerp/principes.md § Data).
  *
  * Item 6.1 breidde de tegel uit met een optionele hero-variant (merkverloop,
  * zoals de eerste tegel in `docs/ontwerp/marktanalyse.html`), een delta t.o.v.

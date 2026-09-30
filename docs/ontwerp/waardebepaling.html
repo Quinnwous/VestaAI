@@ -9,7 +9,7 @@
   puur om dit prototype interactief te maken — in de app komt de uitkomst
   altijd uit lib/waardering.ts + de RPC's uit § 3.1/3.3, nooit uit JS in de
   pagina zelf. De 8 referenties + 6 drawer-kandidaten zijn synthetisch maar
-  volgen exact het rekenvoorbeeld uit docs/waardering-methode.md § 3.
+  volgen exact het rekenvoorbeeld uit docs/waardering/methode.md § 3.
 
   Wat hieronder NIET in de app hoort:
   - De rekenfuncties gewogenPercentiel()/bereken() — vervangen door
@@ -331,7 +331,7 @@
       </div>
     </div>`);
 
-  // ── Vaste feiten uit docs/waardering-methode.md § 3 ──
+  // ── Vaste feiten uit docs/waardering/methode.md § 3 ──
   const PEILDATUM_LABEL = '1 sep 2026', DATA_TM = '12 sep 2026', INDEX_TM = '2026-Q3';
   const SUBJECT = { adres: 'Dorpsstraat 12, Wassenaar', m2: 120, bouwjaar: 1965 };
   const WOZ = { waarde: 695000, peildatum: '1 jan 2025' };
@@ -510,7 +510,7 @@
     { key: 'garage', label: 'Garage', aan: true }, { key: 'tuin', label: 'Tuin', aan: true }, { key: 'energielabel', label: 'Energielabelklasse', aan: true },
     { key: 'bouwperiode', label: 'Bouwperiode', aan: true }, { key: 'grootte', label: 'Grootte (m²)', aan: true },
   ];
-  /** Alleen in de proto-staat "Met correcties" is er (in dit voorbeeld) genoeg regionale data voor de garage-correctie op Lindelaan 8 — exact het rekenvoorbeeld uit § 3 van docs/waardering-methode.md. */
+  /** Alleen in de proto-staat "Met correcties" is er (in dit voorbeeld) genoeg regionale data voor de garage-correctie op Lindelaan 8 — exact het rekenvoorbeeld uit § 3 van docs/waardering/methode.md. */
   function isToepasbaar(key) { return STAAT === 'met-correcties' && key === 'garage'; }
   function correctiesPil(correcties) {
     const keys = Object.keys(correcties || {});

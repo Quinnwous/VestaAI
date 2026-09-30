@@ -1,6 +1,6 @@
 # Waardebepaling — de methode in makelaarstaal
 
-> Voor de taxateur van i4 Housing (tussencheck, zie `docs/goals.md`) en voor
+> Voor de taxateur van i4 Housing (tussencheck, zie `docs/strategie/doelen.md`) en voor
 > wie de rekenkern aansluit (roadmap fase 4). Rekenkern: `lib/waardering.ts`
 > (v2), `lib/prijsindex.ts`; datacontract `WaarderingUitkomstSchema` in
 > `lib/schemas.ts`. Gebouwd en getest op 17 sep 2026; de bindende regels

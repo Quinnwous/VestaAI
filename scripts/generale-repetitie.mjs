@@ -1,6 +1,6 @@
 /**
  * Generale repetitie (roadmap-item 12.5b) — loopt het klik-voor-klik-
- * demoscript (`docs/demoscript.md`) automatisch af op 1920×1080 (standaard;
+ * demoscript (`docs/i4housing/demoscript.md`) automatisch af op 1920×1080 (standaard;
  * `--breedte` voor een ander formaat), meet de laadtijd per stap, en faalt
  * duidelijk zodra iets breekt dat Quinn tijdens de échte demo zou zien.
  *

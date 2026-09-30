@@ -1,5 +1,5 @@
 /**
- * Plaatsnaam-normalisatie (item J1, docs/specs/j1-plaatsnormalisatie.md).
+ * Plaatsnaam-normalisatie (item J1, docs/archief/specs/j1-plaatsnormalisatie.md).
  * Verhuisd uit lib/kerncijfers.ts (item 2.5), waar dit begon als vergelijkings-
  * hulp voor de marktaandeel-tegel op het dashboard. Nu de centrale plek voor
  * élke plaatsnaam-vergelijking én -normalisatie in de app.

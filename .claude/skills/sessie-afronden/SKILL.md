@@ -18,7 +18,7 @@ chat, ook na contextverlies — feilloos verder kan via `sessie-start`.
      `.claude/hooks/huisstijl-check.sh` op de gewijzigde bestanden; geen
      `var(--merk…, #hex)`-fallbacks).
    - `npm run dod:screens` groen en de screenshots in `screenshots/`
-     beoordeeld tegen `docs/ontwerpprincipes.md`. Elke geraakte route echt
+     beoordeeld tegen `docs/ontwerp/principes.md`. Elke geraakte route echt
      bekeken (open de png's): geen foutstaat, geen Next-error-overlay.
    - Lege/laad/foutstaat aanwezig waar relevant; geen console-errors; elke
      statistiek toont n en "data t/m".

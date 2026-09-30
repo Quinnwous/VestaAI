@@ -82,7 +82,7 @@ function StatusBadge({ status }: { status: string }) {
 /**
  * `/woningen` v2 (item 10.1, docs/roadmap.md § Fase 10) — filterbalk (zoeken,
  * fase, makelaar, sortering, tabel/kaart-toggle) + de gekozen weergave. Alle
- * standen staan in de URL (docs/ontwerpprincipes.md § Interactie). Data komt
+ * standen staan in de URL (docs/ontwerp/principes.md § Interactie). Data komt
  * al server-gefilterd/-gesorteerd binnen (page.tsx) — dit component regelt
  * alleen de interactie en de weergave zelf.
  */

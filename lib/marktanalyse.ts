@@ -15,7 +15,7 @@ import { canoniekePlaats } from './plaatsNormalisatie'
  */
 
 /**
- * Ondergrens voor een "betrouwbaar" cijfer (docs/ontwerpprincipes.md § Data:
+ * Ondergrens voor een "betrouwbaar" cijfer (docs/ontwerp/principes.md § Data:
  * "te weinig data → een waarschuwing, geen schijnzeker getal"). Gedeeld door
  * de kerncijfer-tegels en de segment-A-vs-B-vergelijking (F1) zodat beide
  * exact dezelfde drempel hanteren.
@@ -397,7 +397,7 @@ export type SegmentVergelijkingRij = {
  * mislukt" — in beide gevallen blijft segment A gewoon werken (`a` en
  * `teWeinigA` zijn onafhankelijk van `b`). Hergebruikt dezelfde
  * `berekenDelta` als de periode-delta in de kerncijfer-tegels, en dezelfde
- * `MIN_N_BETROUWBAAR`-drempel (docs/ontwerpprincipes.md § Data).
+ * `MIN_N_BETROUWBAAR`-drempel (docs/ontwerp/principes.md § Data).
  */
 export function segmentVergelijking(
   a: MarktanalyseSamenvattingRij,

@@ -5,7 +5,7 @@
  * Gebruik: <Tooltip tekst="Aantal verkopen in de periode"><button …/></Tooltip>
  * Eén <TooltipProvider> hoort hoog in de boom (staat in app/(app)/layout.tsx).
  * Alleen voor toelichting, nooit voor informatie die je nodig hebt om te kiezen —
- * die hoort zichtbaar in beeld (docs/ontwerpprincipes.md).
+ * die hoort zichtbaar in beeld (docs/ontwerp/principes.md).
  */
 
 import type { ReactNode } from 'react'

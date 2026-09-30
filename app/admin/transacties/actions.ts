@@ -32,7 +32,7 @@ async function haalKantoorAliassen(
 
 /**
  * Parseert een CSV-bestand en draait 'm door de volledige importpijplijn
- * (item i2, docs/specs/i2-admin-csv-via-pijplijn.md) — dezelfde
+ * (item i2, docs/archief/specs/i2-admin-csv-via-pijplijn.md) — dezelfde
  * `voerImportPijplijnUit()` als `scripts/import-transacties.mjs`, met bron
  * `'handmatig'` (profiel = de gedeelde `ALIASSEN`, geen bron-specifieke
  * aliassen). `null` bij een leeg bestand (geen datarij na de header).

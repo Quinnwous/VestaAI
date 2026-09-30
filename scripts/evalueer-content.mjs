@@ -23,7 +23,7 @@
  *
  * (tsx i.p.v. node: dit script importeert lib/claude.ts en lib/aiModellen.ts
  * rechtstreeks — zelfde patroon als scripts/backtest-waardering.mjs, zie
- * docs/waardering-backtest.md.)
+ * docs/waardering/backtest.md.)
  */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'

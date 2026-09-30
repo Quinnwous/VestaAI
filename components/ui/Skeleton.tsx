@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { colors, radius } from './tokens'
 
 /**
- * Laadstaat als schetsvorm i.p.v. een spinner (docs/ontwerpprincipes.md §
+ * Laadstaat als schetsvorm i.p.v. een spinner (docs/ontwerp/principes.md §
  * Data: "skeletons, nooit spinners" voor database-aggregaties). De shimmer-
  * animatie zit in globals.css (`.vui-skeleton`) zodat hij niet per gebruik
  * opnieuw als inline <style> ingevoegd hoeft te worden.

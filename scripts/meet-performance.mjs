@@ -1,7 +1,7 @@
 /**
  * Server-side querytimings op echte (demo-)data — item 12.3, docs/roadmap.md
  * § Fase 12: "RPC-/querytimings op de echte (demo-)data ... gelogd in
- * docs/data/performance.md". Meet dezelfde `lib/transactiesQuery.ts`-functies
+ * docs/metingen/performance.md". Meet dezelfde `lib/transactiesQuery.ts`-functies
  * en RPC's die dashboard/marktanalyse/transacties/concurrentie/dossier ook
  * zelf aanroepen — geen losse SQL, dus geen risico dat het meetscript iets
  * anders meet dan de app.

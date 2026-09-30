@@ -116,7 +116,7 @@
 @media (max-width: 640px) { .vui-wij-vs-markt { grid-template-columns: minmax(0, 1fr); } }
 
 /* Skeleton-laadstaat (components/ui/Skeleton.tsx) — shimmer i.p.v. spinner,
-   zie docs/ontwerpprincipes.md § Data. Neutraal grijs, geen merkkleur: een
+   zie docs/ontwerp/principes.md § Data. Neutraal grijs, geen merkkleur: een
    laadstaat is geen statusmelding. */
 .vui-skeleton {
   position: relative;

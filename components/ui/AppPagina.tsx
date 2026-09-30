@@ -7,7 +7,7 @@ import type { CSSProperties, ReactNode } from 'react'
  * `<main style={{ maxWidth: 'var(--app-breedte)', padding: '0 22px' }}>`
  * die eerder op elke pagina apart stond — dashboard, woningen, object/[id],
  * marktanalyse, kantoor (stond op een eigen 980px) en object/new (900px)
- * gebruikten allemaal een net iets andere waarde. Zie docs/ontwerpprincipes.md
+ * gebruikten allemaal een net iets andere waarde. Zie docs/ontwerp/principes.md
  * § Layout.
  */
 export function AppPagina({

@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui'
 
 /**
  * Laadstaat voor `/woningen` v2 (item 10.1) — skeletons, geen spinner
- * (docs/ontwerpprincipes.md § Data-weergave), in de vorm van de filterbalk +
+ * (docs/ontwerp/principes.md § Data-weergave), in de vorm van de filterbalk +
  * tabelweergave (de meest gekozen weergave) zodat er geen layoutsprong is
  * zodra de echte data binnenkomt.
  */

@@ -5,14 +5,14 @@
  * kenmerk-effecten via vergelijkbare paren, wat-als, migratie van de
  * opgeslagen json. Puur en getest (waardering.test.ts +
  * waardering.backtest.test.ts); methode in makelaarstaal in
- * docs/waardering-methode.md.
+ * docs/waardering/methode.md.
  *
  * (v1 — selecteerReferenties/berekenWaardebepaling/kenmerkEffect/
  * berekenWaardering — verwijderd in item 4.3, 18 sep 2026, nu het paneel op
  * v2 draait; zie git-historie als je de oude vergelijkbare-verkopen-v1-
  * implementatie terug wil zien.)
  *
- * Bewuste keuzes (F7, zie docs/goals.md § Risico's):
+ * Bewuste keuzes (F7, zie docs/strategie/doelen.md § Risico's):
  *
  * - Vergelijkbare-verkopen-methode (comparables), geen regressie: bij een
  *   kleine, één-kantoor-dataset geeft een regressie een schijnzekere
