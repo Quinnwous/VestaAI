@@ -50,7 +50,7 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
     return (
       <button
         onClick={handleOpen}
-        className="flex items-center gap-1 text-xs text-gray-500 hover:text-[var(--merk)] border border-gray-200 hover:border-[var(--merk-rand)] rounded-md px-2.5 py-1 transition-colors"
+        className="flex items-center gap-1 text-xs text-gray-500 hover:text-[var(--merk-tekst)] border border-gray-200 hover:border-[var(--merk-rand)] rounded-md px-2.5 py-1 transition-colors"
         title="Herschrijf dit onderdeel opnieuw met Claude"
       >
         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -150,7 +150,7 @@ export function StatistiekenPaneel() {
                       <p className="text-xs text-gray-500">{m.email}</p>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk)]' : 'text-gray-500'}`}>
+                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk-tekst)]' : 'text-gray-500'}`}>
                         {m.objecten}
                       </span>
                     </td>

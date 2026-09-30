@@ -24,7 +24,7 @@ const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
   // (2.97:1) — Lighthouse a11y, item 12.3. #92400E (amber-800, zelfde tint
   // als DumbbellStat/StatTile) geeft 6.6:1.
   verkoopadvies: { label: 'Verkoopadvies', color: '#92400E' },
-  in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
+  in_verkoop: { label: 'In verkoop', color: 'var(--merk-tekst)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
 
@@ -64,7 +64,7 @@ export function RecentBekeken({ items }: { items: RecentBekekenItem[] }) {
           <p style={{ fontSize: 12.5, color: colors.muted, margin: '2px 0 0' }}>de dossiers die je het laatst opende</p>
         </div>
         {items.length > 0 && (
-          <Link href="/woningen" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none', flexShrink: 0 }}>
+          <Link href="/woningen" style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', textDecoration: 'none', flexShrink: 0 }}>
             Alles bekijken
           </Link>
         )}
@@ -76,7 +76,7 @@ export function RecentBekeken({ items }: { items: RecentBekekenItem[] }) {
             titel="Nog geen dossiers bekeken"
             beschrijving="Open een woningdossier en het verschijnt hier, zodat je snel terug kunt naar waar je gebleven was."
             actie={
-              <Link href="/woningen" style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none' }}>
+              <Link href="/woningen" style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk-tekst)', textDecoration: 'none' }}>
                 Naar je woningen →
               </Link>
             }

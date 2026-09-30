@@ -40,6 +40,7 @@ vi.mock('@/lib/branding', async () => {
 import { POST } from './route'
 import { escapeIlike, _zetMinimaleDuurVoorTest, MINIMALE_DUUR_MS } from '@/lib/kantoorReset'
 import { _resetAlleEmmersVoorTest } from '@/lib/resetRateLimit'
+import { knopKleur } from '@/lib/branding'
 
 function makeRequest(body: unknown, headers: Record<string, string> = {}) {
   return new Request('http://localhost/api/auth/kantoor-reset', {
@@ -120,7 +121,7 @@ describe('POST /api/auth/kantoor-reset — reset-mail in kantoorstijl (item 9.2)
     )
     expect(sendKantoorResetEmail).toHaveBeenCalledWith(
       'makelaar@i4housing.nl',
-      expect.objectContaining({ naam: 'i4 Housing', kleur: '#0080C8' }),
+      expect.objectContaining({ naam: 'i4 Housing', kleur: knopKleur('#0080C8') }),
     )
   })
 

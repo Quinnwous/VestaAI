@@ -311,7 +311,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           <button
             type="button"
             onClick={() => genereerExtra(type, tabId)}
-            style={{ alignSelf: 'flex-start', fontSize: 13, fontWeight: 600, color: 'var(--merk)', background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '6px 12px', cursor: 'pointer' }}
+            style={{ alignSelf: 'flex-start', fontSize: 13, fontWeight: 600, color: 'var(--merk-tekst)', background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '6px 12px', cursor: 'pointer' }}
           >
             Opnieuw proberen
           </button>

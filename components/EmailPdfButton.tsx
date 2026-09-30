@@ -67,7 +67,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       {open && (
         <div style={{ position: 'absolute', top: 'calc(100% + 8px)', right: 0, zIndex: 30, background: '#fff', border: '1px solid #E1E5E9', borderRadius: 'var(--merk-radius-lg, 14px)', boxShadow: '0 12px 32px rgba(20,24,27,.12)', padding: 16, minWidth: 280 }}>
           {status === 'done' ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--merk)', fontSize: 13, fontWeight: 600 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--merk-tekst)', fontSize: 13, fontWeight: 600 }}>
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                 <path d="M5 13l4 4L19 7" />
               </svg>

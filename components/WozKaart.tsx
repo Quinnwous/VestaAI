@@ -100,7 +100,7 @@ export function WozKaart({
           </div>
           <p style={{ ...bronStijl, margin: 0 }}>
             Staat op de WOZ-beschikking van de verkoper, of zoek de woning op in het{' '}
-            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk)', fontWeight: 600 }}>
+            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk-tekst)', fontWeight: 600 }}>
               WOZ-waardeloket ↗
             </a>
             . Peildatum 1 januari 2025 hoort bij belastingjaar 2026.
@@ -158,6 +158,6 @@ const cijferGroot: React.CSSProperties = { fontSize: 24, fontWeight: 700, color:
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const veldLabel: React.CSSProperties = { display: 'grid', gap: 6, fontSize: 12.5, fontWeight: 650, color: '#5C6470' }
 const linkKnop: React.CSSProperties = {
-  fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none',
+  fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'none', border: 'none',
   cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap',
 }

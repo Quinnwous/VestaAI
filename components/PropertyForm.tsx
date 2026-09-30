@@ -725,7 +725,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
           />
           <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
             Van de WOZ-beschikking van de verkoper, of opzoeken in het{' '}
-            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
+            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk-tekst)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
           </p>
         </div>
         <div>

@@ -656,7 +656,7 @@ export function WaardebepalingPaneel({
                           <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.text, fontWeight: 700 }}>{formatEuro(r.waarde_geimpliceerd)}</td>
                           <td style={{ padding: '10px 0' }}>
                             {uitgesloten ? (
-                              <button type="button" onClick={() => onHerstellen(r)} style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              <button type="button" onClick={() => onHerstellen(r)} style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk-tekst)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' }}>
                                 Herstel
                               </button>
                             ) : (

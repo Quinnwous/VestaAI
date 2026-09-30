@@ -50,12 +50,12 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h2 style={{ fontSize: 13.5, fontWeight: 700, color: '#14181B', margin: 0 }}>Interne notitie</h2>
-          {status === 'saved' && <span className="text-xs text-[var(--merk)]">✓ Opgeslagen</span>}
+          {status === 'saved' && <span className="text-xs text-[var(--merk-tekst)]">✓ Opgeslagen</span>}
         </div>
         {!bewerkModus && (
           <button
             onClick={handleOpen}
-            style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             {notitie ? 'Bewerken' : 'Voeg toe'}
           </button>

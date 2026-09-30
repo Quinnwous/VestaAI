@@ -184,6 +184,8 @@
   border-radius: 2px;
 }
 .vui-tab:hover { color: var(--merk); }
+/* Avatarknop: de inline outline (menu open) overschrijft anders elke focusring */
+.vui-avatarknop:focus-visible { outline: 2px solid var(--merk) !important; outline-offset: 2px !important; }
 .vui-tab:focus-visible { outline: 2px solid var(--merk); outline-offset: -3px; border-radius: var(--merk-radius-sm, 10px); }
 
 /* Welkomstblok startpagina (app/(app)/dashboard/StartBanner.tsx, ontwerp uit

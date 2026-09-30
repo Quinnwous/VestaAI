@@ -53,7 +53,7 @@ export default async function KantoorPage() {
 
       <Eyebrow>Beheer</Eyebrow>
       <SerifTitle style={{ marginBottom: 8 }}>
-        <span style={{ fontStyle: 'italic', color: 'var(--merk)' }}>Kantoor</span>
+        <span style={{ fontStyle: 'italic', color: 'var(--merk-tekst)' }}>Kantoor</span>
       </SerifTitle>
       <p style={{ fontSize: 14, color: '#5C6470', margin: '0 0 32px', maxWidth: 560 }}>
         Huisstijl, courtage en kantoorprofiel stelt je platformbeheerder voor je in — hieronder zie je waarop je omgeving draait.

@@ -705,7 +705,7 @@ export function TransactiesZoeken({
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: `1px solid ${colors.border}`, borderRadius: 10, padding: '10px 12px', background: colors.surface, cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: colors.text, fontWeight: 600 }}
                 >
                   <span>{d.adres}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk-tekst)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
                 </button>
               ))}
             </div>

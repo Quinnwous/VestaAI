@@ -43,7 +43,7 @@ const FASE_TABS: { value: FaseFilter; label: string }[] = [
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'Concept', color: '#5C6470' },
-  published: { label: 'Gepubliceerd', color: 'var(--merk)' },
+  published: { label: 'Gepubliceerd', color: 'var(--merk-tekst)' },
   // #D97706 haalde met tekst óp de eigen 7%-achtergrondtint geen 4.5:1
   // (2.97:1) — Lighthouse a11y, item 12.3. #92400E (amber-800) geeft 6.6:1.
   onder_bod: { label: 'Onder bod', color: '#92400E' },
@@ -54,7 +54,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 // toont alleen de fase, geen "Gewonnen/Verloren"-uitslag meer.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
   verkoopadvies: { label: 'Verkoopadvies', color: '#92400E' },
-  in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
+  in_verkoop: { label: 'In verkoop', color: 'var(--merk-tekst)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
 
@@ -313,7 +313,7 @@ export function WoningenOverzicht({
               <button
                 type="button"
                 onClick={() => { setZoekterm(''); updateUrl({ search: '', fase: '', makelaar: '', page: '1' }) }}
-                style={{ fontSize: 13, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ fontSize: 13, color: 'var(--merk-tekst)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Wis filters
               </button>

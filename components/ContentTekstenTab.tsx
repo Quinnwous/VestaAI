@@ -134,7 +134,7 @@ export function ContentTekstenTab({
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 14, height: 14, border: '2px solid var(--merk-zacht)', borderTopColor: 'var(--merk)', borderRadius: '50%', animation: 'ctt-spin .8s linear infinite' }} />
           <style>{'@keyframes ctt-spin { to { transform: rotate(360deg); } }'}</style>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk)' }}>Content genereren (NL + EN)…</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk-tekst)' }}>Content genereren (NL + EN)…</span>
           <span style={{ fontFamily: 'monospace', fontSize: 13, color: '#5C6470' }}>{formatMmSs(verstreken)}</span>
         </div>
         <div style={{ display: 'grid', gap: 10 }}>

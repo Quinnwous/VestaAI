@@ -153,7 +153,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
         />
         <label
           htmlFor="staging-upload"
-          className={`inline-flex items-center gap-2 text-sm font-medium rounded-xl border border-gray-200 bg-white px-4 py-2.5 cursor-pointer hover:border-[var(--merk)] hover:text-[var(--merk)] transition-colors shadow-sm ${verwerken ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+          className={`inline-flex items-center gap-2 text-sm font-medium rounded-xl border border-gray-200 bg-white px-4 py-2.5 cursor-pointer hover:border-[var(--merk)] hover:text-[var(--merk-tekst)] transition-colors shadow-sm ${verwerken ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
         >
           {verwerken ? (
             <>
@@ -182,8 +182,8 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
           <div className="flex items-center gap-3">
             <span className="w-5 h-5 border-2 border-[var(--merk-rand)] border-t-[var(--merk)] rounded-full animate-spin flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-[var(--merk)]">Gemini AI is aan het werk…</p>
-              <p className="text-xs text-[var(--merk)] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
+              <p className="text-sm font-semibold text-[var(--merk-tekst)]">Gemini AI is aan het werk…</p>
+              <p className="text-xs text-[var(--merk-tekst)] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={r.gestaged} alt="" className="w-full h-full object-cover" />
-              <span className="absolute bottom-0.5 left-0.5 right-0.5 text-center" style={{ fontSize: 8, fontWeight: 700, color: 'var(--merk)', background: 'rgba(255,255,255,.85)', borderRadius: 3, padding: '1px 2px' }}>{r.stijl}</span>
+              <span className="absolute bottom-0.5 left-0.5 right-0.5 text-center" style={{ fontSize: 8, fontWeight: 700, color: 'var(--merk-tekst)', background: 'rgba(255,255,255,.85)', borderRadius: 3, padding: '1px 2px' }}>{r.stijl}</span>
             </button>
           ))}
         </div>
@@ -229,7 +229,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
               <div className="flex flex-col items-end">
                 <button
                   onClick={() => downloadGestaged(huidig)}
-                  className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5"
+                  className="text-xs font-semibold text-[var(--merk-tekst)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5"
                 >
                   Download ↓
                 </button>
@@ -239,7 +239,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
                 <button
                   onClick={() => bewaarInBibliotheek(huidig, actief)}
                   disabled={!!bewaardStatus[actief]}
-                  className="text-xs font-semibold text-[var(--merk)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5 disabled:opacity-60"
+                  className="text-xs font-semibold text-[var(--merk-tekst)] hover:text-[var(--merk-hover)] transition-colors px-2 py-1.5 disabled:opacity-60"
                 >
                   {bewaardStatus[actief] === 'klaar' ? 'Bewaard ✓' : bewaardStatus[actief] === 'bezig' ? 'Bewaren…' : 'Bewaar in bibliotheek'}
                 </button>

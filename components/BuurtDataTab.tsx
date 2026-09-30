@@ -96,7 +96,7 @@ export function BuurtDataTab({
       onClick={ververs}
       disabled={laden}
       style={{
-        fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none',
+        fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'none', border: 'none',
         cursor: laden ? 'default' : 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap',
         opacity: laden ? 0.6 : 1,
       }}
@@ -229,7 +229,7 @@ export function BuurtDataTab({
             <p style={blokLabel}>Markt in {marktEigen.plaats}</p>
             <Link
               href={`/marktanalyse?plaatsen=${encodeURIComponent(marktEigen.plaats)}`}
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: 'var(--merk-tekst)', textDecoration: 'none' }}
             >
               Bekijk in marktanalyse →
             </Link>
@@ -280,7 +280,7 @@ const cijferGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: 
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const badgeStijl: React.CSSProperties = {
   fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)',
-  background: 'var(--merk-zacht)', color: 'var(--merk)', whiteSpace: 'nowrap',
+  background: 'var(--merk-zacht)', color: 'var(--merk-tekst)', whiteSpace: 'nowrap',
 }
 
 const NIVEAU_LABEL: Record<CbsNiveau, string> = { buurt: 'buurt', wijk: 'wijk', gemeente: 'gemeente', nederland: 'NL' }

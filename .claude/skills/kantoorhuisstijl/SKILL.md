@@ -21,6 +21,7 @@ Nooit een hardgecodeerde kleur voor iets merkgebonden. Altijd:
 | `var(--merk)` | primaire kleur: knoppen, actieve staat, links |
 | `var(--merk-hover)` | hover op de primaire kleur |
 | `var(--merk-op)` | tekst bovenóp de merkkleur (nooit `#fff` hardcoderen — een licht kantoorlogo maakt witte tekst onleesbaar) |
+| `var(--merk-tekst)` | tekst en links ín de merkkleur op een lichte achtergrond — haalt altijd 4,5 : 1 op wit (item 14.4). Nooit `color: var(--merk)` voor tekst |
 | `var(--merk-zacht)` | lichte tintvlakken, geselecteerde staat |
 | `var(--merk-rand)` | randen in de merkkleur |
 | `var(--merk-diep)` | donkere variant, koppen op een tintvlak |

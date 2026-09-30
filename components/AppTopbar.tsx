@@ -282,6 +282,7 @@ export function AppTopbar({
                 aria-expanded={profielOpen}
                 aria-haspopup="menu"
                 aria-label="Accountmenu"
+                className="vui-avatarknop"
                 style={{
                   width: 34, height: 34, borderRadius: '50%', border: 'none', cursor: 'pointer',
                   background: 'var(--merk)', color: 'var(--merk-op)', fontWeight: 700, fontSize: 14,
