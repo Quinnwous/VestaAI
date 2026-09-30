@@ -103,6 +103,8 @@ export type Branding = {
   accentZacht: string
   accentRand: string
   opPrimair: string
+  /** `primair`, verdonkerd tot ≥ 4,5 : 1 contrast op wit (item 14.4) — voor links en merkgekleurde tekst. */
+  merkTekst: string
   lettertype: LettertypeKeuze
   vorm: VormKeuze
   isEigenStijl: boolean
@@ -153,6 +155,57 @@ export function luminantie(hex: string): number {
 /** Zwarte of witte tekst op deze achtergrond, afhankelijk van wat leesbaarder is. */
 export function tekstOp(hex: string): string {
   return luminantie(hex) > 0.5 ? '#0E1A13' : '#FFFFFF'
+}
+
+/** De donkere tekstkleur die `besteTekstOp`/`tekstOp` als alternatief voor wit gebruiken. */
+const DONKERE_TEKST = '#0E1A13'
+
+/**
+ * WCAG-contrastratio tussen twee kleuren (1–21). Symmetrisch: de volgorde van
+ * `a`/`b` maakt niet uit. Basis voor `besteTekstOp` en `verdonkerTotContrast`
+ * — item 14.4 (toegankelijkheid): `tekstOp`'s `luminantie > 0,5`-drempel kiest
+ * niet altijd de kleur met het hoogste contrast (bv. i4-blauw `#0080C8`: wit
+ * geeft 4,3 : 1, net onder de 4,5 : 1 voor gewone tekst).
+ */
+export function contrastRatio(a: string, b: string): number {
+  const la = luminantie(a)
+  const lb = luminantie(b)
+  const lichtste = Math.max(la, lb)
+  const donkerste = Math.min(la, lb)
+  return (lichtste + 0.05) / (donkerste + 0.05)
+}
+
+/**
+ * Kiest tussen wit en de donkere tekstkleur de kleur met het hoogste contrast
+ * op `hex` — vervangt `tekstOp`'s vaste `luminantie > 0,5`-drempel voor
+ * `opPrimair`/`--merk-op`. Bij een middenkleur (zoals i4-blauw) kan dit nog
+ * steeds onder de 4,5 : 1-AA-drempel voor gewone tekst uitkomen; dat is een
+ * bewuste ontwerpkeuze (donkere knoptekst of een donkerder merkkleur) — zie
+ * `--merk-tekst`/`verdonkerTotContrast` voor tekst/links die wél altijd AA moet halen.
+ */
+export function besteTekstOp(hex: string): string {
+  return contrastRatio(hex, '#FFFFFF') >= contrastRatio(hex, DONKERE_TEKST) ? '#FFFFFF' : DONKERE_TEKST
+}
+
+/**
+ * Verdonkert `hex` in kleine stappen (2 % dichter naar zwart per stap, tot
+ * 100 stappen) tot het contrast met `achtergrond` minstens `doel` (WCAG AA
+ * voor gewone tekst: 4,5 : 1) haalt. Haalt de kleur dat al, dan blijft hij
+ * ongewijzigd. Elke stap gaat uit van de oorspronkelijke `hex` (niet
+ * cumulatief vanaf de vorige stap) om afrondingsdrift te voorkomen. Bewaart
+ * de tint: alle kanalen worden met dezelfde factor verdonkerd, dus de
+ * verhouding tussen r/g/b — en daarmee de kleurtoon — blijft gelijk.
+ * Gebruikt voor `--merk-tekst`: de merkkleur zelf, bruikbaar voor links en
+ * merkgekleurde tekst op een witte achtergrond.
+ */
+export function verdonkerTotContrast(hex: string, achtergrond = '#FFFFFF', doel = 4.5): string {
+  if (contrastRatio(hex, achtergrond) >= doel) return hex
+  for (let stap = 1; stap <= 100; stap++) {
+    const kandidaat = donkerder(hex, stap * 0.02)
+    if (contrastRatio(kandidaat, achtergrond) >= doel) return kandidaat
+  }
+  // Uiterste terugval — zou bij een normale merkkleur nooit bereikt moeten worden.
+  return donkerder(hex, 0.98)
 }
 
 export type WebsiteWeergave = { label: string; href: string }
@@ -233,7 +286,8 @@ export function bouwBranding(kantoor: {
     accent,
     accentZacht: lichter(accent, 0.92),
     accentRand: lichter(accent, 0.72),
-    opPrimair: tekstOp(primair),
+    opPrimair: besteTekstOp(primair),
+    merkTekst: verdonkerTotContrast(primair),
     lettertype,
     vorm,
     isEigenStijl: primair !== VESTA_MERK.primair || !!kantoor?.logo_url,
@@ -280,6 +334,7 @@ export function brandingCssVars(b: Branding): React.CSSProperties {
     '--merk-accent-rand': b.accentRand,
     '--merk-accent-rgb': `${ar},${ag},${ab}`,
     '--merk-op': b.opPrimair,
+    '--merk-tekst': b.merkTekst,
     '--merk-font-heading': font.css,
     '--merk-font-body': font.css,
     '--merk-titel-stijl': vorm.titelStijl,
