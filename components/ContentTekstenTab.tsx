@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { EmptyState, Skeleton } from '@/components/ui'
 import { ResultTabs } from '@/components/ResultTabs'
@@ -52,12 +52,22 @@ export function ContentTekstenTab({
   const [status, setStatus] = useState<ObjectContentStatus>(initieleStatus)
   const [starting, setStarting] = useState(false)
   const [now, setNow] = useState(() => Date.now())
-  const pollingSindsRef = useRef(contentBezigSinds)
+  // Was een ref, maar wordt tijdens render gelezen (hieronder, voor de
+  // verstreken tijd) — dat mag niet meer (react-hooks/refs), dus gewoon state.
+  const [pollingSinds, setPollingSinds] = useState(contentBezigSinds)
 
-  useEffect(() => {
+  // `status`/`pollingSinds` volgen de server-props zodra die veranderen (na
+  // een router.refresh()) — state aanpassen tijdens render i.p.v. een effect
+  // (React-docs "Adjusting some state when a prop changes"): vergelijk met de
+  // vorige render en zet dan in dezelfde render terug.
+  const [prevInitieleStatus, setPrevInitieleStatus] = useState(initieleStatus)
+  const [prevContentBezigSinds, setPrevContentBezigSinds] = useState(contentBezigSinds)
+  if (initieleStatus !== prevInitieleStatus || contentBezigSinds !== prevContentBezigSinds) {
+    setPrevInitieleStatus(initieleStatus)
+    setPrevContentBezigSinds(contentBezigSinds)
     setStatus(initieleStatus)
-    pollingSindsRef.current = contentBezigSinds
-  }, [initieleStatus, contentBezigSinds])
+    setPollingSinds(contentBezigSinds)
+  }
 
   // Timer (tick elke seconde) + polling (elke 3s) zolang de generatie bezig is.
   useEffect(() => {
@@ -83,7 +93,7 @@ export function ContentTekstenTab({
 
   const startGeneratie = async () => {
     setStarting(true)
-    pollingSindsRef.current = new Date().toISOString()
+    setPollingSinds(new Date().toISOString())
     setStatus('bezig')
     try {
       const res = await fetch('/api/generate', {
@@ -118,8 +128,7 @@ export function ContentTekstenTab({
   }
 
   if (status === 'bezig') {
-    const sinds = pollingSindsRef.current
-    const verstreken = sinds ? now - new Date(sinds).getTime() : 0
+    const verstreken = pollingSinds ? now - new Date(pollingSinds).getTime() : 0
     return (
       <div style={{ display: 'grid', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
@@ -42,15 +42,14 @@ interface Props {
 export function InlogFormulier({ branding, slug }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [mode, setMode] = useState<Mode>('login')
+  // Lazy afgeleid bij mount i.p.v. via een effect + setState — de
+  // `mode`-parameter in de URL verandert na het laden van deze pagina niet
+  // meer zelfstandig (de "Vergeten?"-knop hieronder zet `mode` zelf al direct).
+  const [mode, setMode] = useState<Mode>(() => (searchParams.get('mode') === 'forgot' ? 'forgot' : 'login'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
-
-  useEffect(() => {
-    if (searchParams.get('mode') === 'forgot') setMode('forgot')
-  }, [searchParams])
 
   const supabase = supabaseConfigured
     ? createBrowserClient(
