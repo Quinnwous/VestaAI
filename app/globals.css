@@ -308,4 +308,4 @@
 }
 
 /* Kaartattributie (PDOK): link onderscheidbaar zonder kleur — axe link-in-text-block */
-.maplibregl-ctrl-attrib a { text-decoration: underline; }
+.maplibregl-ctrl.maplibregl-ctrl-attrib a { text-decoration: underline !important; }

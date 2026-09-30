@@ -234,7 +234,7 @@ describe('brandingRootCss (portals erven de kantoorkleuren)', () => {
   it('bevat ook --merk-tekst (item 14.4)', async () => {
     const { brandingRootCss } = await import('./branding')
     const css = brandingRootCss(bouwBranding({ name: 'Test', huisstijl_json: { primaire_kleur: I4_BLAUW } }))
-    expect(css).toContain('--merk-tekst:#007bc0;')
+    expect(css).toContain(`--merk-tekst:${verdonkerTotContrast(knopKleur('#0080C8'), '#FFFFFF', 5)};`)
   })
 })
 
@@ -317,8 +317,8 @@ describe('bouwBranding — opPrimair en merkTekst (item 14.4)', () => {
     expect(b.primair).not.toBe(I4_BLAUW)
     expect(b.opPrimair).toBe('#FFFFFF')
     expect(contrastRatio(b.opPrimair, b.primair)).toBeGreaterThanOrEqual(4.5)
-    expect(b.merkTekst).toBe(verdonkerTotContrast(I4_BLAUW))
-    expect(contrastRatio(b.merkTekst, '#FFFFFF')).toBeGreaterThanOrEqual(4.5)
+    expect(b.merkTekst).toBe(verdonkerTotContrast(knopKleur(I4_BLAUW), '#FFFFFF', 5))
+    expect(contrastRatio(b.merkTekst, '#FFFFFF')).toBeGreaterThanOrEqual(5)
   })
 
   it('laat knopKleur ongemoeid bij kleuren die al AA halen (rood, groen, geel met donkere tekst)', () => {

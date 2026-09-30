@@ -300,7 +300,9 @@ export function bouwBranding(kantoor: {
     accentZacht: lichter(accent, 0.92),
     accentRand: lichter(accent, 0.72),
     opPrimair: besteTekstOp(primair),
-    merkTekst: verdonkerTotContrast(primair),
+    // Doel 5 : 1 op wit i.p.v. precies 4,5: merktekst staat ook op lichtgrijze
+    // kaartvlakken (#F9FAFC e.d.), waar 4,5 op wit net onder de norm zakt (axe, i4).
+    merkTekst: verdonkerTotContrast(primair, '#FFFFFF', 5),
     lettertype,
     vorm,
     isEigenStijl: primair !== VESTA_MERK.primair || !!kantoor?.logo_url,
