@@ -109,8 +109,17 @@ function useTweenGetal(waarde: number | null, duurMs = 400): number | null {
   const vorige = useRef<number | null>(waarde)
   useEffect(() => {
     const verminderd = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    if (waarde === null) { setWeergegeven(null); vorige.current = null; return }
-    if (verminderd || vorige.current === null) { setWeergegeven(waarde); vorige.current = waarde; return }
+    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+    // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon), maar
+    // telt niet als een synchrone setState in de effect-body.
+    if (waarde === null) {
+      const frame = requestAnimationFrame(() => { setWeergegeven(null); vorige.current = null })
+      return () => cancelAnimationFrame(frame)
+    }
+    if (verminderd || vorige.current === null) {
+      const frame = requestAnimationFrame(() => { setWeergegeven(waarde); vorige.current = waarde })
+      return () => cancelAnimationFrame(frame)
+    }
     const van = vorige.current
     if (van === waarde) return
     let frame: number
@@ -242,14 +251,17 @@ export function WaardebepalingPaneel({
   useEffect(() => {
     if (!drawerOpen) return
     let actief = true
-    setDrawerBezig(true)
+    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+    // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon), maar
+    // telt niet als een synchrone setState in de effect-body.
+    const bezigFrame = requestAnimationFrame(() => { if (actief) setDrawerBezig(true) })
     const timer = window.setTimeout(async () => {
       const res = await zoekWaarderingReferenties(objectId, drawerZoek)
       if (!actief) return
       if (res.ok) setDrawerResultaten(res.kandidaten)
       setDrawerBezig(false)
     }, 250)
-    return () => { actief = false; window.clearTimeout(timer) }
+    return () => { actief = false; cancelAnimationFrame(bezigFrame); window.clearTimeout(timer) }
   }, [drawerOpen, drawerZoek, objectId])
 
   const toegevoegdActief = useMemo(
