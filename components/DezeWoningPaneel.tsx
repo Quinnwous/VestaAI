@@ -79,7 +79,7 @@ export function DezeWoningPaneel({ control, kantoorInstellingen }: Props) {
       }}
     >
       <div>
-        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk)', textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 4px' }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 4px' }}>
           Deze woning
         </p>
         <p style={{ fontSize: 13.5, fontWeight: 600, color: '#14181B', margin: 0, lineHeight: 1.4 }}>

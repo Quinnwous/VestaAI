@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { previewTransactieImport, bevestigTransactieImport, type ImportPreview } from './actions'
 
@@ -37,10 +37,12 @@ export function TransactieImportForm({ kantoren }: { kantoren: KantoorOptie[] })
   // Kwaliteitsregels (met name eigen_verkoop) hangen af van het gekozen kantoor —
   // wissel je van kantoor terwijl er al een bestand geladen is, dan moet de preview
   // opnieuw tegen dát kantoor draaien voordat je "Bevestigen" kunt vertrouwen.
-  useEffect(() => {
-    if (csvTekst) draaiPreview(kantoorId, csvTekst)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [kantoorId])
+  // Rechtstreeks in de handler i.p.v. een effect: het is de <select>'s eigen
+  // onChange die kantoorId verandert, geen externe prop.
+  const kiesKantoor = (nieuw: string) => {
+    setKantoorId(nieuw)
+    if (csvTekst) draaiPreview(nieuw, csvTekst)
+  }
 
   const bevestig = async () => {
     if (!kantoorId || !csvTekst) return
@@ -65,7 +67,7 @@ export function TransactieImportForm({ kantoren }: { kantoren: KantoorOptie[] })
         <label className="block text-sm font-medium text-gray-700 mb-1">Kantoor</label>
         <select
           value={kantoorId}
-          onChange={e => setKantoorId(e.target.value)}
+          onChange={e => kiesKantoor(e.target.value)}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-white"
         >
           {kantoren.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}

@@ -51,7 +51,7 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
         </svg>
         {open ? 'Verberg invoer' : 'Toon oorspronkelijke invoer'}
         {invoer.taal === 'en' && (
-          <span className="text-xs bg-[var(--merk-zacht)] text-[var(--merk)] border border-[var(--merk-rand)] rounded-full px-1.5 py-0.5 leading-none">EN</span>
+          <span className="text-xs bg-[var(--merk-zacht)] text-[var(--merk-tekst)] border border-[var(--merk-rand)] rounded-full px-1.5 py-0.5 leading-none">EN</span>
         )}
         {invoer.open_huis_datum && (
           <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 rounded-full px-1.5 py-0.5 leading-none">Open huis {invoer.open_huis_datum}</span>

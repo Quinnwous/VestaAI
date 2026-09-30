@@ -57,18 +57,6 @@
   .kantoorbanner-context { margin: 8px 0 0; font-size: 14px; font-weight: 600; color: rgba(255,255,255,.86); }
   @media (max-width: 600px) { .kantoorbanner-tekst h1 { font-size: 27px; } .kantoorbanner { min-height: 200px; } }
 
-  /* kit.css' .topbar-in/.nav hebben geen mobiel-breekpunt (geverifieerd: marktanalyse.html
-     overflowt identiek naar ~598px breed op een 390px-viewport) — lokale workaround i.p.v.
-     kit.css aan te passen: het "VESTAAI ×"-lockupteksje verdwijnt en de pil-nav scrolt
-     zelf horizontaal, zodat de pagina niet meer breder wordt dan het scherm. Zie het
-     eindrapport voor de aanbeveling om dit centraal in kit.css op te lossen. */
-  @media (max-width: 560px) {
-    .topbar-in { gap: 10px; }
-    .lockup .vesta, .lockup .x { display: none; }
-    .nav { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
-    .nav::-webkit-scrollbar { display: none; }
-  }
-
   /* Kerncijfers-kop + grid (6 tegels i.p.v. kit.css' standaard 5) */
   .kerncijfers-kop { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
   .kerncijfers-kop h2 { font-size: 15px; font-weight: 800; margin: 0; }
@@ -141,7 +129,6 @@
   .waarde-blok .content-status { display: block; margin-top: 2px; font-size: 12px; color: var(--body); font-weight: 600; }
   .knoppenrij { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
   @media (max-width: 600px) { .knoppenrij { justify-content: flex-start; width: 100%; } }
-  .btn[disabled] { opacity: .42; cursor: not-allowed; pointer-events: none; }
   .dossier-tabs { display: inline-flex; gap: 2px; background: var(--control); padding: 3px; border-radius: var(--r-pill); margin-bottom: 14px; max-width: 100%; overflow-x: auto; }
   .dossier-tabs button { border: 0; background: none; padding: 7px 16px; border-radius: var(--r-pill); font-weight: 600; font-size: 13px; color: var(--body); cursor: pointer; transition: all var(--t-hover); white-space: nowrap; }
   .dossier-tabs button:hover { color: var(--merk); }
@@ -286,10 +273,6 @@
     { icon: 'bars', tekst: '9 nieuwe transacties in Wassenaar', tijd: 'deze week' },
   ];
 
-  // ── Sparkline-decoratie (zelfde lokale patroon als marktanalyse.html/concurrentie.html; geen gedeelde kit.js-helper) ──
-  function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
-  function sparklineSvg(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = gladSegmenten(pts).map(s => s.d).join(''); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
-
   // ── Getal-tween bij laden: K.tween animeert alleen als de vorige waarde afwijkt, dus we zetten 'm eerst op 0 ──
   function tweenBijLaden(el, naar, fmt) { K.tween(el, 0, fmt); requestAnimationFrame(() => K.tween(el, naar, fmt)); }
 
@@ -312,7 +295,7 @@
     } else {
       voet = `<div class="voet"><span class="n num">n = ${d.n}${d.periode ? ' · ' + d.periode : ''}</span></div>`;
     }
-    const sparkHtml = d.hero && !weinig ? sparklineSvg(d.spark) : '';
+    const sparkHtml = d.hero && !weinig ? K.sparkline(d.spark) : '';
     return `<div class="tegel${d.hero ? ' hero' : ''}${weinig ? ' warn' : ''}">
       <div class="lbl">${d.lbl}</div>
       <div class="val num">${weinig ? '<span>—</span>' : `<span class="v" data-target="${d.val}" data-fmt="${d.fmt}">0</span>`}</div>

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import sharp from 'sharp'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 import { meldFout } from '@/lib/fouten'
+import { GEMINI_STAGING } from '@/lib/aiModellen'
+import { labelAlsVirtueleInrichting } from '@/lib/stagingLabel'
 
 export const maxDuration = 120
 
@@ -28,37 +29,6 @@ const RUIMTE_OMSCHRIJVING: Record<RuimteType, string> = {
   keuken: 'kitchen with organized countertops, bar stools at island if present, and decorative items',
   badkamer: 'bathroom with towels, bath accessories, plants, and organized vanity',
   werkkamer: 'home office with desk, ergonomic chair, bookshelf, and focused lighting',
-}
-
-// Virtual staging vervangt het interieur volledig door AI-fictie. Dit is precies het soort
-// AI-gegenereerd beeld dat de Belgische deontologische code voor makelaars en de
-// EU AI Act-transparantieplicht verplicht labelen.
-async function labelAlsAiGegenereerd(imageBase64: string): Promise<{ base64: string; mimeType: string }> {
-  const buffer = Buffer.from(imageBase64, 'base64')
-  const image = sharp(buffer)
-  const meta = await image.metadata()
-  const breedte = meta.width ?? 1024
-  const hoogte = meta.height ?? 768
-
-  const label = 'AI-gegenereerd interieur'
-  const badgeBreedte = Math.min(breedte - 32, Math.round(label.length * (breedte * 0.017) + breedte * 0.04))
-  const badgeHoogte = Math.round(breedte * 0.045)
-  const fontSize = Math.round(badgeHoogte * 0.42)
-
-  const svg = `<svg width="${breedte}" height="${hoogte}" xmlns="http://www.w3.org/2000/svg">
-    <rect x="16" y="${hoogte - badgeHoogte - 16}" rx="${badgeHoogte / 2}" ry="${badgeHoogte / 2}"
-      width="${badgeBreedte}" height="${badgeHoogte}" fill="black" fill-opacity="0.6" />
-    <text x="${16 + badgeBreedte / 2}" y="${hoogte - badgeHoogte / 2 - 16 + fontSize * 0.35}"
-      font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="700"
-      fill="white" text-anchor="middle">${label}</text>
-  </svg>`
-
-  const gelabeld = await image
-    .composite([{ input: Buffer.from(svg), top: 0, left: 0 }])
-    .jpeg({ quality: 92 })
-    .toBuffer()
-
-  return { base64: gelabeld.toString('base64'), mimeType: 'image/jpeg' }
 }
 
 export async function POST(req: NextRequest) {
@@ -94,10 +64,9 @@ export async function POST(req: NextRequest) {
   const base64 = buffer.toString('base64')
 
   const genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY)
-  // gemini-2.5-flash-image ("Nano Banana"): het huidige GA-model voor beeldbewerking —
-  // fotorealistisch meubels toevoegen met behoud van de architectuur. Vervangt het
-  // verouderde experimentele gemini-2.0-flash-exp.
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-image' })
+  // Model-id centraal in lib/aiModellen.ts (GEMINI_STAGING, item 14.3) — zie
+  // daar het commentaar over "Nano Banana" en waarom dit het GA-model is.
+  const model = genAI.getGenerativeModel({ model: GEMINI_STAGING })
 
   const prompt = `You are a professional virtual staging designer for Dutch real estate. Furnish this ${RUIMTE_OMSCHRIJVING[ruimte]} in a ${STIJL_OMSCHRIJVING[stijl]} style.
 
@@ -134,10 +103,11 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
     for (const part of parts) {
       if (part.inlineData?.mimeType?.startsWith('image/')) {
         try {
-          const gelabeld = await labelAlsAiGegenereerd(part.inlineData.data)
+          const ruweBuffer = Buffer.from(part.inlineData.data, 'base64')
+          const gelabeld = await labelAlsVirtueleInrichting(ruweBuffer)
           return NextResponse.json({
-            image_base64: gelabeld.base64,
-            mime_type: gelabeld.mimeType,
+            image_base64: gelabeld.toString('base64'),
+            mime_type: 'image/jpeg',
             stijl,
             ruimte,
           })

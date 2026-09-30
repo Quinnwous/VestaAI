@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { InlogFormulier } from '@/components/InlogFormulier'
+import { PlausibleScript } from '@/components/PlausibleScript'
 import { haalKantoorBrandingOpVoorSlug } from '@/lib/kantoorLoginBranding'
 
 interface Props {
@@ -34,5 +35,10 @@ export default async function KantoorLoginPage(props: Props) {
   const branding = await haalKantoorBrandingOpVoorSlug(params.slug)
   if (!branding) redirect('/login')
 
-  return <InlogFormulier branding={branding} slug={params.slug} />
+  return (
+    <>
+      <PlausibleScript />
+      <InlogFormulier branding={branding} slug={params.slug} />
+    </>
+  )
 }

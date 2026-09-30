@@ -9,7 +9,13 @@
 // (item 9.1) — gedeeld met de kantoorspecifieke /login/[slug]. Deze pagina
 // blijft ongewijzigd: vaste VestaAI-groene stijl, `branding={null}`.
 import { InlogFormulier } from '@/components/InlogFormulier'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export default function LoginPage() {
-  return <InlogFormulier branding={null} />
+  return (
+    <>
+      <PlausibleScript />
+      <InlogFormulier branding={null} />
+    </>
+  )
 }

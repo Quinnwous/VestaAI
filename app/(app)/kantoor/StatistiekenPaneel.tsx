@@ -109,7 +109,7 @@ export function StatistiekenPaneel() {
                   className="w-full rounded-t bg-[var(--merk)] transition-all"
                   style={{ height: `${Math.max(hoogte, 2)}%` }}
                 />
-                <span className="text-xs text-gray-400">{MAAND_LABELS[maand] ?? maand}</span>
+                <span className="text-xs text-gray-500">{MAAND_LABELS[maand] ?? maand}</span>
               </div>
             )
           })}
@@ -124,7 +124,7 @@ export function StatistiekenPaneel() {
               <span className="text-xs text-gray-500">Claude API — deze maand</span>
               <span className="text-sm font-bold text-gray-900">€{stats.kostenschatting.deze_maand.toFixed(2)}</span>
             </div>
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               Schatting op basis van €{stats.kostenschatting.prijs_per_object.toFixed(2)} per content-set (Claude Sonnet 4.6). Werkelijke kosten kunnen afwijken.
             </p>
           </div>
@@ -147,10 +147,10 @@ export function StatistiekenPaneel() {
                   <tr key={m.id} className="bg-white">
                     <td className="px-4 py-2.5">
                       <p className="font-medium text-gray-900">{m.name || '—'}</p>
-                      <p className="text-xs text-gray-400">{m.email}</p>
+                      <p className="text-xs text-gray-500">{m.email}</p>
                     </td>
                     <td className="px-4 py-2.5 text-right">
-                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk)]' : 'text-gray-400'}`}>
+                      <span className={`font-semibold ${m.objecten > 0 ? 'text-[var(--merk-tekst)]' : 'text-gray-500'}`}>
                         {m.objecten}
                       </span>
                     </td>

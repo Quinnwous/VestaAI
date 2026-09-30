@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
@@ -18,16 +18,18 @@ export default function ResetPasswordPage() {
   const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
-  const [phase, setPhase] = useState<Phase>('checking')
   const [errorMsg, setErrorMsg] = useState('')
 
-  // Token uit de URL bewaren zodat we pas op klik verifiëren.
-  const tokenRef = useRef<{ tokenHash: string | null; type: EmailOtpType; code: string | null }>({
-    tokenHash: null,
-    type: 'recovery',
-    code: null,
-  })
-
+  // Token/type/code en de kantoor-slug ("next") komen uit de URL en
+  // veranderen niet meer nadat de pagina eenmaal geladen is — eenmalig
+  // lazy afgeleid bij mount i.p.v. via een effect + setState (dat laatste
+  // gaf een synchrone setState in een effect-body voor de token-tak
+  // hieronder).
+  const [tokenInfo] = useState<{ tokenHash: string | null; type: EmailOtpType; code: string | null }>(() => ({
+    tokenHash: searchParams.get('token_hash'),
+    type: (searchParams.get('type') as EmailOtpType | null) ?? 'recovery',
+    code: searchParams.get('code'),
+  }))
   // Kantoorlogin (item 9.2): een reset-link die via /api/auth/kantoor-reset
   // is gegenereerd, stuurt hier een `next`-parameter met de kantoor-slug mee
   // (nooit een volledig pad — dat zou een open-redirect-vangrail nodig maken
@@ -35,7 +37,13 @@ export default function ResetPasswordPage() {
   // `/login/<slug>` in plaats van naar het generieke /dashboard. Ontbreekt
   // hij (de bestaande, generieke flow via InlogFormulier op /login), dan
   // blijft het gedrag exact zoals het was.
-  const nextSlugRef = useRef<string | null>(null)
+  const [nextSlug] = useState<string | null>(() => {
+    const next = searchParams.get('next')
+    if (!next) return null
+    const genormaliseerd = normaliseerSlug(next)
+    return isGeldigeSlug(genormaliseerd) ? genormaliseerd : null
+  })
+  const [phase, setPhase] = useState<Phase>(() => (tokenInfo.tokenHash || tokenInfo.code ? 'confirm' : 'checking'))
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,22 +51,11 @@ export default function ResetPasswordPage() {
   )
 
   useEffect(() => {
-    const tokenHash = searchParams.get('token_hash')
-    const type = (searchParams.get('type') as EmailOtpType | null) ?? 'recovery'
-    const code = searchParams.get('code')
-
-    const next = searchParams.get('next')
-    if (next) {
-      const genormaliseerd = normaliseerSlug(next)
-      nextSlugRef.current = isGeldigeSlug(genormaliseerd) ? genormaliseerd : null
-    }
-
-    // Er zit een token/code in de link → wacht op klik van de gebruiker.
-    if (tokenHash || code) {
-      tokenRef.current = { tokenHash, type, code }
+    // Er zit een token/code in de link → wacht op klik van de gebruiker
+    // (phase staat via de lazy initial state hierboven al op 'confirm').
+    if (tokenInfo.tokenHash || tokenInfo.code) {
       // Token uit de adresbalk halen (netjes + voorkomt per ongeluk delen).
       window.history.replaceState({}, '', '/auth/reset-password')
-      setPhase('confirm')
       return
     }
 
@@ -84,7 +81,7 @@ export default function ResetPasswordPage() {
 
   // Verifieer het token pas op expliciete klik van de gebruiker.
   const handleConfirm = async () => {
-    const { tokenHash, type, code } = tokenRef.current
+    const { tokenHash, type, code } = tokenInfo
     setPhase('verifying')
     setErrorMsg('')
 
@@ -123,7 +120,7 @@ export default function ResetPasswordPage() {
       setPhase('form')
     } else {
       setPhase('success')
-      const bestemming = nextSlugRef.current ? `/login/${nextSlugRef.current}` : '/dashboard'
+      const bestemming = nextSlug ? `/login/${nextSlug}` : '/dashboard'
       setTimeout(() => router.push(bestemming), 2000)
     }
   }

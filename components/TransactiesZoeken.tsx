@@ -159,7 +159,14 @@ export function TransactiesZoeken({
 
   // ── Zoekveld: lokale state + debounce (200 ms, zoals het prototype) ──
   const [zoekInput, setZoekInput] = useState(filter.zoek)
-  useEffect(() => setZoekInput(filter.zoek), [filter.zoek])
+  // Volgt filter.zoek (bv. na terugnavigeren) via "state aanpassen tijdens
+  // render" i.p.v. een effect (React-docs "Adjusting some state when a prop
+  // changes").
+  const [prevFilterZoek, setPrevFilterZoek] = useState(filter.zoek)
+  if (filter.zoek !== prevFilterZoek) {
+    setPrevFilterZoek(filter.zoek)
+    setZoekInput(filter.zoek)
+  }
   useEffect(() => {
     if (zoekInput === filter.zoek) return
     const t = setTimeout(() => zetFilterDeel({ zoek: zoekInput }), 200)
@@ -698,7 +705,7 @@ export function TransactiesZoeken({
                   style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: `1px solid ${colors.border}`, borderRadius: 10, padding: '10px 12px', background: colors.surface, cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: colors.text, fontWeight: 600 }}
                 >
                   <span>{d.adres}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk-tekst)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
                 </button>
               ))}
             </div>

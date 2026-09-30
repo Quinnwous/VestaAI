@@ -9,8 +9,9 @@
 > `docs/besluiten.md` (logboek, nieuwste bovenaan).
 >
 > **Definition of Done** (elk item, zie `docs/roadmap.md` § 4 voor de volledige versie):
-> `npm run typecheck && npm run test && npm run build` groen · huisstijl-hook schoon ·
-> `npm run dod:screens` groen en `screenshots/` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
+> `npm run typecheck && npm run lint && npm run test && npm run build` groen (lint staat sinds
+> 30 sep op 0 — houden zo) · huisstijl-hook schoon ·
+> `npm run dod:screens` groen (incl. axe, linkcheck en toetsenbordronde sinds 14.4) en `screenshots/` beoordeeld tegen `docs/ontwerpprincipes.md` · lege/laad/foutstaat
 > aanwezig · `transacties` uitsluitend via `lib/transactiesQuery.ts` (vanaf fase 2, guard-test) ·
 > elke nieuwe tabel met RLS per kantoor · docs bijgewerkt.
 >
@@ -39,7 +40,9 @@
 > laat de auto-mode-classifier time-outen ("no verdict") — de agent start dan niet. Schrijf de
 > spec naar de scratchpad en geef de agent één regel: "Lees de opdracht in <pad> en voer die
 > uit". Worktrees hebben geen `.env.local`/echte `node_modules`: `dod:screens` en
-> `maplibreWorker.guard.test.ts` draait de hoofdsessie na de merge.
+> `maplibreWorker.guard.test.ts` draait de hoofdsessie na de merge. Ook `npm run build` (Turbopack)
+> faalt in een worktree: Turbopack weigert een `node_modules`-symlink buiten de projectroot. Agents
+> bouwen daar met `ANALYZE=true npm run build` (webpack); de echte build draait na de merge.
 > **Worktrees vertakken van `origin/main`** (les 28 sep 2026), niet van de featurebranch:
 > een spec of gedeeld contract dat alleen op de featurebranch staat, ziet de agent niet.
 > Geef het **absolute pad** naar de spec in de hoofdmap, en verwacht add/add-conflicten
@@ -80,7 +83,8 @@ Multi-featureplatform voor makelaars, gebouwd in eerste instantie specifiek voor
 
 > 🎨 **Bouwregel (verplicht, geldt voor élke nieuwe UI).** Alles achter de login wordt meteen in
 > de huisstijl van het kantoor gebouwd — niet achteraf omgezet. Kleur via `var(--merk*)` (nooit
-> een hardgecodeerde hex of een Tailwind-kleurclass, want de `blue`-schaal rendert groen),
+> een hardgecodeerde hex of een Tailwind-kleurclass, want de `blue`-schaal rendert groen) — tekst
+> in de merkkleur via `var(--merk-tekst)` (haalt 5 : 1 op wit, sinds 14.4), nooit `var(--merk)`,
 > vorm en lettertype via `var(--merk-radius-*)`/`var(--merk-font-*)`, tekst informeel ("je/jouw")
 > zonder de naam VestaAI, en "woning" in plaats van "object". Volledige checklist:
 > `.claude/skills/kantoorhuisstijl/SKILL.md`. Een hook waarschuwt bij overtredingen.
@@ -203,7 +207,7 @@ transacties:  id, kantoor_id, adres, postcode, plaats, wijk, buurt, geo (geograp
 
 `huisstijl_json.primaire_kleur` + `.accent_kleur` voeden `lib/branding.ts`. `instellingen_json` (courtage, kantoorprofiel, werkgebied) volgt `lib/schemas.ts` `KantoorInstellingenSchema`.
 
-Nog niet toegepast op de database (migraties staan klaar in `supabase/migrations/`, vereisen Quinns akkoord; gecontroleerd 30 sep 2026): het opruimen van `post_planning`/`chatbot_leads`/`chatbot_faq`/`referrals` en de kolommen `kantoren.plan`/`trial_ends_at`/`stripe_id`/`referral_code`/`objecten.chat_publiek`/`chat_foto_url`/`object_documenten.publiek_chatbaar` — allemaal ongebruikt sinds de koerswijzigingen van 15 en 16 sep 2026 — en `transacties.makelaar_id` (wacht op een makelaarsveld in de exports). De tabel `wijken` wordt door geen code meer gebruikt (kandidaat voor de opruimmigratie).
+Nog niet toegepast op de database (gecontroleerd 30 sep 2026): alleen `transacties.makelaar_id` (`20260924190000_transacties_makelaar_id.sql`, wacht op een makelaarsveld in de exports). De opruimmigratie (legacy-tabellen, `wijken`, Stripe-/trial-/chatkolommen, trigger `trg_referral_code`, functie `handle_new_user`) is op 30 sep toegepast.
 
 ## Prijzen
 

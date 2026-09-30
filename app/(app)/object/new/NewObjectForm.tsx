@@ -160,7 +160,7 @@ export function NewObjectForm({ toonDemoKnop, kantoorInstellingen }: Props) {
                 <button
                   type="button"
                   onClick={fillDemo}
-                  style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
+                  style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap' }}
                 >
                   Vul een voorbeeld in
                 </button>

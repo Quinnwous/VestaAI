@@ -52,9 +52,11 @@ export function BuurtDataTab({
   const [laden, setLaden] = useState(isVerouderd(initieel))
   const [fout, setFout] = useState('')
 
-  const ververs = async () => {
-    setLaden(true)
-    setFout('')
+  // Puur async: geen synchrone setState vóór de fetch, zodat dit ook
+  // rechtstreeks vanuit het mount-effect hieronder mag (react-hooks/
+  // set-state-in-effect) — alle state-updates zitten in de afhandeling ná
+  // de fetch.
+  const haalOp = async () => {
     try {
       const res = await fetch(`/api/object/${objectId}/verrijking`, { method: 'POST' })
       const json = await res.json().catch(() => null) as { verrijking?: VerrijkingOpslag; error?: string } | null
@@ -71,8 +73,19 @@ export function BuurtDataTab({
     }
   }
 
+  // Knop "Ververs": reset eerst zichtbaar de laad-/foutstaat, dan dezelfde fetch.
+  const ververs = () => {
+    setLaden(true)
+    setFout('')
+    haalOp()
+  }
+
   useEffect(() => {
-    if (isVerouderd(initieel)) ververs()
+    // laden/fout staan via de lazy initial state hierboven al goed
+    // (isVerouderd(initieel)), dus geen reset nodig — alleen ophalen. Via
+    // queueMicrotask zodat de aanroep van `haalOp` (die pas ná zijn eigen
+    // `await` setState raakt) niet als synchrone effect-code wordt gezien.
+    if (isVerouderd(initieel)) queueMicrotask(() => { haalOp() })
     // Eenmalig bij mount — zie toelichting hierboven.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -83,7 +96,7 @@ export function BuurtDataTab({
       onClick={ververs}
       disabled={laden}
       style={{
-        fontSize: 12.5, fontWeight: 600, color: 'var(--merk)', background: 'none', border: 'none',
+        fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'none', border: 'none',
         cursor: laden ? 'default' : 'pointer', padding: 0, textDecoration: 'underline', whiteSpace: 'nowrap',
         opacity: laden ? 0.6 : 1,
       }}
@@ -216,7 +229,7 @@ export function BuurtDataTab({
             <p style={blokLabel}>Markt in {marktEigen.plaats}</p>
             <Link
               href={`/marktanalyse?plaatsen=${encodeURIComponent(marktEigen.plaats)}`}
-              style={{ fontSize: 12, fontWeight: 600, color: 'var(--merk)', textDecoration: 'none' }}
+              style={{ fontSize: 12, fontWeight: 600, color: 'var(--merk-tekst)', textDecoration: 'none' }}
             >
               Bekijk in marktanalyse →
             </Link>
@@ -267,7 +280,7 @@ const cijferGrid: React.CSSProperties = { display: 'grid', gridTemplateColumns: 
 const cijferKlein: React.CSSProperties = { fontSize: 17, fontWeight: 700, color: '#14181B', fontVariantNumeric: 'tabular-nums' }
 const badgeStijl: React.CSSProperties = {
   fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 'var(--merk-radius-card-xl, 20px)',
-  background: 'var(--merk-zacht)', color: 'var(--merk)', whiteSpace: 'nowrap',
+  background: 'var(--merk-zacht)', color: 'var(--merk-tekst)', whiteSpace: 'nowrap',
 }
 
 const NIVEAU_LABEL: Record<CbsNiveau, string> = { buurt: 'buurt', wijk: 'wijk', gemeente: 'gemeente', nederland: 'NL' }

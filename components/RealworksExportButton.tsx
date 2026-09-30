@@ -43,7 +43,7 @@ export function RealworksExportButton({ objectId }: Props) {
       <button
         onClick={handleExport}
         disabled={bezig}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:border-[var(--merk)] hover:text-[var(--merk)] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-1.5 bg-white hover:border-[var(--merk)] hover:text-[var(--merk-tekst)] transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
         title="Exporteer naar Realworks XML"
       >
         {bezig ? (

@@ -35,6 +35,8 @@
     --merk-accent-rand: #C3DED1;
     --merk-accent-rgb: 42,138,92;
     --merk-op: #FFFFFF;
+    /* Item 14.4: VestaAI-groen (#1A6B45) haalt al ≥ 4,5 : 1 op wit, dus gelijk aan --merk. */
+    --merk-tekst: #1A6B45;
   }
 
   html {
@@ -182,6 +184,8 @@
   border-radius: 2px;
 }
 .vui-tab:hover { color: var(--merk); }
+/* Avatarknop: de inline outline (menu open) overschrijft anders elke focusring */
+.vui-avatarknop:focus-visible { outline: 2px solid var(--merk) !important; outline-offset: 2px !important; }
 .vui-tab:focus-visible { outline: 2px solid var(--merk); outline-offset: -3px; border-radius: var(--merk-radius-sm, 10px); }
 
 /* Welkomstblok startpagina (app/(app)/dashboard/StartBanner.tsx, ontwerp uit
@@ -302,3 +306,6 @@
   /* Links niet onderstrepen in print */
   a { text-decoration: none !important; color: inherit !important; }
 }
+
+/* Kaartattributie (PDOK): link onderscheidbaar zonder kleur — axe link-in-text-block */
+.maplibregl-ctrl.maplibregl-ctrl-attrib a { text-decoration: underline !important; }

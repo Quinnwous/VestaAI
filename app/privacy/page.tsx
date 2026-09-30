@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicFooter } from '@/components/PublicFooter'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'Privacyverklaring — VestaAI',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-white">
+      <PlausibleScript />
       {/* Nav */}
       <header className="border-b border-gray-100">
         <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
@@ -30,19 +32,24 @@ export default function PrivacyPage() {
 
       <main className="mx-auto max-w-2xl px-6 py-20">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-3">Privacyverklaring</h1>
-        <p className="text-sm text-gray-400 mb-12">Laatst bijgewerkt: 23 september 2026</p>
+        <p className="text-sm text-gray-400 mb-12">Laatst bijgewerkt: 30 september 2026</p>
 
         <div className="prose prose-sm prose-gray max-w-none space-y-10">
 
           <section>
             <h2 className="text-lg font-bold text-gray-900 mb-3">1. Wie zijn wij?</h2>
-            <p className="text-gray-600 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed mb-3">
               VestaAI is een product van Quinn Berkouwer, gevestigd in Nederland.
               Contactadres: <a href="mailto:quinn.berkouwer@gmail.com" className="text-blue-600 underline">quinn.berkouwer@gmail.com</a>.
               VestaAI is een platform voor de Nederlandse makelaardij — in de huisstijl van uw kantoor —
               met woningwaardering en marktinzicht op de eigen transactiedataset van het kantoor, plus een
               complete contentsuite per woning. Toegang is admin-beheerd: uw kantoor kent geen registratie
               in eigen beheer.
+            </p>
+            <p className="text-gray-600 leading-relaxed">
+              Voor uw accountgegevens en uw bezoek aan deze website is VestaAI <strong>verwerkingsverantwoordelijke</strong>.
+              Voor de woningdossiers en de transactiedataset van uw kantoor is <strong>uw kantoor</strong> verwerkingsverantwoordelijke
+              en treedt VestaAI op als <strong>verwerker</strong>, conform de verwerkersovereenkomst tussen uw kantoor en VestaAI.
             </p>
           </section>
 
@@ -69,9 +76,11 @@ export default function PrivacyPage() {
                 <p className="text-gray-600 leading-relaxed">
                   De eigen verkoopdata van uw kantoor (adres, verkoopprijs, verkoopdatum en woningkenmerken),
                   die de platform-admin voor u importeert en gebruikt voor de waardebepaling, marktanalyse en
-                  concurrentieanalyse. Per kantoor afgeschermd via row-level security: uw kantoor ziet nooit de
-                  data van een ander kantoor. Voor deze dataset treedt VestaAI op als verwerker namens uw
-                  kantoor; uw kantoor blijft hiervoor verwerkingsverantwoordelijke.
+                  concurrentieanalyse. De combinatie van adres en verkoopprijs is een persoonsgegeven in de zin
+                  van de AVG en wordt met dezelfde zorgvuldigheid behandeld als objectdata. Per kantoor
+                  afgeschermd via row-level security: uw kantoor ziet nooit de data van een ander kantoor. Voor
+                  deze dataset treedt VestaAI op als verwerker namens uw kantoor; uw kantoor blijft hiervoor
+                  verwerkingsverantwoordelijke.
                 </p>
               </div>
               <div>
@@ -95,22 +104,32 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-gray-900 mb-3">4. Derde partijen</h2>
-            <div className="space-y-3">
+            <h2 className="text-lg font-bold text-gray-900 mb-3">4. Derde partijen en doorgifte buiten de EER</h2>
+            <p className="text-gray-600 leading-relaxed mb-4">
+              Onze database (Supabase) draait in Frankfurt en onze serverfuncties (Vercel) draaien eveneens in
+              Frankfurt. Voor een aantal ondersteunende diensten gaan gegevens naar een leverancier in de
+              Verenigde Staten. Elke doorgifte daarnaartoe is afgedekt door het EU-VS Data Privacy Framework
+              en/of modelbepalingen (Standard Contractual Clauses) — per leverancier hieronder aangegeven.
+            </p>
+            <div className="space-y-4">
               {[
-                ['Supabase', 'Database, authenticatie en opslag — EU-servers, GDPR-compliant'],
-                ['Anthropic (Claude API)', 'AI-generatie voor content en USP-extractie — uw objectdata wordt per request verstuurd, niet permanent opgeslagen bij Anthropic'],
-                ['Google (Gemini API)', 'AI-generatie voor virtual staging — een foto wordt per request verstuurd, niet permanent opgeslagen bij Google'],
-                ['Resend', 'Transactionele e-mails — GDPR-compliant'],
-                ['Vercel', 'Hosting en edge functions — EU-regio beschikbaar'],
-                ['Plausible', 'Cookieloze, geanonimiseerde websitestatistieken op onze publieke pagina\'s'],
+                ['Supabase', 'Database, authenticatie en opslag. Project gehost in de EU (Frankfurt). Verwerkersovereenkomst met modelbepalingen voor eventuele doorgifte naar sub-verwerkers buiten de EER.'],
+                ['Anthropic (Claude API)', 'AI-generatie voor content en USP-extractie. Amerikaans bedrijf — doorgifte afgedekt via modelbepalingen in Anthropic’s verwerkersovereenkomst; Anthropic staat niet in het Data Privacy Framework-register. Zonder aparte zero-data-retention-afspraak verwijdert Anthropic uw prompts en de gegenereerde tekst automatisch binnen 30 dagen, en gebruikt ze niet om modellen te trainen zonder uw toestemming.'],
+                ['Google (Gemini API)', 'AI-generatie voor virtual staging, op de betaalde laag. Doorgifte afgedekt door zowel het EU-VS Data Privacy Framework (Google LLC is gecertificeerd) als modelbepalingen. Op de betaalde laag gebruikt Google uw foto’s niet om producten of modellen te verbeteren.'],
+                ['Resend', 'Transactionele e-mails (accountmeldingen, wachtwoordherstel). Amerikaans bedrijf, gecertificeerd onder het EU-VS Data Privacy Framework.'],
+                ['Vercel', 'Hosting en serverfuncties, draaiend in Frankfurt. Amerikaans bedrijf, gecertificeerd onder het EU-VS Data Privacy Framework en met modelbepalingen in de verwerkersovereenkomst.'],
+                ['Plausible', 'Cookieloze, geanonimiseerde websitestatistieken op onze publieke pagina’s. Europees bedrijf (Estland); gegevens worden verwerkt en opgeslagen op Europese infrastructuur en verlaten de EU niet.'],
               ].map(([partij, beschrijving]) => (
-                <div key={partij} className="flex gap-3">
-                  <span className="font-medium text-gray-800 w-40 flex-shrink-0">{partij}</span>
-                  <span className="text-gray-600">{beschrijving}</span>
+                <div key={partij} className="flex gap-3 flex-col sm:flex-row">
+                  <span className="font-medium text-gray-800 w-44 flex-shrink-0">{partij}</span>
+                  <span className="text-gray-600 leading-relaxed">{beschrijving}</span>
                 </div>
               ))}
             </div>
+            <p className="text-gray-500 text-xs leading-relaxed mt-4">
+              Deze paragraaf geeft de stand van zaken op 30 september 2026 weer; certificeringen en
+              overeenkomsten kunnen door de leverancier zelf worden gewijzigd.
+            </p>
           </section>
 
           <section>

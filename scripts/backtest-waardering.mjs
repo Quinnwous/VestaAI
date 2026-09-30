@@ -70,7 +70,6 @@ const SEED = Number(argWaarde('seed', '42'))
 const COMMANDO = `npx tsx --env-file=.env.local scripts/backtest-waardering.mjs${KANTOOR_ID ? ` --kantoor=${KANTOOR_ID}` : ''}${N !== 400 ? ` --n=${N}` : ''}${SEED !== 42 ? ` --seed=${SEED}` : ''}`
 
 function log(...a) {
-  // eslint-disable-next-line no-console
   console.log(...a)
 }
 

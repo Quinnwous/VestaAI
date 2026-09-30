@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
 import { PublicFooter } from '@/components/PublicFooter'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'Over ons — VestaAI',
@@ -17,6 +18,7 @@ const NR = { fontFamily: 'var(--font-newsreader), Georgia, serif' }
 export default function OverOnsPage() {
   return (
     <div style={{ background: '#FBFCFB', color: '#0E1A13', minHeight: '100vh' }}>
+      <PlausibleScript />
       <PublicNav active="/over-ons" />
 
       <main>
@@ -55,7 +57,7 @@ export default function OverOnsPage() {
             {[
               { titel: 'Nederlands door en door', tekst: 'Geen vertaalde tool. Funda-richtlijnen, NVM-stijlregels en de cultuur van de Nederlandse huizenmarkt zitten in elk algoritme ingebakken.' },
               { titel: 'Uw stem, niet de onze', tekst: 'Vesta leert de schrijftoon, het logo en de stijl van uw kantoor. Elke tekst klinkt als u — niet als een robot.' },
-              { titel: 'Privacy boven alles', tekst: "Objectdata en uw eigen transactiedata worden uitsluitend gebruikt om uw omgeving te laten werken. Versleuteld, in de EU, volledig AVG-proof. We verkopen nooit uw data." },
+              { titel: 'Privacy boven alles', tekst: "Objectdata en uw eigen transactiedata worden uitsluitend gebruikt om uw omgeving te laten werken. Versleuteld opgeslagen in de EU, per kantoor afgeschermd. We verkopen nooit uw data." },
               { titel: 'Eén platform, niet tien tools', tekst: 'Waardering, marktinzicht en content samengebracht in één werkplek, op uw eigen verkoopdata. Minder logins, meer overzicht.' },
             ].map(({ titel, tekst }) => (
               <div key={titel} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '26px 28px' }}>

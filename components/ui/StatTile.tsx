@@ -21,9 +21,14 @@ function useGetalTween(waarde: number, duurMs = 400) {
       typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
 
     if (verminderdeBeweging || duurMs <= 0) {
-      setWeergegeven(waarde)
-      vorigeWaarde.current = waarde
-      return
+      // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
+      // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon),
+      // maar telt niet als een synchrone setState in de effect-body.
+      const frame = requestAnimationFrame(() => {
+        setWeergegeven(waarde)
+        vorigeWaarde.current = waarde
+      })
+      return () => cancelAnimationFrame(frame)
     }
 
     const van = vorigeWaarde.current

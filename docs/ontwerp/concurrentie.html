@@ -252,9 +252,7 @@
     K.filterPills($('#pills'), pills, () => $('#btnReset').click()); $('#rijPills').hidden = !pills.length;
   }
 
-  // ── Sparkline (zoals marktanalyse) ──
-  function sparkline(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = glad(pts); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
-  function glad(pts) { return gladSegmenten(pts).map(s => s.d).join(''); }
+  // ── Vloeiende lijn voor de aandeel-grafiek (sparkline zit sinds de opruiming in K.sparkline) ──
   function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d, eerste: seg[0], laatste: seg[seg.length - 1] }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
 
   // ── Korte naam voor eindlabels/matrixcellen (volledige naam blijft in tooltip/drawer) ──
@@ -371,7 +369,7 @@
     K.tween($('#drawerRatio'), ratio, v => K.procent(v));
     $('#drawerVerdeling').innerHTML = groepVerdeling.map(g => `<div class="mini-balk"><span>${g.label}</span><span class="track"><span class="fill" style="width:${(g.n / totBreed * 100).toFixed(0)}%"></span></span><span class="num">${(g.n / totBreed * 100).toFixed(0)}%</span></div>`).join('');
     $('#drawerSterkste').textContent = sterkste && sterkste.aandeel > 0 ? `${sterkste.label} (${sterkste.aandeel.toFixed(0)}% aandeel)` : '—';
-    $('#drawerSpark').innerHTML = sparkline(trend) || '<p class="hint" style="margin:0">Onvoldoende data.</p>';
+    $('#drawerSpark').innerHTML = K.sparkline(trend) || '<p class="hint" style="margin:0">Onvoldoende data.</p>';
     const btnSchrap = $('#btnSchrap'); btnSchrap.hidden = naam === ONS; btnSchrap.onclick = () => { F.verborgen.add(naam); sluitDrawer(); update(); };
     $('#drawerSluier').classList.add('open');
   }

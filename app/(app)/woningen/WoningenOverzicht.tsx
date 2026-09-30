@@ -12,6 +12,7 @@ import {
 import { BasisKaart } from '@/components/kaart'
 import { WoningenKaartLaag, type WoningKaartPunt, type WoningHoverInfo } from '@/components/WoningenKaartLaag'
 import { WoningenKaartHover } from '@/components/WoningenKaartHover'
+import { useHeeftGemount } from '@/hooks/useHeeftGemount'
 import { relatieveDatum, formatDatum } from '@/lib/utils'
 import { berekenKaartBounds, WONINGEN_SORTEER_OPTIES, type WoningenSortering } from '@/lib/woningenOverzicht'
 import type { ObjectFase } from '@/lib/supabase'
@@ -42,7 +43,7 @@ const FASE_TABS: { value: FaseFilter; label: string }[] = [
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'Concept', color: '#5C6470' },
-  published: { label: 'Gepubliceerd', color: 'var(--merk)' },
+  published: { label: 'Gepubliceerd', color: 'var(--merk-tekst)' },
   // #D97706 haalde met tekst óp de eigen 7%-achtergrondtint geen 4.5:1
   // (2.97:1) — Lighthouse a11y, item 12.3. #92400E (amber-800) geeft 6.6:1.
   onder_bod: { label: 'Onder bod', color: '#92400E' },
@@ -53,7 +54,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 // toont alleen de fase, geen "Gewonnen/Verloren"-uitslag meer.
 const FASE_BADGE: Record<ObjectFase, { label: string; color: string }> = {
   verkoopadvies: { label: 'Verkoopadvies', color: '#92400E' },
-  in_verkoop: { label: 'In verkoop', color: 'var(--merk)' },
+  in_verkoop: { label: 'In verkoop', color: 'var(--merk-tekst)' },
   verkocht: { label: 'Verkocht', color: '#5C6470' },
 }
 
@@ -137,11 +138,14 @@ export function WoningenOverzicht({
     if (debounceRef.current) clearTimeout(debounceRef.current)
   }, [])
 
-  const [now, setNow] = useState<number | null>(null)
-  useEffect(() => { setNow(Date.now()) }, [])
+  // Relatieve datums ("2 uur geleden") verschillen per omgeving (Date.now())
+  // en mogen dus nooit in de eerste render staan — hydratiemismatch, zie
+  // CLAUDE.md. `useHeeftGemount` (useSyncExternalStore) levert `true` pas na
+  // mount, zonder een setState in een effect-body.
+  const gemount = useHeeftGemount()
   const formatRelatief = useCallback(
-    (iso: string) => (now !== null ? relatieveDatum(iso) : formatDatum(iso)),
-    [now],
+    (iso: string) => (gemount ? relatieveDatum(iso) : formatDatum(iso)),
+    [gemount],
   )
 
   const makelaarNaamPerId = useMemo(() => new Map(makelaars.map((m) => [m.id, m.name])), [makelaars])
@@ -309,7 +313,7 @@ export function WoningenOverzicht({
               <button
                 type="button"
                 onClick={() => { setZoekterm(''); updateUrl({ search: '', fase: '', makelaar: '', page: '1' }) }}
-                style={{ fontSize: 13, color: 'var(--merk)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                style={{ fontSize: 13, color: 'var(--merk-tekst)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
               >
                 Wis filters
               </button>

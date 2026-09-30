@@ -18,9 +18,14 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
   const [opslaan, setOpslaan] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
+  // Concept-tekst volgt een nieuwe `content`-prop (bv. na opnieuw genereren)
+  // via "state aanpassen tijdens render" i.p.v. een effect (React-docs
+  // "Adjusting some state when a prop changes").
+  const [prevContent, setPrevContent] = useState(content)
+  if (content !== prevContent) {
+    setPrevContent(content)
     setBewerkTekst(content)
-  }, [content])
+  }
 
   useEffect(() => {
     if (bewerkModus && textareaRef.current) {

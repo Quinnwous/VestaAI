@@ -63,6 +63,7 @@ export function ReferentiesLaag({
 
       const subjectEl = document.createElement('div')
       subjectEl.innerHTML = renderToStaticMarkup(<SubjectPin />)
+      subjectEl.setAttribute('role', 'img')
       subjectEl.setAttribute('aria-label', `Dit adres: ${subject.label}`)
       nieuweMarkers.push(
         new Marker({ element: subjectEl, anchor: 'bottom' })
@@ -73,6 +74,7 @@ export function ReferentiesLaag({
       for (const r of referenties) {
         const el = document.createElement('div')
         el.innerHTML = renderToStaticMarkup(<ReferentiePin nummer={r.volgnummer} uitgesloten={r.uitgesloten} />)
+        el.setAttribute('role', 'img')
         el.setAttribute('aria-label', `Referentie ${r.volgnummer}${r.uitgesloten ? ' (uitgesloten)' : ''}`)
         el.addEventListener('mouseenter', () => {
           const punt = map.project([r.lng, r.lat])

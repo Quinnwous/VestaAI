@@ -166,7 +166,12 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
 
   useEffect(() => {
     if (duplicaatTimerRef.current) clearTimeout(duplicaatTimerRef.current)
-    if (adresValue.length < 6) { setDuplicaat(null); return }
+    if (adresValue.length < 6) {
+      // Geen synchrone setState hier — de render laat de melding pas zien
+      // vanaf 6 tekens (zie de guard bij de weergave hieronder), dus een
+      // stale duplicaat-melding kan hier niet doorschemeren.
+      return
+    }
     duplicaatTimerRef.current = setTimeout(async () => {
       try {
         const res = await fetch(`/api/object/check-adres?adres=${encodeURIComponent(adresValue)}`)
@@ -271,7 +276,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
         />
         <input type="hidden" {...register('adres')} />
         {errors.adres && <p style={{ marginTop: 5, fontSize: 12, color: '#DC2626' }}>{errors.adres.message}</p>}
-        {duplicaat && !errors.adres && (
+        {duplicaat && adresValue.length >= 6 && !errors.adres && (
           <div style={{ marginTop: 8, borderRadius: 'var(--merk-radius-md, 10px)', background: '#FFFBEB', border: '1px solid #FDE68A', padding: '10px 12px', display: 'flex', alignItems: 'flex-start', gap: 8 }}>
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#D97706" style={{ flexShrink: 0, marginTop: 1 }}>
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -720,7 +725,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
           />
           <p style={{ marginTop: 6, fontSize: 12, color: '#5C6470' }}>
             Van de WOZ-beschikking van de verkoper, of opzoeken in het{' '}
-            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
+            <a href={WOZ_LOKET_URL} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--merk-tekst)', fontWeight: 600 }}>WOZ-waardeloket ↗</a>
           </p>
         </div>
         <div>

@@ -34,8 +34,6 @@
 
   /* Kaartkop-rechts van de tabelkaart: segmented sort + export naast elkaar */
   .tabelkop-rechts { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .btn:disabled { opacity: .5; cursor: not-allowed; }
-  .btn:disabled:hover { filter: none; transform: none; border-color: var(--border-strong); color: var(--body-strong); }
 
   /* Datatabel (Stripe-achtig, dicht) — geen interne scrollcontainer: de tabel staat gewoon in de paginastroom, sticky kop volgt de sticky filterbalk.
      overflow-x:auto staat hier bewust alléén achter een media query: op elk element (ook zonder zichtbare
@@ -263,10 +261,6 @@
   ];
   const PIN_SVG = '<svg viewBox="0 0 26 32"><circle class="halo" cx="13" cy="13" r="15"/><path class="ring" d="M13 2.5 23.5 13 13 23.5 2.5 13Z"/><path class="ruit" d="M13 6.5 19.5 13 13 19.5 6.5 13Z"/><circle class="hart" cx="13" cy="13" r="2.1"/><path d="M13 23.5v6" stroke="#C61E45" stroke-width="2" stroke-linecap="round"/></svg>';
 
-  // ── Sparkline voor de hero-tegel (zelfde lokale patroon als concurrentie.html/startpagina.html; geen gedeelde kit.js-helper) ──
-  function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
-  function sparklineSvg(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = gladSegmenten(pts).map(s => s.d).join(''); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
-
   // ── Data: hele markt, ± 2.500 rijen (roadmap §3.1: transacties_zoeken-RPC in de app) ──
   const DATA = K.genereerTransacties({ perKwartaal: [70, 20] });
   const rndKantoor = K.seed(778899), kiesKantoor = K.kiesVan(rndKantoor);
@@ -376,7 +370,7 @@
     $('#' + prefix + 'N').textContent = `n = ${K.nl.format(n)} · vs vorige periode`;
     const tegelEl = $('#tegel' + prefix.charAt(0).toUpperCase() + prefix.slice(1));
     const oud = $('.spark', tegelEl); if (oud) oud.remove();
-    tegelEl.insertAdjacentHTML('beforeend', sparklineSvg(sparkWaarden));
+    tegelEl.insertAdjacentHTML('beforeend', K.sparkline(sparkWaarden));
   }
   function bouwTegels(alle, totaal) {
     const { van: vanVorig, tot: totVorig } = vorigePeriodeBereik();
@@ -391,7 +385,7 @@
       deltaEl.innerHTML = `${r > 0 ? '▲' : r < 0 ? '▼' : '•'} ${K.procent(deltaPct)}`;
     }
     $('#heroN').textContent = `van ${K.nl.format(DATA.length)} · vs vorige periode`;
-    $('#heroSpark').innerHTML = sparklineSvg(kwartaalReeks(rijen => rijen.length));
+    $('#heroSpark').innerHTML = K.sparkline(kwartaalReeks(rijen => rijen.length));
 
     vulWitteTegel('prijs', K.mediaan(alle.map(r => r.prijs)), K.mediaan(vorigeRijen.map(r => r.prijs)), alle.length, vorigeAantal, K.euro, null, 1, kwartaalReeks(rijen => K.mediaan(rijen.map(r => r.prijs))));
     vulWitteTegel('m2', K.mediaan(alle.map(r => r.m2)), K.mediaan(vorigeRijen.map(r => r.m2)), alle.length, vorigeAantal, K.euro, null, 1, kwartaalReeks(rijen => K.mediaan(rijen.map(r => r.m2))));

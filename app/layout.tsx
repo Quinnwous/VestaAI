@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, Newsreader, Gantari, Nunito_Sans } from 'next/font/google'
-import Script from 'next/script'
 import './globals.css'
 import { APP_URL } from '@/lib/appUrl'
 
@@ -92,17 +91,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="nl">
-      <head>
-        {/* lazyOnload (29 sep 2026): analytics pas als de browser vrij is — met
-            afterInteractive gaf het script een lange taak van ~0,5 s midden in
-            de hydratie (Lighthouse mobiel). */}
-        <Script
-          defer
-          data-domain="vestaai.nl"
-          src="https://plausible.io/js/script.js"
-          strategy="lazyOnload"
-        />
-      </head>
+      {/* Plausible staat niet meer hier (item 14.1, 30 sep 2026): dit layout
+          omvat óók de ingelogde omgeving (app/(app)/) en /admin, en de
+          privacyverklaring belooft het script alleen op de publieke pagina's.
+          Zie components/PlausibleScript.tsx, gemount per publieke pagina. */}
       <body className={`${jakarta.variable} ${newsreader.variable} ${gantari.variable} ${nunito.variable} ${jakarta.className}`}>
         <a
           href="#main-content"

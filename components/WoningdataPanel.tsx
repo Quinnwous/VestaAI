@@ -44,7 +44,7 @@ function Rij({ label, waarde }: { label: string; waarde: React.ReactNode }) {
 function Sectie({ titel, children }: { titel: string; children: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk)', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', textTransform: 'uppercase', letterSpacing: 0.8, margin: 0 }}>{titel}</p>
       {children}
     </div>
   )

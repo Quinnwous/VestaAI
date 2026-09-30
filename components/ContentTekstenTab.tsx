@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { EmptyState, Skeleton } from '@/components/ui'
 import { ResultTabs } from '@/components/ResultTabs'
@@ -52,13 +52,22 @@ export function ContentTekstenTab({
   const [status, setStatus] = useState<ObjectContentStatus>(initieleStatus)
   const [starting, setStarting] = useState(false)
   const [now, setNow] = useState(() => Date.now())
-  const pollingSindsRef = useRef(contentBezigSinds)
+  // Was een ref, maar wordt tijdens render gelezen (hieronder, voor de
+  // verstreken tijd) — dat mag niet meer (react-hooks/refs), dus gewoon state.
+  const [pollingSinds, setPollingSinds] = useState(contentBezigSinds)
 
-  useEffect(() => {
+  // `status`/`pollingSinds` volgen de server-props zodra die veranderen (na
+  // een router.refresh()) — state aanpassen tijdens render i.p.v. een effect
+  // (React-docs "Adjusting some state when a prop changes"): vergelijk met de
+  // vorige render en zet dan in dezelfde render terug.
+  const [prevInitieleStatus, setPrevInitieleStatus] = useState(initieleStatus)
+  const [prevContentBezigSinds, setPrevContentBezigSinds] = useState(contentBezigSinds)
+  if (initieleStatus !== prevInitieleStatus || contentBezigSinds !== prevContentBezigSinds) {
+    setPrevInitieleStatus(initieleStatus)
+    setPrevContentBezigSinds(contentBezigSinds)
     setStatus(initieleStatus)
-    pollingSindsRef.current = contentBezigSinds
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initieleStatus, contentBezigSinds])
+    setPollingSinds(contentBezigSinds)
+  }
 
   // Timer (tick elke seconde) + polling (elke 3s) zolang de generatie bezig is.
   useEffect(() => {
@@ -84,7 +93,7 @@ export function ContentTekstenTab({
 
   const startGeneratie = async () => {
     setStarting(true)
-    pollingSindsRef.current = new Date().toISOString()
+    setPollingSinds(new Date().toISOString())
     setStatus('bezig')
     try {
       const res = await fetch('/api/generate', {
@@ -119,14 +128,13 @@ export function ContentTekstenTab({
   }
 
   if (status === 'bezig') {
-    const sinds = pollingSindsRef.current
-    const verstreken = sinds ? now - new Date(sinds).getTime() : 0
+    const verstreken = pollingSinds ? now - new Date(pollingSinds).getTime() : 0
     return (
       <div style={{ display: 'grid', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 14, height: 14, border: '2px solid var(--merk-zacht)', borderTopColor: 'var(--merk)', borderRadius: '50%', animation: 'ctt-spin .8s linear infinite' }} />
           <style>{'@keyframes ctt-spin { to { transform: rotate(360deg); } }'}</style>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk)' }}>Content genereren (NL + EN)…</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk-tekst)' }}>Content genereren (NL + EN)…</span>
           <span style={{ fontFamily: 'monospace', fontSize: 13, color: '#5C6470' }}>{formatMmSs(verstreken)}</span>
         </div>
         <div style={{ display: 'grid', gap: 10 }}>

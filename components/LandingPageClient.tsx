@@ -97,7 +97,7 @@ const REDENEN = [
   { nr: 'b', titel: 'Klinkt als uw kantoor, niet als een generieke chatbot', tekst: 'Het huisstijlgeheugen leert uw schrijftoon. Geen generieke output die u alsnog moet herschrijven.' },
   { nr: 'c', titel: 'Eén login in plaats van tien tools', tekst: 'Waardering, marktinzicht, verkoopkaart en content op één plek — die ook nog eens met elkaar samenwerken.' },
   { nr: 'd', titel: 'Direct bruikbaar', tekst: 'Teksten volgen de Funda-richtlijnen en de vaste opbouw van uw kantoor. U controleert, past aan of herschrijft met één klik, en kopieert ze naar Funda of uw CRM.' },
-  { nr: 'e', titel: 'Uw data blijft in Europa', tekst: 'Versleuteld opgeslagen binnen de EU, volledig AVG-proof. Wij verkopen geen data, trainen er geen AI-modellen op en gebruiken uw gegevens alleen voor u.' },
+  { nr: 'e', titel: 'Uw data blijft in Europa', tekst: 'Versleuteld opgeslagen binnen de EU, per kantoor afgeschermd. Wij verkopen geen data, trainen er geen AI-modellen op en gebruiken uw gegevens alleen voor u.' },
   { nr: 'f', titel: 'Nederlands én Engels, automatisch', tekst: 'Elke contentgeneratie komt automatisch ook in het Engels beschikbaar, klaar om naast de Nederlandse tekst te zetten.' },
 ]
 

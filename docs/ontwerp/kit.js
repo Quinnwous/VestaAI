@@ -80,6 +80,14 @@ window.Kit = (() => {
   const tweens = new WeakMap();
   function tween(el, naar, fmt) { const van = tweens.get(el) ?? naar; tweens.set(el, naar); if (reduceer || van === naar || van == null || naar == null) { el.textContent = fmt(naar); return; } const t0 = performance.now(); const stap = t => { const p = Math.min(1, (t - t0) / 400), e = 1 - Math.pow(1 - p, 3); el.textContent = fmt(van + (naar - van) * e); if (p < 1) requestAnimationFrame(stap); }; requestAnimationFrame(stap); }
 
+  // ── Sparkline (mini-lijn onderin een hero/reeks-tegel, 300×38, var(--serie-wij)) ──
+  // Was vijf keer los gekopieerd (marktanalyse/concurrentie/verkoopkaart/
+  // startpagina/transacties.html) — nu één gedeelde K.sparkline(waarden).
+  // `waarden` mag `null` bevatten (gat in de reeks): gladSegmenten() breekt
+  // de lijn daar dan in losse segmenten, zoals de oorspronkelijke kopieën.
+  function gladSegmenten(pts) { const segs = []; let seg = []; const flush = () => { if (seg.length) { let d = `M${seg[0][0].toFixed(1)} ${seg[0][1].toFixed(1)}`; for (let i = 0; i < seg.length - 1; i++) { const p0 = seg[i - 1] || seg[i], p1 = seg[i], p2 = seg[i + 1], p3 = seg[i + 2] || p2; d += `C${(p1[0] + (p2[0] - p0[0]) / 8).toFixed(1)} ${(p1[1] + (p2[1] - p0[1]) / 8).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 8).toFixed(1)} ${(p2[1] - (p3[1] - p1[1]) / 8).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`; } segs.push({ d }); } seg = []; }; pts.forEach(p => p ? seg.push(p) : flush()); flush(); return segs; }
+  function sparkline(waarden) { const w = 300, h = 38, v = waarden.filter(x => x != null); if (v.length < 2) return ''; const mn = Math.min(...v), mx = Math.max(...v), sp = mx - mn || 1; const pts = waarden.map((x, i) => x == null ? null : [i / (waarden.length - 1) * w, h - 4 - (x - mn) / sp * (h - 14)]).filter(Boolean); const d = gladSegmenten(pts).map(s => s.d).join(''); return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="var(--serie-wij)" opacity=".08"/><path d="${d}" fill="none" stroke="var(--serie-wij)" stroke-width="1.6" opacity=".6" vector-effect="non-scaling-stroke"/></svg>`; }
+
   // ── Topbar + subnav (AppTopbar.tsx + marktanalyse/layout) ──
   function topbar({ actief = 'Overzicht' } = {}) {
     const items = ['Overzicht', 'Woningdossier', 'Marktanalyse', 'Transacties', 'Concurrentie', 'Verkoopkaart'];
@@ -131,5 +139,5 @@ window.Kit = (() => {
   function leesHash(std, parse) { const h = new URLSearchParams(location.hash.slice(1)); const s = std(); if (![...h.keys()].length) return s; for (const [k, v] of h) if (parse[k]) s[k] = parse[k](v); return s; }
   function schrijfHash(obj) { const h = new URLSearchParams(); Object.entries(obj).forEach(([k, v]) => { if (v == null || v === '' || (Array.isArray(v) && !v.length) || (v instanceof Set && !v.size)) return; h.set(k, v instanceof Set ? [...v].join(',') : Array.isArray(v) ? v.join(',') : String(v)); }); history.replaceState(null, '', '#' + h.toString()); }
 
-  return { $, $$, reduceer, LOGO, TAXONOMIE, GROEP, ENERGIE, TEAM, PLAATSEN, KWARTALEN, MAAND, seed, gaussVan, kiesVan, genereerTransacties, nl, euro, euroKort, procent, dagen, datum, m2, mediaan, gem, mooieStap, tween, topbar, segmented, dropdown, vinkje, chipsLijst, rangeSlider, schakel, filterPills, protoStrip, leesHash, schrijfHash };
+  return { $, $$, reduceer, LOGO, TAXONOMIE, GROEP, ENERGIE, TEAM, PLAATSEN, KWARTALEN, MAAND, seed, gaussVan, kiesVan, genereerTransacties, nl, euro, euroKort, procent, dagen, datum, m2, mediaan, gem, mooieStap, tween, sparkline, topbar, segmented, dropdown, vinkje, chipsLijst, rangeSlider, schakel, filterPills, protoStrip, leesHash, schrijfHash };
 })();

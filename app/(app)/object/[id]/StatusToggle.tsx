@@ -65,7 +65,7 @@ export function StatusToggle({ objectId, initialStatus }: Props) {
                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_CONFIG[s].punt}`} />
                 {STATUS_CONFIG[s].label}
                 {s === status && (
-                  <svg className="w-3 h-3 ml-auto text-[var(--merk)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3 h-3 ml-auto text-[var(--merk-tekst)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 )}

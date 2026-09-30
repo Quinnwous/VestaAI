@@ -38,17 +38,10 @@ export function KwartaalberichtModal({
   const [gekopieerd, setGekopieerd] = useState(false)
   const geannuleerd = useRef(false)
 
-  useEffect(() => {
-    geannuleerd.current = false
-    return () => { geannuleerd.current = true }
-  }, [])
-
-  // Losse functie i.p.v. alles in de effect-body: "Opnieuw proberen" moet
-  // dezelfde aanroep opnieuw kunnen doen zonder dat `taal` verandert (een
-  // effect met `[taal]` als dependency vuurt anders niet opnieuw).
-  const haalOp = (t: Taal) => {
-    setLaden(true)
-    setFout(null)
+  // Puur async: geen synchrone setState vóór de fetch, zodat de aanroep
+  // vanuit het mount-effect hieronder mag (react-hooks/set-state-in-effect)
+  // — alle state-updates zitten in .then()/.catch()/.finally().
+  const laadOp = (t: Taal) => {
     fetch('/api/kwartaalbericht', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,10 +64,25 @@ export function KwartaalberichtModal({
       })
   }
 
+  // Losse functie i.p.v. alles in de effect-body: "Opnieuw proberen"/de taal-
+  // toggle moeten dezelfde aanroep opnieuw kunnen doen (event handlers, geen
+  // effect nodig).
+  const haalOp = (t: Taal) => {
+    setLaden(true)
+    setFout(null)
+    laadOp(t)
+  }
+
   useEffect(() => {
-    if (!resultaten[taal]) haalOp(taal)
+    geannuleerd.current = false
+    // Eenmalige eerste ophaal-actie (NL) bij mount — via queueMicrotask zodat
+    // de aanroep niet als synchrone effect-code geldt (`laadOp` raakt zelf
+    // pas ná zijn fetch setState). De taal-toggle hieronder triggert daarna
+    // zelf een nieuwe haalOp() voor een taal die nog niet in de cache zit.
+    queueMicrotask(() => { laadOp('nl') })
+    return () => { geannuleerd.current = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [taal])
+  }, [])
 
   const actief = resultaten[taal]
 
@@ -130,7 +138,11 @@ export function KwartaalberichtModal({
           size="sm"
           options={[{ value: 'nl', label: 'NL' }, { value: 'en', label: 'EN' }]}
           value={taal}
-          onChange={v => setTaal(v as Taal)}
+          onChange={v => {
+            const t = v as Taal
+            setTaal(t)
+            if (!resultaten[t]) haalOp(t)
+          }}
         />
       </div>
 

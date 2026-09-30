@@ -112,7 +112,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
                   className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--merk)]"
                 />
                 {situatie === 'prijsreductie' && huidigeprijs > 0 && nieuweprijs && (
-                  <span className="text-xs text-[var(--merk)] font-medium whitespace-nowrap">
+                  <span className="text-xs text-[var(--merk-tekst)] font-medium whitespace-nowrap">
                     -{Math.round((1 - parseInt(nieuweprijs) / huidigeprijs) * 100)}%
                   </span>
                 )}

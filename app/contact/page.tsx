@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
 import { PublicFooter } from '@/components/PublicFooter'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'Contact — VestaAI',
@@ -17,6 +18,7 @@ const NR = { fontFamily: 'var(--font-newsreader), Georgia, serif' }
 export default function ContactPage() {
   return (
     <div style={{ background: '#FBFCFB', color: '#0E1A13', minHeight: '100vh' }}>
+      <PlausibleScript />
       <PublicNav active="/contact" />
 
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '80px 28px 120px' }}>

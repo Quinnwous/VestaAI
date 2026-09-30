@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import type { Metadata } from 'next'
 import { APP_URL } from '@/lib/appUrl'
 import { LandingPageClient } from '@/components/LandingPageClient'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'VestaAI — Platform voor makelaars',
@@ -50,6 +51,7 @@ export default async function LandingPage() {
 
   return (
     <>
+      <PlausibleScript />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}

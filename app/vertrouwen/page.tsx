@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { PublicNav } from '@/components/PublicNav'
 import { PublicFooter } from '@/components/PublicFooter'
+import { PlausibleScript } from '@/components/PlausibleScript'
 
 export const metadata: Metadata = {
   title: 'Vertrouwen & beveiliging — VestaAI',
@@ -26,7 +27,7 @@ const PIJLERS: { titel: string; tekst: string; icoon: string }[] = [
   {
     icoon: '🧠',
     titel: 'Geen AI-training op uw data',
-    tekst: 'De teksten en woninggegevens die u invoert worden niet gebruikt om AI-modellen te trainen. Ze gaan per opdracht naar Claude (Anthropic) of, voor virtual staging, naar Gemini (Google), en worden daar niet permanent bewaard of hergebruikt.',
+    tekst: 'De teksten en woninggegevens die u invoert gaan per opdracht naar Claude (Anthropic) of, voor virtual staging, naar Gemini (Google, betaalde laag). Geen van beide gebruikt uw gegevens om AI-modellen te trainen zonder uw toestemming; Anthropic verwijdert de gegevens zonder aparte afspraak automatisch binnen 30 dagen.',
   },
   {
     icoon: '🛡️',
@@ -51,6 +52,7 @@ const card: React.CSSProperties = {
 export default function VertrouwenPage() {
   return (
     <div style={{ background: '#FBFCFB', minHeight: '100vh' }}>
+      <PlausibleScript />
       <PublicNav active="/vertrouwen" />
 
       <main style={{ maxWidth: 960, margin: '0 auto', padding: '64px 28px 96px' }}>

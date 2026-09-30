@@ -47,6 +47,18 @@ zodat je tijdens de demo niet hoeft te zoeken:
 | **In verkoop** | Eén dossier **met** al gegenereerde NL+EN-content (voor scène 5 als vaste terugval, zie hieronder) | `/woningen` → filter **In verkoop** → open er één waar de contentknop al "Content klaar" toont |
 | **Verkocht** | Eén dossier, puur om te laten zien dat alles bereikbaar blijft (archief) | `/woningen` → filter **Verkocht** → open er één |
 
+**Gekozen op 30 sep 2026** (demo-kantoor, alle drie in Wassenaar, met de meeste
+referenties in hun fase — gecontroleerd in de database):
+
+| Fase | Dossier | Waarom |
+|---|---|---|
+| Verkoopadvies | Kerkehoutlaan 12 — `/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e` | waardering met 25 referenties, geen content |
+| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 8 punt 6) |
+| Verkocht | Rust en Vreugdlaan 5 — `/object/f1db5bd7-133f-4e1a-989c-7be97d505f10` | content klaar, 25 referenties |
+
+Geen van de demo-dossiers heeft foto's; voor de brochure-pdf en virtual staging
+in scène 5 vooraf een paar foto's uploaden in het In verkoop-dossier.
+
 **Voor scène 4 (het live verkoopadvies)** maak je **een extra, vers dossier**
 vlak vóór de repetitie/demo aan via `/object/new` — dat is juist het punt van
 de scène (adres typen, dossier staat er direct, waardering live doorrekenen).
