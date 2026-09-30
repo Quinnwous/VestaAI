@@ -103,13 +103,6 @@ export async function setObjectStatus(objectId: string, nieuwStatus: ObjectStatu
   return { ok: true, status: nieuwStatus }
 }
 
-export async function toggleObjectStatus(objectId: string, huidigStatus: ObjectStatus) {
-  const volgorde: ObjectStatus[] = ['draft', 'published', 'onder_bod', 'verkocht']
-  const huidigIndex = volgorde.indexOf(huidigStatus)
-  const nieuwStatus = volgorde[(huidigIndex + 1) % volgorde.length]
-  return setObjectStatus(objectId, nieuwStatus)
-}
-
 export async function deleteObject(objectId: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()

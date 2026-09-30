@@ -313,7 +313,7 @@ type MarktanalyseReeksRpcRij = {
   pct_tov_vraag: number | null
 }
 
-/** RPC `marktanalyse_reeks` — kwartaalrijen, referentie-implementatie: lib/marktanalyse.ts naarKwartaalReeks(). */
+/** RPC `marktanalyse_reeks` — kwartaalrijen (mediaan per kwartaal; client-side tegenhanger voor eigen verkopen: `wijKwartaalReeks()` in lib/marktanalyse.ts). */
 export async function marktanalyseReeks(client: SessieClient, filters?: TransactieFilter): Promise<MarktanalyseReeksRij[]> {
   const { data, error } = await client.rpc('marktanalyse_reeks', { p_filters: metFilters(filters) })
   if (error) throw new Error(`marktanalyseReeks: ${error.message}`)

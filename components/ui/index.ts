@@ -2,10 +2,10 @@ export * from './tokens'
 export { Eyebrow } from './Eyebrow'
 export { PageHeader, SerifTitle } from './PageHeader'
 export { Card } from './Card'
-export { Badge, StatusBadge } from './Badge'
+export { Badge } from './Badge'
 export { Button, buttonStyle, buttonClass } from './Button'
 export type { BtnVariant, BtnSize } from './Button'
-export { Label, Input, Textarea, Select, fieldStyle } from './Field'
+export { Label, Input, Textarea } from './Field'
 export { SegmentedToggle } from './SegmentedToggle'
 export type { SegOption } from './SegmentedToggle'
 export { Switch } from './Switch'
@@ -18,7 +18,7 @@ export { EmptyState } from './EmptyState'
 export { Skeleton, SkeletonRij } from './Skeleton'
 
 // Radix-gebaseerde interactieprimitives (item 6.0, roadmap § 3.8). Zelf bouwen
-// mag alleen wat Radix niet levert — deze zes geven focus-trap, Escape,
+// mag alleen wat Radix niet levert — deze vijf geven focus-trap, Escape,
 // scroll-lock, botsingscorrectie en toetsenbordnavigatie die handwerk mist.
 export { Sheet } from './Sheet'
 export { Popover } from './Popover'
@@ -26,8 +26,6 @@ export { Slider } from './Slider'
 export { Tooltip, TooltipProvider } from './Tooltip'
 export { SelectMenu } from './SelectMenu'
 export type { SelectOptie } from './SelectMenu'
-export { Tabs } from './Tabs'
-export type { TabDef } from './Tabs'
 
 // Item 6.1 (Marktanalyse-explorer v2, roadmap § 3.7/3.8): FilterBar-bouwstenen
 // en chart-primitives, geëxporteerd voor hergebruik door de volgende
