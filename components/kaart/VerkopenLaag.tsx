@@ -95,6 +95,8 @@ export function VerkopenLaag({
         const el = document.createElement('div')
         el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
         el.style.cursor = 'pointer'
+        // role=img: axe staat aria-label niet toe op een kale div (aria-prohibited-attr)
+        el.setAttribute('role', 'img')
         el.setAttribute(
           'aria-label',
           `${p.adres}, ${p.verkoopprijs ? `€${p.verkoopprijs.toLocaleString('nl-NL')}` : 'prijs onbekend'}`,

@@ -89,7 +89,7 @@ export default async function KantoorPage() {
               </div>
             )}
             {!instellingen && (
-              <p className="text-xs text-gray-400">Courtage, kantoorprofiel en werkgebied zijn nog niet ingesteld — neem contact op met je platformbeheerder.</p>
+              <p className="text-xs text-gray-500">Courtage, kantoorprofiel en werkgebied zijn nog niet ingesteld — neem contact op met je platformbeheerder.</p>
             )}
           </div>
         </section>
@@ -129,7 +129,7 @@ export default async function KantoorPage() {
                 </div>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-4">Wil je iets aanpassen aan je huisstijl? Neem contact op met je platformbeheerder.</p>
+            <p className="text-xs text-gray-500 mt-4">Wil je iets aanpassen aan je huisstijl? Neem contact op met je platformbeheerder.</p>
           </div>
         </section>
 
@@ -145,7 +145,7 @@ export default async function KantoorPage() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-2">Een nieuwe collega toevoegen? Neem contact op met je platformbeheerder.</p>
+          <p className="text-xs text-gray-500 mt-2">Een nieuwe collega toevoegen? Neem contact op met je platformbeheerder.</p>
         </section>
 
         <section>

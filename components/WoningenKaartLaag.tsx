@@ -74,6 +74,7 @@ export function WoningenKaartLaag({
         const el = document.createElement('div')
         el.innerHTML = renderToStaticMarkup(<Pin variant={basisVariant} />)
         el.style.cursor = 'pointer'
+        el.setAttribute('role', 'img')
         el.setAttribute('aria-label', w.address)
 
         el.addEventListener('mouseenter', () => {
