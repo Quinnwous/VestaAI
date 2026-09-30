@@ -331,3 +331,32 @@ gelogd (zonder adres) en valt nooit stil terug op "geen resultaat".
   instance, `lib/resetRateLimit.ts`).
 - Geen tracking achter de login; transactiedata geldt als persoonsgegeven
   (privacyverklaring). Anthropic bewaart API-invoer 30 dagen.
+
+## 13. Auth en e-mail
+
+- **Inloggen** met e-mail + wachtwoord (`components/InlogFormulier.tsx`) op
+  `/login` of de kantoorlogin `/login/<slug>`. Zelf registreren bestaat niet;
+  in Supabase staat "Allow new users to sign up" nog aan (roadmap § 2 punt 4).
+- **Wachtwoord-reset:** de mail linkt naar
+  `{{ .SiteURL }}/auth/reset-password?token_hash=…&type=recovery`; de pagina
+  doet `verifyOtp` pas na een klik, zodat een mailscanner die de link opent de
+  token niet verbruikt. De kantoorlogin heeft een eigen reset-mail in kantoorstijl
+  (`app/api/auth/kantoor-reset`, `lib/kantoorResetMail.ts`, met rate-limit).
+- ⚠️ **Supabase Site URL = `https://vestaai.nl`, zonder `/**`.** De wildcard hoort
+  alleen bij de Redirect URLs; met `/**` in de Site URL landde elke resetlink op
+  `/login` (bug 2 juli). Het kale domein stuurt met 308 door naar
+  `www.vestaai.nl` en behoudt de query, dus maillinks blijven werken.
+- **E-mail via Resend:** domein `vestaai.nl` geverifieerd (DNS bij TransIP),
+  afzender `noreply@vestaai.nl`; ook de Supabase-auth-mails lopen via
+  Resend-SMTP (`smtp.resend.com:465`). `RESEND_API_KEY` is een send-only-sleutel
+  (kan geen domeinen of mails uitlezen). De onderwerpregels van de
+  Supabase-mails zijn nog Engels (backlog).
+- **Accounts:** `addMakelaarAccount` (`/admin`) maakt de auth-user (e-mail al
+  bevestigd) en het makelaar-record, en mailt de persoon meteen;
+  `scripts/maak-team-accounts.mjs` doet hetzelfde zonder mail. `ensureMakelaar`
+  is het vangnet als het makelaar-record ontbreekt.
+- **Nieuwe klant:** bij het eerste dashboardbezoek van een kantoor
+  (`kantoren.admin_notified_at is null`) gaat er atomisch één welkomstmail naar
+  het eerste lid en een melding naar de platform-admin (`lib/nieuweKlant.ts`).
+  Beide huidige kantoren zijn al verwerkt: nieuwe teamleden van i4 krijgen
+  daardoor geen mail.

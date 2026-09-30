@@ -16,8 +16,8 @@ puur via de platform-admin: geen prijzen, abonnementen of Stripe (weg sinds
 - **Waar staat wat** (wegwijzer: `docs/README.md`):
   `docs/productoverzicht.md` = wat er staat, per onderdeel ·
   `docs/architectuur.md` = hoe het gebouwd is, **bindend** (datalagen, waardering,
-  content, kaart, AI, datamodel) · `docs/werkwijze.md` = DoD, agents, vangrails,
-  git · `docs/besluiten.md` = logboek (nieuwste bovenaan) ·
+  content, kaart, AI, datamodel, auth en e-mail) · `docs/werkwijze.md` = DoD,
+  agents, vangrails, git · `docs/besluiten.md` = logboek (nieuwste bovenaan) ·
   `docs/strategie/doelen.md` = kompas bij twijfel over product of prioriteiten ·
   `scripts/README.md` = alle scripts.
 - **Een item is af** → uit de roadmap halen (niet afvinken), beschrijven in het
@@ -237,6 +237,9 @@ exports).
   (`voegInstellingenSamen()`), nooit vervangen — dat wiste `demo: true`.
 - Nieuwe policies altijd met `(select my_kantoor_id())`/`(select auth.uid())`,
   nooit kaal; nieuwe view op `transacties` altijd `with (security_invoker = true)`.
+- Een `SECURITY DEFINER`-functie met `set search_path = public` vindt
+  extensiefuncties niet (die staan in schema `extensions`): altijd gekwalificeerd
+  aanroepen (`extensions.gen_random_bytes`) — dit brak op 3 juli alle registraties.
 - Den Haag heet in BAG/PDOK/Brainbay "'s-Gravenhage" — vergelijk plaatsnamen
   nooit kaal (`canoniekePlaats()`).
 - Verouderde "nog niet toegepast"-commentaren kosten dubbel werk: werk bij het
