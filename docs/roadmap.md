@@ -34,15 +34,18 @@
   roadmap/CLAUDE.md opgeschoond. Lighthouse mobiel na de ronde: dashboard 91,
   marktanalyse 80, concurrentie 87, woningen 92, dossier 76, landing 90,
   kantoorlogin 85 (was 87/64/51/82/58/86/82) — Quinn: "prima", geen ronde 3.
-- **Open en bouwbaar zonder input:** vrijwel niets. Alleen klein onderhoud:
+- **Open en bouwbaar zonder input:** fase 14 (juridisch & toegankelijk, uit
+  Quinns checklist van 30 sep): 14.1 juridische teksten, 14.3 staging-label,
+  14.4 axe + contrast in de DoD — nul bestandsoverlap, één ronde met agents.
+  14.2 wacht op bedrijfsgegevens (§ 8 punt 17). Verder klein onderhoud:
   31 react-hooks-lintmeldingen (§ 9). Performance is afgerond (besluit Quinn).
-  De volgende echte stap hangt aan § 8 — vooral de exports.
 - **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
   voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), akkoord betaalde
   testruns (8.5, smoke-generatie, EN-kwartaalbericht), opruimmigratie,
   6 ongebruikte Stripe-/cron-geheimen op Vercel verwijderen (akkoord gegeven,
   handwerk — § 8 punt 10), Supabase-auth 2 klikken,
-  kantoorprofiel i4, pastelkleuren kaart, Vercel Pro.
+  kantoorprofiel i4, pastelkleuren kaart, Vercel Pro, bedrijfsgegevens +
+  zakelijk mailadres (14.2), Gemini betaalde laag, beeldrechten i4.
 - ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
   7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
   Repetitie op `/login/demo`. Terugvalplan als de exports uitblijven: demo op
@@ -602,6 +605,97 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
 ### Fase 13 — Publieke site ✅ (27 sep 2026)
 Verouderde copy eruit (13.1) en landingspagina herpositioneerd op waardering + marktinzicht, content, white-label en concierge (13.2). Details: `docs/besluiten.md`.
 
+### Fase 14 — Juridisch & toegankelijk (4 items; 14.1, 14.3 en 14.4 bouwbaar zonder input, nul bestandsoverlap)
+
+Uit de website-checklist van Quinn (30 sep 2026), gefilterd op wat voor een
+gesloten B2B-platform zonder betalingen en zonder publieke formulieren geldt.
+Wat al klopt of niet van toepassing is: `docs/besluiten.md` 30 sep (checklist)
+en § 10. ⚠️ Claude is geen jurist: de teksten van 14.1/14.2 gaan vóór het
+eerste betaalde contract langs een jurist (§ 8 punt 16).
+
+- [ ] **14.1 Juridische teksten kloppend maken** —
+  *Doel:* voorwaarden, privacyverklaring en publieke claims beloven niets wat
+  niet waar of niet waar te maken is. *Raakt:* `app/voorwaarden/page.tsx`,
+  `app/privacy/page.tsx`, `app/over-ons/page.tsx`, `app/vertrouwen/page.tsx`,
+  copy in `components/LandingPageClient.tsx`, `app/layout.tsx` (Plausible).
+  *Spec:* (1) **Rollen:** voorwaarden art. 6 zegt nu "VestaAI is de
+  verwerkingsverantwoordelijke" — fout voor dossier- en transactiedata: daar is
+  het kantoor verantwoordelijke en VestaAI verwerker (sluit aan op de
+  verwerkersovereenkomst); VestaAI is alleen verantwoordelijke voor
+  accountgegevens en websitebezoek. Privacyverklaring § 1 idem. (2) **Nieuw
+  artikel "AI-uitvoer en waardebepaling":** de waardebepaling is een
+  onderbouwde indicatie, geen (NWWI-)taxatie; AI-teksten en virtual staging
+  controleert de makelaar vóór publicatie en hij blijft verantwoordelijk voor
+  wat hij publiceert; gestagede foto's publiceren als impressie. (3)
+  **Onwaarmaakbare beloftes eruit:** "99,5 % beschikbaarheid" en "24 uur van
+  tevoren onderhoud melden" (Hobby-plan, geen monitoring) → inspanningsverplichting;
+  "volledig AVG-proof" (over-ons) en andere absolute claims → feitelijk
+  ("data in de EU, versleuteld opgeslagen, per kantoor afgeschermd").
+  Claims-sweep over landing/over-ons/vertrouwen: elk getal of superlatief moet
+  herleidbaar zijn. (4) **Privacyverklaring:** doorgifte buiten de EER per
+  leverancier (Anthropic, Google, Vercel, Resend zijn Amerikaans — grondslag
+  EU-VS Data Privacy Framework of SCC's, bij de bouw per leverancier nagaan);
+  bewaartermijn bij Anthropic feitelijk (actuele API-retentie opzoeken, niet
+  "niet permanent"); Vercel-functies draaien in Frankfurt; transactiedata is
+  persoonsgegevens (adres + prijs) en staat er zo in; datum "laatst
+  bijgewerkt". (5) **Plausible alleen op publieke pagina's:** het script
+  staat nu in `app/layout.tsx` en draait dus ook achter de login (stuurt
+  dossier-URL's mee), terwijl de privacyverklaring "op onze publieke pagina's"
+  zegt → script naar een klein component op de publieke pagina's
+  (landing, contact, privacy, voorwaarden, over-ons, vertrouwen, `/login*`).
+  Bedrijfsgegevens (KvK/adres) níet hier — dat is 14.2.
+  *Tests:* geen logica; `npm run build` + controle dat Plausible niet laadt op
+  `/dashboard` (Playwright: geen request naar plausible.io). *Klaar als:* de
+  vijf punten staan erin, `dod:screens` groen, Quinn heeft de nieuwe teksten
+  gelezen.
+- [ ] **14.2 Bedrijfsgegevens + zakelijk e-mailadres** *(geblokkeerd: § 8
+  punt 17)* — *Doel:* wettelijk verplichte identiteitsgegevens op de site
+  (art. 3:15d BW, art. 20 Handelsregisterwet): naam, KvK-nummer,
+  vestigingsadres, btw-id, e-mail. *Raakt:* footer van
+  `LandingPageClient`/`PublicNav`-pagina's, `app/contact/page.tsx`, privacy,
+  voorwaarden (art. 7 "arrondissement waar VestaAI is gevestigd" krijgt een
+  plaats). *Spec:* gegevens in één constante (`lib/bedrijf.ts`), overal daaruit
+  lezen; `quinn.berkouwer@gmail.com` vervangen door het zakelijke adres
+  (contact, privacy, voorwaarden) — scheelt ook spam op een gmail dat nu
+  publiek staat. *Klaar als:* grep op het gmail-adres in `app/` en
+  `components/` geeft niets meer (behalve `lib/admin.ts`).
+- [ ] **14.3 Virtual staging herkenbaar als impressie** — *Doel:* een gestagede
+  foto kan niet voor een echte foto doorgaan. EU AI Act art. 50 lid 4
+  (transparantie bij gemanipuleerd beeld, van kracht sinds 2 aug 2026, geldt
+  voor de makelaar als gebruiker — wij maken het hem makkelijk) en misleiding
+  richting kopers (Reclamecode, NVM-gedragsregels). *Raakt:*
+  `app/api/fotos/staging/route.ts`, `components/VirtualStaging.tsx`,
+  `public/staging-voor.jpg`/`staging-na.jpg`. *Spec:* het resultaat krijgt
+  server-side (met `sharp`, dat al in de stack zit — CLAUDE.md-les: eerst naar
+  een buffer, dan pas verder) een klein, leesbaar label "Virtueel ingericht"
+  in een hoek; de download is dus altijd gelabeld; in de UI een regel "Publiceer
+  dit als impressie" bij de downloadknop. Meteen de hardgecodeerde
+  `#4A9970`-tekstkleur in `VirtualStaging.tsx` naar `var(--merk…)`. De twee
+  jpg's in `public/` worden nergens gebruikt → weg. *Tests:* unit-test op de
+  labelfunctie (uitvoer heeft dezelfde afmetingen, is een geldige jpeg).
+  *Klaar als:* een gedownloade staging toont het label; huisstijl-hook schoon.
+  (Test tegen de echte Gemini-API = betaalde run, § 8 punt 6.)
+- [ ] **14.4 Toegankelijkheid en dode links in de DoD** *(ontwerpkeuze bij
+  het contrast)* — *Doel:* WCAG 2.1 AA automatisch bewaken, per kantoorkleur.
+  Wettelijk hoeft het niet (de European Accessibility Act geldt voor
+  consumentendiensten, niet voor een B2B-tool van een micro-onderneming), maar
+  het is kwaliteit en een makelaar met een brilletje is ook een gebruiker.
+  *Raakt:* het `dod:screens`-script, `lib/branding.ts` (+ test),
+  `package.json` (devDependency `@axe-core/playwright`). *Spec:* (1) axe-scan op
+  elke route in `dod:screens`; `serious`/`critical` → exit 1. (2) **Contrast
+  per kantoor:** `lib/branding.ts` kiest tekst op de merkkleur nu met
+  `luminantie > 0,5`; bij i4-blauw `#0080C8` levert dat wit op 4,3 : 1 — onder
+  de 4,5 : 1 voor gewone tekst (knoplabels). Kies op het hoogste
+  contrast, en voeg een `--merk-tekst` toe (de merkkleur zo ver verdonkerd dat
+  hij ≥ 4,5 : 1 op wit haalt) voor links en merkgekleurde tekst. Ontwerpkeuze:
+  i4-knoppen worden iets donkerder blauw of krijgen donkere tekst — Quinn kiest
+  op een screenshot. (3) Toetsenbordronde op de hero-schermen: alles bereikbaar
+  met Tab, focus zichtbaar (skip-link bestaat al). (4) Linkcheck: alle
+  interne links op de publieke pagina's (uit `sitemap.ts`) geven 200.
+  *Tests:* unit-test contrastfunctie (i4-blauw, i4-rood, demo-groen, zwart,
+  wit, geel). *Klaar als:* `dod:screens` groen met axe op 390/1280/1920, voor
+  demo-kantoor én i4 (`DOD_EMAIL`).
+
 ---
 
 ## 6. Planning, mijlpalen & schrapvolgorde
@@ -720,7 +814,28 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
     versies zijn van vóór 0.1; upload werd door auto-mode geblokkeerd.
 16. **Vóór het eerste betaalde contract:** Supabase Pro, definitieve
     verwerkersovereenkomst (⚠️ de import is formeel al verwerking — hoort er
-    vóór 5.5 te liggen), prijsafspraak. Sentry-account (backlog).
+    vóór 5.5 te liggen), prijsafspraak. Sentry-account (backlog). Plus een
+    **juridische toets** van voorwaarden + privacyverklaring (na 14.1/14.2)
+    door een jurist.
+
+**Juridisch (fase 14, 30 sep 2026):**
+
+17. **Bedrijfsgegevens** — staat VestaAI ingeschreven bij de KvK (bv. als
+    eenmanszaak)? Nodig: KvK-nummer, vestigingsadres (moet een bezoekbaar
+    adres zijn; bij een eenmanszaak mag dat een zakelijk postadres/
+    kantoorservice zijn als je je huisadres niet online wilt), btw-id en een
+    **zakelijk mailadres** (bv. `info@vestaai.nl` — het domein bestaat al;
+    nu staat overal je gmail). Deblokkeert 14.2.
+18. **Gemini-API: betaalde laag?** Op de gratis laag mag Google ingestuurde
+    foto's gebruiken om zijn producten te verbeteren — dan klopt de
+    privacyverklaring niet en gaan klantfoto's verder dan afgesproken. Check in
+    Google AI Studio → API-sleutel → billing ingeschakeld. Claude kan dat niet
+    zien.
+19. **Beeldrechten** — sfeerbeelden, teamfoto en logo van i4 Housing staan in
+    hun omgeving: laat in het contract/de verwerkersovereenkomst opnemen dat
+    i4 de rechten heeft en ze aan VestaAI ter beschikking stelt. Eigen beelden
+    op de publieke site: geen (de twee staging-jpg's in `public/` zijn
+    ongebruikt en gaan weg in 14.3).
 
 ## 9. Backlog & geparkeerd
 
@@ -790,6 +905,15 @@ prijsadvies bij lange looptijd.
 - ❌ **Facturatie/boekhouding**, **AI-inbox**, **bezichtigingsplanner**.
 - ❌ **Losse primitives-fase of showcasepagina** (v2).
 - ❌ **Upload-UI voor grote imports** — script is de weg (v2).
+- ❌ **Cookiebanner en losse cookiepagina** — alleen functionele
+  sessiecookies (Supabase-auth) en cookieloze Plausible: geen toestemming nodig
+  (Telecommunicatiewet 11.7a); privacy § 7 is de cookieverklaring. Opnieuw
+  bekijken zodra er ooit tracking/advertentie-cookies of embeds (YouTube,
+  Calendly, Google Maps) bijkomen.
+- ❌ **Retourbeleid, formulier-toestemming, spamfilter/captcha** — geen
+  betalingen en geen publieke formulieren (contact is `mailto:`, login heeft
+  een rate-limit op de reset). Komt er een contactformulier, dan pas: validatie,
+  honeypot + rate-limit, toestemmingstekst.
 
 ## 11. Permanente kwaliteit
 

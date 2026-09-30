@@ -6,7 +6,18 @@
 
 ---
 
-### 30 sep 2026 (zeventiende ronde, O) — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
+### 30 sep 2026 — website-checklist van Quinn gefilterd → fase 14
+
+Twee generieke "laat je vibe-coded site niet aanklagen"-lijsten (±30 punten,
+deels dubbel, deels voor webshops) nagelopen tegen de code.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Staat al (geverifieerd) | Privacy- en voorwaardenpagina, HTTPS + HSTS-preload + CSP (`next.config.mjs`), alleen publieke sleutels in de frontend (`NEXT_PUBLIC_SUPABASE_URL/_ANON_KEY`, `_APP_URL`), metatitels + OG/Twitter-afbeelding, favicon/apple-icon/manifest, `sitemap.ts` + `robots.ts` (app-routes uitgesloten), eigen 404 + foutpagina's, alt-tekst op alle 9 `<img>` (decoratief = `alt=""`), afbeeldingen/snelheid/mobiel (fase 12, Lighthouse), analytics (Plausible), één duidelijke CTA (13.2), skip-link. Geen nep-reviews of testimonials gevonden | Opus |
+| Niet van toepassing | Cookiebanner en losse cookiepagina (alleen functionele cookies + cookieloze Plausible), retourbeleid (geen betalingen), formulier-toestemming/-validatie/spamfilter (geen publieke formulieren), third-party embeds (geen; alleen PDOK-tegels en Plausible). Vastgelegd in roadmap § 10 met het moment waarop het wél nodig wordt | Opus |
+| Gevonden → fase 14 | Voorwaarden noemen VestaAI "verwerkingsverantwoordelijke" (moet: verwerker voor kantoordata); onwaarmaakbare beloftes (99,5 % uptime, "volledig AVG-proof"); geen doorgifte buiten de EER in de privacyverklaring; Plausible draait ook achter de login terwijl de verklaring "publieke pagina's" zegt; geen KvK/adres/zakelijk mailadres op de site; gestagede foto's ongelabeld (AI Act art. 50 lid 4); tekst op i4-blauw 4,3 : 1 (< AA); geen automatische a11y-check | Opus |
+| Voor Quinn | § 8 punten 17-19: bedrijfsgegevens, Gemini betaalde laag, beeldrechten i4; juridische toets door een jurist bij punt 16 | Opus |
+ — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
 
 | Onderwerp | Besluit | Door |
 |---|---|---|
