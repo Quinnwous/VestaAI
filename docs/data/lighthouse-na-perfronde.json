@@ -1,0 +1,173 @@
+{
+  "datum": "2026-09-30T07:49:41.675Z",
+  "basis": "https://www.vestaai.nl",
+  "preset": "mobiel",
+  "runs": 3,
+  "routes": {
+    "/dashboard": {
+      "score": 91,
+      "scores": [
+        87,
+        92,
+        91
+      ],
+      "fcp": 1026,
+      "lcp": 3458,
+      "tbt": 61,
+      "si": 2492,
+      "cls": 0,
+      "jsKb": 297,
+      "lcpElement": "-1 dgn vs markt (58 dgn) · n=154\ndata t/m 17 september 2026 (div > div > div > p)",
+      "bootup": [
+        {
+          "url": "/_next/static/immutable/chunks/39vfuiv530vx4.js",
+          "ms": 232
+        },
+        {
+          "url": "/dashboard",
+          "ms": 171
+        },
+        {
+          "url": "Unattributable",
+          "ms": 149
+        },
+        {
+          "url": "/_next/static/immutable/chunks/2u5v7xdlfh11m.js",
+          "ms": 92
+        }
+      ]
+    },
+    "/marktanalyse": {
+      "score": 80,
+      "scores": [
+        79,
+        80,
+        80
+      ],
+      "fcp": 1331,
+      "lcp": 4155,
+      "tbt": 293,
+      "si": 2683,
+      "cls": 0,
+      "jsKb": 412,
+      "lcpElement": "Marktanalyse (div > main > div > h1)",
+      "bootup": [
+        {
+          "url": "/_next/static/immutable/chunks/39vfuiv530vx4.js",
+          "ms": 1793
+        },
+        {
+          "url": "/marktanalyse",
+          "ms": 350
+        },
+        {
+          "url": "/_next/static/immutable/chunks/35gsx1f8o0xjp.js",
+          "ms": 261
+        },
+        {
+          "url": "Unattributable",
+          "ms": 249
+        }
+      ]
+    },
+    "/marktanalyse/concurrentie": {
+      "score": 87,
+      "scores": [
+        87,
+        90,
+        85
+      ],
+      "fcp": 941,
+      "lcp": 3641,
+      "tbt": 201,
+      "si": 2401,
+      "cls": 0,
+      "jsKb": 387,
+      "lcpElement": "Concurrentie (div > main > div > h1)",
+      "bootup": [
+        {
+          "url": "/_next/static/immutable/chunks/39vfuiv530vx4.js",
+          "ms": 1249
+        },
+        {
+          "url": "/marktanalyse/concurrentie",
+          "ms": 355
+        },
+        {
+          "url": "/_next/static/immutable/chunks/35gsx1f8o0xjp.js",
+          "ms": 281
+        },
+        {
+          "url": "Unattributable",
+          "ms": 170
+        }
+      ]
+    },
+    "/woningen": {
+      "score": 92,
+      "scores": [
+        92,
+        96,
+        80
+      ],
+      "fcp": 958,
+      "lcp": 3366,
+      "tbt": 74,
+      "si": 1781,
+      "cls": 0,
+      "jsKb": 323,
+      "lcpElement": "Jouw woningen (main > div > div > h1)",
+      "bootup": [
+        {
+          "url": "/_next/static/immutable/chunks/1ayqkm5vb-zxk.js",
+          "ms": 617
+        },
+        {
+          "url": "Unattributable",
+          "ms": 501
+        },
+        {
+          "url": "/woningen",
+          "ms": 416
+        },
+        {
+          "url": "/_next/static/immutable/chunks/39vfuiv530vx4.js",
+          "ms": 358
+        }
+      ]
+    },
+    "/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e": {
+      "score": 76,
+      "scores": [
+        73,
+        80,
+        76
+      ],
+      "fcp": 1640,
+      "lcp": 3967,
+      "tbt": 378,
+      "si": 2101,
+      "cls": 0,
+      "jsKb": 301,
+      "lcpElement": "Kerkehoutlaan 12, Wassenaar (div > div > div > h1)",
+      "bootup": [
+        {
+          "url": "/_next/static/immutable/chunks/39vfuiv530vx4.js",
+          "ms": 809
+        },
+        {
+          "url": "/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e",
+          "ms": 650
+        },
+        {
+          "url": "Unattributable",
+          "ms": 266
+        },
+        {
+          "url": "/_next/static/immutable/chunks/1ayqkm5vb-zxk.js",
+          "ms": 99
+        }
+      ]
+    }
+  }
+}

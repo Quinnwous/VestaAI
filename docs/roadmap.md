@@ -17,7 +17,7 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 30 sep 2026 (ronde O, PR #48). Geschiedenis per ronde: `docs/besluiten.md`.*
+*Bijgewerkt 30 sep 2026 (ronde O, PR #48 + #49). Geschiedenis per ronde: `docs/besluiten.md`.*
 
 - **Af:** fases 0-4, 6, 7, 9, 10 en 13. Fase 5 is voorbereid tot aan de exports
   (5.2-5.4 af, importpijplijn en geocodering liggen klaar). Next 16 + React 19
@@ -31,15 +31,17 @@
   ziet verschijnt even snel, alle checks groen (dod:screens 33/33, e2e 10/10,
   repetitie 0 fouten). Verder: meetscript `scripts/meet-lighthouse.mjs`,
   kantoor-admin-achterdeur op `kantoren` gedicht (migratie toegepast),
-  roadmap/CLAUDE.md opgeschoond. Nameting Lighthouse: zie 12.6.
-- **Open en bouwbaar zonder input:** weinig. Kandidaten: dossier-LCP verder
-  omlaag (verkoopadvies-fase, `WaardebepalingPaneel` + kaart zijn de grootste
-  hydratie), landingspagina naar > 90 (nu 86, § 11-eis) en kantoorlogin (82),
-  31 react-hooks-lintmeldingen.
+  roadmap/CLAUDE.md opgeschoond. Lighthouse mobiel na de ronde: dashboard 91,
+  marktanalyse 80, concurrentie 87, woningen 92, dossier 76, landing 90,
+  kantoorlogin 85 (was 87/64/51/82/58/86/82) — Quinn: "prima", geen ronde 3.
+- **Open en bouwbaar zonder input:** vrijwel niets. Alleen klein onderhoud:
+  31 react-hooks-lintmeldingen (§ 9). Performance is afgerond (besluit Quinn).
+  De volgende echte stap hangt aan § 8 — vooral de exports.
 - **Open, wacht op Quinn (§ 8):** exports (5.1 → 5.5 → M1), licentie Brainbay,
   voorbeeld-verkoopadvies (fase 11), team-accounts (12.1), akkoord betaalde
   testruns (8.5, smoke-generatie, EN-kwartaalbericht), opruimmigratie,
-  6 ongebruikte Stripe-/cron-geheimen op Vercel, Supabase-auth 2 klikken,
+  6 ongebruikte Stripe-/cron-geheimen op Vercel verwijderen (akkoord gegeven,
+  handwerk — § 8 punt 10), Supabase-auth 2 klikken,
   kantoorprofiel i4, pastelkleuren kaart, Vercel Pro.
 - ⚠️ **Demo-realiteit:** het i4housing-kantoor heeft 0 transacties (demo-kantoor
   7.996) — marktinzichten, kerncijfers en waardering tonen daar de lege staat.
@@ -569,7 +571,7 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   op echte data gelogd in `docs/data/performance.md`.
   Desktop > 85 en a11y 100 gehaald; **mobiel > 85 niet** (alleen het
   dashboard) → vervolg in 12.6.
-- [ ] **12.6 Performance mobiel, ronde 2** *(29-30 sep, loopt)* — meten met
+- [x] **12.6 Performance mobiel, ronde 2** *(29-30 sep, PR #48 live)* — meten met
   `scripts/meet-lighthouse.mjs` (ingelogd, productie, mediaan van 3 runs;
   nulmeting `docs/data/lighthouse-voor-perfronde.json`: dashboard 87,
   marktanalyse 64, concurrentie 51, woningen 82, dossier 58). Diagnose: het
@@ -580,6 +582,12 @@ Zonder voorbeeld: demo zonder dit onderdeel (scène 4 eindigt bij de pdf).
   `sideEffects` + directe imports voor de ui-barrel.
   *Klaar als:* nameting op productie vastgelegd naast de nulmeting; wat de 85
   nog tegenhoudt benoemd.
+  *Resultaat* (`docs/data/lighthouse-na-perfronde*.json`, mediaan van 3):
+  dashboard 87 → 91, marktanalyse 64 → 80, concurrentie 51 → 87, woningen
+  82 → 92, dossier 58 → 76, landing 86 → 90, kantoorlogin 82 → 85. Wat nog
+  onder 85 zit: marktanalyse (LCP 4,2 s, TBT ~290 ms — hydratie van de
+  explorer zelf) en dossier (LCP 4,0 s, TBT ~380 ms — `WaardebepalingPaneel` +
+  kaart). **Besluit Quinn 30 sep: dit is voor nu prima, geen ronde 3.**
 - [x] **12.4 Feedbackknop** — klein: knop in het avatarmenu → Resend-mail naar
   Quinn met pagina-URL + tekst. Gebruiksoverzicht in `/admin` (schrapbaar).
 - [ ] **12.5 Demo-voorbereiding** — ✅ 12.5a `docs/demoscript.md` (§ 2 uitgewerkt tot
@@ -689,11 +697,14 @@ Gecontroleerd op 30 sep 2026. **Blokkeert de demo:**
 8. **Kantoorprofiel i4 aanvullen:** "opgericht" en kenmerken ontbreken nog
    (de verkoopadvies-gereedheidscheck meldt het).
 9. **Oordeel pastelkleuren kaart** (`/marktanalyse/kaart`).
-10. **Akkoord: 6 ongebruikte geheimen van Vercel verwijderen** —
-    `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/_PRO/_KANTOOR`
-    en `CRON_SECRET` (Stripe en de cron zijn sinds 15 sep uit de code; een
-    live Stripe-sleutel laten staan is onnodig risico). Claude kan het doen
-    via de Vercel-MCP zodra je ja zegt.
+10. **6 ongebruikte geheimen van Vercel verwijderen** (akkoord Quinn 30 sep,
+    maar Claude kan het niet: de Vercel-MCP heeft geen verwijder-actie en de
+    CLI is niet ingelogd) — `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+    `STRIPE_PRICE_STARTER/_PRO/_KANTOOR` en `CRON_SECRET`. Zelf: Vercel →
+    project vesta-ai → Settings → Environment Variables → per regel ⋯ →
+    Remove. Of eenmalig `npx vercel login` in de terminal, dan doet Claude het
+    met `vercel env rm`. Daarna ook de Stripe-sleutel in het Stripe-dashboard
+    intrekken.
 
 **Vóór de demo / later:**
 

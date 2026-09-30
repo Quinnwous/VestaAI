@@ -6,7 +6,7 @@
 
 ---
 
-### 30 sep 2026 (zeventiende ronde, O) — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48)
+### 30 sep 2026 (zeventiende ronde, O) — performance mobiel ronde 2, opschoning roadmap, kantoor-admin-achterdeur (PR #48, #49)
 
 | Onderwerp | Besluit | Door |
 |---|---|---|
@@ -17,6 +17,9 @@
 | Resultaat bundel | Initieel gzip (webpack-analyse): marktanalyse 209 → 77 kB, concurrentie 197 → 65, woningen 132 → 69, transacties 161 → 91, kaart 159 → 76, layout 66 → 37, dossier 121 → 120 (winst daar: minder hydratie/fetches) | Opus |
 | Kwaliteit bewaakt | Vraag Quinn: "gaat dit ten koste van de kwaliteit?" — Nee: niets weggehaald, alleen laadvolgorde. A/B met productiebuilds van deze branch en `main` (mediaan van 4): inhoud zichtbaar even snel op alle vier pagina's (verschil ≤ 60 ms); networkidle dossier In verkoop 2,4 → 1,3 s. Merkbaar voor een gebruiker: grafiek verschijnt met een skelet ervoor, Media/Documenten/Export laden bij de eerste klik, kantoorfont kan bij het allereerste bezoek heel kort in de terugvalletter staan, Plausible telt een bezoek < 1 s mogelijk niet | Quinn + Opus |
 | Repetitie-waarschuwingen | De 3 "traag > 3 s"-waarschuwingen in scène 4 bestonden al op `main` (gemeten): ze meten tot networkidle incl. kaarttegels, niet wat de gebruiker ziet | Opus |
+| Nameting (live) | Productie na PR #48, mobiel, mediaan van 3: dashboard 87 → 91, marktanalyse 64 → 80, concurrentie 51 → 87, woningen 82 → 92, dossier 58 → 76, landing 86 → 90, kantoorlogin 82 → 85. Deploy READY, 0 runtime-errors | Opus |
+| Genoeg is genoeg | Quinn: "de score is op dit moment prima" — geen performance-ronde 3; marktanalyse (80) en dossier (76) blijven onder 85, reden gedocumenteerd in 12.6 | Quinn |
+| Vercel-geheimen | Akkoord Quinn om de 6 ongebruikte geheimen te verwijderen, maar Claude kan het niet: de Vercel-MCP heeft geen verwijder-actie en de CLI is niet ingelogd. Blijft handwerk voor Quinn (§ 8 punt 10, met stappen) | Quinn |
 | Meetscript | `scripts/meet-lighthouse.mjs` (ingelogd via sessiecookie, `--anoniem` voor publiek, mediaan van n runs, `--label` → `docs/data/lighthouse-<label>.json`). Productie is `www.vestaai.nl` (kale domein stuurt door) | Opus |
 | Browsertabbladen | `@next/bundle-analyzer` opende bij elke analyse-build 3 tabbladen bij Quinn → `openAnalyzer: false` | Quinn + Opus |
 | Kantoor-admin-achterdeur | Policy "admin mag kantoor bijwerken" liet de ene makelaar met `role = 'admin'` zijn kantoorrij (huisstijl, instellingen, naam) via REST wijzigen — in strijd met "platform-admin-beheerd". De app schrijft nergens met de sessie-client naar `kantoren`. Policy + `is_kantoor_admin()` weg (`20260929230000_kantoor_admin_rest_weg.sql`, toegepast; raakt geen data; rooktest productie groen) | Opus |
