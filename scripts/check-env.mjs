@@ -23,7 +23,6 @@ import { parseEnvExampleGroepen, parseDotEnv, controleerEnv } from './lib/envChe
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 
 function log(...a) {
-  // eslint-disable-next-line no-console
   console.log(...a)
 }
 

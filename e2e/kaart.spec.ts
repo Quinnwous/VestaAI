@@ -25,7 +25,6 @@ test('verkoopkaart laadt zonder CSP-fout of pageerror', async ({ page }) => {
 
   await page.addInitScript(() => {
     window.addEventListener('securitypolicyviolation', (e) => {
-      // eslint-disable-next-line no-console
       console.error(
         `[csp] ${e.violatedDirective} blocked-uri=${e.blockedURI} source=${e.sourceFile}:${e.lineNumber}`,
       )

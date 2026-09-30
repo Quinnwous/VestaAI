@@ -235,7 +235,6 @@ export function WaardebepalingPaneel({
     })
     return () => { actief = false }
     // objectId is stabiel voor de levensduur van dit paneel — geen andere deps nodig.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [objectId])
 
   // (Escape-afhandeling zat hier; `Sheet` (Radix Dialog) doet dat sinds item 6.0 zelf.)

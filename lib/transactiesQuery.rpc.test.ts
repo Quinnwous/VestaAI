@@ -47,7 +47,6 @@ const AAN = process.env.SUPABASE_TEST === '1'
 function tijd<T>(label: string, p: Promise<T>): Promise<T> {
   const start = performance.now()
   return p.then(r => {
-    // eslint-disable-next-line no-console
     console.log(`[rpc-duur] ${label}: ${(performance.now() - start).toFixed(1)} ms`)
     return r
   })

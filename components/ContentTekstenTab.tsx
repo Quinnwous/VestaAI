@@ -57,7 +57,6 @@ export function ContentTekstenTab({
   useEffect(() => {
     setStatus(initieleStatus)
     pollingSindsRef.current = contentBezigSinds
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initieleStatus, contentBezigSinds])
 
   // Timer (tick elke seconde) + polling (elke 3s) zolang de generatie bezig is.
