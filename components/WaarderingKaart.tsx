@@ -29,7 +29,7 @@ function formatDatum(iso: string): string {
 /**
  * Dossierkaart (item "Twee kaarten in het dossier samenvoegen",
  * docs/roadmap.md § 9) — de vroegere referentiekaart van de waardering
- * (item 4.6, docs/roadmap.md § 3.3/3.8) en de straal-uitsnede "In de buurt
+ * (item 4.6, docs/architectuur.md § 3/8) en de straal-uitsnede "In de buurt
  * verkocht" (item 7.3, ex-`StraalKaartPaneel`) zijn hier samengevoegd tot
  * één `<BasisKaart>` met een laagschakelaar: subject-pin altijd zichtbaar,
  * daarnaast óf de genummerde waarderingsreferenties óf de eigen-verkoop-

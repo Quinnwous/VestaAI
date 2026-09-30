@@ -1,7 +1,8 @@
 # VestaAI — Ontwerpprincipes
 
 > Leidend voor élk nieuw scherm en elke wijziging in de ingelogde omgeving.
-> Samengevat in `docs/roadmap.md` § 5; dit document is de volledige versie.
+> De Definition of Done toetst hieraan (`docs/werkwijze.md` § 4); dit document
+> is de volledige versie.
 > Geldt náást (niet in plaats van) de huisstijlregels in
 > `.claude/skills/kantoorhuisstijl/SKILL.md` — dat gaat over merkkleur/vorm
 > per kantoor, dit gaat over layout, beweging, data-weergave en interactie.
@@ -131,4 +132,4 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 ## Toetsing (Definition of Done)
 
 Voor elk item: `scripts/screenshots.mjs` op 390/1280/1920px, beoordeeld tegen
-dit document. Zie `docs/roadmap.md` § 4 voor de volledige Definition of Done.
+dit document. Zie docs/werkwijze.md voor de volledige Definition of Done.

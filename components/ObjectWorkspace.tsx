@@ -152,7 +152,7 @@ export function ObjectWorkspace({
   waarderingUitkomst?: WaarderingUitkomst | null
   waarderingCorrectie?: { waarde: number; motivatie: string; datum: string } | null
   uspsInitieel?: string[]
-  /** Item 3.1 (docs/roadmap.md § 3.2): status van de contentgeneratie, stuurt
+  /** Item 3.1 (docs/architectuur.md § 2): status van de contentgeneratie, stuurt
    * de EmptyState/skeleton/foutstaat in de Teksten-tab. Default 'klaar' voor
    * bestaande call-sites/tests die deze prop nog niet meegeven. */
   contentStatus?: ObjectContentStatus

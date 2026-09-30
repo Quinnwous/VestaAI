@@ -6,7 +6,7 @@ import { lookupCoordinaten } from '@/lib/verrijking'
 import { meldFout } from '@/lib/fouten'
 
 /**
- * Dossier aanmaken zonder Claude (item 3.1, docs/roadmap.md § 3.2 "Dossier
+ * Dossier aanmaken zonder Claude (item 3.1, docs/architectuur.md § 2 "Dossier
  * los van content"). Alleen de intake opslaan — geen Claude-call, dus geen
  * 1-2 minuten wachten en geen tokens voor een dossier dat nooit in verkoop
  * gaat. Content komt later via `POST /api/generate` (`{ objectId }`), op

@@ -13,7 +13,7 @@
 /** Het loket zelf — de makelaar zoekt het adres daar handmatig op. */
 export const WOZ_LOKET_URL = 'https://www.wozwaardeloket.nl/'
 
-/** Dezelfde vorm als het WOZ-ijkpunt in de waardering (§ 3.3): waarde + peildatum. */
+/** Dezelfde vorm als het WOZ-ijkpunt in de waardering (architectuur § 3): waarde + peildatum. */
 export interface WozIjkpunt {
   waarde: number
   peildatum: string

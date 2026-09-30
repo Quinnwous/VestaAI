@@ -1,10 +1,33 @@
 # VestaAI — Besluitenlogboek & opleverlog
 
-> Logboek, geen werklijst. Het plan zelf staat in `docs/roadmap.md`. Nieuwe
-> besluiten komen hier bovenaan (nieuwste eerst); `/sessie-afronden` voegt ze
-> toe. `/sessie-start` leest alleen de bovenste datum-sectie.
+> Logboek, geen werklijst. Open werk staat in `docs/roadmap.md`, wat er staat in
+> `docs/productoverzicht.md`. Per ronde komt hier bovenaan één datumsectie met
+> een tabel `Onderwerp | Besluit | Door` — besluiten én opleveringen, nieuwste
+> eerst; `/sessie-afronden` voegt hem toe en `/sessie-start` leest alleen de
+> bovenste. Onderaan staan de oudere secties § Besluiten (16-17 sep) en
+> § Opgeleverd (lijst tot 30 sep, niet meer bijgehouden).
+>
+> Paden in dit logboek zijn op 30 sep 2026 bijgewerkt naar de nieuwe indeling
+> van `docs/`; "roadmap § 3.x" in oudere secties = `docs/architectuur.md` § x.
 
 ---
+
+### 30 sep 2026 (opschoning) — roadmap gesplitst, docs heringedeeld, dode code weg
+
+Opdracht Quinn: "de hele map opfrissen en opschonen; de roadmap alleen nog wat
+moet gebeuren, wat er staat in een nieuw document; wees kritisch". Toevoeging
+halverwege: "geen onnodige risico's, alleen als je 100 procent zeker weet hoe".
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Roadmap gesplitst | `docs/roadmap.md` bevat alleen nog open werk (stand van zaken, demo-doel, acties Quinn, sporen A-F, risico's, backlog). Nieuw: `docs/productoverzicht.md` (wat er staat, per onderdeel), `docs/architectuur.md` (was roadmap § 3, bijgewerkt: o.a. Leaflet/v1-teksten weg, `FaseToggle` bestaat niet meer → fasestepper, plus live gecontroleerd datamodel, stack, bronnen, beveiliging), `docs/werkwijze.md` (was § 4 + § 11 + het agentprotocol). Afspraak: een afgerond item gaat uit de roadmap en komt in het productoverzicht | Quinn + Opus |
+| Docs heringedeeld | `strategie/`, `i4housing/`, `ontwerp/principes.md`, `waardering/`, `metingen/` (was `data/`), `databronnen/`, `archief/specs/` (afgeronde agent-specs; code-commentaar verwijst ernaar). Wegwijzer `docs/README.md`, scriptoverzicht `scripts/README.md`. Vijf oude data-integratieprompts van de Python-pipeline weg. Schrijfpaden van drie scripts mee aangepast; `i4housing-team.md` hield zijn naam, omdat `maak-team-accounts.mjs` daar de naam van het wachtwoordbestand uit afleidt | Opus |
+| CLAUDE.md | 48,8 → 18,5 KB: feature-beschrijvingen naar het productoverzicht, alle regels en lessen behouden (gecontroleerd op 50 kernbegrippen), sectienamen waar code naar verwijst (Hoofdstructuur, Transactiedataset, Conventies, Datamodel) blijven bestaan | Opus |
+| Dode code | Weg: server action `toggleObjectStatus`, `components/ui/Tabs.tsx` (+ `.vui-tab`-CSS, `@radix-ui/react-tabs`), `StatusBadge`/`STATUS_CFG`, `Select` in `ui/Field`, de v1-gemiddelde-functies in `lib/marktanalyse.ts`, `@types/sharp`, `@eslint/eslintrc`, `@vitejs/plugin-react`, `e2e/smoke.mjs` + `npm run smoke`, `public/kantoren/i4housing/*` (geen code- of databaseverwijzing, gecontroleerd). Gevonden met knip (scripts en e2e als entry) + grep per geval | Opus |
+| Bewust níet gedaan | Codemappen `lib/` en `components/` herindelen: raakt honderden imports; na "geen onnodige risico's" als optioneel item F10 op de roadmap. Ook niet: database-opruiming (akkoord nodig, F7), GitHub-branches weghalen (extern, § 2 punt 10) | Quinn + Opus |
+| Verwijzingen | 134 commentaarregels "roadmap § 3.x"/"§ 4" → `docs/architectuur.md § x`/`docs/werkwijze.md` (alleen commentaar, testnamen en rapporttekst). Verouderd commentaar in `lib/ensureMakelaar.ts` (verwees naar de opgeruimde trigger `handle_new_user`) rechtgezet. e2e-README: opgeloste kanttekeningen weg — de "verouderde" generatietest in `smoke.spec.ts` bleek op 27 sep al bijgewerkt | Opus |
+| Kritische bevindingen → roadmap § 3 F | Geen CI (F1) · back-up mist `imports`, Storage en een actuele schemabaseline (F2) · 86 MB productiedata + wachtwoordbestand lokaal (F3) · geen foutmonitoring (F4) · 4 dev-kwetsbaarheden, productie 0 (F5) · docx-test draait nooit (F6) · `nps_responses`/`first_generated_at` ongebruikt (F7) · kostenschatting verouderd (F8). Vercel Pro kreeg zijn echte reden: Hobby is niet-commercieel. Uit de DoD-screenshots en de database: i4 heeft ook 0 dossiers (demo-dossiers staan in het demo-kantoor → 12.5), voorzieningen staan op `mislukt` bij alle gecontroleerde dossiers en CBS op `leeg` bij het scène-5-dossier (12.7), referentietabel breekt af op 1280 px (12.8) | Opus |
+| Lokaal | Vier `.tmp-*.mjs`, `test-results/`, lege `.claude/commands/` en 12 gemergde lokale branches opgeruimd. `backups/` bewust niet aangeraakt (productiedata, F3) | Opus |
 
 ### 30 sep 2026 (ronde Q) — fase 14 zonder 14.2, lint op 0, opruimmigratie, prototypes herpubliceerd
 

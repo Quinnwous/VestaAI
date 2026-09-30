@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { woningtypeGroep, woningtypeSub } from './transactieNormalisatie'
 import { SLUG_REGEX, SLUG_MIN_LENGTE, SLUG_MAX_LENGTE } from './slug'
 
-// Woningtype-taxonomie (docs/ontwerp/README.md § 5, waardering § 3.3): groep is
+// Woningtype-taxonomie (docs/ontwerp/README.md § 5, waardering: architectuur § 3): groep is
 // hard vereist (de waarderingskern filtert kandidaten erop), subtype optioneel.
 // Vooraan gedefinieerd omdat PropertyInputSchema (verderop) er al naar verwijst.
 export const TypegroepSchema = z.enum(['appartement', 'rijwoning', 'halfvrijstaand', 'vrijstaand'])
@@ -33,7 +33,7 @@ export function typegroepLabel(groep: Typegroep): string {
   return TYPEGROEP_LABELS[groep]
 }
 
-// Tekstsjabloon-model (item 8.2, roadmap § 3.4): een kantoor kan de opbouw van
+// Tekstsjabloon-model (item 8.2, architectuur § 4): een kantoor kan de opbouw van
 // funda_tekst hard voorschrijven (i4housing schrijft bv. altijd 4SALE! →
 // WOONCOMFORT → BUITENLEVEN → LOCATIE → GOED OM TE WETEN → vaste slotzin) in
 // plaats van het generieke, vrije format. `lib/tekstsjabloon.ts` rendert dit
@@ -227,7 +227,7 @@ export const LiggingBuitenruimteSchema = z.object({
 export type LiggingBuitenruimte = z.infer<typeof LiggingBuitenruimteSchema>
 
 // Migreert de oude woningtype-enum (6 waarden, vóór item 3.2 — zie
-// docs/roadmap.md § 3.2 en § 5 fase 3.2) naar de nieuwe groep+subtype-vorm.
+// docs/architectuur.md § 2 en masterplan-item 3.2) naar de nieuwe groep+subtype-vorm.
 // Bestaande dossiers in `objecten.input_json` hebben nog het platte veld
 // `woningtype`; deze preprocess zet dat om via dezelfde taxonomie-mapping als
 // de transactiedataset (lib/transactieNormalisatie.ts), zodat ze zonder
@@ -315,7 +315,7 @@ export const PropertyInputSchema = z.preprocess(migreerOudWoningtype, z.object({
 
 export type PropertyInput = z.infer<typeof PropertyInputSchema>
 
-// Outputset v2 (item 8.3, docs/roadmap.md § 3.4): kleinere kern-call + extra's
+// Outputset v2 (item 8.3, docs/architectuur.md § 4): kleinere kern-call + extra's
 // op knopdruk. Kern (altijd gegenereerd, één call — `generateContent` in
 // lib/claude.ts): funda_tekst, brochure_tekst, instagram, linkedin_kantoor,
 // sneak_preview (NL-only, WhatsApp), koper_email, buurtomschrijving. Extra
@@ -355,7 +355,7 @@ export const ContentOutputSchema = z.object({
 
 export type ContentOutput = z.infer<typeof ContentOutputSchema>
 
-// Content-generatiestatus van een dossier (item 3.1, docs/roadmap.md § 3.2):
+// Content-generatiestatus van een dossier (item 3.1, docs/architectuur.md § 2):
 // 'geen' meteen na het aanmaken zonder Claude, 'bezig' tijdens een lock (6
 // min verlooptijd, zie lib/contentGeneratie.ts CONTENT_LOCK_VERLOOP_MS),
 // 'klaar'/'fout' na afloop van de generatie.
@@ -400,7 +400,7 @@ export const WachtwoordWijzigenSchema = z.object({
 export type WachtwoordWijzigen = z.infer<typeof WachtwoordWijzigenSchema>
 
 // ---------------------------------------------------------------------------
-// Waardering v2 — datacontract uit docs/roadmap.md § 3.3 (rekenkern gebouwd
+// Waardering v2 — datacontract uit docs/architectuur.md § 3 (rekenkern gebouwd
 // 17 sep 2026 door Fable in lib/waardering.ts; Sonnet sluit in fase 4 de
 // RPC's, actions en het paneel aan). `waardering_json` op `objecten` bevat
 // een WaarderingOpslag; v1-json ({ correctie }) wordt bij lezen gemigreerd
@@ -635,7 +635,7 @@ export const VerrijkingOpslagSchema = z.object({
 export type VerrijkingOpslag = z.infer<typeof VerrijkingOpslagSchema>
 
 // ---------------------------------------------------------------------------
-// Transactiefilter (item 2.2, docs/roadmap.md § 3.1 + docs/ontwerp/README.md
+// Transactiefilter (item 2.2, docs/architectuur.md § 1 + docs/ontwerp/README.md
 // § 4 "Filtermodel") — voedt `p_filters jsonb` van elke RPC in
 // `lib/transactiesQuery.ts`. Alle velden optioneel: een lege filterset
 // betekent "hele dataset" (min uitgesloten_reden). `wijken` gebruikt de
@@ -645,7 +645,7 @@ export type VerrijkingOpslag = z.infer<typeof VerrijkingOpslagSchema>
 // transactietabel heeft geen makelaar-kolom — migratie
 // `20260924190000_transacties_makelaar_id.sql` staat klaar maar is nog niet
 // toegepast, dus de RPC's/`transacties_gefilterd` negeren dit veld tot die
-// koppeling bestaat (zie docs/roadmap.md § 3.1 en de opleverrapportage van
+// koppeling bestaat (zie docs/architectuur.md § 1 en de opleverrapportage van
 // item 2.2 voor de open actie).
 // ---------------------------------------------------------------------------
 

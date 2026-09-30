@@ -38,7 +38,7 @@ const card: React.CSSProperties = {
 /**
  * Woning toevoegen — start altijd in de Verkoopadvies-fase (interne waarde
  * `verkoopadvies`, hernoemd van `acquisitie` in item 2.1; besluit 16 sep 2026,
- * zie CLAUDE.md § Hoofdstructuur). Sinds item 3.1 (docs/roadmap.md § 3.2)
+ * zie CLAUDE.md § Hoofdstructuur). Sinds item 3.1 (docs/architectuur.md § 2)
  * slaat dit formulier alleen de intake op via `POST /api/object` — geen
  * Claude-call, dus geen 1-2 minuten wachten. Content komt pas op knopdruk of
  * automatisch bij de fase-overgang naar In verkoop (zie

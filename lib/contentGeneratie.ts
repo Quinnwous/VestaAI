@@ -7,7 +7,7 @@ import { behoudExtras } from '@/lib/contentExtra'
 import type { HuisstijlConfig, PropertyInput } from '@/lib/schemas'
 
 /** Lock-verlooptijd voor `content_status = 'bezig'` (item 3.1, docs/roadmap.md
- * § 3.2): een generatie die langer dan dit loopt (gecrashte functie, timeout)
+ * architectuur § 2): een generatie die langer dan dit loopt (gecrashte functie, timeout)
  * telt niet meer als actief — een volgend verzoek mag opnieuw claimen. */
 export const CONTENT_LOCK_VERLOOP_MS = 6 * 60 * 1000
 
@@ -17,7 +17,7 @@ export type GenereerResultaat =
 
 /**
  * Kernlogica van "genereer content voor dossier-id" (item 3.1, docs/roadmap.md
- * § 3.2) — los van de HTTP-laag, zodat zowel `POST /api/generate` als de
+ * architectuur § 2) — los van de HTTP-laag, zodat zowel `POST /api/generate` als de
  * fire-and-forget-trigger bij de fase-overgang naar In verkoop hem kunnen
  * aanroepen. Lock per dossier (niet per gebruiker) via `content_status =
  * 'bezig'` + `content_bezig_sinds`, met een verlooptijd van 6 minuten — de

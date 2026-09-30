@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, relative, resolve } from 'path'
 
 /**
- * Dwingt item 8.1 af (docs/roadmap.md § 3.6, bindend): "Nergens anders nog een
+ * Dwingt item 8.1 af (docs/architectuur.md § 6, bindend): "Nergens anders nog een
  * modelstring" — `lib/aiModellen.ts` is de enige plek in `app/`, `components/`
  * en `lib/` die een `claude-`- of `gemini-`-modelstring als letterlijke waarde
  * bevat. Elke Claude/Gemini API-aanroep importeert zijn model-id uit die ene
@@ -51,7 +51,7 @@ function zonderComments(code: string): string {
   return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
 }
 
-describe('aiModellen-guard (§ 3.6/8.1, docs/roadmap.md — bindend)', () => {
+describe('aiModellen-guard (§ 6, item 8.1, docs/architectuur.md — bindend)', () => {
   it('geen letterlijke claude- of gemini-modelstring buiten lib/aiModellen.ts in app/components/lib', () => {
     const overtredingen: string[] = []
     for (const pad of BESTANDEN) {

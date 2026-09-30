@@ -3,7 +3,7 @@
 /**
  * ReferentiesLaag — subject-marker (`SubjectPin`) + genummerde referentie-
  * pins (`ReferentiePin`) op een `<BasisKaart>`, voor de referentiekaart in
- * de waardering (item 7.3, docs/roadmap.md § 3.5). Bewust generiek
+ * de waardering (item 7.3, docs/architectuur.md § 5). Bewust generiek
  * (lat/lng/nummer/uitgesloten, geen `WaarderingReferentie`-import): de
  * aanroeper buiten `components/kaart/` (`WaarderingKaart.tsx`) kent de eigen
  * data (adres, prijs, datum, …) en rendert de hover-inhoud zelf op basis van

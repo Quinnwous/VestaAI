@@ -9,7 +9,7 @@ import { HERSCHRIJF } from '@/lib/aiModellen'
 
 export const maxDuration = 60
 
-// Outputset v2 (item 8.3, roadmap § 3.4) — kern + extra-veldnamen. Oude
+// Outputset v2 (item 8.3, architectuur § 4) — kern + extra-veldnamen. Oude
 // sleutels (brochure_kort/brochure_lang, instagram_emotioneel/informatief/
 // actie, linkedin_makelaar, bezichtiging_followup_*, marktanalyse) staan hier
 // bewust niet meer: ze worden niet meer gegenereerd en `ResultTabs` toont er

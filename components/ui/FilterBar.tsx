@@ -3,7 +3,7 @@
 /**
  * FilterBar — sticky, frosted container voor een rij `FilterDropdown`s +
  * optioneel een pillenrij (actieve filters) en een segment-B-rij (item 6.1,
- * docs/ontwerp/README.md § 1.4 "frosted balken" + § 3.8). Herbruikbaar door
+ * docs/ontwerp/README.md § 1.4 "frosted balken" + architectuur § 8). Herbruikbaar door
  * de volgende verkenners (6.2 Transacties, 6.3 Concurrentie) — de bar zelf
  * kent de filters niet, dat blijft pagina-specifiek. Gebruik:
  *   <FilterBar pillenRij={<FilterPills .../>} segmentBRij={...}>

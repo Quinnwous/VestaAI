@@ -2,7 +2,7 @@
 
 /**
  * SegmentVergelijking — compacte kerncijfervergelijking segment A vs. B
- * (F1, docs/roadmap.md § 3.1/3.7). Zit onder de kerncijfer-tegels in
+ * (F1, docs/architectuur.md § 1/7). Zit onder de kerncijfer-tegels in
  * `MarktanalyseExplorer.tsx`, die de rijen bouwt met `lib/marktanalyse.ts`
  * `segmentVergelijking()` en de getallen formatteert (`lib/opmaak.ts`).
  * Puur presentatie: geen fetch, geen berekening.

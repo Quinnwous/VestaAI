@@ -42,7 +42,7 @@ const STIJLPROFIEL = `Vaste opbouw van elke woningtekst:
 Toon: informeel (je/jouw, nooit u), warm en sfeervol, beschrijvend met langere zinnen. Terugkerende woordkeus: heerlijk, royale, sfeervol, fijne plek, stijlvol, verrassend ruime, warm thuisgevoel. Geen stapeling van superlatieven en geen uitroeptekens behalve in het 4SALE!/4RENT!-label. Lengte van de Nederlandse tekst: 450-500 woorden.`
 
 /**
- * Tekstsjabloon (item 8.2, docs/roadmap.md § 3.4): dezelfde 4SALE!-opbouw als
+ * Tekstsjabloon (item 8.2, docs/architectuur.md § 4): dezelfde 4SALE!-opbouw als
  * STIJLPROFIEL hierboven, nu als harde structuur i.p.v. alleen een vrije-tekst
  * beschrijving — lib/tekstsjabloon.ts rendert dit als verplichte promptstructuur
  * voor funda_tekst en valideert de output erop (koppen + volgorde + slotzin).

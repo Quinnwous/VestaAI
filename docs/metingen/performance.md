@@ -38,7 +38,7 @@ vóór dit item); "ná" = na alle wijzigingen hieronder (§ 3).
 - **Performance desktop: al vóór dit item boven de 85-lat**, blijft dat.
 - **Performance mobiel: dashboard haalt 85 nu al** (88-90). **Marktanalyse
   (~79-80) en dossier (56-75) halen de lat niet** ondanks de maplibre-fix
-  (§ 3.1) — zie § 4 Conclusies voor waarom en wat een volgende stap zou zijn.
+  (architectuur § 1) — zie § 4 Conclusies voor waarom en wat een volgende stap zou zijn.
 
 ## 2. Bundle-analyse (`@next/bundle-analyzer`)
 
@@ -181,7 +181,7 @@ bestaande functie. Niet verder uitgezocht — buiten scope van dit item.)
 
 - **Alle RPC's (marktanalyse/concurrentie) zijn snel: 52-129 ms** op de
   echte demo-dataset — precies wat de patroon-2-aggregatiestrategie
-  (`docs/roadmap.md` § 3.1) beoogde. Geen actie nodig.
+  (`docs/architectuur.md` § 1) beoogde. Geen actie nodig.
 - **`/marktanalyse/transacties` ("Transacties opzoeken") is de duidelijke
   uitschieter: 866 ms** voor `haalTransactiesVoorVerkenner()`. Dit is een
   bewuste, in de code zelf gedocumenteerde tussenfase (`lib/

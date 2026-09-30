@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, statSync } from 'fs'
 import { join, relative, resolve } from 'path'
 
 /**
- * Dwingt § 3.1 af (docs/roadmap.md, bindend): `lib/transactiesQuery.ts` is de
+ * Dwingt § 1 af (docs/architectuur.md, bindend): `lib/transactiesQuery.ts` is de
  * enige plek in `app/`, `components/` en `lib/` die `transacties` of
  * `transacties_met_coordinaten` bevraagt, of een transactie-RPC aanroept.
  * `scripts/` en `app/admin/` zijn uitgezonderd (platform-admin/service-role,
@@ -66,7 +66,7 @@ function zonderComments(code: string): string {
   return code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1')
 }
 
-describe('transactiesQuery-guard (§ 3.1, docs/roadmap.md — bindend)', () => {
+describe('transactiesQuery-guard (§ 1, docs/architectuur.md — bindend)', () => {
   it('geen `.from(\'transacties...\')` of de coördinaten-view buiten lib/transactiesQuery.ts', () => {
     const overtredingen: string[] = []
     for (const pad of BESTANDEN) {

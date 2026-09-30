@@ -1,5 +1,5 @@
 /**
- * Haalt de CBS-prijsindexreeks op (item 4.2, docs/roadmap.md § 3.3): tabel
+ * Haalt de CBS-prijsindexreeks op (item 4.2, docs/architectuur.md § 3): tabel
  * 85792NED "Bestaande koopwoningen; verkoopprijzen, prijsindex 2020=100,
  * regio" via de CBS-OData-API, en schrijft haar weg als `CbsIndexReeks`
  * (kwartaal → indexcijfer) naar `lib/cbsPrijsindexData.json`, die

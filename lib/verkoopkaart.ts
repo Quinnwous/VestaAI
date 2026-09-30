@@ -13,7 +13,7 @@ import { bereikGelijk } from './filterVergelijk'
  * React/Supabase, zodat hij met vitest te testen is — zie
  * `verkoopkaart.test.ts`.
  *
- * Filtert client-side op de eigen-verkopenreeks (§ 3.1 patroon 1, al
+ * Filtert client-side op de eigen-verkopenreeks (architectuur § 1 patroon 1, al
  * opgehaald via `haalEigenVerkopen`/`MET_COORDINATEN_KOLOMMEN`): hergebruikt
  * `filterEigenRijen`/`PRIJS_BEREIK`/`OPP_BEREIK`/`BOUWJAAR_BEREIK` uit
  * `lib/marktanalyse.ts` zodat er precies één implementatie van "wat is een
@@ -116,7 +116,7 @@ export function standaardVerkoopkaartFilter(vanKwartaal: number, totKwartaal: nu
   }
 }
 
-/** Vertaalt de verkoopkaart-filterstaat naar `MarktanalyseFilterV2` voor `filterEigenRijen` (§ 3.1 patroon 1). */
+/** Vertaalt de verkoopkaart-filterstaat naar `MarktanalyseFilterV2` voor `filterEigenRijen` (architectuur § 1 patroon 1). */
 export function verkoopkaartFilterNaarEigenFilter(f: VerkoopkaartFilterState): MarktanalyseFilterV2 {
   const { datumVan, datumTot } = tijdlijnFilterDatums(f.van, f.tot)
   return {

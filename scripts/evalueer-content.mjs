@@ -1,5 +1,5 @@
 /**
- * Blinde A/B-evaluatie van de contentsuite (item 8.1, docs/roadmap.md § 3.6/8):
+ * Blinde A/B-evaluatie van de contentsuite (item 8.1, docs/architectuur.md § 6):
  * per dossier in docs/evaluatie/dossiers/ genereert dit script twee anonieme
  * varianten — één met het huidige CONTENT-model, één met de kandidaat
  * CONTENT_KANDIDAAT (lib/aiModellen.ts) — willekeurig gelabeld "A"/"B" en

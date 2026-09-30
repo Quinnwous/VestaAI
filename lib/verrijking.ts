@@ -105,7 +105,7 @@ function parsePdokCoord(centroide: string): { lat: number; lon: number } | null 
 }
 
 /**
- * Enkele, snelle coördinaatopzoeking (item 3.1, docs/roadmap.md § 3.2) — alleen
+ * Enkele, snelle coördinaatopzoeking (item 3.1, docs/architectuur.md § 2) — alleen
  * de PDOK Locatieserver-call, geen WOZ/CBS/Overpass. Gebruikt door
  * `POST /api/object` als de intake nog geen lat/lng meestuurde, zodat het
  * dossier binnen de 5s-belofte blijft (de volle `fetchVerrijking` hieronder
@@ -152,12 +152,12 @@ async function fetchWoz(): Promise<FetchPoging<WozData>> {
 }
 
 /**
- * Licht WOZ-ijkpunt voor de waarderingskern (item 4.6, docs/roadmap.md § 3.3):
+ * Licht WOZ-ijkpunt voor de waarderingskern (item 4.6, docs/architectuur.md § 3):
  * alleen de PDOK-opzoeking + WOZ Waardeloket, geen CBS/Overpass — die zijn
  * hier niet nodig en zouden `berekenWaardering()` onnodig vertragen. Geeft de
  * meest recente WOZ-waarde + peildatum terug, of `null` als het adres niet in
  * BAG/WOZ te vinden is. **Nooit als invoer voor de berekening** — puur een
- * ijkpunt náást de waarde (§ 3.3).
+ * ijkpunt náást de waarde (architectuur § 3).
  */
 export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; peildatum: string } | null> {
   // Zolang WOZ niet gekoppeld is: geen PDOK-opzoeking voor niets.

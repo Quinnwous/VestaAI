@@ -93,7 +93,7 @@ export function prijsklasseFilter(key: string): { prijs_min?: number; prijs_max?
 
 /**
  * Filtermodel voor de eigen-verkopenreeks in de explorer v2 ("wij" — patroon 1,
- * docs/roadmap.md § 3.1: client-side, want ≤ 2.000 rijen). Zelfde velden als
+ * docs/architectuur.md § 1: client-side, want ≤ 2.000 rijen). Zelfde velden als
  * `TransactieFilterSchema` (lib/schemas.ts) op de RPC-kant, zodat "wij" en
  * "markt" met exact dezelfde definitie filteren. `wijken` is
  * `"plaats|wijk"`, zoals in de URL-state en `docs/ontwerp/kit.js`.
@@ -209,7 +209,7 @@ export const BOUWJAAR_BEREIK: [number, number] = [1900, 2030]
 export const PERCEEL_BEREIK: [number, number] = [0, 5000]
 
 /**
- * Zod-schema voor `useFilterState` (item 6.1, docs/roadmap.md § 3.7) —
+ * Zod-schema voor `useFilterState` (item 6.1, docs/architectuur.md § 7) —
  * bereiken als 2-tallen (schuivers), lijsten als arrays (multi-select),
  * `klasse`/`b`/`bPlaats`/`bGroep` voor de prijsklasse-crossfilter resp.
  * segment B. `kamers: 0` = geen ondergrens.
@@ -356,7 +356,7 @@ export function segmentBFilter(f: MarktanalyseFilterState, opts: { datumTot: str
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// F1: kerncijfers segment A vs. B (docs/roadmap.md § 3.1/3.7) — Segment B
+// F1: kerncijfers segment A vs. B (docs/architectuur.md § 1/7) — Segment B
 // stond tot nu toe alleen als extra reeks in de grafieken; deze functie
 // bouwt de compacte vergelijkingstabel onder de tegels (waarde A, waarde B,
 // verschil B t.o.v. A). Puur, geen React — `components/SegmentVergelijking.tsx`

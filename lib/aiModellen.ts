@@ -1,6 +1,6 @@
 /**
  * Centrale modelconstanten voor élke Claude API-aanroep in de codebase (item
- * 8.1, docs/roadmap.md § 3.6, bindend): "Nergens anders een modelstring."
+ * 8.1, docs/architectuur.md § 6, bindend): "Nergens anders een modelstring."
  * Een guard-test (`aiModellen.guard.test.ts`) faalt zodra een `claude-`-
  * modelstring buiten dit bestand opduikt in `lib/`, `app/` of `components/`.
  *
@@ -16,7 +16,7 @@
  * Hoofdmodel voor de klantgerichte contentsuite: `generateContent` (Funda-
  * tekst, brochures, social, koper-e-mail, buurtomschrijving, extra's) en de
  * korte prijswijzigingsberichten. Blijft op het beproefde model tot de
- * blinde vergelijking tegen CONTENT_KANDIDAAT is gewonnen (roadmap § 3.6/8.1).
+ * blinde vergelijking tegen CONTENT_KANDIDAAT is gewonnen (architectuur § 6, item 8.1).
  */
 export const CONTENT = 'claude-sonnet-4-6'
 

@@ -133,7 +133,7 @@ function makeStyles(kleur: string) {
   })
 }
 
-// Outputset v2 (item 8.3, roadmap § 3.4). De kern staat bovenaan (nooit
+// Outputset v2 (item 8.3, architectuur § 4). De kern staat bovenaan (nooit
 // optioneel — brochure_tekst/instagram/sneak_preview zijn wel `optioneel:
 // true` omdat ze pas sinds 8.3 bestaan: een dossier van vóór die datum heeft
 // ze leeg totdat de content opnieuw gegenereerd wordt). Ná de kern volgen de

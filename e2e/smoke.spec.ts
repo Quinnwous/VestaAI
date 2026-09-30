@@ -99,7 +99,7 @@ const TIMEOUT_CODES = [408, 502, 503, 504, 524]
 // doorstuurt naar /object/[id] — zie components/PropertyForm.tsx en
 // app/(app)/object/new/NewObjectForm.tsx.
 //
-// Sinds fase 3 (docs/roadmap.md § 3.2 "Dossier los van content") zijn aanmaken en content
+// Sinds fase 3 (docs/architectuur.md § 2 "Dossier los van content") zijn aanmaken en content
 // genereren twee losse stappen: `POST /api/object` maakt het dossier zonder Claude aan
 // (content_status='geen', ~1s, geen API-kosten) en stuurt door naar /object/[id] in fase
 // Verkoopadvies. Content komt pas via `POST /api/generate { objectId }` — op knopdruk

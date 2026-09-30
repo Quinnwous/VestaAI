@@ -1,6 +1,6 @@
 # Demoscript — i4housing (±25 minuten)
 
-> Item 12.5a (`docs/roadmap.md` § 5 Fase 12). Uitwerking van het demoscript in
+> Item 12.5a (masterplan fase 12; wat nog open is: `docs/roadmap.md` § 3 B). Uitwerking van het demoscript in
 > § 2 (zes scènes) tot klik-voor-klik, met terugvalplan per scène. Knoplabels,
 > routes en teksten hieronder zijn geverifieerd tegen de code op 27 sep 2026
 > (`git log` `ff8b181`) — niet verzonnen. Wijzigt een label in de code, dan
@@ -83,7 +83,7 @@ klikken.
 
 ### Checklist — dag ervoor
 
-1. **Vercel** naar **Pro** (roadmap § 8 actie 4, staat nog op Hobby) —
+1. **Vercel** naar **Pro** (roadmap § 2 punt 12, staat nog op Hobby) —
    zonder Pro kapt een lange functie-aanroep (contentgeneratie) af.
 2. **Supabase-project actief**: log kort in, draai één query — een gratis
    project pauzeert na 7 dagen inactiviteit.
@@ -211,7 +211,7 @@ opzichte van de rest van [plaats]."
   wacht op een door Quinn goedgekeurde foto — noem in de demo dus niet "hier
   staat het team", tenzij 12.1 alsnog wordt opgeleverd.
 - Er is **geen "Deze week"-tijdlijn** naast Recent bekeken — die is bewust
-  geschrapt (item 10.4, roadmap § 6 schrapvolgorde) en niet gebouwd.
+  geschrapt (item 10.4, geschrapt bij de schrapvolgorde van het masterplan) en niet gebouwd.
 
 **Terugvalplan:**
 - **Marktaandeel-tegel leeg/ontbreekt:** komt voor als het kantoor geen
@@ -269,7 +269,7 @@ die je hier ook echt ziet staan."
 **Belofte:** positie in de regio.
 
 ⚠️ **Alleen tonen als bevestigd is dat de Brainbay-export het veld
-"verkopend kantoor" bevat** (roadmap § 2 demo-minimum: "scène 3 zodra
+"verkopend kantoor" bevat** (roadmap § 1 demo-minimum: "scène 3 zodra
 Brainbay het verkopend kantoor blijkt te bevatten"). Op het demo-kantoor is
 dit veld wél gevuld (fixture) — daar werkt de scène nu al voluit.
 
@@ -433,11 +433,11 @@ de eerste échte demo (zie eindrapport van deze sessie / `docs/roadmap.md`):
 - **12.1 (teamfoto in de startbanner)** is nog niet gebouwd — scène 1 in § 2
   belooft "met teamfoto", de code toont vandaag een merkverloop.
 - **"Deze week"-tijdlijn** naast "Recent bekeken" op het dashboard bestaat
-  niet (bewust geschrapt, item 10.4) — § 2 scène 1 noemt "recent bekeken,
-  deze week" als twee dingen; het is er nog maar één.
+  niet (bewust geschrapt, item 10.4) — het oude masterplan noemde "recent
+  bekeken, deze week" als twee dingen; het is er nog maar één.
 - **Scène 3 (Concurrentie)** hangt volledig af van het veld
-  `verkopend_kantoor` in de Brainbay-export — nog niet bevestigd (roadmap §
-  Stand van zaken, open vraag).
+  `verkopend_kantoor` in de Brainbay-export — nog niet bevestigd (roadmap
+  5.1 exportanalyse).
 - **Kwartaalbericht-knop heet in de code "Kwartaalbericht schrijven"**, niet
-  "Schrijf kwartaalbericht" zoals in roadmap § 2 scène 2 staat — cosmetisch,
-  maar de presentator moet op het juiste label klikken.
+  "Schrijf kwartaalbericht" zoals het oude masterplan zei — de presentator
+  moet op het juiste label klikken.

@@ -1,6 +1,6 @@
 # docs/ontwerp — de prototypes zijn de spec
 
-> Roadmap v2 § 3.8: voor elk hero-scherm bestaat vóór de bouw een interactief
+> Architectuur § 8: voor elk hero-scherm bestaat vóór de bouw een interactief
 > HTML-prototype in deze map. Sonnet port het 1-op-1 (layout, spacing, staten,
 > interacties, formattering); alleen de datalaag wordt `lib/transactiesQuery.ts`.
 > Bekijken: open het `.html`-bestand in de browser (`file://`) — `kit.css` en
@@ -38,8 +38,8 @@ app `lib/waardering.ts`).
 > uitgangspunt voor de stijl van élk scherm — ook voor de eerder gemaakte
 > `marktanalyse.html` en `verkoopkaart.html`, en voor `transacties.html`, dat
 > stilistisch afwijkt (kale tabelpagina zonder hero/tegelrij). Bijwerken
-> daarvan is een kleine ontwerpsessie (zie roadmap § Stand van zaken); daarna
-> geldt: nieuw scherm = zelfde opbouw als die drie.
+> daarvan was een kleine ontwerpsessie (gedaan, item 0.1, 17 sep); nu geldt:
+> nieuw scherm = zelfde opbouw als die drie.
 >
 > Wat die drie gemeen hebben en wat dus de norm is: (a) kop met eyebrow, titel
 > en databadge; (b) één merkblauwe hero-tegel met verloop en daarnaast witte
@@ -117,7 +117,7 @@ app `lib/waardering.ts`).
 | `TAXONOMIE` | `lib/transactieNormalisatie.ts` | `woningtype_groep` + `woningtype_sub` |
 | `protoStrip()` | — | **niet porten** |
 
-## 4. Filtermodel (vult `TransactieFilterSchema`, § 3.1)
+## 4. Filtermodel (vult `TransactieFilterSchema`, architectuur § 1)
 
 | Filter | Control | Schema-veld | Marktanalyse | Transacties | Concurrentie | Verkoopkaart |
 |---|---|---|---|---|---|---|
@@ -145,7 +145,7 @@ reageert client-side binnen 100 ms (eigen verkopen) of met skeleton (RPC).
 
 ## 5. Woningtype-taxonomie (`woningtype_groep` × `woningtype_sub`)
 
-| Groep (waardering § 3.3) | Subtypes (filter, intake, import-normalisatie) |
+| Groep (waardering: architectuur § 3) | Subtypes (filter, intake, import-normalisatie) |
 |---|---|
 | appartement | Bovenwoning, Benedenwoning, Maisonnette, Portiekflat, Galerijflat, Penthouse, Studio |
 | rijwoning ("Eengezinswoning") | Tussenwoning, Hoekwoning, Eindwoning, Geschakelde woning, Herenhuis, Drive-in woning |

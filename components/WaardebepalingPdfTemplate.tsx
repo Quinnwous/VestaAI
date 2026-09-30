@@ -55,7 +55,7 @@ const SvgText = Text as unknown as ComponentType<{
   children?: ReactNode
 }>
 
-// ── Formattering (spec: § 3.3 + item 4.7 — nl-NL, komma-decimalen) ────────
+// ── Formattering (spec: architectuur § 3 + item 4.7 — nl-NL, komma-decimalen) ────────
 function euro(n: number | null): string {
   return n == null ? '—' : `€ ${Math.round(n).toLocaleString('nl-NL')}`
 }
@@ -286,7 +286,7 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
         </View>
 
         {/* Waarschuwingen — zelfde lijst als de kaart "Waarschuwingen" in het paneel.
-            § 3.3: nooit een schijnzeker getal zonder de caveats eronder. Geen ⚠-glyph:
+            architectuur § 3: nooit een schijnzeker getal zonder de caveats eronder. Geen ⚠-glyph:
             react-pdf's ingebouwde Helvetica is WinAnsi en kent U+26A0 niet. */}
         {uitkomst.waarschuwingen.length > 0 && (
           <View style={s.waarschuwingBlok}>
@@ -352,7 +352,7 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
           </View>
         )}
 
-        {/* Disclaimer (§ 3.3, verplicht) */}
+        {/* Disclaimer (architectuur § 3, verplicht) */}
         <Text style={s.disclaimer}>
           Dit is een indicatieve waardebepaling op basis van vergelijkbare verkopen, geen taxatie in de zin van NRVT/NWWI.
         </Text>

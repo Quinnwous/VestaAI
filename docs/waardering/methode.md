@@ -4,7 +4,7 @@
 > wie de rekenkern aansluit (roadmap fase 4). Rekenkern: `lib/waardering.ts`
 > (v2), `lib/prijsindex.ts`; datacontract `WaarderingUitkomstSchema` in
 > `lib/schemas.ts`. Gebouwd en getest op 17 sep 2026; de bindende regels
-> staan in `docs/roadmap.md` § 3.3.
+> staan in `docs/architectuur.md` § 3.
 
 ## 1. Wat het is en niet is
 
@@ -106,7 +106,7 @@ zonder garage (elk ≥ 30 verkopen), dan krijgt die referentie factor
 
 Elke eigen verkoop wordt achteraf gewaardeerd met uitsluitend verkopen van
 vóór haar eigen verkoopdatum; daarna vergelijken we met de echte prijs.
-Demo-lat (§ 3.3): mediaan absolute fout ≤ 7 % en ≥ 75 % van de prijzen
+Demo-lat (architectuur § 3): mediaan absolute fout ≤ 7 % en ≥ 75 % van de prijzen
 binnen de band.
 
 Synthetische backtest (`lib/waardering.backtest.test.ts`, dataset met bekende
@@ -145,7 +145,7 @@ niet, dan verbreden we hem — nooit de lat verlagen.
 
 - `kiesReferenties(subject, kandidaten, { peildatum, uitgesloten })` →
   referenties + straal + methode + waarschuwingen. Kandidaten komen uit RPC
-  `referenties_in_straal` (§ 3.1) als `Kandidaat[]` met `afstand_m`.
+  `referenties_in_straal` (architectuur § 1) als `Kandidaat[]` met `afstand_m`.
 - `bouwIndex(rijen)` / `factor(reeks, van, naar)` in `lib/prijsindex.ts`; de
   RPC `prijsindex_kwartaal` levert straks dezelfde vorm als `bouwIndex()`.
 - `berekenWaarderingV2(subject, kandidaten, { peildatum, index, cbs,

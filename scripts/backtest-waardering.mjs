@@ -1,6 +1,6 @@
 /**
- * Backtest van de waarderingskern v2 (item 4.8, docs/roadmap.md § 3.3 + § 5
- * Fase 4): meet hoe goed `berekenWaarderingV2()` de werkelijke verkoopprijs
+ * Backtest van de waarderingskern v2 (item 4.8, docs/architectuur.md § 3; masterplan
+ * fase 4): meet hoe goed `berekenWaarderingV2()` de werkelijke verkoopprijs
  * voorspelt op de demo-fixture, per typegroep en per verbredingstrede — de
  * echte "hoe betrouwbaar is de band"-check voor de taxateur van i4 Housing.
  * Draait later opnieuw op echte data (item 5.5), ongewijzigd.
@@ -18,7 +18,7 @@
  * filteren of N losse RPC's te doen: de hele (gedateerde) dataset gaat er in
  * één keer in, precies zoals de vitest-backtest het doet.
  *
- * Toegang tot `transacties` (§ 3.1 — bindend: alléén via de sessie-gebonden
+ * Toegang tot `transacties` (architectuur § 1 — bindend: alléén via de sessie-gebonden
  * client zodat RLS de kantoorscheiding regelt):
  * - Standaard (geen --kantoor): logt in als het demo-account
  *   (`demo@vestaai.nl`, wachtwoord `DEMO_PASSWORD`) via de anon-key en haalt
@@ -195,7 +195,7 @@ function interpretatie(totaal, mediaanHaalt, bandHaalt, perGroep, trede) {
     regels.push('Beide demo-lat-doelen zijn gehaald op deze dataset — geen aanpassing aan de bandregels nodig.')
   }
 
-  // Nuance: de demo-lat geldt op totaalniveau (roadmap § 3.3), maar een
+  // Nuance: de demo-lat geldt op totaalniveau (architectuur § 3), maar een
   // typegroep of trede die er zelf net onder zit is voor de taxateur
   // relevanter dan het totaalcijfer alleen.
   const zwakkeGroepen = perGroep.filter(g => g.subjecten >= 20 && ((g.mediaanFoutPct ?? 0) > DEMO_LAT_MEDIAAN_FOUT_PCT || (g.binnenBandPct ?? 100) < DEMO_LAT_BINNEN_BAND_PCT))
@@ -293,7 +293,7 @@ async function main() {
   const vandaag = new Date().toISOString().slice(0, 10)
   const md = `# Backtest waardering v2
 
-> Item 4.8 (\`docs/roadmap.md\` § 3.3 + § 5 Fase 4). Elke steekproefwoning wordt gewaardeerd met peildatum = de dag vóór haar eigen verkoopdatum, uitsluitend met transacties van daarvóór — precies zoals de synthetische vitest-vangrail (\`lib/waardering.backtest.test.ts\`), maar dan op ${KANTOOR_ID ? 'een specifiek kantoor' : 'de demo-fixture'}. Meetlogica gedeeld met de test via \`lib/backtest.ts\`. Dit rapport wordt bij elke run overschreven; in item 5.5 draait hetzelfde script opnieuw op echte i4housing-data.
+> Item 4.8 (\`docs/architectuur.md\` § 3; masterplan fase 4). Elke steekproefwoning wordt gewaardeerd met peildatum = de dag vóór haar eigen verkoopdatum, uitsluitend met transacties van daarvóór — precies zoals de synthetische vitest-vangrail (\`lib/waardering.backtest.test.ts\`), maar dan op ${KANTOOR_ID ? 'een specifiek kantoor' : 'de demo-fixture'}. Meetlogica gedeeld met de test via \`lib/backtest.ts\`. Dit rapport wordt bij elke run overschreven; in item 5.5 draait hetzelfde script opnieuw op echte i4housing-data.
 
 - **Datum:** ${vandaag}
 - **Dataset:** ${KANTOOR_ID ? `kantoor \`${KANTOOR_ID}\`` : `demo-account \`${DEMO_EMAIL}\` (kantoor Demo Makelaardij, RLS)`} — ${dataset.length} niet-uitgesloten transacties, waarvan ${kandidatenVoorSteekproef.length} recent (${RECENT_MAANDEN} maanden t/m ${maxDatum}) met coördinaten
@@ -321,7 +321,7 @@ ${interpretatie(totaal, mediaanHaalt, bandHaalt, perGroep, trede)}
 
 | | Mediaan fout | Binnen band |
 |---|---|---|
-| Demo-lat (roadmap § 3.3) | ≤ ${DEMO_LAT_MEDIAAN_FOUT_PCT} % | ≥ ${DEMO_LAT_BINNEN_BAND_PCT} % |
+| Demo-lat (architectuur § 3) | ≤ ${DEMO_LAT_MEDIAAN_FOUT_PCT} % | ≥ ${DEMO_LAT_BINNEN_BAND_PCT} % |
 | Synthetisch (17 sep 2026, 400 woningen, \`lib/waardering.backtest.test.ts\`) | ${SYNTHETISCH_REFERENTIE.mediaanFoutPct} % | ${SYNTHETISCH_REFERENTIE.binnenBandPct} % |
 | **Dit rapport (${KANTOOR_ID ? 'kantoor ' + KANTOOR_ID : 'demo-fixture'})** | **${totaal.mediaanFoutPct} %** | **${totaal.binnenBandPct} %** |
 

@@ -17,7 +17,7 @@ export { StatTile } from './StatTile'
 export { EmptyState } from './EmptyState'
 export { Skeleton, SkeletonRij } from './Skeleton'
 
-// Radix-gebaseerde interactieprimitives (item 6.0, roadmap § 3.8). Zelf bouwen
+// Radix-gebaseerde interactieprimitives (item 6.0, architectuur § 8). Zelf bouwen
 // mag alleen wat Radix niet levert — deze vijf geven focus-trap, Escape,
 // scroll-lock, botsingscorrectie en toetsenbordnavigatie die handwerk mist.
 export { Sheet } from './Sheet'
@@ -27,7 +27,7 @@ export { Tooltip, TooltipProvider } from './Tooltip'
 export { SelectMenu } from './SelectMenu'
 export type { SelectOptie } from './SelectMenu'
 
-// Item 6.1 (Marktanalyse-explorer v2, roadmap § 3.7/3.8): FilterBar-bouwstenen
+// Item 6.1 (Marktanalyse-explorer v2, architectuur § 7/8): FilterBar-bouwstenen
 // en chart-primitives, geëxporteerd voor hergebruik door de volgende
 // verkenners (6.2 Transacties, 6.3 Concurrentie).
 export { Chip } from './Chip'
@@ -39,7 +39,7 @@ export type { FilterPil } from './FilterPills'
 export { RangeSlider } from './RangeSlider'
 export { ChartCard, Legenda } from './ChartCard'
 
-// Item 6.2 (Transacties opzoeken v2, roadmap § 3.8): TanStack Table-primitive
+// Item 6.2 (Transacties opzoeken v2, architectuur § 8): TanStack Table-primitive
 // voor server-gepagineerde datatabellen — herbruikbaar door latere lijst-
 // schermen (bv. fase 10 dossierlijst).
 export { DataTable, dataTableFeatures } from './DataTable'

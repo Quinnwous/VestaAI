@@ -1,6 +1,6 @@
 /**
  * Tests voor de pure vangrail-functies achter scripts/seed-demo-kantoor.mjs
- * (item 2.3, zie docs/roadmap.md § 4 "Vangrails productiedatabase"). Draait
+ * (item 2.3, zie docs/werkwijze.md § 5 "Vangrails productiedatabase"). Draait
  * los van Supabase — geen database-verbinding nodig.
  */
 import { describe, expect, it } from 'vitest'

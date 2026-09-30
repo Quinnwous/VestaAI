@@ -100,7 +100,7 @@ const EIGEN_VERKOOP_KOLOMMEN_MARKTANALYSE = [
   'woningtype_groep', 'woningtype_sub', 'prijs_m2',
 ]
 // Zelfde kolomset als TransactiesZoeken/VerkoopkaartExplorerV2 e.d. gebruiken
-// via haalTransactiesVoorVerkenner (§ 3.1 patroon 1, tussenfase — zie
+// via haalTransactiesVoorVerkenner (architectuur § 1 patroon 1, tussenfase — zie
 // lib/transactiesQuery.ts bestandscommentaar).
 const VERKENNER_KOLOMMEN = [
   'id', 'adres', 'postcode', 'plaats', 'wijk', 'buurt', 'verkoopprijs', 'vraagprijs',

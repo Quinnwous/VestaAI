@@ -22,7 +22,7 @@
  * de subject-pin moet gebruiken.
  *
  * Ondergrond: PDOK BRT-Achtergrondkaart, stijl "pastel" (zelfde stijlkeuze
- * als de interactieve MapLibre-kaart, § 3.5 / besluit 17 sep 2026) — maar
+ * als de interactieve MapLibre-kaart, architectuur § 5 / besluit 17 sep 2026) — maar
  * hier via **WMTS-tegels**, niet WMS GetMap: de GetCapabilities van
  * `service.pdok.nl/kadaster/brt-achtergrondkaart/wms/...` bestaat niet (404,
  * gecontroleerd 28 sep 2026); BRT-Achtergrondkaart wordt alléén ontsloten als

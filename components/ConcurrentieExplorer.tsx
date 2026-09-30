@@ -4,7 +4,7 @@
  * Concurrentie-explorer v2 (item 6.3, docs/roadmap.md § 5 Fase 6 — port van
  * `docs/ontwerp/concurrentie.html`, spec: `docs/ontwerp/README.md`).
  *
- * Alles komt via RPC's op `verkopend_kantoor_norm` (patroon 2, § 3.1) — geen
+ * Alles komt via RPC's op `verkopend_kantoor_norm` (patroon 2, architectuur § 1) — geen
  * client-side aggregatie meer op ruwe rijen, dat hield de v1-pagina op
  * ~5,5 s. De standaardfilter-data komt al mee met de pagina (server
  * component); elke volgende filterwijziging ververst via de server actions

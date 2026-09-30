@@ -7,13 +7,14 @@ description: Visuele review van een gebouwd scherm tegen zijn ontwerp-prototype 
 
 Doel: voorkomen dat een interactieve verkenner "technisch af" maar visueel
 amateuristisch of tekst-gebaseerd wordt opgeleverd. Het prototype in
-`docs/ontwerp/<scherm>.html` is de spec (roadmap § 3.8); de gebouwde pagina
+`docs/ontwerp/<scherm>.html` is de spec (`docs/architectuur.md` § 8); de gebouwde pagina
 moet er naast kunnen liggen zonder dat je het verschil ziet, behalve de data.
 
 ## Wanneer
 
-Bij elk item dat in `docs/roadmap.md` naar een prototype in `docs/ontwerp/`
-verwijst — vóór `/sessie-afronden`, en opnieuw na elke fix-ronde.
+Bij elk item dat een hero-scherm raakt (marktanalyse, transacties, concurrentie,
+verkoopkaart, waardebepaling, startpagina/dossierheader — elk met een prototype
+in `docs/ontwerp/`) — vóór `/sessie-afronden`, en opnieuw na elke fix-ronde.
 
 ## Stappen
 
@@ -65,8 +66,8 @@ verwijst — vóór `/sessie-afronden`, en opnieuw na elke fix-ronde.
 4. **Fix alles wat NIET AKKOORD is, herhaal stap 1-3.** Geen afwijking
    "laten staan voor later" — dat is precies hoe schermen amateuristisch
    blijven. Wél toegestaan: een bewuste, genoteerde afwijking omdat de
-   datalaag het vereist (schrijf hem in het item in `docs/roadmap.md`).
-5. **Noteer het akkoord** in `/sessie-afronden` (Stand van zaken:
+   datalaag het vereist (noteer hem in `docs/besluiten.md` bij de oplevering).
+5. **Noteer het akkoord** in `/sessie-afronden` (regel in `docs/besluiten.md`:
    "ontwerpreview akkoord op <datum>").
 
 ## Wat dit NIET is

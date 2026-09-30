@@ -33,7 +33,7 @@ import type { TransactieMetCoordinaten, TransactieRow } from './supabase'
  * (live database, demo-kantoor), anders overgeslagen.
  *
  * `marktanalyse_reeks`/`marktanalyse_samenvatting` gebruiken `percentile_cont`
- * (mediaan, § 3.1 — bindend). Deze test bouwt daarom zijn eigen
+ * (mediaan, architectuur § 1 — bindend). Deze test bouwt daarom zijn eigen
  * mediaan-referentie met de primitieven `mediaan()`/`kwartaalVan()` uit
  * lib/prijsindex.ts. (De oude gemiddelde-functies in lib/marktanalyse.ts zijn
  * op 30 sep 2026 als dode code verwijderd.)

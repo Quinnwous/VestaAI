@@ -114,7 +114,7 @@ export function DossierHeader({
       // De overgang is "vandaag" — geen datum nodig om dat te weten.
       setDagenInFase(0)
       // Content-generatie start automatisch bij de overgang naar In verkoop,
-      // als er nog niets staat (item 3.1, docs/roadmap.md § 3.2) —
+      // als er nog niets staat (item 3.1, docs/architectuur.md § 2) —
       // fire-and-forget, niet awaiten: de makelaar hoeft niet te wachten, de
       // Teksten-tab (ContentTekstenTab) pollt zelf op de status.
       if (doel === 'in_verkoop' && result.contentStatus === 'geen') {

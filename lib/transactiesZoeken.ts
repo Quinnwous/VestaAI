@@ -85,7 +85,7 @@ export function standaardTransactiesFilterState(werkgebiedPlaatsen: string[]): T
 
 /**
  * Filterstaat → `TransactieFilter` voor de RPC `transacties_zoeken` (patroon 2,
- * docs/roadmap.md § 3.1). Een handmatig datumbereik (`datumVan`/`datumTot`)
+ * docs/architectuur.md § 1). Een handmatig datumbereik (`datumVan`/`datumTot`)
  * overschrijft de periode-preset — "Aangepaste periode overschrijft de
  * snelkeuze" in `docs/ontwerp/transacties.html`.
  */
@@ -166,7 +166,7 @@ export function transactiesFilterNaarEigenFilter(
 /**
  * Filtert de (compacte, client-side aanwezige) eigen-verkopenset voor de
  * CSV-export — `haalEigenVerkopen()` haalt al alléén `eigen_verkoop = true`
- * op (§ 3.1 patroon 1), dus "CSV-export uitsluitend eigen verkopen" is al
+ * op (architectuur § 1 patroon 1), dus "CSV-export uitsluitend eigen verkopen" is al
  * gegarandeerd vóór dit filter draait. `filterEigenRijen()` (lib/marktanalyse.ts)
  * dekt niet `zoek`/`looptijdMax` — die twee worden hier na afloop toegepast,
  * zodat de export exact dezelfde selectie is als de zichtbare tabel.

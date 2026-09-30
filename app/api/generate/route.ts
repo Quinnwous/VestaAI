@@ -7,7 +7,7 @@ import { meldFout } from '@/lib/fouten'
 export const maxDuration = 300
 
 /**
- * "Genereer content voor dossier-id" (item 3.1, docs/roadmap.md § 3.2) — niet
+ * "Genereer content voor dossier-id" (item 3.1, docs/architectuur.md § 2) — niet
  * meer de aanmaakroute (dat is `POST /api/object` sinds hetzelfde item). Body
  * is nu `{ objectId }` i.p.v. de volledige intake; de kernlogica (lock,
  * Claude-call, opslaan) zit in lib/contentGeneratie.ts zodat ook de

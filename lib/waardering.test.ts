@@ -1,5 +1,5 @@
 // ===========================================================================
-// v2 — rekenkern § 3.3 (Fable, 17 sep 2026; v1 verwijderd item 4.3, 18 sep
+// v2 — rekenkern architectuur § 3 (Fable, 17 sep 2026; v1 verwijderd item 4.3, 18 sep
 // 2026). Het rekenvoorbeeld hieronder is hetzelfde als in
 // docs/waardering/methode.md; wijzigt de uitkomst, werk dan beide bij.
 // ===========================================================================

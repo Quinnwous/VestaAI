@@ -1,6 +1,6 @@
 /**
  * Gedeelde getal-/datumopmaak voor élke interactieve verkenner (item 6.1,
- * docs/roadmap.md § 3.7 — bindend: "lib/opmaak.ts (euro, procent, dagen,
+ * docs/architectuur.md § 7 — bindend: "lib/opmaak.ts (euro, procent, dagen,
  * datum, m2, nlNL) voor élk getal"). Poort van `docs/ontwerp/kit.js` §
  * Opmaak. Puur, geen React — te gebruiken in server- én clientcomponenten,
  * StatTiles, tooltips en het kwartaalbericht-feitenblad (6.4).

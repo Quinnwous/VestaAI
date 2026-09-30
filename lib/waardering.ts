@@ -1,5 +1,5 @@
 /**
- * Waarderingsmodule (v2) — de rekenkern uit docs/roadmap.md § 3.3:
+ * Waarderingsmodule (v2) — de rekenkern uit docs/architectuur.md § 3:
  * referentieselectie op locatie met verbredingsladder, prijsindex per
  * kwartaal, gewichten, gewogen mediaan/percentielen, bandbreedte-regels,
  * kenmerk-effecten via vergelijkbare paren, wat-als, migratie van de
@@ -65,7 +65,7 @@ export type SubjectV2 = {
 }
 
 /**
- * Kandidaat-referentie zoals de RPC `referenties_in_straal` (§ 3.1) of een
+ * Kandidaat-referentie zoals de RPC `referenties_in_straal` (architectuur § 1) of een
  * client-side filter hem aanlevert. `afstand_m` komt uit ST_DWithin; ontbreekt
  * hij maar zijn lat/lng bekend, dan rekent `metAfstand()` hem uit.
  */
@@ -88,7 +88,7 @@ export type Kandidaat = {
   verkopend_kantoor?: string | null
 }
 
-/** Verbredingsladder (§ 3.3): straal en terugkijkperiode per trede. */
+/** Verbredingsladder (architectuur § 3): straal en terugkijkperiode per trede. */
 export const LADDER: ReadonlyArray<{ straal_m: number; maanden: number }> = [
   { straal_m: 750, maanden: 36 },
   { straal_m: 1000, maanden: 36 },
@@ -104,7 +104,7 @@ export const BOUWJAAR_TOLERANTIE: Record<'standaard' | 'vrijstaand', number> = {
 /**
  * Bandbreedte = gewogen percentielen van de geïmpliceerde waarden. P25-P75
  * dekt per definitie maar de helft van de uitkomsten; om 3 op de 4 werkelijke
- * verkoopprijzen binnen de band te hebben (demo-lat § 3.3) nemen we
+ * verkoopprijzen binnen de band te hebben (demo-lat architectuur § 3) nemen we
  * P12,5-P87,5. Kalibratieknop voor de backtest (item 4.8): haalt de band de
  * 75 % niet op echte data, verbreed dan hier — nooit de lat verlagen.
  */
@@ -156,7 +156,7 @@ export function gelijkenisV2(subject: SubjectV2, k: Kandidaat): number {
  */
 export const ANDERE_PLAATS_FACTOR = 0.5
 
-/** Gewicht (§ 3.3): gelijkenis × 1/(1 + afstand/500 m) × 1/(1 + maanden/12) × plaatsfactor. Zonder afstand telt alleen tijd. */
+/** Gewicht (architectuur § 3): gelijkenis × 1/(1 + afstand/500 m) × 1/(1 + maanden/12) × plaatsfactor. Zonder afstand telt alleen tijd. */
 export function gewichtV2(gelijkenis: number, afstand_m: number | null | undefined, maanden: number, plaatsFactor = 1): number {
   const fAfstand = afstand_m == null ? 1 : 1 / (1 + afstand_m / 500)
   const fTijd = 1 / (1 + Math.max(0, maanden) / 12)
@@ -201,7 +201,7 @@ function scoor(subject: SubjectV2, k: Kandidaat, peildatum: Date, handmatig = fa
 }
 
 /**
- * Referentieselectie met verbredingsladder (§ 3.3, item 4.1). Alleen
+ * Referentieselectie met verbredingsladder (architectuur § 3, item 4.1). Alleen
  * transacties van vóór de peildatum tellen mee (backtest-eis). Zonder locatie
  * (subject of kandidaten zonder afstand) valt de selectie terug op plaats +
  * typegroep met een waarschuwing.
@@ -288,7 +288,7 @@ export function gewogenMediaan(waarden: number[], gewichten: number[]): number |
   return gewogenPercentiel(waarden, gewichten, 0.5)
 }
 
-/** Minimale halve bandbreedte naar aantal referenties (§ 3.3, verduidelijkt: de ruimste regel geldt). */
+/** Minimale halve bandbreedte naar aantal referenties (architectuur § 3, verduidelijkt: de ruimste regel geldt). */
 export function minimaleBand(n: number): number {
   if (n < 4) return BAND_MINIMUM.onder4
   if (n < WEINIG_DATA_ONDER) return BAND_MINIMUM.onder6
@@ -376,7 +376,7 @@ export function kenmerkEffectenV2(regionaal: Kandidaat[], subject: SubjectV2): R
  * Grootte-effect: hoe verandert de € per m² per extra m² woonoppervlak binnen
  * de typegroep? Theil-Sen-helling (mediaan van paarsgewijze hellingen) op
  * ln(€ per m²) — robuust, één dimensie, uitlegbaar ("−0,1 % per m² extra").
- * Geen multivariate regressie (§ 3.3).
+ * Geen multivariate regressie (architectuur § 3).
  */
 export function grootteEffect(regionaal: Kandidaat[]): GrootteEffect | null {
   const punten = regionaal

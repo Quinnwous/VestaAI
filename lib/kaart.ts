@@ -1,6 +1,6 @@
 /**
- * Pure kaartfuncties voor de MapLibre-stack (item 7.1, § 3.5/3.8 van
- * docs/roadmap.md) — geen React, geen DOM, makkelijk te testen met vitest
+ * Pure kaartfuncties voor de MapLibre-stack (item 7.1, § 5/8 van
+ * docs/architectuur.md) — geen React, geen DOM, makkelijk te testen met vitest
  * (zie lib/kaart.test.ts). Verantwoordelijk voor: de pastel PDOK-stijl, en de
  * geometrie/aggregatie die `components/kaart/*` nodig heeft (cirkel voor de
  * straal-uitsnede, bounds om op de eigen verkopen te centreren, GeoJSON-
@@ -253,7 +253,7 @@ export type ClusterPunt = { id: string; lat: number; lng: number }
 export type Cluster = { lat: number; lng: number; aantal: number; ids: string[] }
 
 /**
- * Grid-clustering (§ 3.8/README § 6: "clustering boven 200 zichtbare
+ * Grid-clustering (architectuur § 8/README § 6: "clustering boven 200 zichtbare
  * pins" — puur voor leesbaarheid, geen library nodig op deze schaal).
  * `celGraden` bepaalt de rastercel; punten in dezelfde cel worden één
  * cluster op hun gemiddelde positie. Deterministisch or van invoervolgorde,

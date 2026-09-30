@@ -20,7 +20,7 @@
  *   npx tsx --env-file=.env.local scripts/seed-demo-kantoor.mjs --write        # schrijft (vereist env DEMO_PASSWORD)
  *   npx tsx --env-file=.env.local scripts/seed-demo-kantoor.mjs --write --reset  # verwijdert eerst bestaande demo-kantoor-rijen, dan opnieuw schrijven
  *
- * Vangrails (hard, zie docs/roadmap.md § 4):
+ * Vangrails (hard, zie docs/werkwijze.md):
  * - Standaard dry-run: rekent alles uit en print een samenvatting, schrijft niets.
  * - `--reset` alleen samen met `--write`, en raakt uitsluitend rijen van het
  *   geverifieerde demo-kantoor-id (lib/demoFixtureGuard.ts `bouwResetFilter`).

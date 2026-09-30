@@ -1,6 +1,6 @@
 # Blinde evaluatie: CONTENT vs. CONTENT_KANDIDAAT
 
-Item 8.1 (`docs/roadmap.md` § 3.6/8): een modelwissel voor het CONTENT-model
+Item 8.1 (`docs/architectuur.md` § 6): een modelwissel voor het CONTENT-model
 (`lib/aiModellen.ts`) gebeurt pas nadat Quinn een blinde vergelijking heeft
 gewonnen — niet op basis van een claim uit een release-aankondiging.
 

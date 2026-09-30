@@ -1,6 +1,6 @@
 /**
  * Prijsindex per kwartaal uit de eigen regionale transactiedataset
- * (roadmap v2 § 3.3 en item 4.2). Pure functies; de RPC `prijsindex_kwartaal`
+ * (architectuur § 3 en item 4.2). Pure functies; de RPC `prijsindex_kwartaal`
  * levert straks dezelfde vorm als `bouwIndex()` hier client-side maakt, zodat
  * `factor()` op beide werkt.
  *
@@ -9,7 +9,7 @@
  *   venster van 3 kwartalen, gewogen naar het aantal verkopen per kwartaal.
  *   Een mediaan is ongevoelig voor één villa; het venster dempt kwartaalruis.
  * - Betrouwbaar is een gladgestreken punt pas als het venster samen ≥ `minN`
- *   verkopen bevat (standaard 30, § 3.3). Daaronder geeft `factor()` `null`
+ *   verkopen bevat (standaard 30, architectuur § 3). Daaronder geeft `factor()` `null`
  *   en valt de aanroeper terug op de CBS-index (`lib/cbsPrijsindex.ts`) of
  *   op "geen tijdcorrectie" mét waarschuwing.
  * - Ontbreekt het gevraagde kwartaal (bv. het lopende kwartaal heeft nog

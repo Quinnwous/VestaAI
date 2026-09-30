@@ -199,7 +199,7 @@ function zoekMapping(ruweWaarde: string | null | undefined): TaxonomieEntry | nu
   return OPZOEKTABEL.get(normaliseerRuw(ruweWaarde)) ?? null
 }
 
-/** Groep uit de taxonomie (§ 3.3), of `null` als de ruwe waarde onbekend is — nooit gokken. */
+/** Groep uit de taxonomie (architectuur § 3), of `null` als de ruwe waarde onbekend is — nooit gokken. */
 export function woningtypeGroep(ruweWaarde: string | null | undefined): Typegroep | null {
   return zoekMapping(ruweWaarde)?.groep ?? null
 }

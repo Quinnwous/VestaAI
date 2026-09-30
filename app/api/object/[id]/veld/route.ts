@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 
-// Outputset v2 (item 8.3, roadmap § 3.4) — alleen de veldnamen die
+// Outputset v2 (item 8.3, architectuur § 4) — alleen de veldnamen die
 // `ResultTabs` nog daadwerkelijk toont/bewerkt. Oude sleutels van vóór 8.3
 // blijven leesbaar in `outputs_json` (backcompat-schema) maar zijn hier niet
 // meer opgenomen: ze zijn niet meer bewerkbaar via deze route.

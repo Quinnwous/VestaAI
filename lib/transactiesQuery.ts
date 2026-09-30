@@ -1,11 +1,11 @@
 /**
  * De enige plek in `app/`, `components/` en `lib/` die `transacties` of
  * `transacties_met_coordinaten` bevraagt, of een RPC op transactiedata
- * aanroept (item 2.2, docs/roadmap.md § 3.1 — bindend, afgedwongen door
+ * aanroept (item 2.2, docs/architectuur.md § 1 — bindend, afgedwongen door
  * `lib/transactiesQuery.guard.test.ts`). `app/admin/transacties/*` en
  * `scripts/` zijn uitgezonderd (platform-admin/service-role, buiten RLS).
  *
- * Drie toegangspatronen (§ 3.1):
+ * Drie toegangspatronen (architectuur § 1):
  * 1. Eigen verkopen, compact, client-side (`haalEigenVerkopen`,
  *    `haalTransactiesVoorVerkenner`) — range-lus in blokken van 1.000,
  *    expliciete kolommen, `uitgesloten_reden is null`.
@@ -141,11 +141,11 @@ export async function haalTransactiesVoorVerkenner<T extends Record<string, unkn
 }
 
 /**
- * Regionale set voor de waarderingskern (§ 3.3): alleen de kolommen die
+ * Regionale set voor de waarderingskern (architectuur § 3): alleen de kolommen die
  * `kenmerkEffectenV2()`/`grootteEffect()` nodig hebben, binnen werkgebied +
  * typegroep, laatste `maanden` (standaard 36) tot en met `totDatum`
  * (standaard vandaag). Geen aparte RPC — enkele duizenden rijen, gerekend in
- * de server action, zodat er één implementatie van de methode is (§ 3.1).
+ * de server action, zodat er één implementatie van de methode is (architectuur § 1).
  */
 export async function haalRegionaleSet(
   client: SessieClient,
@@ -180,7 +180,7 @@ export async function haalRegionaleSet(
 }
 
 /**
- * Referentiekandidaten op id (item 4.4, docs/roadmap.md § 3.3): lost de
+ * Referentiekandidaten op id (item 4.4, docs/architectuur.md § 3): lost de
  * opgeslagen `waardering_json.handmatig.toegevoegd`/`uitgesloten`-ids op naar
  * volledige `Kandidaat`-rijen — dezelfde kolommen als `haalRegionaleSet()`.
  * Geen coördinaten (die kolommen staan alleen op de view
@@ -288,7 +288,7 @@ export async function dataTotEnMet(client: SessieClient): Promise<DataTotEnMet> 
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Patroon 2: regionale dataset, geaggregeerd in Postgres (RPC's, § 3.1)
+// Patroon 2: regionale dataset, geaggregeerd in Postgres (RPC's, architectuur § 1)
 // ─────────────────────────────────────────────────────────────────────────
 
 function metFilters(filters: TransactieFilter | undefined): TransactieFilter {

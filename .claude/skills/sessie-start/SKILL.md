@@ -6,42 +6,44 @@ description: Begin van een VestaAI-werksessie. Leest de stand van zaken uit docs
 # Sessie starten
 
 Doel: binnen één stap opnieuw volledig op de hoogte zijn van waar VestaAI staat,
-zonder dat Quinn dat opnieuw moet uitleggen — zie CLAUDE.md § 🚦 Begin hier bij
-elke sessie.
+zonder dat Quinn dat opnieuw moet uitleggen — zie CLAUDE.md § 🚦 Begin hier.
 
 ## Stappen
 
-1. **Lees `docs/roadmap.md` § 📍 Stand van zaken.** Dat blok bevat: huidige
-   fase, laatst opgeleverde item, het geplande volgende item, openstaande
-   blokkades en open vragen.
+1. **Lees `docs/roadmap.md` § 📍 Stand van zaken.** Kritiek pad, de volgende
+   ronde, wat op Quinn wacht, en de waarschuwingen. De roadmap bevat alléén
+   open werk.
 2. **Lees ook, kort:**
-   - `docs/roadmap.md` § 3 Architectuurbesluiten — bindend voor elk item;
-     lees in elk geval de subsectie die het volgende item raakt (3.1 data,
-     3.2 dossier/content, 3.3 waardering, 3.4 content, 3.5 kaart, 3.6 AI,
-     3.7 URL-state/primitives).
-   - Het fase-blok in § 5 dat bij "huidige fase" hoort — het volgende item
-     heeft daar zijn spec (*Doel · Raakt · Hergebruik · Spec · Tests · Klaar
-     als*). De checkboxen laten zien wat al af is.
-   - `docs/besluiten.md` — alleen de bovenste datum-sectie, tenzij Quinns
-     vraag over een ouder besluit lijkt te gaan.
-   - § 8 Acties Quinn — check of een eerder genoemde blokkade inmiddels is
-     opgelost (exports binnen? verwerkersovereenkomst getekend? Vercel Pro?).
-3. **Vat samen in maximaal 8 regels** aan Quinn: fase, laatst opgeleverd,
-   voorgestelde volgende stap, en eventuele blokkades die die stap
-   tegenhouden. Geen herhaling van het hele plan.
+   - Het item zelf in `docs/roadmap.md` § 3 (spec: doel, wat het raakt,
+     klaar-als).
+   - `docs/architectuur.md` — de sectie die het item raakt (§ 1 datalagen,
+     § 2 dossier/content, § 3 waardering, § 4 contentsjabloon, § 5 kaart,
+     § 6 AI-modellen, § 7 URL-state/primitives, § 8 ontwerpspoor, § 9
+     datamodel). Die regels zijn bindend.
+   - `docs/productoverzicht.md` — het onderdeel dat je gaat raken, zodat je
+     weet wat er al staat en niets dubbel bouwt.
+   - `docs/besluiten.md` — alleen de bovenste datumsectie, tenzij Quinns vraag
+     over een ouder besluit gaat.
+   - `docs/roadmap.md` § 2 Wacht op Quinn — is een eerder genoemde blokkade
+     inmiddels opgelost (exports binnen? voorbeeld aangeleverd? Vercel Pro?)
+3. **Vat samen in maximaal 8 regels** aan Quinn: waar het project staat, wat
+   laatst is opgeleverd, de voorgestelde volgende stap, en blokkades die die
+   stap tegenhouden. Geen herhaling van het hele plan.
 4. **Stel vragen (AskUserQuestion) alleen als het volgende item niet
    eenduidig is**, bijvoorbeeld:
-   - een blokkade uit § 8 staat nog open en het volgende item hangt ervan af;
-   - er is sinds de laatste sessie iets veranderd dat niet in de roadmap
-     staat (exports binnen, voorbeeld aangeleverd);
+   - een blokkade uit § 2 staat nog open en het volgende item hangt ervan af;
+   - er is sinds de laatste sessie iets veranderd dat niet in de roadmap staat
+     (exports binnen, voorbeeld aangeleverd);
    - Quinn noemt een taak die niet één-op-één in een bestaand item past.
    Is Quinn er niet (autonome sessie), kies dan zelf, noteer de keuze in
    `docs/besluiten.md` en werk door — blokkeer alleen bij iets onomkeerbaars
-   (migratie of bulk-update op echte data, verwijderen).
-5. **Mini-plan, dan bouwen.** Schrijf ≤10 regels in de chat: bestanden,
+   (migratie of bulk-update op echte data, verwijderen, betaalde API-rondes).
+5. **Mini-plan, dan bouwen.** Schrijf ≤ 10 regels in de chat: bestanden,
    volgorde, welke bestaande functies je hergebruikt, welke tests je eerst
-   schrijft. Plan mode is alleen nodig bij items gemarkeerd *(ontwerpkeuze)*.
+   schrijft. Plan mode alleen bij items gemarkeerd *(ontwerpkeuze)*.
    Rekenlogica eerst als pure functie in `lib/` mét vitest-test, dan de UI.
+   Meerdere items zonder bestandsoverlap → parallel met agents volgens
+   `docs/werkwijze.md` § 3.
 
 ## Wat dit NIET is
 

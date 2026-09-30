@@ -15,7 +15,7 @@ import { haalMarktanalyseData } from './actions'
 
 export const metadata = { title: 'Marktanalyse' }
 
-/** Kolommen voor de eigen-verkopenreeks ("wij", patroon 1 — client-side filteren, § 3.1). */
+/** Kolommen voor de eigen-verkopenreeks ("wij", patroon 1 — client-side filteren, architectuur § 1). */
 const EIGEN_VERKOOP_KOLOMMEN = [
   'id', 'plaats', 'wijk', 'verkoopprijs', 'vraagprijs', 'verkoopdatum', 'looptijd_dagen',
   'woonoppervlak_m2', 'perceel_m2', 'bouwjaar', 'energielabel', 'kamers', 'garage', 'tuin',

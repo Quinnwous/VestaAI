@@ -40,7 +40,7 @@ describe('factorCbs', () => {
 })
 
 describe('CBS-brongegevens', () => {
-  it('legt de tabel- en regiocode vast zoals gedocumenteerd (§ 3.3, item 4.2)', () => {
+  it('legt de tabel- en regiocode vast zoals gedocumenteerd (architectuur § 3, item 4.2)', () => {
     expect(CBS_TABEL_ID).toBe('85792NED')
     expect(CBS_REGIO_CODE).toBe('GM0518')
   })
