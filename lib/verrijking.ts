@@ -72,10 +72,21 @@ interface PdokHit {
   woonplaatsnaam?: string
 }
 
-async function pdokLookup(adres: string): Promise<PdokHit | null> {
+/**
+ * Item 12.9-fix (1 okt 2026): gebruikte eerst `fetchMet` (alleen de data), dus
+ * een PDOK-uitval (netwerkfout/5xx/timeout) was voor de aanroeper onzichtbaar
+ * — identiek aan "dit adres staat niet in PDOK". `fetchVerrijking()` leidde
+ * CBS en voorzieningen dan allebei af tot `leeg` i.p.v. `mislukt`, terwijl de
+ * eigenlijke oorzaak bij PDOK lag. `fetchMetStatus` i.p.v. `fetchMet`
+ * onderscheidt dat nu, net als bij CBS (12.7) en Overpass. Een geslaagde call
+ * zonder treffer (adres onbekend bij PDOK) blijft 'leeg', geen 'mislukt'.
+ */
+async function pdokLookup(adres: string): Promise<FetchPoging<PdokHit>> {
   const url = `https://api.pdok.nl/bzk/locatieserver/search/v3_1/free?q=${encodeURIComponent(adres)}&fq=type:adres&rows=1&fl=centroide_ll,buurtcode,buurtnaam,wijkcode,wijknaam,gemeentecode,gemeentenaam,postcode,nummeraanduiding_id,adresseerbaarobject_id`
-  const data = await fetchMet<{ response: { docs: PdokHit[] } }>(url)
-  return data?.response?.docs?.[0] ?? null
+  const poging = await fetchMetStatus<{ response: { docs: PdokHit[] } }>(url)
+  const hit = poging.data?.response?.docs?.[0] ?? null
+  if (poging.status === 'ok' && !hit) return { status: 'leeg', data: null }
+  return { status: poging.status, data: hit, reden: poging.reden }
 }
 
 /**
@@ -84,8 +95,9 @@ async function pdokLookup(adres: string): Promise<PdokHit | null> {
  * aanroeper (bv. `scripts/geocodeer-transacties.mjs`) onderscheid kan maken
  * tussen 'leeg' (geen treffer — dit adres bestaat niet in PDOK) en 'mislukt'
  * (netwerk/HTTP-fout — de call zelf ging mis en verdient een nieuwe poging).
- * `pdokLookup()` hierboven blijft ongewijzigd voor de bestaande call-sites
- * (`lookupCoordinaten`/`fetchVerrijking`) — dit is een losse export ernaast.
+ * `pdokLookup()` hierboven kreeg dat onderscheid later ook (12.9) — dit blijft
+ * een losse export ernaast, want `pdokZoek()` vraagt meer velden op (de
+ * geocodeerpijplijn, bewust niet aangeraakt door die fix).
  */
 export async function pdokZoek(query: string, fq?: string): Promise<FetchPoging<{ response: { docs: PdokHit[] } }>> {
   const params = new URLSearchParams({
@@ -112,7 +124,7 @@ function parsePdokCoord(centroide: string): { lat: number; lon: number } | null 
  * is te traag voor een aanmaakroute zonder Claude).
  */
 export async function lookupCoordinaten(adres: string): Promise<{ lat: number; lng: number } | null> {
-  const pdok = await pdokLookup(adres)
+  const pdok = (await pdokLookup(adres)).data
   const coord = pdok?.centroide_ll ? parsePdokCoord(pdok.centroide_ll) : null
   return coord ? { lat: coord.lat, lng: coord.lon } : null
 }
@@ -162,7 +174,7 @@ async function fetchWoz(): Promise<FetchPoging<WozData>> {
 export async function haalWozIjkpunt(adres: string): Promise<{ waarde: number; peildatum: string } | null> {
   // Zolang WOZ niet gekoppeld is: geen PDOK-opzoeking voor niets.
   if (!WOZ_GEKOPPELD) return null
-  const pdok = await pdokLookup(adres)
+  const pdok = (await pdokLookup(adres)).data
   const bagId = pdok?.adresseerbaarobject_id
   if (!bagId) return null
   const meestRecent = (await fetchWoz()).data?.waarden[0]
@@ -333,6 +345,12 @@ async function fetchCbs(
   buurtcode: string | null,
   wijkcode: string | null,
   gemeentecode: string | null,
+  // Item 12.9-fix: geen enkele code heeft twee heel verschillende oorzaken —
+  // PDOK gaf een treffer zonder die codes (zou niet moeten, maar 'leeg' is
+  // dan terecht) óf de PDOK-opzoeking zelf is mislukt (dan is er geen enkel
+  // zinnig antwoord mogelijk, en moet dat als 'mislukt' doorklinken i.p.v.
+  // als "dit gebied kent CBS niet").
+  pdokMislukt = false,
 ): Promise<FetchPoging<CbsData>> {
   const gemeenteCbs = gemeentecode
     ? gemeentecode.startsWith('GM') ? gemeentecode : `GM${gemeentecode}`
@@ -342,9 +360,13 @@ async function fetchCbs(
   if (buurtcode) gevraagd.push(['buurt', buurtcode])
   if (wijkcode) gevraagd.push(['wijk', wijkcode])
   if (gemeenteCbs) gevraagd.push(['gemeente', gemeenteCbs])
-  // Geen enkele code (PDOK leverde niets op): geen CBS-aanroep te doen, niet
-  // 'mislukt' — die kant is bij de PDOK-opzoeking zelf te verklaren.
-  if (!gevraagd.length) return { status: 'leeg', data: null }
+  // Geen enkele code: zonder een mislukte PDOK-opzoeking betekent dit dat
+  // PDOK niets opleverde voor dit adres — niet 'mislukt', die kant is bij de
+  // PDOK-opzoeking zelf te verklaren. Mét een mislukte PDOK-opzoeking is er
+  // geen enkele code om op te vragen, en dat is wél 'mislukt' (12.9-fix).
+  if (!gevraagd.length) return pdokMislukt
+    ? { status: 'mislukt', data: null, reden: 'PDOK-opzoeking mislukt' }
+    : { status: 'leeg', data: null }
   gevraagd.push(['nederland', 'NL00'])
 
   const filter = gevraagd
@@ -752,7 +774,13 @@ export interface VerrijkingData {
 }
 
 export async function fetchVerrijking(adres: string, oppervlakM2?: number): Promise<VerrijkingData> {
-  const pdok = await pdokLookup(adres)
+  const pdokPoging = await pdokLookup(adres)
+  const pdok = pdokPoging.data
+  // Item 12.9-fix: CBS en voorzieningen hangen allebei af van wat PDOK hier
+  // teruggeeft (buurt/wijk/gemeentecode resp. coördinaat). Zonder dit
+  // onderscheid werd een PDOK-uitval onzichtbaar afgeleid tot "leeg" (geen
+  // treffer) voor allebei — terwijl de werkelijke oorzaak 'mislukt' was.
+  const pdokMislukt = pdokPoging.status === 'mislukt'
 
   const coord = pdok?.centroide_ll ? parsePdokCoord(pdok.centroide_ll) : null
   const gemeente = pdok?.gemeentenaam ?? null
@@ -760,13 +788,18 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
 
   const [wozPoging, voorzieningenPoging, cbsPoging] = await Promise.all([
     !WOZ_GEKOPPELD || bagId ? fetchWoz() : Promise.resolve<FetchPoging<WozData>>({ status: 'leeg', data: null }),
-    coord ? fetchVoorzieningen(coord.lat, coord.lon) : Promise.resolve<FetchPoging<VoorzieningenData>>({ status: 'leeg', data: null }),
-    fetchCbs(pdok?.buurtcode ?? null, pdok?.wijkcode ?? null, pdok?.gemeentecode ?? null),
+    coord
+      ? fetchVoorzieningen(coord.lat, coord.lon)
+      : Promise.resolve<FetchPoging<VoorzieningenData>>(
+          pdokMislukt ? { status: 'mislukt', data: null, reden: 'PDOK-opzoeking mislukt' } : { status: 'leeg', data: null },
+        ),
+    fetchCbs(pdok?.buurtcode ?? null, pdok?.wijkcode ?? null, pdok?.gemeentecode ?? null, pdokMislukt),
   ])
 
   // Een mislukte bron zie je anders nergens terug (de UI toont alleen de
   // status): log de reden, zodat een uitval op Vercel te diagnosticeren is.
   // Bewust zonder adres (persoonsgegeven) — gemeente is genoeg context.
+  if (pdokMislukt) console.warn(`[verrijking] pdok mislukt (trekt cbs/voorzieningen mee): ${pdokPoging.reden ?? 'onbekend'}`)
   for (const [bron, poging] of [['voorzieningen', voorzieningenPoging], ['woz', wozPoging], ['cbs', cbsPoging]] as const) {
     if (poging.status === 'mislukt') console.warn(`[verrijking] ${bron} mislukt (${gemeente ?? 'onbekende gemeente'}): ${poging.reden ?? 'onbekend'}`)
   }
