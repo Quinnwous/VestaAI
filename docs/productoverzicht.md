@@ -58,13 +58,18 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
 - Linksboven staat een klein "VestaAI × kantoorlogo"-lockup; verder nergens de
   naam VestaAI achter de login.
 - **i4 Housing** is ingericht: huisstijl, kantoorprofiel, werkgebied
-  (Wassenaar, Den Haag), courtage 1 % excl. btw, tekstsjabloon. Er is één
-  account (Quinn als makelaar); de zes teamaccounts zijn nog niet aangemaakt.
+  (Wassenaar, Den Haag), courtage 1 % excl. btw, tekstsjabloon. Zeven
+  accounts: Quinn als makelaar plus de zes teamleden uit
+  `docs/i4housing/i4housing-team.md` (1 okt, zonder welkomstmail; de
+  startwachtwoorden staan alleen lokaal in `backups/`). Teamfoto uit hun eigen
+  fotoshoot (mei 2026, origineel 3894 × 4868) als startbanner en sfeerbeeld.
 
 ## 2. Startpagina (`/dashboard`)
 
 Begroeting op tijd van de dag (server-side berekend), merkverloop of
-sfeerbeeld (`StartBanner`), **kerncijfers** (verkocht laatste 12 maanden,
+teamfoto (`StartBanner`, `banner_url` + `banner_focus_y`; vanaf 1024 px staat
+de foto rechts en loopt hij over in het merkverloop, smaller schermvullend),
+**kerncijfers** (verkocht laatste 12 maanden,
 gemiddelde looptijd, marktaandeel in de hoofdplaats, prijs t.o.v. vraagprijs,
 aantal in verkoop, lopende verkoopadviezen) en **recent bekeken** dossiers
 (`gebruik_events`). Geen snelkoppelingen (bewust).

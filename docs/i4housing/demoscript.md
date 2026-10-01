@@ -53,7 +53,7 @@ referenties in hun fase — gecontroleerd in de database):
 | Fase | Dossier | Waarom |
 |---|---|---|
 | Verkoopadvies | Kerkehoutlaan 12 — `/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e` | waardering met 25 referenties, geen content |
-| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 2 punt 6) |
+| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 2 punt 5) |
 | Verkocht | Rust en Vreugdlaan 5 — `/object/f1db5bd7-133f-4e1a-989c-7be97d505f10` | content klaar, 25 referenties |
 
 Geen van de demo-dossiers heeft foto's; voor de brochure-pdf en virtual staging
@@ -83,7 +83,7 @@ klikken.
 
 ### Checklist — dag ervoor
 
-1. **Vercel** naar **Pro** (roadmap § 2 punt 10, staat nog op Hobby) —
+1. **Vercel** naar **Pro** (roadmap § 2 punt 9, staat nog op Hobby) —
    zonder Pro kapt een lange functie-aanroep (contentgeneratie) af.
 2. **Supabase-project actief**: log kort in, draai één query — een gratis
    project pauzeert na 7 dagen inactiviteit.
@@ -195,7 +195,7 @@ rode regel in de tabel is een concreet punt om te fixen, geen giswerk.
 |---|---|---|
 | 1 | Ga naar `/login/demo` (later: `/login/i4housing`) | Kantoorlogin in de huisstijl van het kantoor (logo, kleuren, lettertype) |
 | 2 | Log in | Redirect naar `/dashboard` ("Overzicht" in de topbar) |
-| 3 | — | **Startbanner**: merkverloop (géén teamfoto — zie let-op hieronder), datum, begroeting **"Goedemorgen/-middag/-avond, [voornaam]"**, contextregel (bv. "N dossiers wachten op content") |
+| 3 | — | **Startbanner**: teamfoto van i4 (op `/login/i4housing`; het demo-kantoor toont een merkverloop — zie let-op hieronder), datum, begroeting **"Goedemorgen/-middag/-avond, [voornaam]"**, contextregel (bv. "N dossiers wachten op content") |
 | 4 | — | **Kerncijfers**, 6 tegels: *Verkocht laatste 12 maanden* (+ delta) · *Gem. looptijd* (vs. markt) · *Marktaandeel [plaats]* · *Prijs t.o.v. vraagprijs* · *In verkoop* · *Lopende verkoopadviezen* — elke tegel met n en "data t/m" |
 | 5 | — | **Recent bekeken**: laatste ~5 dossiers die deze makelaar opende |
 
@@ -205,11 +205,11 @@ afgelopen 12 maanden is verkocht, hoe snel, en hoe jullie ervoor staan ten
 opzichte van de rest van [plaats]."
 
 **Let op — twee afwijkingen van de scène-belofte in § 2:**
-- Er staat **geen teamfoto** in de banner (besluit Quinn 19 sep 2026: een
-  aangeleverde foto oogde zacht opgeschaald; nu een merkverloop met raster/
-  glans). Item **12.1** (teamfoto via `achtergrond_url`) staat nog open en
-  wacht op een door Quinn goedgekeurde foto — noem in de demo dus niet "hier
-  staat het team", tenzij 12.1 alsnog wordt opgeleverd.
+- De **teamfoto** staat alleen in het i4-kantoor (1 okt 2026: groepsfoto uit
+  hun eigen fotoshoot van mei 2026, scherp tot 1920 px; op brede schermen
+  rechts in de banner). Het demo-kantoor — de repetitie en het terugvalplan —
+  toont een merkverloop met raster en glans: zeg daar dus niet "hier staat het
+  team".
 - Er is **geen "Deze week"-tijdlijn** naast Recent bekeken — die is bewust
   geschrapt (item 10.4, geschrapt bij de schrapvolgorde van het masterplan) en niet gebouwd.
 
@@ -430,8 +430,6 @@ ook eens doorheen te scrollen."
 Niet dit document zelf, maar losse bevindingen die het bouwen waard zijn vóór
 de eerste échte demo (zie eindrapport van deze sessie / `docs/roadmap.md`):
 
-- **12.1 (teamfoto in de startbanner)** is nog niet gebouwd — scène 1 in § 2
-  belooft "met teamfoto", de code toont vandaag een merkverloop.
 - **"Deze week"-tijdlijn** naast "Recent bekeken" op het dashboard bestaat
   niet (bewust geschrapt, item 10.4) — het oude masterplan noemde "recent
   bekeken, deze week" als twee dingen; het is er nog maar één.
