@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Annuleert een lopende run van dezelfde branch/PR zodra er een nieuwe push
+# binnenkomt, zodat runners niet op verouderde code blijven draaien.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Typecheck, lint & test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Geen .nvmrc of package.json "engines" aanwezig; 22 is de versie waarmee
+      # ook lokaal wordt ontwikkeld (next vereist >=20.9.0).
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm run test
+
+# Bewust geen `npm run build`: die heeft productie-env-vars nodig (Supabase,
+# Claude, Resend, ...) die hier niet beschikbaar zijn — zie docs/werkwijze.md
+# § 4. De echte build en dod:screens draaien na de merge, lokaal of via de
+# Vercel-preview/production-deploy.

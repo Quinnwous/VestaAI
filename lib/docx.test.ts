@@ -1,18 +1,40 @@
 import { describe, expect, it } from 'vitest'
-import { existsSync, readFileSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { extractDocxText } from './docx'
 
-// Gebruikt een echt .docx-bestand als fixture, zodat we bewijzen dat de extractie
-// werkelijke Word-inhoud oplevert (geen mock). Het bestand staat niet in git (klantdata),
-// dus zonder fixture slaan we de test over in plaats van de hele suite rood te maken.
-const FIXTURE = join(process.cwd(), 'docs/Concurrentieanalyse-HousApp.docx')
+// Synthetische fixture (geen klantdata, zie lib/__fixtures__/README.md voor hoe hij
+// is opgebouwd), dus deze test draait altijd mee — geen skip meer zoals toen de fixture
+// nog het echte (niet-gecommitte) klantdocument `docs/Concurrentieanalyse-HousApp.docx` was.
+const FIXTURE = join(process.cwd(), 'lib/__fixtures__/voorbeeld.docx')
 
-describe.skipIf(!existsSync(FIXTURE))('extractDocxText', () => {
-  it('haalt bruikbare platte tekst uit een echt .docx-bestand', async () => {
+describe('extractDocxText', () => {
+  it('haalt kop, alinea’s, tabelcellen en bijzondere tekens uit een .docx', async () => {
     const buffer = readFileSync(FIXTURE)
     const tekst = await extractDocxText(buffer)
-    expect(tekst.length).toBeGreaterThan(1000)
-    expect(tekst).toContain('HousApp')
+
+    // Kop
+    expect(tekst).toContain('Voorbeeldkop voor testfixture')
+
+    // Alinea's
+    expect(tekst).toContain(
+      'Eerste alinea met bijzondere tekens: café, klëine, € 1.234,56 en de plaatsnaam \'s-Gravenhage.',
+    )
+    expect(tekst).toContain(
+      'Tweede alinea om te bewijzen dat meerdere paragrafen na elkaar worden opgehaald door extractDocxText.',
+    )
+
+    // Tabelcellen
+    expect(tekst).toContain('Plaats')
+    expect(tekst).toContain('Vraagprijs')
+    expect(tekst).toContain('€ 450.000')
+
+    // Bijzondere tekens (nogmaals los getoetst, zodat een encoding-regressie
+    // direct zichtbaar is, ook als de bredere zinnen hierboven per ongeluk
+    // zouden worden aangepast)
+    expect(tekst).toContain('é')
+    expect(tekst).toContain('ë')
+    expect(tekst).toContain('€')
+    expect(tekst).toContain('\'s-Gravenhage')
   })
 })

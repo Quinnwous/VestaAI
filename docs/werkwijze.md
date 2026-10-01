@@ -64,6 +64,10 @@ De hoofdsessie regisseert; Sonnet-subagents bouwen elk één roadmap-item.
 
 - `npm run typecheck && npm run lint && npm run test && npm run build` groen;
   lint = 0 problemen.
+- GitHub Actions (`.github/workflows/ci.yml`) draait typecheck/lint/test
+  automatisch op elke pull request en elke push naar `main` (geen secrets,
+  geen build — die heeft productie-env-vars nodig). Dit vervangt geen lokale
+  DoD-run; het is het laatste net voordat iets naar `main` gaat.
 - Huisstijl-hook schoon: `var(--merk*)` (tekst in merkkleur via
   `var(--merk-tekst)`), "je/jouw", geen "VestaAI" achter de login, geen groene
   grijzen, geen `var(--merk…, #hex)`-fallbacks. Checklist:
