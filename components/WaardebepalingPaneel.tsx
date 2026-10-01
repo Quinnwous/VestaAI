@@ -38,11 +38,11 @@ import {
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 function formatEuro(n: number | null): string {
-  // Niet-brekende spatie (` `) tussen € en het getal — een gewone
+  // Niet-brekende spatie (`\u00A0`) tussen € en het getal — een gewone
   // spatie laat de browser "€ 430.000" afbreken tot "€" / "430.000" zodra
   // de kolom (Prijs, €/m²) te smal wordt, bv. op 1280 px. `nowrap` op de
   // cel alléén is niet genoeg zolang er een brekend teken in de tekst zit.
-  return n !== null ? `€ ${Math.round(n).toLocaleString('nl-NL')}` : '—'
+  return n !== null ? `€\u00A0${Math.round(n).toLocaleString('nl-NL')}` : '—'
 }
 
 function formatDatum(d: string | null): string {
