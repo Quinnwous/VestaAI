@@ -12,6 +12,24 @@
 
 ---
 
+### 1 okt 2026 (ronde R) — buurtdata, referentietabel, CI, herstelplan, audit 0, docx-test
+
+Ronde na `/sessie-start`: de zes items die zonder input bouwbaar waren. Vier
+Sonnet-agents in worktrees (12.7 · 12.8 + F9 · F2 · F5 + F6 + F1); de
+hoofdsessie voegde samen, controleerde en verving waar nodig.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 12.7 oorzaak | Niet de apostrof (PDOK vindt "Storm van 's-Gravesandeweg 3" prima), maar `fetchCbs()`: die gebruikte `fetchMet()` en maakte van een serverfout/time-out "leeg". CBS kan nu `mislukt` melden (`fetchMetStatus()`), met test die op de oude code faalde. Overpass: geen codefout — de servers geven bij overbelasting zelf HTTP 504. Twee extra mirrors (private.coffee, kumi.systems) waren bij toetsing ook onbereikbaar → niet toegevoegd | Sonnet |
+| 12.7 data | Alle 15 dossiers van het demo-kantoor ververst via de echte route (lokale build van deze branch, als `demo@vestaai.nl`, back-up vooraf): CBS 15/15 `ok`, voorzieningen na één herhaling 15/15 `ok`. Gevonden: bij de eerste ronde verloren Haagweg 102 en Rembrandtlaan 14 hun goede voorzieningen door een 504 → nieuw item **12.9** (verversen zonder dataverlies + PDOK-status) en in het demoscript: tijdens de demo niet op "Ververs" klikken | Opus |
+| 12.8 | `formatEuro()` in `WaardebepalingPaneel` met een niet-brekende spatie (als expliciete `\u00A0`, niet onzichtbaar in de bron) plus `nowrap` op alle getalkolommen; alleen het adres mag afbreken. Gecontroleerd op het `dod:screens`-screenshot van 1280 px. Pdf-template niet aangepast: kolommen rekenkundig breed genoeg | Sonnet + Opus |
+| F9 (deels) | In `WaardebepalingPaneel` de twee rAF-omzeilingen vervangen door "state aanpassen tijdens render" (react.dev); de rest van F9 volgt dat patroon | Sonnet |
+| F2 | Back-up: alle 9 bedrijfstabellen (+ `imports`, `gebruik_events`), Storage van alle buckets (`--zonder-storage` om over te slaan), `manifest.json` met aantallen; pure logica in `scripts/lib/backupPijplijn.mjs` + 21 tests. Schemabaseline ververst uit de live database (alleen lezend). Herstelprocedure in werkwijze § 5: `auth.users` zit niet in de back-up → bij volledig herstel eerst de accounts met dezelfde id's. Een echte hersteloefening is níet gedaan (schrijft naar productie; alleen op verzoek) | Sonnet |
+| F5 | `npm audit` 0: browserslist en brace-expansion via `npm update`, vitest 4.1.9 → 4.1.11 (eenmalig `--legacy-peer-deps` vanwege een npm-arborist-bug; het lockfile werkt daarna met een kale `npm ci`) | Sonnet |
+| F6 | Synthetische `lib/__fixtures__/voorbeeld.docx` (kop, alinea's, tabel, é/ë/€/'s-Gravenhage; hoe gemaakt: README ernaast); de test draait nu altijd en is rood gezien | Sonnet |
+| F1 | `.github/workflows/ci.yml`: typecheck, lint en test op elke PR en push naar `main`, `actions/*@v7`, `concurrency`, alleen leesrechten. Node 24 i.p.v. de door de agent gekozen 22, omdat het Vercel-project op 24.x staat | Sonnet + Opus |
+| `scripts/fixtures/` | Blijft: synthetische Brainbay/Realworks-bestanden voor een dry-run van de import (5.5), niet verweesd | Opus |
+
 ### 1 okt 2026 — opruimmigratie 2 en GitHub opgeruimd
 
 Akkoord Quinn op de twee nieuwe actiepunten uit de opschoning ("doe punt 1 en

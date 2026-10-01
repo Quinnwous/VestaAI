@@ -20,7 +20,7 @@ importeren draaien via `npx tsx`, de rest via `node`.
 
 | Script | Waarvoor | Commando |
 |---|---|---|
-| `backup-data.mjs` | Back-up van de belangrijkste tabellen naar `backups/` — **vóór elke migratie, import of bulk-update** | `node --env-file=.env.local scripts/backup-data.mjs` |
+| `backup-data.mjs` | Back-up van alle bedrijfstabellen + Storage naar `backups/<tijdstip>/` (met `manifest.json`) — **vóór elke migratie, import of bulk-update**; herstelprocedure in `docs/werkwijze.md` § 5 | `node --env-file=.env.local scripts/backup-data.mjs [--zonder-storage]` |
 | `controleer-schema.mjs` | Heeft de live database de kolommen die de code verwacht? | `node --env-file=.env.local scripts/controleer-schema.mjs` |
 | `import-transacties.mjs` | Brainbay-/Realworks-export (CSV/XLSX) importeren via de pijplijn; weigert `--write` zonder back-up van vandaag | `npx tsx --env-file=.env.local scripts/import-transacties.mjs --bron brainbay\|realworks --bestand <pad> --kantoor <id> [--write]` |
 | `geocodeer-transacties.mjs` | Coördinaten en buurt/wijk via PDOK, hervatbaar | `npx tsx --env-file=.env.local scripts/geocodeer-transacties.mjs --kantoor=<id> [--write]` |
@@ -48,5 +48,6 @@ importeren draaien via `npx tsx`, de rest via `node`.
 
 - `lib/` — gedeelde helpers: `dodSessie.mjs` (inloggen via sessiecookie),
   `vestaGroen.mjs` (welke kleuren tellen als VestaAI-groen), `axeCheck.mjs`,
-  `linkCheck.mjs`, `toetsenbordCheck.mjs`, `envCheck.mjs`.
+  `linkCheck.mjs`, `toetsenbordCheck.mjs`, `envCheck.mjs`, `backupPijplijn.mjs`
+  (paginering, Storage-padopbouw en manifest-opbouw achter `backup-data.mjs`).
 - `fixtures/` — kleine testbestanden voor de importpijplijn.

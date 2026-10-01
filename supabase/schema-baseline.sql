@@ -1,74 +1,68 @@
 -- ============================================================================
--- VestaAI — Database-baseline (schema, RLS, policies)
+-- VestaAI — Database-baseline (schema, RLS, policies, functies, views, indexen)
 -- Vastgelegd: 17 sep 2026, via introspectie (Supabase-MCP `list_tables`,
 -- `pg_policies`, `pg_views`, `list_extensions`) van project uvpcjpejocjmlxxyhqyz.
--- Bijgewerkt: 17 sep 2026 (item 2.1) naar de staat NA migratie
--- `20260917_transacties_pijplijn.sql` — die migratie was op het moment van
--- schrijven nog niet toegepast (de orchestrator maakt eerst een back-up en
--- past hem daarna toe); dit bestand beschrijft dus de bedoelde staat, niet
--- per se de live staat op het moment dat je dit leest. Ter controle:
--- `scripts/controleer-schema.mjs`.
+-- Ververst: 1 okt 2026 (item F2, "Herstelplan compleet") — volledig opnieuw
+-- ingelezen tegen de live database (`list_tables` verbose, `pg_policies`,
+-- `pg_get_functiondef`, `pg_indexes`, `pg_constraint`, `pg_views`,
+-- `information_schema.triggers`, `pg_event_trigger`, `list_extensions`).
+-- Ter controle: `scripts/controleer-schema.mjs`.
 --
 -- BELANGRIJK: dit is GEEN uitvoerbare migratie en geen letterlijke `pg_dump`
 -- (geen Supabase CLI/db-wachtwoord lokaal beschikbaar). Het is een leesbare
 -- momentopname van de daadwerkelijke databasestructuur, ter vergelijking door
--- `scripts/controleer-schema.mjs` (nog te bouwen, fase 0/11) — zodat een
--- "vergeten migratie" zoals bij de 16-sep-batch niet meer onopgemerkt blijft.
---
--- Aanleiding: de bestanden in `supabase/migrations/20260916_*.sql` staan NIET
--- in de getrackte migratiehistorie (`list_migrations`), maar de kolommen en
--- tabellen die ze beschrijven bestaan wél op de database — ze zijn ooit
--- rechtstreeks uitgevoerd (waarschijnlijk via de SQL Editor of een eerdere
--- `execute_sql`-aanroep) zonder als migratie te worden vastgelegd. Vanaf nu
--- gaat elke schemawijziging via `apply_migration` (wél getrackt).
+-- `scripts/controleer-schema.mjs` — zodat een "vergeten migratie" zoals bij de
+-- 16-sep-batch niet meer onopgemerkt blijft. Elke schemawijziging gaat via
+-- `apply_migration` (wél getrackt in `list_migrations`).
 -- ============================================================================
 
 -- ── Extensies (geïnstalleerd, `installed_version` niet null) ───────────────
--- pgcrypto        (schema: extensions)  — cryptografische functies
--- pg_stat_statements (schema: extensions) — query-statistieken
--- uuid-ossp       (schema: extensions)  — uuid_generate_v4()
--- pg_trgm         (schema: public)      — ⚠️ hoort niet in public (advisory)
--- postgis         (schema: public)      — ⚠️ hoort niet in public (advisory)
--- supabase_vault  (schema: vault)
+-- pgcrypto           (schema: extensions)  — cryptografische functies
+-- pg_stat_statements (schema: extensions)  — query-statistieken
+-- uuid-ossp          (schema: extensions)  — uuid_generate_v4()
+-- pg_trgm            (schema: public)      — ⚠️ hoort niet in public (advisory, laag)
+-- postgis            (schema: public)      — ⚠️ hoort niet in public (advisory, laag)
+-- supabase_vault     (schema: vault)
 
 -- ── Tabellen (schema public) ─────────────────────────────────────────────
 
--- kantoren (RLS: aan)
+-- kantoren (RLS: aan) — Stripe/trial-kolommen (plan, stripe_id, trial_ends_at,
+-- referral_code) zijn verwijderd (opruimmigratie, vóór 1 okt 2026); `slug`
+-- erbij voor de publieke huisstijl-lookup (kantoor_branding_publiek()).
 create table if not exists kantoren (
   id                uuid primary key default extensions.uuid_generate_v4(),
   name              text not null,
-  plan              text check (plan = any (array['starter','pro','kantoor','gratis'])),
   logo_url          text,
   huisstijl_json    jsonb,
-  stripe_id         text,
-  trial_ends_at     timestamptz,
   created_at        timestamptz not null default now(),
-  referral_code     varchar unique,
   admin_notified_at timestamptz,
-  instellingen_json jsonb
-  -- ⚠️ plan/stripe_id/trial_ends_at/referral_code zijn dood (Stripe/trial-model
-  -- verwijderd 15 sep 2026) — verwijderen via de goedgekeurde opruimmigratie
-  -- 20260916_opruimen_ongebruikt.sql (nog niet uitgevoerd, vereist akkoord Quinn).
+  instellingen_json jsonb,
+  slug              text unique,
+  constraint kantoren_slug_formaat check (slug is null or slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
+  constraint kantoren_slug_lengte check (slug is null or (char_length(slug) >= 2 and char_length(slug) <= 60))
 );
--- Policies: "makelaar ziet eigen kantoor" (select, authenticated, id = my_kantoor_id()).
+-- Policy: "makelaar ziet eigen kantoor" (select, authenticated, id = my_kantoor_id()).
 -- Geen schrijf-policy: kantoren wordt alleen via de service-client gewijzigd
--- (platform-admin). "admin mag kantoor bijwerken" + is_kantoor_admin() zijn
--- weggehaald in 20260929230000_kantoor_admin_rest_weg.sql.
+-- (platform-admin, lib/admin.ts).
 
--- makelaars (RLS: aan)
+-- makelaars (RLS: aan) — role stuurt sinds "Eén rol per kantoor" (16 sep 2026)
+-- geen rechten meer (RLS is kantoorbreed); de kolom blijft staan.
 create table if not exists makelaars (
-  id                 uuid primary key references auth.users(id),
-  kantoor_id         uuid not null references kantoren(id),
-  name               text not null,
-  email              text not null,
-  role               text not null default 'makelaar' check (role = any (array['admin','makelaar'])),
-  created_at         timestamptz not null default now(),
-  first_generated_at timestamptz
+  id         uuid primary key references auth.users(id),
+  kantoor_id uuid not null references kantoren(id),
+  name       text not null,
+  email      text not null,
+  role       text not null default 'makelaar' check (role = any (array['admin','makelaar'])),
+  created_at timestamptz not null default now()
 );
--- Policies: "makelaar ziet kantoorgenoten" (select, authenticated, kantoor_id = my_kantoor_id()),
---           "makelaar ziet zichzelf" (select, public, id = auth.uid())
+-- Policy: "makelaar ziet zichzelf en kantoorgenoten" (select, authenticated,
+--   id = (select auth.uid()) OR kantoor_id = (select my_kantoor_id())).
+-- Geen insert/update/delete-policy: accounts gaan alleen via /admin
+-- (createKantoor/addMakelaarAccount, service-role).
 
--- objecten (RLS: aan) — woningdossier, fasemodel-kolommen aanwezig
+-- objecten (RLS: aan) — woningdossier, fasemodel. chat_publiek/chat_foto_url
+-- en pitch_uitslag zijn vervallen (object-chatbot en pitch-concept weg vóór
+-- 1 okt 2026); verrijking_json erbij (buurtdata-verrijking, lib/verrijking*).
 create table if not exists objecten (
   id              uuid primary key default extensions.uuid_generate_v4(),
   kantoor_id      uuid not null references kantoren(id),
@@ -79,48 +73,31 @@ create table if not exists objecten (
   status          text not null default 'draft' check (status = any (array['draft','published','onder_bod','verkocht'])),
   created_at      timestamptz not null default now(),
   notitie         text,
-  chat_publiek    boolean not null default true,   -- dood: object-chatbot verwijderd 15 sep
-  chat_foto_url   text,                             -- dood
   lat             double precision,
   lng             double precision,
   fase            text not null default 'verkoopadvies' check (fase = any (array['verkoopadvies','in_verkoop','verkocht'])),
-  -- pitch_uitslag VERVALLEN (migratie 20260917_transacties_pijplijn.sql, item
-  -- 2.1) — pitch-concept al uit de code sinds 1.9c (17 sep 2026), kolom nu ook
-  -- uit het schema. fase-waarde 'acquisitie' hernoemd naar 'verkoopadvies' in
-  -- dezelfde migratie (besluit Quinn 17 sep 2026); bestaande rijen bijgewerkt.
   outputs_json_en jsonb,
   waardering_json jsonb,
   usps_structuur  jsonb,
-  -- item 3.1 (migratie 20260917_object_content_status.sql): dossier
-  -- aanmaken is losgekoppeld van content genereren. outputs_json blijft
-  -- NOT NULL — een net aangemaakt dossier krijgt een lege, geldige
-  -- ContentOutput-structuur (lib/schemas.ts LEEG_CONTENT_OUTPUT) in plaats
-  -- van null, zie de migratie voor de afweging.
+  -- item 3.1: dossier aanmaken is losgekoppeld van content genereren. Lock met
+  -- verlooptijd (6 min, lib/contentGeneratie.ts CONTENT_LOCK_VERLOOP_MS) tegen
+  -- dubbele Claude-generaties.
   content_status         text not null default 'geen' check (content_status = any (array['geen','bezig','klaar','fout'])),
   content_gegenereerd_op timestamptz,
-  content_bezig_sinds    timestamptz, -- lock-claim-tijdstip, verlopen na 6 min (lib/contentGeneratie.ts)
-  -- item 3.4 (migratie 20260917_object_fase_sinds.sql): tijdstip van de
-  -- laatste faseovergang, voedt "X dagen in <fase>" in DossierHeader.tsx.
-  -- Bestaande rijen kregen created_at; setObjectFase zet hem opnieuw bij
-  -- een echte overgang.
-  fase_sinds             timestamptz not null default now()
+  content_bezig_sinds    timestamptz,
+  -- item 3.4: tijdstip van de laatste faseovergang, voedt "X dagen in <fase>"
+  -- in DossierHeader.tsx. setObjectFase zet hem opnieuw bij een echte overgang.
+  fase_sinds             timestamptz not null default now(),
+  verrijking_json jsonb
 );
--- Policies: "makelaar ziet kantoor-objecten" (select, authenticated, kantoor_id = my_kantoor_id()),
---           "makelaar mag object aanmaken" (insert, public, makelaar_id = auth.uid()),
---           "makelaar mag eigen object wijzigen" (update, public, makelaar_id = auth.uid()),
---           "makelaar mag eigen object verwijderen" (delete, public, makelaar_id = auth.uid()),
---           "admin mag kantoor-objecten wijzigen" (update, authenticated, kantoor_id = my_kantoor_id() AND is_kantoor_admin()),
---           "admin mag kantoor-objecten verwijderen" (delete, authenticated, kantoor_id = my_kantoor_id() AND is_kantoor_admin())
--- ⚠️ Achterhaald: sinds 20260928100000_rls_kantoorbreed_en_initplan.sql zijn
---    select/insert/update/delete kantoorbreed ((select my_kantoor_id())), zonder
---    eigenaar- of admin-voorwaarde.
---    Bij "één rol per kantoor" zou elke collega elk dossier moeten kunnen
---    bewerken — check of app-mutaties via service-role lopen (dan is dit geen
---    probleem) of via de sessie-gebonden client (dan faalt een collega-edit
---    stil, 0 rijen bijgewerkt, geen foutmelding).
+-- Policies (kantoorbreed sinds 20260928100000_rls_kantoorbreed_en_initplan.sql,
+-- "Eén rol per kantoor" — geen eigenaar- of admin-voorwaarde meer):
+--   "makelaar ziet kantoor-objecten"        (select, authenticated, kantoor_id = (select my_kantoor_id()))
+--   "makelaar mag object aanmaken"          (insert, authenticated, makelaar_id = (select auth.uid()))
+--   "makelaar wijzigt kantoor-objecten"     (update, authenticated, kantoor_id = (select my_kantoor_id()) — qual én with check)
+--   "makelaar verwijdert kantoor-objecten"  (delete, authenticated, kantoor_id = (select my_kantoor_id()))
 
--- transacties (RLS: aan — ZIE 20260917213323-migratie voor de RLS-fix, en
--- 20260917_transacties_pijplijn.sql (item 2.1) voor de pijplijn-kolommen hieronder)
+-- transacties (RLS: aan) — i4housing's eigen Brainbay-/Realworks-data.
 create table if not exists transacties (
   id                uuid primary key default gen_random_uuid(),
   kantoor_id        uuid not null references kantoren(id),
@@ -147,13 +124,13 @@ create table if not exists transacties (
   eigen_verkoop     boolean not null default true,
   verkopend_kantoor text,
   created_at        timestamptz not null default now(),
-  -- ── vanaf hier: item 2.1, migratie 20260917_transacties_pijplijn.sql ──
+  -- ── item 2.1, migratie 20260917_transacties_pijplijn.sql ──
   bron                   text check (bron = any (array['brainbay','realworks','handmatig','fixture'])),
   import_id              uuid references imports(id) on delete set null,
   adres_sleutel          text not null,  -- postcode|huisnummer|toevoeging, terugval straat|huisnummer|plaats
   huisnummer             integer,
   toevoeging             text,
-  woningtype_groep       text,  -- appartement | rijwoning | halfvrijstaand | vrijstaand (§ 3.3), geen check (applicatielaag)
+  woningtype_groep       text,  -- appartement | rijwoning | halfvrijstaand | vrijstaand, geen check (applicatielaag)
   woningtype_sub         text,  -- taxonomie docs/ontwerp/README.md § 5, geen check (applicatielaag)
   geocode_status         text check (geocode_status = any (array['exact','benaderd','mislukt'])),
   uitgesloten_reden      text,
@@ -161,29 +138,22 @@ create table if not exists transacties (
   verkopend_kantoor_norm text,
   prijs_m2               numeric generated always as (verkoopprijs::numeric / nullif(woonoppervlak_m2, 0)) stored
 );
--- Policy (na fix 17 sep 2026, migratie rls_kantoor_isolatie_transacties):
---   "makelaar leest eigen kantoor-transacties" (select, authenticated,
---    kantoor_id = (select kantoor_id from makelaars where id = auth.uid()))
--- Vóór de fix: "Ingelogde makelaars lezen de transactiedataset" (elk
--- ingelogd account zag ALLE kantoren — bewust ontworpen als "gedeelde
--- referentiepool", ingetrokken 17 sep 2026, zie besluitenlogboek).
---
--- Indexen (na item 2.1): transacties_geo_idx (gist geo),
--- transacties_eigen_verkoop_idx (kantoor_id, eigen_verkoop),
--- transacties_kantoor_verkoopdatum_idx (kantoor_id, verkoopdatum),
--- transacties_kantoor_plaats_idx (kantoor_id, plaats),
--- transacties_kantoor_woningtype_groep_idx (kantoor_id, woningtype_groep),
--- transacties_natuurlijke_sleutel_idx UNIQUE (kantoor_id, adres_sleutel,
--- verkoopdatum) NULLS NOT DISTINCT. transacties_kantoor_id_idx (kantoor_id)
--- en transacties_verkoopdatum_idx (verkoopdatum) zijn gedropt — overbodig
--- naast de kantoor_id-geleide composiet-indexen (RLS voegt altijd
--- kantoor_id = … toe, dus verkoopdatum/kantoor_id worden nooit los bevraagd).
+-- Policy: "makelaar leest eigen kantoor-transacties" (select, authenticated,
+--   kantoor_id = (select my_kantoor_id())). Geen schrijf-policy: import/mutatie
+--   alleen via de service-client (platform-admin, scripts/import-transacties.mjs).
+-- Indexen: transacties_geo_idx (gist geo), transacties_eigen_verkoop_idx
+-- (kantoor_id, eigen_verkoop), transacties_kantoor_verkoopdatum_idx
+-- (kantoor_id, verkoopdatum), transacties_kantoor_plaats_idx (kantoor_id,
+-- plaats), transacties_kantoor_woningtype_groep_idx (kantoor_id,
+-- woningtype_groep), transacties_natuurlijke_sleutel_idx UNIQUE (kantoor_id,
+-- adres_sleutel, verkoopdatum) NULLS NOT DISTINCT, transacties_import_id_idx
+-- (import_id).
 
--- tabel imports (item 2.1, RLS: aan) — importlog per CSV-batch, alleen
--- service-role schrijft (geen insert/update/delete-policies)
+-- imports (RLS: aan) — importlog per CSV-batch; snapshot_json is het vangnet
+-- om een import terug te draaien. Alleen service-role schrijft.
 create table if not exists imports (
   id                      uuid primary key default gen_random_uuid(),
-  kantoor_id              uuid not null references kantoren(id) on delete cascade,
+  kantoor_id              uuid not null references kantoren(id),
   bron                    text not null check (bron = any (array['brainbay','realworks','handmatig','fixture'])),
   bestandsnaam            text,
   aantal_rijen            integer,
@@ -198,48 +168,134 @@ create table if not exists imports (
   teruggedraaid_op        timestamptz
 );
 -- Policy: "makelaar leest eigen kantoor-imports" (select, authenticated,
---   kantoor_id = (select kantoor_id from makelaars where id = auth.uid()))
+--   kantoor_id = (select my_kantoor_id())).
+-- Index: imports_kantoor_id_idx (kantoor_id).
 
--- view: transacties_met_coordinaten (na fix 17 sep 2026, kolommen uitgebreid item 2.1)
---   `with (security_invoker = true)` — was SECURITY DEFINER (eigenaar
---   'postgres'), wat RLS op transacties volledig omzeilde voor iedereen die
---   de view bevroeg, incl. de publieke anon-key. grant select alleen aan
---   authenticated (niet aan anon — de view is toch niet updatable). Bevat nu
---   ook de pijplijn-kolommen (bron, adres_sleutel, woningtype_groep/_sub,
---   geocode_status, uitgesloten_reden, verkopend_kantoor_norm, prijs_m2, …).
+-- object_documenten (RLS: aan) — documenten per dossier, voor Claude-uploads.
+create table if not exists object_documenten (
+  id                uuid primary key default extensions.uuid_generate_v4(),
+  object_id         uuid references objecten(id),
+  kantoor_id        uuid not null references kantoren(id),
+  bestandsnaam      text not null,
+  storage_pad       text not null,
+  mime_type         text not null,
+  grootte_bytes     bigint not null,
+  anthropic_file_id text,
+  created_at        timestamptz not null default now()
+);
+-- Policies: "makelaar ziet kantoor-documenten" (select), "makelaar mag
+-- document toevoegen" (insert), "makelaar mag kantoor-document verwijderen"
+-- (delete) — alle drie op kantoor_id = (select my_kantoor_id()). Geen
+-- update-policy (documenten zijn immutable: vervangen = verwijderen + opnieuw
+-- toevoegen).
+-- Indexen: obj_doc_kantoor_idx (kantoor_id), obj_doc_object_idx (object_id)
+-- WHERE object_id IS NOT NULL.
 
--- ── Tabellen die alleen via service-role gelezen/geschreven worden ────────
--- (RLS aan, geen policies voor anon/authenticated — bevestigd tegen de
--- codebase: alle queries op deze tabellen lopen via createServiceSupabaseClient)
--- object_fotos       — fotobibliotheek / virtual staging
--- stijl_bewerkingen  — "leren van bewerkingen"
--- object_documenten  — heeft wél policies (makelaar mag eigen kantoor-documenten
---                       zien/toevoegen/verwijderen via kantoor_id-subquery)
+-- object_fotos (RLS: aan, GEEN policies) — fotobibliotheek / virtual staging.
+-- Alleen de service-client (createServiceSupabaseClient) kan lezen/schrijven;
+-- een ingelogde makelaar krijgt via de sessie-gebonden client altijd 0 rijen.
+-- Bevestig dit bewust is vóórdat een UI-feature hier rechtstreeks op leunt.
+create table if not exists object_fotos (
+  id           uuid primary key default extensions.uuid_generate_v4(),
+  object_id    uuid not null references objecten(id),
+  kantoor_id   uuid not null references kantoren(id),
+  url          text not null,
+  storage_pad  text not null,
+  soort        text not null default 'verbeterd',
+  bestandsnaam text,
+  created_at   timestamptz not null default now()
+);
+-- Indexen: object_fotos_kantoor_id_idx (kantoor_id), object_fotos_object_idx (object_id).
 
--- ── Dode tabellen (kandidaat voor 20260916_opruimen_ongebruikt.sql) ───────
--- post_planning, chatbot_faq, chatbot_leads, referrals, wijken (wijken is
--- publiek leesbaar voor SEO-pagina's die niet meer bestaan — nagaan of wijken
--- nog gebruikt wordt vóór verwijderen)
+-- stijl_bewerkingen (RLS: aan, GEEN policies) — "leren van bewerkingen",
+-- zelfde situatie als object_fotos: uitsluitend via de service-client.
+create table if not exists stijl_bewerkingen (
+  id         uuid primary key default extensions.uuid_generate_v4(),
+  kantoor_id uuid not null references kantoren(id),
+  object_id  uuid references objecten(id),
+  sleutel    text not null,
+  origineel  text not null,
+  bewerkt    text not null,
+  verwerkt   boolean not null default false,
+  created_at timestamptz not null default now()
+);
+-- Indexen: stijl_bewerkingen_object_id_idx (object_id),
+-- stijl_bewerkingen_kantoor_onverwerkt_idx (kantoor_id) WHERE verwerkt = false.
 
--- ── Dode functies (SECURITY DEFINER, callable door anon — niet als trigger
---    gekoppeld aan auth.users, dus geen actief self-signup-risico via de DB) ─
--- handle_new_user()   — vroegere signup-trigger; GEEN trigger meer aanwezig
---                        op auth.users (geverifieerd 17 sep 2026 — pg_trigger
---                        bevat geen enkele trigger met deze naam)
--- my_kantoor_id()     — actief gebruikt in RLS-policies, blijft staan.
---                        (is_kantoor_admin() weg sinds 20260929230000.)
+-- gebruik_events (RLS: aan) — productanalytics ("dossier bekeken"), item 9.x.
+create table if not exists gebruik_events (
+  id          uuid primary key default gen_random_uuid(),
+  kantoor_id  uuid not null references kantoren(id),
+  makelaar_id uuid not null references makelaars(id),
+  object_id   uuid references objecten(id),
+  type        text not null check (type = 'dossier_bekeken'),
+  created_at  timestamptz not null default now()
+);
+-- Policies: "makelaar leest events van eigen kantoor" (select, kantoor_id =
+--   (select my_kantoor_id())), "makelaar logt alleen eigen events" (insert,
+--   kantoor_id = (select my_kantoor_id()) AND makelaar_id = (select auth.uid())).
+-- Indexen: gebruik_events_kantoor_makelaar_idx (kantoor_id, makelaar_id,
+-- created_at DESC), gebruik_events_makelaar_id_idx (makelaar_id),
+-- gebruik_events_object_id_idx (object_id).
 
--- ── Overige advisory-bevindingen (17 sep 2026, niet met dit account op te
---    lossen of bewust uitgesteld) ─────────────────────────────────────────
--- • spatial_ref_sys: RLS staat uit (PostGIS-systeemtabel, alleen SRID-
---   referentiedata). ALTER TABLE mislukt met "must be owner" — eigendom van
---   de postgis-extensie, niet aan te passen met dit projectaccount. Geen
---   persoonsgegevens, laag risico — actie: navragen bij Supabase-support of
---   negeren als bekende PostGIS-beperking.
--- • pg_trgm/postgis in schema `public` i.p.v. een eigen schema (WARN, laag).
+-- spatial_ref_sys (RLS: UIT) — PostGIS-systeemtabel (SRID-referentiedata,
+-- 8500+ vaste rijen). Geen bedrijfsdata, geen kantoor_id. Niet in de back-up
+-- (scripts/backup-data.mjs) — zie advisory hieronder waarom RLS hier niet aan
+-- te zetten is met dit projectaccount.
+
+-- ── View: transacties_met_coordinaten ──────────────────────────────────────
+-- Alle kolommen van transacties plus `lat`/`lng` (st_y/st_x op geo::geometry).
+-- `security_invoker = true` (bevestigd via pg_class.reloptions) — RLS van
+-- transacties geldt dus ook via deze view; gebruik hem altijd voor
+-- coördinaten, nooit de EWKB-hex uit transacties.geo rechtstreeks.
+
+-- ── Functies (schema public, eigen code — exclusief PostGIS-interne functies) ─
+-- my_kantoor_id()                      sql STABLE SECURITY DEFINER — kantoor_id
+--                                       van de ingelogde makelaar; basis van elke RLS-policy.
+-- kantoor_branding_publiek(p_slug)     sql STABLE SECURITY DEFINER — publieke
+--                                       huisstijl-lookup op kantoren.slug (geen auth nodig).
+-- transacties_gefilterd(p_filters)     sql STABLE — gedeeld filterfundament
+--                                       (RETURNS SETOF transacties) waar alle
+--                                       onderstaande rapportagefuncties op bouwen.
+-- transacties_zoeken / transacties_plaatsen_wijken — transactiezoeker (paginering, facetten).
+-- marktanalyse_reeks / marktanalyse_samenvatting / marktanalyse_verdeling_prijsklasse — marktanalyse.
+-- concurrentie_marktaandeel / concurrentie_ranglijst / concurrentie_segmenten /
+-- concurrentie_matrix / concurrentie_aandeel_jaar / concurrentie_profiel /
+-- concurrentie_wij_vs_markt — concurrentieanalyse.
+-- prijsindex_kwartaal                  sql STABLE — prijs/m² per kwartaal.
+-- referenties_in_straal(p_lat,p_lng,…) sql STABLE — vergelijkbare verkopen
+--                                       binnen een straal (lib/waardering.ts).
+-- rls_auto_enable()                    plpgsql SECURITY DEFINER, event trigger
+--                                       (ensure_rls, ddl_command_end) — zet RLS
+--                                       automatisch aan op elke nieuwe tabel in
+--                                       schema public. Verklaart waarom een
+--                                       nieuwe tabel altijd met RLS "aan" start;
+--                                       er moeten dus nog wél policies bij.
+-- ⚠️ Alle STABLE-functies hierboven hebben `SET search_path TO 'public'` — bij
+--    een PostGIS-aanroep (st_distance, st_dwithin in referenties_in_straal)
+--    werkt dat alleen omdat postgis zelf (nog) in schema public staat, zie de
+--    advisory hieronder. Verhuist postgis ooit naar een eigen schema, dan
+--    moeten deze functies mee worden bijgewerkt.
+-- Bevestigd verdwenen (geen enkele functiedefinitie meer op de database):
+-- handle_new_user(), is_kantoor_admin() — beide ongebruikt, geen trigger op
+-- auth.users aanwezig (information_schema.triggers, schema public, is leeg;
+-- er bestaan ook geen triggers op de business-tabellen).
+
+-- ── Bevestigd verdwenen tabellen (niet meer aanwezig, opruimmigratie vóór
+--    1 okt 2026) ────────────────────────────────────────────────────────────
+-- post_planning, chatbot_faq, chatbot_leads, referrals, wijken.
+
+-- ── Overige advisory-bevindingen (laatst herbevestigd 1 okt 2026) ──────────
+-- • spatial_ref_sys: RLS staat uit (PostGIS-systeemtabel). ALTER TABLE
+--   mislukt met "must be owner" — eigendom van de postgis-extensie, niet aan
+--   te passen met dit projectaccount. Geen persoonsgegevens, laag risico.
+-- • pg_trgm/postgis in schema `public` i.p.v. een eigen schema (WARN, laag,
+--   nog steeds zo op 1 okt 2026).
 -- • Leaked-password-protection staat uit (Auth-instelling, alleen via
---   dashboard/Management API te zetten — actie Quinn).
+--   dashboard/Management API te zetten — actie Quinn, niet via SQL te
+--   verifiëren).
 -- • Self-signup (auth.signUp) mogelijk nog aan op providerniveau (Auth-
 --   instelling, alleen via dashboard te controleren — actie Quinn). Risico
---   lager dan aangenomen: de DB-trigger die automatisch een kantoor aanmaakt
---   bestaat niet meer, dus signup zou geen makelaar/kantoor-koppeling geven.
+--   laag: er bestaat geen trigger op auth.users die automatisch een
+--   makelaar/kantoor-koppeling aanmaakt, dus een self-signup geeft geen
+--   toegang tot een kantoor.

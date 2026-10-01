@@ -38,7 +38,11 @@ import {
 import type { TransactieMetCoordinaten } from '@/lib/supabase'
 
 function formatEuro(n: number | null): string {
-  return n !== null ? `€ ${Math.round(n).toLocaleString('nl-NL')}` : '—'
+  // Niet-brekende spatie (`\u00A0`) tussen € en het getal — een gewone
+  // spatie laat de browser "€ 430.000" afbreken tot "€" / "430.000" zodra
+  // de kolom (Prijs, €/m²) te smal wordt, bv. op 1280 px. `nowrap` op de
+  // cel alléén is niet genoeg zolang er een brekend teken in de tekst zit.
+  return n !== null ? `€\u00A0${Math.round(n).toLocaleString('nl-NL')}` : '—'
 }
 
 function formatDatum(d: string | null): string {
@@ -103,25 +107,48 @@ type ServerData = {
 
 type Correctie = { waarde: number; motivatie: string; datum: string }
 
-/** Getal-tween (~400ms ease-out), zelfde patroon als components/ui/StatTile.tsx — geen exported hook daar, dus lokaal. */
+/**
+ * Getal-tween (~400ms ease-out), zelfde patroon als components/ui/StatTile.tsx
+ * — geen exported hook daar, dus lokaal.
+ *
+ * De twee synchrone gevallen (nieuwe waarde is `null`, of dit is de eerste
+ * waarde / `prefers-reduced-motion`) zetten `weergegeven` tijdens render
+ * (React's "aanpassen tijdens render"-patroon, react.dev/learn/you-might-not-need-an-effect
+ * § Adjusting state based on a prop change) in plaats van in een
+ * `useEffect` — dat voorkomt zowel een extra commit als de
+ * `react-hooks/set-state-in-effect`-lint, zonder 'm via
+ * `requestAnimationFrame` te moeten omzeilen (stond hier eerder zo; F9,
+ * item 12.8). De échte animatie (de `tick`-lus) blijft in een effect: dat is
+ * een geoorloofde subscribe-op-een-externe-klok, geen synchrone setState.
+ */
 function useTweenGetal(waarde: number | null, duurMs = 400): number | null {
   const [weergegeven, setWeergegeven] = useState<number | null>(waarde)
+  // Spiegelt `waarde` (niet de animatievoortgang) — alléén om tijdens render
+  // te kunnen zien of er iets veranderd is. `vorige` (ref, hieronder) is wat
+  // de animatie als basis gebruikt; die mag niet tijdens render gelezen of
+  // geschreven worden (react-hooks/refs), dus "is dit de eerste waarde?"
+  // wordt hier afgeleid uit `vorigeWaarde === null` — null-heid loopt bij
+  // deze twee altijd gelijk (ze worden alleen samen op null gezet).
+  const [vorigeWaarde, setVorigeWaarde] = useState<number | null>(waarde)
   const vorige = useRef<number | null>(waarde)
-  useEffect(() => {
+
+  if (waarde !== vorigeWaarde) {
     const verminderd = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
-    // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon), maar
-    // telt niet als een synchrone setState in de effect-body.
-    if (waarde === null) {
-      const frame = requestAnimationFrame(() => { setWeergegeven(null); vorige.current = null })
-      return () => cancelAnimationFrame(frame)
+    if (waarde === null || verminderd || vorigeWaarde === null) {
+      setWeergegeven(waarde)
     }
-    if (verminderd || vorige.current === null) {
-      const frame = requestAnimationFrame(() => { setWeergegeven(waarde); vorige.current = waarde })
-      return () => cancelAnimationFrame(frame)
-    }
+    setVorigeWaarde(waarde)
+  }
+
+  // De ref (`vorige`) alleen in het effect lezen/schrijven — nooit tijdens
+  // render. Na een synchrone render-time set hierboven haalt dit effect de
+  // ref alsnog gelijk (geen animatie meer nodig, dus geen tick-lus).
+  useEffect(() => {
+    if (waarde === null) { vorige.current = null; return }
+    const verminderd = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (verminderd || vorige.current === null) { vorige.current = waarde; return }
+    if (vorige.current === waarde) return
     const van = vorige.current
-    if (van === waarde) return
     let frame: number
     const start = performance.now()
     const tick = (nu: number) => {
@@ -203,6 +230,10 @@ export function WaardebepalingPaneel({
   const [drawerZoek, setDrawerZoek] = useState('')
   const [drawerResultaten, setDrawerResultaten] = useState<Kandidaat[]>([])
   const [drawerBezig, setDrawerBezig] = useState(false)
+  // Alleen om tijdens render te kunnen zien of drawerOpen/drawerZoek sinds de
+  // vorige render veranderd zijn (zie de render-time setDrawerBezig(true)
+  // hieronder, F9 item 12.8) — geen ander doel.
+  const [vorigeDrawerSleutel, setVorigeDrawerSleutel] = useState({ open: false, zoek: '' })
 
   const [correctieModus, setCorrectieModus] = useState(false)
   const [correctieWaarde, setCorrectieWaarde] = useState('')
@@ -248,20 +279,29 @@ export function WaardebepalingPaneel({
 
   // (Escape-afhandeling zat hier; `Sheet` (Radix Dialog) doet dat sinds item 6.0 zelf.)
 
+  // Render-time state-aanpassing (zie useTweenGetal hierboven voor dezelfde
+  // reden): zodra drawerOpen/drawerZoek sinds de vorige render veranderd is,
+  // meteen `drawerBezig` aanzetten tijdens render in plaats van in het
+  // effect hieronder — dat voorkomt de `react-hooks/set-state-in-effect`-lint
+  // zonder via requestAnimationFrame te moeten omzeilen (stond hier eerder
+  // zo; F9, item 12.8). Alleen aanzetten als de drawer ook écht open is;
+  // uitzetten blijft in het effect (legitiem: dat gebeurt async, na de
+  // debounce-timer, een geoorloofde setState in een timer-callback).
+  if (drawerOpen !== vorigeDrawerSleutel.open || drawerZoek !== vorigeDrawerSleutel.zoek) {
+    setVorigeDrawerSleutel({ open: drawerOpen, zoek: drawerZoek })
+    if (drawerOpen) setDrawerBezig(true)
+  }
+
   useEffect(() => {
     if (!drawerOpen) return
     let actief = true
-    // Via requestAnimationFrame i.p.v. rechtstreeks: dat draait vóór de
-    // eerstvolgende paint (onzichtbaar hetzelfde moment als synchroon), maar
-    // telt niet als een synchrone setState in de effect-body.
-    const bezigFrame = requestAnimationFrame(() => { if (actief) setDrawerBezig(true) })
     const timer = window.setTimeout(async () => {
       const res = await zoekWaarderingReferenties(objectId, drawerZoek)
       if (!actief) return
       if (res.ok) setDrawerResultaten(res.kandidaten)
       setDrawerBezig(false)
     }, 250)
-    return () => { actief = false; cancelAnimationFrame(bezigFrame); window.clearTimeout(timer) }
+    return () => { actief = false; window.clearTimeout(timer) }
   }, [drawerOpen, drawerZoek, objectId])
 
   const toegevoegdActief = useMemo(
@@ -645,15 +685,15 @@ export function WaardebepalingPaneel({
                             <span style={{ fontWeight: 700, color: colors.text, textDecoration: uitgesloten ? 'line-through' : 'none' }}>{r.adres}</span>
                             {r.handmatig && <span style={{ display: 'inline-block', marginLeft: 7, fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: radius.pill, background: 'var(--merk-accent-zacht)', color: 'var(--merk-accent)' }}>handmatig</span>}
                           </td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{r.afstand_m != null ? `${r.afstand_m} m` : '—'}</td>
-                          <td style={{ padding: '10px 8px 10px 0', color: colors.body }}>{formatDatum(r.verkoopdatum)}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{formatEuro(r.prijs)}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{r.m2}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{formatEuro(r.prijs_m2)}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>×{r.index_factor}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>{r.afstand_m != null ? `${r.afstand_m} m` : '—'}</td>
+                          <td style={{ padding: '10px 8px 10px 0', color: colors.body, whiteSpace: 'nowrap' }}>{formatDatum(r.verkoopdatum)}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>{formatEuro(r.prijs)}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>{r.m2}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>{formatEuro(r.prijs_m2)}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>×{r.index_factor}</td>
                           <td style={{ padding: '10px 8px 10px 0' }}>{correctiesPil(r.correcties)}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{r.gewicht.toFixed(3)}</td>
-                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.text, fontWeight: 700 }}>{formatEuro(r.waarde_geimpliceerd)}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body, whiteSpace: 'nowrap' }}>{r.gewicht.toFixed(3)}</td>
+                          <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.text, fontWeight: 700, whiteSpace: 'nowrap' }}>{formatEuro(r.waarde_geimpliceerd)}</td>
                           <td style={{ padding: '10px 0' }}>
                             {uitgesloten ? (
                               <button type="button" onClick={() => onHerstellen(r)} style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk-tekst)', background: 'none', border: 'none', textDecoration: 'underline', cursor: 'pointer', whiteSpace: 'nowrap' }}>
