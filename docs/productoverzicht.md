@@ -25,7 +25,7 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
 | Woningdossier (fasemodel + intake) | ✅ | aanmaken in ~1 s, zonder AI |
 | Waardebepaling + pdf + presentatiemodus | 🟡 | werkt op het demo-kantoor; i4 wacht op de import |
 | Buurt & data (CBS, voorzieningen, WOZ) | ✅ | WOZ vult de makelaar zelf in |
-| Contentsuite NL + EN | 🟡 | echte duur NL + EN nog niet gemeten; staging nooit betaald getest |
+| Contentsuite NL + EN | ✅ | NL + EN ± 102 s op Vercel (gemeten 1 okt); virtual staging wacht op Gemini-billing |
 | Verkoopadvies | ⏸ | datalaag klaar, document wacht op Quinns voorbeeld |
 | Woningen-overzicht (tabel + kaart) | ✅ | |
 | Marktanalyse + kwartaalbericht | 🟡 | lege staat bij i4 tot de import |
@@ -140,7 +140,17 @@ fase, sinds wanneer en de kernbedragen.
 
 - **Genereren op knopdruk of automatisch** bij de overgang naar In verkoop;
   loopt op de achtergrond met een lock per dossier, het scherm toont voortgang.
-  NL en EN tegelijk; Engels is best-effort.
+  NL en EN tegelijk; Engels is best-effort (mislukt het, dan staat de reden in
+  de log, `generate:en`). Duur op Vercel ± 102 s (NL ± 82 s, EN ± 63 s,
+  gemeten 1 okt; `[contentduur]`-regel in de log, opnieuw meten met
+  `scripts/meet-contentgeneratie.mjs`). Model: Claude Sonnet 4.6, gekozen in
+  een blinde vergelijking met Sonnet 5 en Haiku 4.5 (`docs/evaluatie/`).
+- **Feiten uit de intake:** de prompt krijgt de hele intake mee (slaapkamers,
+  woonlagen, tuin, balkon, keuken- en badkamerjaar, isolatie, zonnepanelen,
+  VvE, erfpacht …; `lib/contentKenmerken.ts`) met de regel "feiten alleen
+  hieruit". Technische staat en duurzaamheid alleen uit de invoer, nooit
+  uitspraken over gebreken of garanties, liever korter dan verzonnen. De
+  aanspreekvorm volgt de schrijftoon van het kantoor (informeel = je/jouw).
 - **Kernteksten:** Funda-tekst (volgt het i4-sjabloon: 4SALE! · WOONCOMFORT ·
   BUITENLEVEN · LOCATIE · GOED OM TE WETEN, met gerichte herkansing bij een
   afwijking), brochuretekst, Instagram, LinkedIn, WhatsApp-sneak-preview,
@@ -151,9 +161,12 @@ fase, sinds wanneer en de kernbedragen.
   bij opnieuw genereren.
 - **Stijl leren:** handmatige bewerkingen worden verzameld; het kantoor keurt
   de daaruit gedestilleerde schrijfregels goed in het dossier.
-- **Media:** fotobibliotheek en **virtual staging** (Gemini) met een vast
-  label "Virtueel ingericht" op het resultaat en de regel "publiceer dit als
-  impressie".
+- **Media:** fotobibliotheek en **virtual staging** (`gemini-3.1-flash-image`)
+  met een vast label "Virtueel ingericht" op het resultaat en de regel
+  "publiceer dit als impressie". ⚠️ Werkt pas als Gemini-billing aanstaat (op de
+  gratis laag is het quotum voor beeldmodellen 0). Een geweigerde aanvraag
+  krijgt een eigen melding ("opnieuw proberen helpt niet"), alleen een echte
+  limiet heet "even druk" (`lib/geminiFout.ts`).
 - **Documenten:** documentenassistent — pdf/Word uploaden, vragen stellen,
   content opnieuw laten genereren met het document als bron.
 - **Export:** brochure-pdf in kantoorstijl (cover, foto's, kenmerkentabel,
@@ -244,7 +257,7 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 
 ## 12. Kwaliteit en tooling
 
-- **Unit-tests** (Vitest): 1019 tests in 81 bestanden, met guard-tests die de
+- **Unit-tests** (Vitest): 1033 tests in 83 bestanden, met guard-tests die de
   architectuurregels afdwingen (transacties via één module, modelstrings op één
   plek, MapLibre-worker zelf gehost). De docx-extractie draait op een
   synthetische fixture (`lib/__fixtures__/voorbeeld.docx`).
@@ -259,7 +272,11 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 - **`npm run demo:repetitie`**: loopt de zes demoscènes automatisch af.
 - **Huisstijl-hook**: waarschuwt bij elke bewerking in de ingelogde omgeving.
 - **Meetscripts**: Lighthouse (ingelogd, mediaan), paginasnelheid, RPC-timings
-  — resultaten in `docs/metingen/`. Mobiel na de performanceronde: dashboard 91,
+  — resultaten in `docs/metingen/` — en de duur van een echte contentgeneratie
+  op productie (`meet-contentgeneratie.mjs`, alleen demo-kantoor, kost €0,12).
+- **Blinde modelvergelijking** (`scripts/evalueer-content.mjs`,
+  `docs/evaluatie/`): alle modellen uit `EVALUATIE_MODELLEN` tegelijk, met de
+  huisstijl van i4, sleutel met duur en tokens apart van de teksten. Mobiel na de performanceronde: dashboard 91,
   concurrentie 87, woningen 92, marktanalyse 80, dossier 76.
 - Scripts en hun gebruik: `scripts/README.md`.
 

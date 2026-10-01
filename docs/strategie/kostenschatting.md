@@ -41,7 +41,7 @@ knopdruk:
 | `CONTENT_KANDIDAAT` | `claude-sonnet-5` | Nog **niet productief** — alleen de blinde evaluatieset (item 8.1), wacht op Quinns oordeel |
 | `EXTRACTIE` / `HERSCHRIJF` | `claude-haiku-4-5` | Letterlijke extractie (huisstijl-PDF, brochure-seed); `HERSCHRIJF` = per-veld herschrijven |
 | `SAMENVATTING` | `claude-sonnet-4-6` | Documentassistent-chat, USP-extractie, stijlprofiel/geleerde-regels destilleren |
-| `GEMINI_STAGING` | `gemini-2.5-flash-image` | Virtual staging |
+| `GEMINI_STAGING` | `gemini-3.1-flash-image` | Virtual staging (sinds 1 okt; vereist Gemini-billing) |
 
 **Prompt caching** (`lib/claude.ts`, item 8.1): de kern-call (en de
 sjabloon-herkansing) cachen het huisstijlblok + taalspecifieke basisblok via
@@ -61,7 +61,7 @@ voordeel.
 | Claude Haiku 4.5 (`claude-haiku-4-5`) | $1,00 / 1M input · $5,00 / 1M output | idem |
 | Claude Sonnet 5 (`claude-sonnet-5`, kandidaat, nog niet productief) | $2,00 / 1M input · $10,00 / 1M output | idem |
 | Prompt cache write / read | ~1,25× / ~0,10× van het input-tarief | idem (Anthropic-standaard, ephemeral 5 min TTL) |
-| Gemini 2.5 Flash Image (`gemini-2.5-flash-image`, betaalde laag, GA) | $30,00 / 1M output-tokens → **$0,039 per gegenereerde afbeelding** (1.290 tokens/afbeelding); input $0,30/1M tokens | Google AI-pricing, via websearch 1 okt 2026 (ai.google.dev/gemini-api/docs/pricing) |
+| Gemini 3.1 Flash Image (`gemini-3.1-flash-image`, betaalde laag, GA) | $60 / 1M output-tokens → **$0,067 per afbeelding van 1K** (1.120 tokens); 0,5K $0,045, 2K $0,101 | Google AI-pricing, via websearch 1 okt 2026 (ai.google.dev/gemini-api/docs/pricing). Vervangt `gemini-2.5-flash-image` ($0,039), dat nieuwe gebruikers weigert (403) |
 | Vercel Pro | $20 / maand per seat (~€18) | Websearch 1 okt 2026 |
 | Supabase Pro | $25 / maand per project, incl. $10 compute-credit (~€22) | Websearch 1 okt 2026 |
 | Resend | Free tot 3.000 e-mails/mo; Pro $20/mo vanaf 50.000 e-mails (~€18) | Websearch 1 okt 2026 |
@@ -126,10 +126,11 @@ Gemiddeld ≈ €0,008 per extra. **Aanname: gemiddeld 2 extra's per dossier** �
 
 ### Virtual staging (Gemini, betaald sinds de GA-release)
 
-€0,039 ≈ **€0,04 per foto** (plus een kleine invoerkost voor de kale
+$0,067 ≈ **€0,06 per foto** op 1K (plus een kleine invoerkost voor de kale
 kamerfoto, verwaarloosbaar). **Aanname: bij gebruik 10 foto's per pand**
-(ongewijzigd t.o.v. de vorige versie) → €0,37/pand als de feature wordt
-gebruikt.
+(ongewijzigd t.o.v. de vorige versie) → €0,59/pand als de feature wordt
+gebruikt. Tot 1 okt 2026 rekende dit document met `gemini-2.5-flash-image`
+(€0,04 per foto); dat model weigert nieuwe gebruikers.
 
 ### Documentassistent (1 PDF + n vragen)
 
@@ -151,11 +152,15 @@ de dossiers gebruikt dit 1× (5 vragen)** → €0,03/dossier gemiddeld.
 | Herschrijven | gemiddeld 2× | €0,02 |
 | Documentassistent | 30% van dossiers, 5 vragen | €0,03 |
 | **Subtotaal zonder staging** | | **≈ €0,20/dossier** |
-| Virtual staging (10 foto's) | *indien gebruikt* | +€0,37 |
-| **Subtotaal met staging** | | **≈ €0,57/dossier** |
+| Virtual staging (10 foto's) | *indien gebruikt* | +€0,59 |
+| **Subtotaal met staging** | | **≈ €0,79/dossier** |
 
+> **Gemeten op 1 okt 2026:** de kern-call met de huisstijl van i4 kostte op
+> Sonnet 4.6 gemiddeld $0,055 per taal (blinde ronde, tokentelling van de API),
+> dus ≈ €0,10 voor NL + EN — binnen de schatting van €0,12.
+>
 > **Vuistregel:** zonder staging ~€0,20/dossier; met staging (10 foto's)
-> ~€0,57/dossier. Dit is lager dan de vorige schatting (€0,36/€0,73) — vooral
+> ~€0,79/dossier. Dit is lager dan de vorige schatting (€0,36/€0,73) — vooral
 > omdat de kern-call sinds Outputset v2 maar 7 velden schrijft in plaats van
 > 17, ook al staat er nu standaard een NL+EN-verdubbeling en een uitgebreider
 > systeemprompt (huisstijl + sjabloon) tegenover.
@@ -199,12 +204,12 @@ werkelijkheid onbekend, zie § 6.
 
 | Scenario | Dossiers/mo | Staging (50%, 10 foto's) | Variabele kosten/mo | + Vaste infra | **Totaal/mo** |
 |---|---|---|---|---|---|
-| Klein | 5 | 2,5 panden gestaged | ≈ €1,90 | €41–50 | **≈ €43–52** |
-| Middel | 15 | 7,5 panden gestaged | ≈ €5,80 | €41–50 | **≈ €47–56** |
-| Groot | 30 | 15 panden gestaged | ≈ €11,60 | €41–50 | **≈ €53–62** |
+| Klein | 5 | 2,5 panden gestaged | ≈ €2,50 | €41–50 | **≈ €44–53** |
+| Middel | 15 | 7,5 panden gestaged | ≈ €7,40 | €41–50 | **≈ €48–57** |
+| Groot | 30 | 15 panden gestaged | ≈ €14,90 | €41–50 | **≈ €56–65** |
 
-Rekenwijze: gestaged dossier ≈ €0,57, niet-gestaged ≈ €0,20 (§ 5); bv. Klein
-= 2,5 × €0,57 + 2,5 × €0,20 ≈ €1,90.
+Rekenwijze: gestaged dossier ≈ €0,79, niet-gestaged ≈ €0,20 (§ 5); bv. Klein
+= 2,5 × €0,79 + 2,5 × €0,20 ≈ €2,50.
 
 **Conclusie:** op dit volume is de variabele API-kost nog steeds
 verwaarloosbaar ten opzichte van de vaste infra — dat was ook de conclusie van
@@ -213,11 +218,16 @@ zijn de eigenlijke bodemprijs, niet de AI-calls.
 
 ## 9. Wat de kandidaat-modelwissel (D3, Sonnet 5) zou schelen
 
-`CONTENT_KANDIDAAT = claude-sonnet-5` ($2/$10 per 1M) is ~33% goedkoper dan
-`CONTENT = claude-sonnet-4-6` ($3/$15) op zowel input als output, en is **nog
-niet productief** — alleen gebruikt in de blinde evaluatieset
-(`scripts/evalueer-content.mjs`, item 8.1), in afwachting van Quinns oordeel
-over de kwaliteit.
+**Besluit 1 okt 2026: geen wissel** (`docs/evaluatie/rondes/2026-10-01/oordeel.md`).
+Sonnet 5 ($2/$10 per 1M) is per token ~33% goedkoper dan Sonnet 4.6 ($3/$15),
+maar schrijft ± 30% meer tokens en gaf in de blinde ronde bij 3 van de 5
+woningen eerst ongeldige JSON (tweede poging nodig). Gemeten per tekst:
+Sonnet 5 $0,077, Sonnet 4.6 $0,055, Haiku 4.5 $0,016 (Haiku valt af op
+kwaliteit). Zonder JSON-herkansing zou Sonnet 5 ± $0,047 kosten — opnieuw
+bekijken met structured outputs, na de demo.
+
+De oorspronkelijke berekening hieronder blijft staan als bovengrens van wat een
+wissel kan schelen.
 
 Als de wissel wordt gewonnen en doorgevoerd, scheelt dat ~33% op alles wat via
 `CONTENT` loopt: kern, extra's, prijswijziging, sjabloon-herkansing en
@@ -225,7 +235,7 @@ kwartaalbericht — **niet** op de documentassistent/USP-extractie/herschrijven
 (die lopen via `SAMENVATTING`/`HERSCHRIJF`, een apart besluit). Op het
 "Groot"-scenario (30 dossiers/mo) is het niet-staging-deel ≈ 30 × €0,20 =
 €6,00, waarvan hooguit een derde wegvalt: de variabele kosten gaan van
-≈ €11,60 naar ≈ €9,60 per maand (staging loopt via Gemini en verandert niet).
+≈ €14,90 naar ≈ €12,90 per maand (staging loopt via Gemini en verandert niet).
 Op dit volume een paar euro; de modelkeuze hoort op kwaliteit te vallen, niet
 op prijs.
 
@@ -234,9 +244,9 @@ op prijs.
 Dit document gaat uitsluitend over kostprijs — een prijsvoorstel aan i4housing
 is aan Quinn. Als ondergrens per maand (kostprijs, geen marge):
 
-- **Klein (5 dossiers/mo): ≈ €43–52/mo**
-- **Middel (15 dossiers/mo): ≈ €47–56/mo**
-- **Groot (30 dossiers/mo): ≈ €53–62/mo**
+- **Klein (5 dossiers/mo): ≈ €44–53/mo**
+- **Middel (15 dossiers/mo): ≈ €48–57/mo**
+- **Groot (30 dossiers/mo): ≈ €56–65/mo**
 
 De bandbreedte komt alleen van wel/niet Plausible; het verschil tussen de
 scenario's komt van het dossiervolume, vooral van staging. Niet meegerekend:

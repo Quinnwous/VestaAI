@@ -101,5 +101,7 @@ tests zichzelf over (`test.skip`) in plaats van te falen — zie
   alleen met `E2E_GENERATE=1`: `content.spec.ts` via de API en
   `smoke.spec.ts` via de UI (dossier aanmaken → fasestepper naar In verkoop →
   `POST /api/generate`, bijgewerkt op 27 sep). Beide wachten maximaal 220 s op
-  het resultaat, onder de functielimiet van 300 s. De echte duur is nog nooit
-  gemeten (roadmap D2).
+  het resultaat, onder de functielimiet van 300 s. Echte duur op Vercel
+  (1 okt 2026): ± 102 s; voor een meting op productie zonder testdossier:
+  `scripts/meet-contentgeneratie.mjs`. Let op: `retries: 1` in
+  `playwright.config.ts` laat een mislukte betaalde test dubbel draaien.

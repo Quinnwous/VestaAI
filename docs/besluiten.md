@@ -12,6 +12,32 @@
 
 ---
 
+### 1 okt 2026 (betaalde testronde) — modelkeuze, echte duur, promptfixes
+
+Akkoord Quinn op de betaalde testruns (roadmap § 2 punt 5) plus het blinde
+oordeel (punt 11), "maar 1 keer, dus doe het goed". Quinn koos: eerst de blinde
+vergelijking, met Haiku erbij, 5 woningen; een rechtenvrije stockfoto voor
+staging; Gemini gewoon proberen. Het oordeel liet Quinn aan Claude ("is er één
+echt veel beter, kies die; anders de goedkoopste; kwaliteit voorop"). Kosten van
+de hele ronde ≈ $1,60 (≈ €1,40), waarvan $0,62 aan mislukte Sonnet 5-pogingen.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Blinde ronde: opzet | `scripts/evalueer-content.mjs` naar N modellen (A/B/C per woning geloot), standaard mét de huisstijl van i4 (4SALE!-sjabloon, 5 voorbeelden), duur/tokens/blokken per aanroep in de sleutel, `--alleen <model>` voor een herhaling onder dezelfde labels. De sjabloon-herkansing draaide altijd op `CONTENT` — nu op het geteste model, anders herschreef Sonnet 4.6 de tekst van een kandidaat | Opus |
+| Sonnet 5 viel eerst 5 × om | Sonnet 5 denkt standaard (adaptive) als `thinking` ontbreekt: denk-tokens vraten de 6.000 `max_tokens` op en blok 0 was een denkblok, terwijl de code blind `content[0]` las. Fix: `denkenUit(model)` (`lib/aiModellen.ts`) en `eersteTekst()` in `lib/claude.ts`; daarna de 5 Sonnet 5-varianten opnieuw ($0,35). Ook zonder denken gaf Sonnet 5 bij 3 van 5 woningen eerst ongeldige JSON | Opus |
+| **Modelkeuze: CONTENT blijft Sonnet 4.6** | Oordeel per woning in `docs/evaluatie/rondes/2026-10-01/oordeel.md` (niet blind — Claude kende de sleutel; daarom vooral toetsbare criteria). Haiku 4.5 valt af: taalfouten en verzonnen voorzieningen in elke tekst, één onzinzin. Sonnet 5 is iets beter (3× beste, 1× gelijk, 1× tweede), niet veel beter, en in de praktijk duurder ($0,077 tegen $0,055 per tekst) en trager (JSON-herkansing). Volgens Quinns regel → Sonnet 4.6. Sonnet 5 opnieuw na de demo, met structured outputs (backlog) | Opus (namens Quinn) |
+| Prompt: hele intake mee | De kern-call kreeg alleen adres, type, kamers, m², bouwjaar, label, prijs, usp's en doelgroep. Alle drie de modellen verzonnen daardoor verdiepingen en slaapkamers en misten een balkon. Nu `kenmerkRegels()` (`lib/contentKenmerken.ts`, NL + EN, ook een expliciet "nee") plus "feiten alleen uit de gegevens hierboven". Interne velden (courtage, prijsverwachting, WOZ) blijven eruit | Opus |
+| Prompt: geen gedwongen verzinsels | De systeemprompt eiste een harde 700-woordengrens en verplichte alinea's over technische staat en duurzaamheid "met vergelijking met de gemiddelde woning". Op productie werd dat "geen verborgen gebreken bekend" en "A+ is de hoogste klasse". Nu: liever korter dan verzonnen, technische staat en duurzaamheid alleen uit de invoer, nooit uitspraken over gebreken, garanties of keuringen, geen ranglijsten of landelijke gemiddelden | Opus |
+| Prompt: aanspreekvorm en balkon | De schrijftoon "informeel" zei niets over je/u; het model koos bij "vermogende gezinnen" de u-vorm. Nu staat de aanspreekvorm in het huisstijlblok. Het intakeveld `balkon_dakterras` werd letterlijk "het balkon of dakterras"; het label zegt nu dat het niet gespecificeerd is. Nog niet op productie gegenereerd (gebeurt vóór de demo, roadmap 12.5) | Opus |
+| D2: echte duur gemeten | Nieuw `scripts/meet-contentgeneratie.mjs` (alleen demo-kantoor, dry-run standaard). Op Vercel twee keer: 104,8 s en 102,0 s voor NL + EN (NL ± 82 s, EN ± 63-67 s, ± 18 s Overpass-time-outs vooraf). Ruim onder 240 s: niet splitsen, Vercel Pro niet nodig voor de duur. Gemeten op het demo-kantoor zonder sjabloon; bij i4 kan de herkansing ± 10-20 s toevoegen | Opus |
+| Scène 5-dossier | Intake van de (synthetische) demowoning aangevuld in de database (samengevoegd, niet vervangen; back-up van vandaag): 5 slaapkamers, 3 badkamers, 2 woonlagen, tuin 1.050 m² ZW, warmtepomp 2022 enz. Daarna NL + EN gegenereerd: alle feiten kloppen met de intake | Opus |
+| EN-kwartaalbericht | Op productie getest (demo-kantoor, werkgebied, 24 mnd): 200 in 13 s, 283 woorden, guardrail in één keer goed. Wel: NL-getalnotatie in Engelse tekst ("2.064 homes") en "procentpunt" onvertaald → nieuw roadmap-item D4 | Opus |
+| Staging (D1) | `gemini-2.5-flash-image` gaf 403 "project has been denied access" — Google sluit de 2.5-generatie voor nieuwe gebruikers (`gemini-2.5-flash`: 404 "no longer available to new users"). `GEMINI_STAGING` → `gemini-3.1-flash-image` ($0,067 per foto). Dat geeft op de gratis laag quotum 0 → D1 wacht op Gemini-billing (roadmap § 2 punt 5). Kosten tot nu toe €0 | Opus |
+| Staging-foutmelding | `/429\|quota\|rate/` matchte "gene**rate**Content" in elke Gemini-URL, dus elke fout heette "even druk, probeer het over een minuut". Nu `soortGeminiFout()` (`lib/geminiFout.ts`): limiet, geweigerd (503, "opnieuw proberen helpt niet") of overig | Opus |
+| EN-fout zichtbaar | Een mislukte EN-generatie werd stil `null`; nu `meldFout('generate:en')` plus een `[contentduur]`-regel per generatie | Opus |
+| Werkwijze: tussendoor live | Drie PR's (#60-62) midden in de ronde gemerged, tegen de afspraak "pas aan het eind pushen" in: de productiemeting moest op de nieuwe code draaien. Elke keer DoD groen en deploy READY | Opus |
+| Nieuwe roadmap-items | D4 (EN-notatie kwartaalbericht) en D5 (opgeslagen buurtdata bij het genereren: scheelt ± 18 s en de voorzieningen vallen niet weg); backlog: Sonnet 5 + structured outputs, de vier routes buiten `lib/claude.ts` naar het eerste tekstblok | Opus |
+
 ### 1 okt 2026 (12.1) — team-accounts i4 en teamfoto
 
 Akkoord Quinn op 12.1, met de opdracht zelf een teamfoto van internet te

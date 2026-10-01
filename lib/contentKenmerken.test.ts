@@ -24,7 +24,7 @@ describe('kenmerkRegels', () => {
     expect(r).toEqual(expect.arrayContaining([
       'Slaapkamers: 4', 'Badkamers: 1', 'Woonlagen: 2', 'Perceel: 260 m²', 'Keuken uit: 2018',
       'Isolatie: dak, isolatieglas', 'Zonnepanelen: ja', 'Recent verbouwd: Living uitgebouwd in 2017',
-      'Ligging: twee-onder-een-kap', 'Tuin: 180 m² op het zuiden', 'Balkon of dakterras: nee',
+      'Ligging: twee-onder-een-kap', 'Tuin: 180 m² op het zuiden', 'Buitenruimte op de verdieping (balkon of dakterras, niet gespecificeerd): nee',
       'Parkeren: eigen garage', 'Uitzicht: Vrij uitzicht over weiland', 'VvE-bijdrage: €145 per maand', 'Erfpacht: nee',
     ]))
   })
@@ -32,7 +32,7 @@ describe('kenmerkRegels', () => {
   it('vertaalt labels en waarden voor de Engelse generatie', () => {
     const r = kenmerkRegels(volledig, 'en')
     expect(r).toEqual(expect.arrayContaining([
-      'Bedrooms: 4', 'Floors (living levels): 2', 'Solar panels: yes', 'Balcony or roof terrace: no',
+      'Bedrooms: 4', 'Floors (living levels): 2', 'Solar panels: yes', 'Outdoor space upstairs (balcony or roof terrace, not specified): no',
       'Garden: 180 m², facing south', 'Position: semi-detached', 'HOA contribution: €145 per month',
     ]))
   })

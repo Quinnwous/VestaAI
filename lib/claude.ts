@@ -102,10 +102,12 @@ type PromptBlok = { type: 'text'; text: string; cache_control?: { type: 'ephemer
  * voorbeelden, slogan) verandert niet.
  */
 function buildHuisstijlBlok(huisstijl: HuisstijlConfig): string {
+  // Met aanspreekvorm (1 okt 2026): zonder die regel koos het model bij een
+  // informeel kantoor voor "vermogende gezinnen" zelf de u-vorm.
   const schrijftoonLabel = {
-    formeel: 'Formeel en professioneel',
-    informeel: 'Informeel en toegankelijk',
-    enthousiast: 'Enthousiast en uitnodigend',
+    formeel: 'Formeel en professioneel — spreek de lezer aan met "u"',
+    informeel: 'Informeel en toegankelijk — spreek de lezer aan met "je" en "jouw", nooit met "u" (in het Engels: "you")',
+    enthousiast: 'Enthousiast en uitnodigend — spreek de lezer aan met "je" en "jouw" (in het Engels: "you")',
   }[huisstijl.schrijftoon]
 
   let blok = `Huisstijl van het makelaarskantoor:\n- Schrijftoon: ${schrijftoonLabel}`

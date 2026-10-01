@@ -298,8 +298,20 @@ describe('generateContent — de hele intake gaat mee in de prompt (blinde ronde
     const tekst = (mockStream.mock.calls[0][0] as { messages: { content: string }[] }).messages[0].content
     expect(tekst).toContain('Slaapkamers: 2')
     expect(tekst).toContain('Woonlagen: 1')
-    expect(tekst).toContain('Balkon of dakterras: ja')
+    expect(tekst).toContain('(balkon of dakterras, niet gespecificeerd): ja')
     expect(tekst).toContain('verzin er geen bij')
+  })
+
+  it('geeft bij een informeel kantoor de je-vorm expliciet mee', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const informeel: HuisstijlConfig = { schrijftoon: 'informeel', slogan: '', primaire_kleur: '#0080C8', voorbeelden: [] }
+
+    const { generateContent } = await import('./claude')
+    await generateContent(validInput, informeel, mockClient)
+
+    const system = (mockStream.mock.calls[0][0] as GevangenSysteemAanroep).system.map(b => b.text).join('\n')
+    expect(system).toContain('spreek de lezer aan met "je"')
   })
 
   it('dwingt geen verzinsels meer af: geen harde 700-woordengrens, geen gebrekenclaims', async () => {
