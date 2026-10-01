@@ -14,7 +14,7 @@ importeren draaien via `npx tsx`, de rest via `node`.
 | `screenshots.mjs` | Screenshots van alle ingelogde routes op 390/1280/1920 px → `screenshots/` | via `dod:screens` |
 | `generale-repetitie.mjs` | Loopt de zes demoscènes af (`docs/i4housing/demoscript.md`) | `npm run demo:repetitie` |
 | `check-env.mjs` | Welke omgevingsvariabelen ontbreken (leest `.env.example`, toont nooit waarden) | `npm run env:check` |
-| `evalueer-content.mjs` | Blinde A/B-evaluatie van het contentmodel (`docs/evaluatie/`); `--write` kost API-geld | `npx tsx --env-file=.env.local scripts/evalueer-content.mjs` |
+| `evalueer-content.mjs` | Blinde evaluatie van de contentmodellen (`EVALUATIE_MODELLEN`, labels A/B/C, standaard met de huisstijl van i4; `docs/evaluatie/`); `--write` kost API-geld | `npx tsx --env-file=.env.local scripts/evalueer-content.mjs [--write] [--zonder-huisstijl]` |
 
 ## Data en database
 
@@ -43,6 +43,7 @@ importeren draaien via `npx tsx`, de rest via `node`.
 | `meet-lighthouse.mjs` | Lighthouse op ingelogde pagina's, mediaan van n runs; `--label` → `docs/metingen/` | `node --env-file=.env.local scripts/meet-lighthouse.mjs --label=<naam>` |
 | `meet-paginasnelheid.mjs` | Servertijd (TTFB) per pagina op productie → `docs/metingen/` | `node --env-file=.env.local scripts/meet-paginasnelheid.mjs --label=<naam>` |
 | `meet-performance.mjs` | Timings van de RPC's en queries op de (demo-)data | `npx tsx --env-file=.env.local scripts/meet-performance.mjs` |
+| `meet-contentgeneratie.mjs` | Echte duur van "Genereer content (NL + EN)" op productie (roadmap D2, demo-dag-check): wandklok + databasetijden, oordeel tegen 240/300 s. Alleen demo-kantoor; `--write` overschrijft de content van dat dossier en kost ≈ €0,12 | `node --env-file=.env.local scripts/meet-contentgeneratie.mjs --object <id> [--url <basis>] [--write]` |
 
 ## Overig
 

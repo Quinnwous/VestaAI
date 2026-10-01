@@ -10,6 +10,7 @@ import {
   type PrijswijzigingOutput,
 } from './schemas'
 import { CONTENT, SAMENVATTING } from './aiModellen'
+import { meldFout } from './fouten'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
 import { bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } from './contentExtra'
@@ -386,6 +387,9 @@ async function herschrijfFundaTekstMetSjabloon(
   origineleTekst: string,
   fouten: string[],
   client: Anthropic,
+  // Zelfde model als de kern-call: in de blinde evaluatie (modelOverride) mag
+  // de herkansing de tekst van een kandidaat niet door CONTENT laten herschrijven.
+  model: string = CONTENT,
 ): Promise<string> {
   const taal = input.taal ?? 'nl'
   const sjabloon = huisstijl.tekstsjabloon!
@@ -402,7 +406,7 @@ async function herschrijfFundaTekstMetSjabloon(
     : `Woning: ${kenmerken}\n\nHuidige funda_tekst:\n${origineleTekst}${correctie}\n\nGeef ALLEEN de gecorrigeerde funda_tekst terug als platte tekst — geen JSON, geen labels, geen aanhalingstekens.`
 
   const message = await client.messages.create({
-    model: CONTENT,
+    model,
     max_tokens: HERKANSING_MAX_TOKENS,
     system: systemBlokken,
     messages: [{ role: 'user', content: userText }],
@@ -518,7 +522,7 @@ export async function generateContent(
     if (!controle.ok) {
       if (Date.now() - start < SJABLOON_HERKANSING_BUDGET_MS) {
         try {
-          const herschreven = await herschrijfFundaTekstMetSjabloon(input, huisstijl, output.funda_tekst, controle.fouten, client)
+          const herschreven = await herschrijfFundaTekstMetSjabloon(input, huisstijl, output.funda_tekst, controle.fouten, client, modelOverride ?? CONTENT)
           if (herschreven) {
             output = { ...output, funda_tekst: herschreven }
             const herkeuring = valideerTekstsjabloon(herschreven, huisstijl.tekstsjabloon, input.taal ?? 'nl')
@@ -598,7 +602,9 @@ export async function genereerExtraContent(
  * `taal: 'nl'`, één met `taal: 'en'` — zodat het beproefde prompt-ontwerp per
  * taal intact blijft. De Engelse generatie is best-effort: mislukt hij, dan
  * krijgt de makelaar nog steeds zijn Nederlandse content (`en: null`) in
- * plaats van dat de hele aanvraag faalt.
+ * plaats van dat de hele aanvraag faalt — maar nooit stil: de fout gaat via
+ * `meldFout` naar de Vercel-logs. Eén `[contentduur]`-regel per generatie laat
+ * zien welke taal de wandkloktijd bepaalt (roadmap D2, functielimiet 300 s).
  */
 export async function generateContentBeideTalen(
   input: PropertyInput,
@@ -607,10 +613,20 @@ export async function generateContentBeideTalen(
   documentFileIds?: string[],
   client?: Anthropic,
 ): Promise<{ nl: ContentOutput; en: ContentOutput | null }> {
+  const start = Date.now()
+  let nlMs = 0
+  let enMs = 0
   const [nl, en] = await Promise.all([
-    generateContent({ ...input, taal: 'nl' }, huisstijl, client, verrijkingTekst, documentFileIds),
-    generateContent({ ...input, taal: 'en' }, huisstijl, client, verrijkingTekst, documentFileIds).catch(() => null),
+    generateContent({ ...input, taal: 'nl' }, huisstijl, client, verrijkingTekst, documentFileIds)
+      .finally(() => { nlMs = Date.now() - start }),
+    generateContent({ ...input, taal: 'en' }, huisstijl, client, verrijkingTekst, documentFileIds)
+      .catch(err => {
+        meldFout('generate:en', err)
+        return null
+      })
+      .finally(() => { enMs = Date.now() - start }),
   ])
+  console.info(`[contentduur] nl=${nlMs}ms en=${enMs}ms en_ok=${en !== null}`)
   return { nl, en }
 }
 
