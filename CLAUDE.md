@@ -103,8 +103,8 @@ Volledige beschrijving per onderdeel: `docs/productoverzicht.md`. Mappen: `app/`
   `components/PropertyForm.tsx` (zesstappenwizard). Tabs: Waardering · Buurt &
   data · Content en media (vanaf In verkoop). Aanmaken gaat zonder Claude
   (~1 s); content komt apart via `POST /api/generate` met een lock per dossier
-  (`lib/contentGeneratie.ts`, architectuur § 2). ⚠️ NL + EN duurt ~3 min tegen
-  een functielimiet van 300 s.
+  (`lib/contentGeneratie.ts`, architectuur § 2). NL + EN duurt ± 102 s op
+  Vercel (gemeten 1 okt, limiet 300 s; `scripts/meet-contentgeneratie.mjs`).
 - **Waardebepaling** (`lib/waardering.ts`, `components/WaardebepalingPaneel.tsx`):
   vergelijkbare verkopen op `transacties`, geen regressie; pdf
   (`/api/pdf/waardebepaling`) en presentatiemodus lezen de opgeslagen
@@ -258,6 +258,18 @@ exports).
   (zonder adres), en een stille terugval op "leeg" mag nooit. WOZ per woning vult
   de makelaar zelf in (`lib/woz.ts`); de backend van het WOZ-waardeloket is geen
   toegestane API — niet omheen bouwen.
+
+**AI en prompts** (1 okt)
+- **Een model verzint wat de prompt afdwingt:** een harde lengte-eis of een
+  verplichte alinea zonder gegevens leverde "geen verborgen gebreken bekend" op.
+  De contentprompt krijgt de hele intake (`lib/contentKenmerken.ts` — een nieuw
+  intakeveld hoort daar ook in) en de regel "feiten alleen hieruit".
+- **Sonnet 5 denkt standaard:** zonder `thinking`-parameter eten denk-tokens
+  `max_tokens` op en is blok 0 geen tekst. `denkenUit(model)` meegeven en het
+  eerste tekstblok lezen, nooit blind `content[0]`.
+- **Gemini:** de 2.5-generatie weigert nieuwe gebruikers; beeldmodellen werken
+  alleen met billing. Foutsoort uit `status` (`lib/geminiFout.ts`), nooit een
+  regex op de melding — de URL bevat "gene**rate**Content".
 
 **Pdf, beeld en tooling**
 - `@react-pdf/renderer`: de ingebouwde Helvetica is WinAnsi (`⚠` en emoji renderen

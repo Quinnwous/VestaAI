@@ -53,7 +53,7 @@ referenties in hun fase — gecontroleerd in de database):
 | Fase | Dossier | Waarom |
 |---|---|---|
 | Verkoopadvies | Kerkehoutlaan 12 — `/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e` | waardering met 25 referenties, geen content |
-| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 2 punt 5) |
+| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL + EN-content sinds 1 okt (volledige intake: 5 slaapkamers, tuin 1.050 m², warmtepomp …), 22 referenties. Vlak vóór de demo nog één keer genereren (roadmap 12.5) en dán de 4+ bewerkingen; nog geen foto's |
 | Verkocht | Rust en Vreugdlaan 5 — `/object/f1db5bd7-133f-4e1a-989c-7be97d505f10` | content klaar, 25 referenties |
 
 Geen van de demo-dossiers heeft foto's; voor de brochure-pdf en virtual staging
@@ -83,16 +83,19 @@ klikken.
 
 ### Checklist — dag ervoor
 
-1. **Vercel** naar **Pro** (roadmap § 2 punt 9, staat nog op Hobby) —
-   zonder Pro kapt een lange functie-aanroep (contentgeneratie) af.
+1. **Vercel** naar **Pro** (roadmap § 2 punt 9, staat nog op Hobby) — voor
+   commercieel gebruik; de contentgeneratie past ook op Hobby (± 102 s van de
+   300 s, gemeten 1 okt).
 2. **Supabase-project actief**: log kort in, draai één query — een gratis
    project pauzeert na 7 dagen inactiviteit.
 3. **Demo-freeze**: branch `demo` aanmaken vanaf `main`, **48 uur geen
    deploys** meer op die branch. Vanaf dit moment niets meer mergen dat de
    demo-omgeving kan raken.
-4. **Contentgeneratie één keer timen** op de branch `demo` zelf (niet lokaal):
-   start "Genereer content (NL + EN)" op een vers dossier, stopwatch. Ligt de
-   tijd dicht bij de Vercel-limiet van 300 s, dan het terugvaldossier (zie
+4. **Contentgeneratie één keer timen** op de omgeving van de demo zelf (niet
+   lokaal): `node --env-file=.env.local scripts/meet-contentgeneratie.mjs
+   --object <id> --write` op een demo-dossier, of "Genereer content (NL + EN)"
+   op een vers dossier met een stopwatch. Op 1 okt ± 102 s; in de demo wacht je
+   dus ± 1,5–2 minuten. Ligt de tijd boven ± 240 s, dan het terugvaldossier (zie
    hierboven) als hoofdplan voor scène 5 gebruiken in plaats van live
    genereren.
 5. Alle drie/vier demo-dossier-URL's + het scène 4-adres nog een keer
@@ -415,11 +418,11 @@ ook eens doorheen te scrollen."
 
 | Risico | Herkomst | Wat te doen |
 |---|---|---|
-| **Contentgeneratie > 300 s (Vercel-functielimiet)** | NL+EN-generatie duurt sinds 8.3 korter, maar is nog niet op de `demo`-branch getimed | Timen in de dag-ervoor-checklist; terugvaldossier klaar hebben (scène 5) |
+| **Contentgeneratie duurt te lang voor de zaal** | Gemeten 1 okt: ± 102 s op Vercel (limiet 300 s); ± 18 s daarvan zijn time-outs van de buurtbron (roadmap D5) | Opnieuw timen in de dag-ervoor-checklist; terugvaldossier klaar hebben (scène 5); na ± 90 s overstappen |
 | **Overpass/WOZ-achtige externe bronnen onbetrouwbaar onder last** | `lib/verrijking.ts` — publieke Overpass-servers gaven in een meting 3/12 geslaagd | Elke bron valt stil terug op een eigen staat (`ok`/`leeg`/`mislukt`/`niet_gekoppeld`), nooit een crash; als een buurtverrijking leeg blijft, gewoon doorgaan — dit is zichtbaar in dossierdata, niet in de zes scènes zelf. **Tijdens de demo niet op "Ververs" in Buurt & data klikken**: de opgeslagen data (alle demo-dossiers ververst op 1 okt, CBS en voorzieningen `ok`) blijft staan, en sinds 1 okt overschrijft een mislukte verversing goede data niet meer, maar toont dan wel "Verversen lukte niet — dit zijn je gegevens van <datum>". De dag vóór de demo de demo-dossiers controleren |
 | **Hydratiemismatch (server UTC vs. browser Europe/Amsterdam)** | Trof eerder de begroeting + maakte de hele pagina/topbar-profielmenu onreageerbaar | Als een knop "niets doet": eerst `F5`; gebeurt het structureel, dan is dit de oorzaak — niet live debuggen tijdens de demo, erna `page.on('pageerror')` in Playwright checken |
 | **Supabase-pauze na 7 dagen inactiviteit (geen Pro)** | Gratis tier | Dag-ervoor-checklist: kort inloggen om het project wakker te houden |
-| **Vercel Hobby kapt lange functies af** | Team staat nog op Hobby | Upgraden vóór de demo (checklist dag ervoor, punt 1) |
+| **Vercel Hobby** | Team staat nog op Hobby; de duur past (± 102 s), maar Hobby is niet voor commercieel gebruik | Upgraden vóór de demo (checklist dag ervoor, punt 1) |
 | **Browserzoom ≠ 100 %** | `auto-fit`-grids alleen getest op 100 % | Checklist 1 uur ervoor, punt 3 |
 | **`i4housing`-kantoor heeft nog geen transacties** | Fase 5 geblokkeerd | Repeteren/demonstreren op `/login/demo` tot fase 5 live is (zie blokkade bovenaan) |
 

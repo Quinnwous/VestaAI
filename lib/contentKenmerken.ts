@@ -86,7 +86,8 @@ export function kenmerkRegels(input: PropertyInput, taal: Taal): string[] {
       regel('Tuin', 'Garden', en ? `facing ${vertaal(ORIENTATIE, l.tuin_orientatie, taal)}` : `op het ${vertaal(ORIENTATIE, l.tuin_orientatie, taal)}`)
     }
     if (l.achterom !== undefined) regel('Achterom', 'Rear access', jaNee(l.achterom, taal))
-    if (l.balkon_dakterras !== undefined) regel('Balkon of dakterras', 'Balcony or roof terrace', jaNee(l.balkon_dakterras, taal))
+    // De intake zegt niet wélke van de twee: anders schreef het model letterlijk "het balkon of dakterras".
+    if (l.balkon_dakterras !== undefined) regel('Buitenruimte op de verdieping (balkon of dakterras, niet gespecificeerd)', 'Outdoor space upstairs (balcony or roof terrace, not specified)', jaNee(l.balkon_dakterras, taal))
     if (l.garage_parkeren) regel('Parkeren', 'Parking', vertaal(PARKEREN, l.garage_parkeren, taal))
     if (l.berging !== undefined) regel('Berging', 'Storage room', jaNee(l.berging, taal))
     if (l.uitzicht) regel('Uitzicht', 'View (in Dutch)', l.uitzicht)

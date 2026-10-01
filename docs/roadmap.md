@@ -22,9 +22,11 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 1 okt 2026. Laatst gedaan: 12.1 op 1 okt — zes team-accounts
-van i4 aangemaakt en hun teamfoto als startbanner; eerder die dag rondes R en S
-(buurtdata, referentietabel, CI, herstelplan, audit 0, kostenschatting).*
+*Bijgewerkt 1 okt 2026. Laatst gedaan: de betaalde testronde op 1 okt —
+blinde modelvergelijking (CONTENT blijft Sonnet 4.6), de echte duur van NL + EN
+op Vercel gemeten (± 102 s), EN-content voor het scène 5-dossier, het
+EN-kwartaalbericht getest, en daaruit drie promptfixes (hele intake mee, geen
+gedwongen verzinsels, aanspreekvorm). Eerder die dag 12.1 en rondes R en S.*
 
 - **Wat er staat:** het hele platform behalve het verkoopadviesdocument en de
   echte data van i4 Housing — zie `docs/productoverzicht.md`.
@@ -32,19 +34,20 @@ van i4 aangemaakt en hun teamfoto als startbanner; eerder die dag rondes R en S
   data (§ 1).
 - **Kritiek pad:** exports van Quinn → 5.1 exportanalyse → 5.5 import →
   M1 tussencheck taxateur → demovoorbereiding (12.5, 12.7) → demo.
-- **Volgende ronde:** er is geen bouwbaar item meer zonder input van Quinn.
-  Alles wat openstaat wacht op § 2 (exports, voorbeeld-verkoopadvies, akkoord
-  betaalde testruns) of is optioneel (F9 bij aanraking, F10).
+- **Volgende ronde:** D4 (EN-getalnotatie kwartaalbericht) en D5 (opgeslagen
+  buurtdata bij het genereren) — allebei bouwbaar zonder input, nul overlap.
 - **Wacht op Quinn:** § 2 — vooral de exports (blokkeert alles op het kritieke
-  pad), het voorbeeld-verkoopadvies en akkoord op de betaalde testruns.
+  pad), het voorbeeld-verkoopadvies en Gemini-billing (staging werkt pas dan).
 - ⚠️ **Demo-realiteit:** i4 Housing heeft 0 transacties én 0 dossiers
   (demo-kantoor: ~8.000 transacties, 15 dossiers). Marktinzichten, kerncijfers
   en waardering tonen bij i4 de lege staat; de repetitie draait op
   `/login/demo`. Terugvalplan als de exports uitblijven: demo op het
   demo-kantoor in i4-huisstijl (beslissing Quinn, pas nodig als half december
   in gevaar komt).
-- ⚠️ **Contentgeneratie:** de echte duur van NL + EN tegen de functielimiet van
-  300 s is nog niet gemeten (D2).
+- **Contentgeneratie gemeten (1 okt):** NL + EN op Vercel ± 102 s (NL ± 82 s,
+  EN ± 63 s, plus ± 18 s Overpass-time-outs vooraf) — ruim binnen 300 s. Gemeten
+  op het demo-kantoor zonder sjabloon; i4 mét sjabloon kan ± 10-20 s langer
+  duren (herkansing). Opnieuw meten: `scripts/meet-contentgeneratie.mjs`.
 
 ---
 
@@ -71,7 +74,7 @@ verkoop naar hun taxateur: "klopt dit ongeveer?") → generale repetitie op
 `/login/i4housing` → demo-freeze (48 uur geen deploys) → demo.
 
 **Schrappen bij uitloop** (eerst bovenaan): 5.6 fixture herijken · D1
-staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvies
+staging · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvies
 (als het voorbeeld uitblijft).
 
 ---
@@ -92,9 +95,11 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 4. **Supabase-dashboard, twee klikken:** self-signup uit (Auth → Providers →
    Email → "Allow new users to sign up") en leaked-password-protection aan
    (Auth → Attack Protection). De security-advisor meldt het nog.
-5. **Akkoord betaalde testruns** (samen een paar euro): smoke-generatie NL + EN
-   (meet meteen de echte duur), staging-testrun, EN-kwartaalbericht, en
-   EN-content voor het demo-dossier van scène 5.
+5. **Gemini-billing aanzetten** (Google AI Studio → API-sleutel → billing,
+   ± 5 min). Zonder billing werkt virtual staging niet: het project zit op de
+   gratis laag, met quotum 0 voor beeldmodellen (gemeten 1 okt). Lost meteen het
+   privacypunt op (op de gratis laag mag Google ingestuurde foto's gebruiken).
+   Daarna draait Claude D1.
 6. **Zes ongebruikte geheimen op Vercel verwijderen** (`STRIPE_SECRET_KEY`,
    `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/_PRO/_KANTOOR`,
    `CRON_SECRET`): Vercel → project vesta-ai → Settings → Environment
@@ -109,26 +114,21 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 ### Vóór de demo of vóór het eerste betaalde contract
 
 9. **Vercel Pro** — het Hobby-plan is volgens Vercels fair-use-regels voor
-    niet-commercieel gebruik; zodra i4 Housing betaalt is Pro nodig. Het geeft
-    ook ruimere functieduur (content NL + EN) en terugrollen naar elke eerdere
-    deploy. Liefst al vóór de demo.
+    niet-commercieel gebruik; zodra i4 Housing betaalt is Pro nodig. Geeft ook
+    terugrollen naar elke eerdere deploy. Voor de functieduur is het niet nodig
+    (content NL + EN ± 102 s, gemeten 1 okt). Liefst al vóór de demo.
 10. **Tussencheck taxateur (M1):** `docs/waardering/methode.md` (rekenvoorbeeld
     en vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
     https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm; contactpersoon noemen.
-11. **Blind oordeel content** (± 30 min, betaalde calls): huidige model tegen de
-    kandidaat `claude-sonnet-5` — pas daarna een modelwissel.
-12. **Google Search Console** en de omleiding van de Vercel-alias.
-13. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
+11. **Google Search Console** en de omleiding van de Vercel-alias.
+12. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
     slaapstand), definitieve verwerkersovereenkomst (⚠️ de import is formeel al
-    verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (kostprijs ≈ €43–62/mnd bij 5–30 dossiers: `docs/strategie/kostenschatting.md`), en een
+    verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (kostprijs ≈ €44–65/mnd bij 5–30 dossiers: `docs/strategie/kostenschatting.md`), en een
     jurist die voorwaarden + privacyverklaring toetst.
-14. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
+13. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
     zakelijk mailadres (bv. `info@vestaai.nl`). Deblokkeert E1. Uiterlijk vóór het
     eerste betaalde contract.
-15. **Gemini betaalde laag bevestigen** (Google AI Studio → API-sleutel →
-    billing aan): op de gratis laag mag Google ingestuurde foto's gebruiken, en
-    dan klopt de privacyverklaring niet. Geen blokkade.
-16. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
+14. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
     contract of de verwerkersovereenkomst laten opnemen.
 
 ---
@@ -166,9 +166,13 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
     demo-dossiers staan in het demo-kantoor. Na 5.5 drie echte, recente
     adressen van i4 aanmaken (één per fase), zodat de waardering op hun eigen
     data rekent.
-  - Het dossier van scène 5 met EN-content (betaald, § 2 punt 5) en foto's — in
-    beide kantoren (het demo-kantoor is het terugvalplan). Nu heeft geen enkel
-    demo-dossier EN-content of foto's.
+  - Het dossier van scène 5 (demo-kantoor) heeft sinds 1 okt NL + EN-content
+    uit een volledige intake. Nog te doen: vlak vóór de demo één keer opnieuw
+    genereren (€0,12; dan zitten de je-vorm en het balkonlabel van 1 okt erin
+    — de huidige tekst zegt "u" en "het balkon of dakterras"), dáárna 4+
+    handmatige bewerkingen (voor "Leren van je bewerkingen"), en foto's
+    uploaden (brochure + staging, na § 2 punt 5). Hetzelfde in het i4-kantoor
+    na 5.5.
   - `docs/i4housing/demoscript.md` en `npm run demo:repetitie` overzetten naar
     `/login/i4housing` zodra 5.5 live is.
   - Vercel Pro actief · Supabase-check de dag ervoor (slaapstand) · demo-freeze
@@ -188,16 +192,21 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 
 ### D. Content — resterende checks (masterplan fase 8)
 
-- [ ] **D1 Staging-testrun** *(betaald, schrapbaar)*: één echte foto door
-  `gemini-2.5-flash-image`; label "Virtueel ingericht" zichtbaar, kwaliteit
-  beoordeeld.
-- [ ] **D2 Echte duur NL + EN meten** *(betaald)*: `E2E_GENERATE=1` op
-  `e2e/content.spec.ts`. Komt hij boven ± 240 s, dan NL en EN in twee aparte
-  functie-aanroepen splitsen (of Vercel Pro met langere duur). Plus één keer het
-  EN-kwartaalbericht tegen de echte API.
-- [ ] **D3 Modelkeuze** *(na het blinde oordeel, § 2 punt 11)*: wint de
-  kandidaat, dan `CONTENT` in `lib/aiModellen.ts` wisselen en de kostenschatting
-  bijwerken.
+- [ ] **D1 Staging** *(betaald, ± €0,07; na § 2 punt 5)*: één foto door
+  `gemini-3.1-flash-image` op productie (stockfoto klaar: Unsplash, Lisa Anna,
+  lege woonkamer); label "Virtueel ingericht" zichtbaar, kwaliteit beoordeeld,
+  origineel + resultaat in het scène 5-dossier.
+- [ ] **D4 EN-kwartaalbericht in Engelse notatie** *(bouwbaar)*: de guardrail
+  dwingt nu ook in het Engels de NL-notatie af ("2.064 homes", "€ 949.500") en
+  "procentpunt" blijft onvertaald. Voor Engelse lezers (expats, 4RENT) leest
+  dat als een fout. `controleerGuardrail` beide notaties laten accepteren,
+  Engelse notatie en "percentage point" laten schrijven, test die beide rendert.
+- [ ] **D5 Opgeslagen buurtdata bij het genereren** *(bouwbaar)*:
+  `genereerContentVoorObject` haalt de buurtdata live op (Overpass liep op 1 okt
+  twee keer in een time-out, ± 18 s per generatie, en dan ontbreken de
+  voorzieningen in de tekst), terwijl het dossier ze al opgeslagen heeft
+  (`verrijking_json`). Eerst de opgeslagen versie gebruiken; alleen live ophalen
+  als die er niet is.
 - *Klaar als (fase):* i4-tekst volgt het sjabloon 1-op-1 in NL en EN; brochure
   niet te onderscheiden van hun eigen werk; scène 5 loopt zonder wachttijd-
   verrassing.
@@ -205,7 +214,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 ### E. Juridisch (masterplan fase 14)
 
 - [ ] **E1 (14.2) Bedrijfsgegevens + zakelijk e-mailadres** *(geblokkeerd: § 2
-  punt 14)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
+  punt 13)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
   Handelsregisterwet: naam, KvK-nummer, vestigingsadres, btw-id, e-mail) in één
   constante `lib/bedrijf.ts`, gelezen door de footer van de publieke pagina's,
   `/contact`, privacy en voorwaarden (art. 7 krijgt een plaats). Het gmail-adres
@@ -250,12 +259,13 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6, F7 en F8 zijn op
 | Exports komen laat of zijn rommeliger dan gedacht | Fixture houdt het werk gaande; 5.1 vóór er één regel importcode wordt aangepast; kwaliteitsregels + rapport; terugvalplan demo-kantoor |
 | Brainbay-licentie staat tonen in een platform van derden niet toe | Schriftelijke bevestiging vóór 5.5; tot die tijd alleen fixture-data |
 | Taxateurs vertrouwen de waardering niet | Transparante referentietabel, WOZ-ijkpunt, backtest, M1-tussencheck |
-| Content NL + EN duurt langer dan de functielimiet | Meten (D2); splitsen of Vercel Pro |
+| Content NL + EN duurt langer dan de functielimiet | Gemeten 1 okt: ± 102 s van 300 s; opnieuw meten na elke prompt- of modelwissel (`scripts/meet-contentgeneratie.mjs`) |
 | Buurtbron faalt tijdens de demo (Overpass overbelast) | Verversen overschrijft nooit meer goede data (12.9, 1 okt); de UI meldt dan "gegevens van <datum>" — in de demo toch niet op "Ververs" klikken |
 | Dataverlies op productie (geen Supabase Pro) | Volledige back-up (alle tabellen + Storage + manifest) vóór elke risicovolle stap; herstelprocedure in werkwijze § 5; Supabase Pro vóór het eerste contract |
 | Supabase gratis pauzeert na 7 dagen inactiviteit | Dagelijks gebruik; check de dag vóór de demo |
 | Fouten bij de klant blijven onopgemerkt | F4 foutmonitoring; feedbackknop |
-| Nieuw AI-model verandert de toon | Blinde evaluatie vóór elke wissel (D3) |
+| Nieuw AI-model verandert de toon | Blinde evaluatie vóór elke wissel (`docs/evaluatie/`, 3 modellen tegelijk) |
+| AI verzint feiten in klantteksten | Hele intake in de prompt en "feiten alleen hieruit" (1 okt); bij twijfel de tekst naast de intake leggen |
 | Datalek tussen kantoren | RLS + `security_invoker`; `e2e/rls.spec.ts` test beide richtingen |
 | Uitloop | Schrapvolgorde (§ 1); nieuwe ideeën naar de backlog |
 
@@ -263,7 +273,11 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6, F7 en F8 zijn op
 
 ## 5. Backlog en geparkeerd
 
-**Na de demo:** streaming van content naar de UI (nu voortgang + skeletons) ·
+**Na de demo:** Sonnet 5 opnieuw vergelijken mét structured outputs
+(`output_config.format`) — zonder de JSON-herkansing goedkoper en sneller dan
+Sonnet 4.6 (`docs/evaluatie/rondes/2026-10-01/oordeel.md`) · de vier routes
+buiten `lib/claude.ts` die `content[0]` lezen naar het eerste tekstblok (nodig
+bij een model dat denkt) · streaming van content naar de UI (nu voortgang + skeletons) ·
 A/B-segmentvergelijking uitbreiden · maatwerkverzoeken-flow (tabel `verzoeken`,
 statusflow, Resend-melding) · gebruiksoverzicht in `/admin` · dossiers
 aanmaken uit een Realworks-objectexport (hun huidige aanbod in één keer "In
