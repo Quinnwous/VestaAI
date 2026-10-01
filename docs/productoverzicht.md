@@ -1,6 +1,6 @@
 # VestaAI — Productoverzicht: wat er staat
 
-> **Stand 30 sep 2026.** Alles wat gebouwd en live is, per onderdeel: wat het
+> **Stand 1 okt 2026.** Alles wat gebouwd en live is, per onderdeel: wat het
 > doet, waar het in de code zit en wat de beperkingen zijn. Wat nog moet gebeuren
 > staat in `docs/roadmap.md`; hoe het technisch in elkaar zit in
 > `docs/architectuur.md`; het verloop per ronde in `docs/besluiten.md`.
@@ -36,7 +36,7 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
 | Platform-admin | ✅ | kantoren, accounts, huisstijl, instellingen, import |
 | Importpijplijn transacties | 🟡 | klaar, wacht op de Brainbay-/Realworks-exports |
 | Publieke site + juridische teksten | ✅ | KvK-gegevens ontbreken nog; jurist-toets open |
-| Kwaliteitsbewaking (tests, DoD-scripts) | ✅ | 982 unit-tests, e2e, axe, generale repetitie |
+| Kwaliteitsbewaking (tests, CI, DoD-scripts) | ✅ | 1007 unit-tests, CI op GitHub, e2e, axe, generale repetitie |
 
 ---
 
@@ -86,9 +86,11 @@ fase, sinds wanneer en de kernbedragen.
 - **Tab Buurt & data** — CBS-buurtcijfers (WOZ-gemiddelde, inkomen,
   opleiding, huishoudens, dichtheid) met per cijfer het niveau
   (buurt/wijk/gemeente), voorzieningen in de buurt en de WOZ-waarde die de
-  makelaar zelf invult. Een mislukte bron staat er als "mislukt", niet als leeg.
-  ⚠️ De voorzieningen (Overpass) mislukken vaak — op 30 sep bij alle
-  gecontroleerde dossiers (roadmap 12.7).
+  makelaar zelf invult. Een mislukte bron staat er als "mislukt", niet als leeg
+  — sinds 1 okt ook bij CBS (een serverfout werd eerder als "leeg" opgeslagen).
+  Alle 15 dossiers van het demo-kantoor zijn op 1 okt ververst: CBS en
+  voorzieningen `ok`. ⚠️ Overpass is dag-op-dag overbelast (HTTP 504) en
+  "Ververs" overschrijft dan goede data met "mislukt" (roadmap 12.9).
 - **Tab Content en media** (vanaf In verkoop) — Teksten, Media, Documenten en
   Export (§ 5).
 - **AI USP-extractor**: zet de vrije intaketekst om in gestructureerde
@@ -111,6 +113,9 @@ fase, sinds wanneer en de kernbedragen.
   kenmerkcorrecties per referentie (garage, tuin, energielabel, bouwperiode),
   een bandbreedte die breder wordt bij weinig data, en een waarschuwing onder
   6 referenties. Methode in makelaarstaal: `docs/waardering/methode.md`.
+- **Referentietabel** met per referentie afstand, datum, prijs, m², €/m²,
+  index, correcties, gewicht en geïmpliceerde waarde; bedragen breken niet af
+  (laptop 1280 px), op mobiel scrolt de tabel binnen zijn eigen kader.
 - Makelaar kan referenties uitsluiten of toevoegen (waarde verandert live) en
   een correctie met verplichte motivatie vastleggen. WOZ staat als ijkpunt
   ernaast.
@@ -229,9 +234,13 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 
 ## 12. Kwaliteit en tooling
 
-- **Unit-tests** (Vitest): 982 tests in 80 bestanden, met guard-tests die de
+- **Unit-tests** (Vitest): 1007 tests in 81 bestanden, met guard-tests die de
   architectuurregels afdwingen (transacties via één module, modelstrings op één
-  plek, MapLibre-worker zelf gehost).
+  plek, MapLibre-worker zelf gehost). De docx-extractie draait op een
+  synthetische fixture (`lib/__fixtures__/voorbeeld.docx`).
+- **CI op GitHub** (`.github/workflows/ci.yml`, sinds 1 okt): `npm ci`,
+  typecheck, lint en tests op elke PR en elke push naar `main`, Node 24 (gelijk
+  aan Vercel). Geen secrets, geen build — die blijft lokaal in de DoD.
 - **E2e** (Playwright, `e2e/`): kantoorlogin, dossier < 5 s, waardering +
   pdf, kaart zonder CSP-fout, admin, RLS-isolatie tussen kantoren, Radix-
   primitives; contentgeneratie alleen met `E2E_GENERATE=1` (kost geld).
@@ -249,7 +258,11 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 Vercel (Hobby-plan, functies in Frankfurt naast de database), Supabase (gratis
 plan, eu-central-1), Resend (vestaai.nl), Plausible, domein
 `www.vestaai.nl`. Back-ups: lokaal via `scripts/backup-data.mjs` (map
-`backups/`, niet in git). Productie-dependencies: 0 bekende kwetsbaarheden.
+`backups/`, niet in git) — alle 9 bedrijfstabellen, Storage (alle buckets, uit
+te zetten met `--zonder-storage`) en een `manifest.json` met aantallen;
+herstelprocedure in `docs/werkwijze.md` § 5 (accounts in `auth.users` zitten
+er níet in). Schemabaseline `supabase/schema-baseline.sql` ververst op 1 okt.
+`npm audit`: 0 kwetsbaarheden (ook in de dev-tooling).
 
 ## 14. Bewust níet gebouwd
 
