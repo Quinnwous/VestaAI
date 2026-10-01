@@ -132,6 +132,41 @@ describe('CBS-cascade', () => {
     expect(v.cbs).toBeNull()
     expect(v.gemeente).toBe('Amsterdam')  // de rest van de verrijking blijft werken
   })
+
+  // Item 12.7-fix (1 okt 2026, demo-dossiers Damlaan 7 en Storm van 's-Gravesandeweg 3):
+  // `fetchCbs` gebruikte `fetchMet` (alleen de data), die een serverfout/timeout
+  // tot dezelfde `null` verzwolg als "CBS kent dit gebied niet" — `bronnen.cbs`
+  // werd dan altijd 'leeg', nooit 'mislukt'. Een verse aanroep voor exact
+  // diezelfde PDOK-codes gaf gewoon data terug: de bron was niet leeg, de call
+  // was mislukt. Dit onderscheid moet dus in `bronnen.cbs` terechtkomen, net als
+  // bij WOZ en Overpass.
+  it('meldt CBS als mislukt bij een serverfout, niet als "leeg" (12.7-fix)', async () => {
+    vi.stubGlobal('fetch', mockFetch(null))
+
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+
+    expect(v.bronnen.cbs).toBe('mislukt')
+  })
+
+  it('meldt CBS als leeg bij een geslaagde call zonder rijen, niet als "mislukt"', async () => {
+    vi.stubGlobal('fetch', mockFetch([]))
+
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+
+    expect(v.cbs).toBeNull()
+    expect(v.bronnen.cbs).toBe('leeg')
+  })
+
+  it('meldt CBS als ok zodra er wél rijen zijn', async () => {
+    vi.stubGlobal('fetch', mockFetch([
+      cbsRij('BU0363AC02', { GemiddeldeWOZWaardeVanWoningen_39: 900 }),
+      cbsRij('NL00', { GemiddeldeWOZWaardeVanWoningen_39: 378 }),
+    ]))
+
+    const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
+
+    expect(v.bronnen.cbs).toBe('ok')
+  })
 })
 
 describe('verrijkingNaarPrompt', () => {

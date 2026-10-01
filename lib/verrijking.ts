@@ -333,7 +333,7 @@ async function fetchCbs(
   buurtcode: string | null,
   wijkcode: string | null,
   gemeentecode: string | null,
-): Promise<CbsData | null> {
+): Promise<FetchPoging<CbsData>> {
   const gemeenteCbs = gemeentecode
     ? gemeentecode.startsWith('GM') ? gemeentecode : `GM${gemeentecode}`
     : null
@@ -342,7 +342,9 @@ async function fetchCbs(
   if (buurtcode) gevraagd.push(['buurt', buurtcode])
   if (wijkcode) gevraagd.push(['wijk', wijkcode])
   if (gemeenteCbs) gevraagd.push(['gemeente', gemeenteCbs])
-  if (!gevraagd.length) return null
+  // Geen enkele code (PDOK leverde niets op): geen CBS-aanroep te doen, niet
+  // 'mislukt' — die kant is bij de PDOK-opzoeking zelf te verklaren.
+  if (!gevraagd.length) return { status: 'leeg', data: null }
   gevraagd.push(['nederland', 'NL00'])
 
   const filter = gevraagd
@@ -355,9 +357,19 @@ async function fetchCbs(
     `&$select=${CBS_VELDEN.join(',')}` +
     `&$format=json`
 
-  const data = await fetchMet<{ value?: CbsRij[] }>(url, { headers: { Accept: 'application/json' } }, 10000)
-  const waarden = data?.value
-  if (!waarden?.length) return null
+  // Item 12.7-fix (1 okt 2026): `fetchMet` (alleen de data) verzwolg hier een
+  // netwerkfout/timeout/5xx tot dezelfde `null` als "CBS kent dit gebied niet"
+  // — dus `bronnen.cbs` werd altijd 'leeg', nooit 'mislukt', óók als CBS zelf
+  // niet bereikbaar was. In productie bleek dat geen theoretisch risico: de
+  // demo-dossiers Damlaan 7 en Storm van 's-Gravesandeweg 3 kregen allebei
+  // 'leeg' terwijl een verse aanroep voor exact dezelfde PDOK-codes gewoon
+  // buurt/wijk/gemeente-rijen teruggeeft. `fetchMetStatus` i.p.v. `fetchMet`
+  // onderscheidt dat nu, net als bij WOZ en Overpass.
+  const poging = await fetchMetStatus<{ value?: CbsRij[] }>(url, { headers: { Accept: 'application/json' } }, 10000)
+  if (poging.status !== 'ok') return { status: poging.status, data: null, reden: poging.reden }
+
+  const waarden = poging.data?.value
+  if (!waarden?.length) return { status: 'leeg', data: null }
 
   // Terugkoppelen op de codes die we vroegen — CBS geeft geen niveau-veld terug dat we vertrouwen.
   const rijen: CbsRijen = {}
@@ -368,7 +380,7 @@ async function fetchCbs(
   }
 
   const fijnste = NIVEAU_VOLGORDE.find(n => n !== 'nederland' && rijen[n])
-  if (!fijnste) return null
+  if (!fijnste) return { status: 'leeg', data: null }
 
   const inkomen = metriek(rijen, r => (r.GemiddeldInkomenPerInwoner_78 === null ? null : Math.round(r.GemiddeldInkomenPerInwoner_78 * 1000)))
   const woz_gem = metriek(rijen, r => (r.GemiddeldeWOZWaardeVanWoningen_39 === null ? null : r.GemiddeldeWOZWaardeVanWoningen_39 * 1000))
@@ -421,30 +433,33 @@ async function fetchCbs(
   const naam = (v: string | null | undefined) => (v ? v.trim() || null : null)
 
   return {
-    gemeente: naam(rijen.gemeente?.Gemeentenaam_1) ?? naam(rijen.buurt?.Gemeentenaam_1) ?? '',
-    buurtnaam: null,
-    wijknaam: null,
-    bron: CBS_BRON,
-    fijnste_niveau: fijnste,
-    inkomen,
-    pct_koop,
-    woz_gem,
-    pct_hoog_opgeleid,
-    dichtheid_per_km2,
-    pct_eengezins,
-    huishoudensgrootte,
-    pct_65plus,
-    pct_met_kinderen,
-    dichtheid: dichtheidLabel(dichtheid_per_km2?.waarde ?? null),
-    buurtprofiel,
-    nl,
-    gemeente_niveau: {
-      woz_gem: rijen.gemeente?.GemiddeldeWOZWaardeVanWoningen_39 != null
-        ? rijen.gemeente.GemiddeldeWOZWaardeVanWoningen_39 * 1000
-        : null,
-      dichtheid_per_km2: rijen.gemeente?.Bevolkingsdichtheid_34 ?? null,
+    status: 'ok',
+    data: {
+      gemeente: naam(rijen.gemeente?.Gemeentenaam_1) ?? naam(rijen.buurt?.Gemeentenaam_1) ?? '',
+      buurtnaam: null,
+      wijknaam: null,
+      bron: CBS_BRON,
+      fijnste_niveau: fijnste,
+      inkomen,
+      pct_koop,
+      woz_gem,
+      pct_hoog_opgeleid,
+      dichtheid_per_km2,
+      pct_eengezins,
+      huishoudensgrootte,
+      pct_65plus,
+      pct_met_kinderen,
+      dichtheid: dichtheidLabel(dichtheid_per_km2?.waarde ?? null),
+      buurtprofiel,
+      nl,
+      gemeente_niveau: {
+        woz_gem: rijen.gemeente?.GemiddeldeWOZWaardeVanWoningen_39 != null
+          ? rijen.gemeente.GemiddeldeWOZWaardeVanWoningen_39 * 1000
+          : null,
+        dichtheid_per_km2: rijen.gemeente?.Bevolkingsdichtheid_34 ?? null,
+      },
+      nabijheid,
     },
-    nabijheid,
   }
 }
 
@@ -715,9 +730,12 @@ export interface VerrijkingData {
    * Item 10.3-fix (23 sep 2026): per externe bron of hij `ok` (data), `leeg`
    * (bron antwoordde, dit adres levert niets op) of `mislukt` (netwerkfout/
    * timeout/serverfout) gaf — voedt "kon niet worden opgehaald" vs "geen data
-   * gevonden" in `components/BuurtDataTab.tsx`. CBS wordt hier niet los op
-   * 'mislukt' getest (bleek in de praktijk stabiel te reageren) — 'leeg' dekt
-   * zowel "geen rijen" als een falende call.
+   * gevonden" in `components/BuurtDataTab.tsx`. Item 12.7-fix (1 okt 2026):
+   * CBS wordt sindsdien wél los op 'mislukt' getest — in productie bleek de
+   * oude veronderstelling ("CBS reageert stabiel") onjuist: de demo-dossiers
+   * Damlaan 7 en Storm van 's-Gravesandeweg 3 kregen 'leeg' terwijl een verse
+   * aanroep voor exact dezelfde PDOK-codes gewoon data teruggaf (zie
+   * `fetchCbs()` hierboven).
    */
   bronnen: { woz: FetchStatus; cbs: FetchStatus; voorzieningen: FetchStatus }
 }
@@ -729,7 +747,7 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
   const gemeente = pdok?.gemeentenaam ?? null
   const bagId = pdok?.adresseerbaarobject_id ?? null
 
-  const [wozPoging, voorzieningenPoging, cbsRuw] = await Promise.all([
+  const [wozPoging, voorzieningenPoging, cbsPoging] = await Promise.all([
     !WOZ_GEKOPPELD || bagId ? fetchWoz() : Promise.resolve<FetchPoging<WozData>>({ status: 'leeg', data: null }),
     coord ? fetchVoorzieningen(coord.lat, coord.lon) : Promise.resolve<FetchPoging<VoorzieningenData>>({ status: 'leeg', data: null }),
     fetchCbs(pdok?.buurtcode ?? null, pdok?.wijkcode ?? null, pdok?.gemeentecode ?? null),
@@ -738,15 +756,15 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
   // Een mislukte bron zie je anders nergens terug (de UI toont alleen de
   // status): log de reden, zodat een uitval op Vercel te diagnosticeren is.
   // Bewust zonder adres (persoonsgegeven) — gemeente is genoeg context.
-  for (const [bron, poging] of [['voorzieningen', voorzieningenPoging], ['woz', wozPoging]] as const) {
+  for (const [bron, poging] of [['voorzieningen', voorzieningenPoging], ['woz', wozPoging], ['cbs', cbsPoging]] as const) {
     if (poging.status === 'mislukt') console.warn(`[verrijking] ${bron} mislukt (${gemeente ?? 'onbekende gemeente'}): ${poging.reden ?? 'onbekend'}`)
   }
 
   // PDOK kent de buurt- en wijknaam; CBS levert die niet in bruikbare vorm.
-  const cbs: CbsData | null = cbsRuw
+  const cbs: CbsData | null = cbsPoging.data
     ? {
-        ...cbsRuw,
-        gemeente: cbsRuw.gemeente || gemeente || '',
+        ...cbsPoging.data,
+        gemeente: cbsPoging.data.gemeente || gemeente || '',
         buurtnaam: pdok?.buurtnaam ?? null,
         wijknaam: pdok?.wijknaam ?? null,
       }
@@ -766,7 +784,7 @@ export async function fetchVerrijking(adres: string, oppervlakM2?: number): Prom
     markt,
     gemeente,
     coord,
-    bronnen: { woz: wozPoging.status, cbs: cbs ? 'ok' : 'leeg', voorzieningen: voorzieningenPoging.status },
+    bronnen: { woz: wozPoging.status, cbs: cbsPoging.status, voorzieningen: voorzieningenPoging.status },
   }
 }
 
