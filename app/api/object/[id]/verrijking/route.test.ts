@@ -166,4 +166,45 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
     expect(res.status).toBe(500)
   })
+
+  // Item 12.9 (1 okt 2026, "Verversen zonder dataverlies"): mislukt een bron bij
+  // het verversen terwijl de vorige opslag voor die bron ok was, dan moet de
+  // route de vorige data behouden i.p.v. de hele kolom te overschrijven.
+  it('behoudt vorige goede voorzieningendata als de verversing die bron laat mislukken', async () => {
+    const vorigeOpslag = {
+      versie: 1,
+      woz: null,
+      cbs: null,
+      voorzieningen: { supermarkt: [{ naam: 'Albert Heijn', afstand_m: 300, looptijd_min: 4 }], apotheek: [], huisarts: [], scholen: [], ov_haltes: [], treinstation: [], groen: [], nabijheid_beoordeling: 'Goed' },
+      gemeente: 'Amsterdam',
+      coord: { lat: 52.37, lon: 4.89 },
+      bronnen: { woz: 'niet_gekoppeld', cbs: 'leeg', voorzieningen: 'ok' },
+      opgehaald_op: '2026-10-01T08:00:00.000Z',
+    }
+    objectSingle.mockResolvedValue({
+      data: {
+        id: 'object-1', address: 'Herengracht 1, Amsterdam',
+        input_json: { adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement', kamers: 3, oppervlak_m2: 85, bouwjaar: 1920, energielabel: 'C' },
+        verrijking_json: vorigeOpslag,
+      },
+    })
+    fetchVerrijking.mockResolvedValue({
+      woz: null, cbs: null, voorzieningen: null, gemeente: 'Amsterdam', coord: { lat: 52.37, lon: 4.89 },
+      bronnen: { woz: 'niet_gekoppeld', cbs: 'leeg', voorzieningen: 'mislukt' },
+    })
+    let callCount = 0
+    serviceFromImpl = () => {
+      callCount += 1
+      return callCount === 1 ? selectChain() : updateChain({ error: null })
+    }
+
+    const res = await POST(makeRequest() as never, { params: Promise.resolve({ id: 'object-1' }) })
+    const data = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(data.verrijking.voorzieningen).toEqual(vorigeOpslag.voorzieningen)
+    expect(data.verrijking.bronnen.voorzieningen).toBe('ok')
+    expect(data.verrijking.bronMeta.voorzieningen.opgehaald_op).toBe('2026-10-01T08:00:00.000Z')
+    expect(data.verrijking.bronMeta.voorzieningen.laatste_versing_mislukt).toBe(true)
+  })
 })
