@@ -67,7 +67,7 @@ interface BronUitkomst<T> {
  * andere gevallen (de nieuwe poging slaagt, of er was ook vorige keer al niets
  * goeds) wint de nieuwe uitkomst gewoon.
  *
- * `laatste_versing_mislukt` is bewust alléén `true` in de eerste tak: het
+ * `laatste_verversing_mislukt` is bewust alléén `true` in de eerste tak: het
  * vlagt specifiek "de data die hier als `ok` wordt getoond is ouder dan je
  * zou verwachten". Komt de nieuwe status zelf door (ook als die `leeg` of
  * `niet_gekoppeld` is, bv. WOZ dat structureel niet gekoppeld is), dan toont
@@ -84,14 +84,14 @@ function voegBronSamen<T>(
       status: 'ok',
       meta: {
         opgehaald_op: vorige.meta?.opgehaald_op ?? vorige.opgehaaldOp,
-        laatste_versing_mislukt: true,
+        laatste_verversing_mislukt: true,
       },
     }
   }
   return {
     data: nieuw.data,
     status: nieuw.status,
-    meta: { opgehaald_op: nieuw.opgehaaldOp, laatste_versing_mislukt: false },
+    meta: { opgehaald_op: nieuw.opgehaaldOp, laatste_verversing_mislukt: false },
   }
 }
 
@@ -132,6 +132,10 @@ export function voegVerrijkingSamen(vorige: VerrijkingOpslag | null, nieuw: Verr
 
   return VerrijkingOpslagSchema.parse({
     ...nieuw,
+    // Gemeente en coördinaat komen uit PDOK; levert die bij verversen niets op
+    // (uitval), dan de vorige waarde houden — het adres is niet veranderd.
+    gemeente: nieuw.gemeente ?? vorige.gemeente,
+    coord: nieuw.coord ?? vorige.coord,
     woz: woz.data,
     cbs: cbs.data,
     voorzieningen: voorzieningen.data,

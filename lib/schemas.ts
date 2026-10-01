@@ -629,7 +629,7 @@ export const BronMetaSchema = z.object({
   /** ISO-tijdstempel waarop déze brondata voor het laatst écht (succesvol) is opgehaald. */
   opgehaald_op: z.string(),
   /** `true` zodra de daaropvolgende verversing voor deze bron mislukte en de data hierboven dus ouder is dan `opgehaald_op` van de hele opslag. */
-  laatste_versing_mislukt: z.boolean().optional(),
+  laatste_verversing_mislukt: z.boolean().optional(),
 })
 export type BronMeta = z.infer<typeof BronMetaSchema>
 

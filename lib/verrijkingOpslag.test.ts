@@ -187,7 +187,24 @@ describe('voegVerrijkingSamen', () => {
     expect(samengevoegd.bronnen?.voorzieningen).toBe('ok')
     // Maar de UI moet kunnen zien dat dit oude data is en dat de laatste poging mislukte.
     expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-10-01T08:00:00.000Z')
-    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_versing_mislukt).toBe(true)
+    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_verversing_mislukt).toBe(true)
+  })
+
+  it('houdt gemeente en coördinaat aan als PDOK bij verversen niets oplevert', () => {
+    const nieuwData: VerrijkingData = {
+      ...VOLLEDIGE_DATA,
+      gemeente: null,
+      coord: null,
+      cbs: null,
+      voorzieningen: null,
+      bronnen: { woz: 'niet_gekoppeld', cbs: 'mislukt', voorzieningen: 'mislukt' },
+    }
+    const nieuw = naarVerrijkingOpslag(nieuwData, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+
+    const samengevoegd = voegVerrijkingSamen(VORIGE, nieuw)
+
+    expect(samengevoegd.gemeente).toBe(VORIGE.gemeente)
+    expect(samengevoegd.coord).toEqual(VORIGE.coord)
   })
 
   it('neemt de nieuwe data over zodra een bron wél slaagt', () => {
@@ -197,7 +214,7 @@ describe('voegVerrijkingSamen', () => {
 
     expect(samengevoegd.bronnen?.voorzieningen).toBe('ok')
     expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-10-01T09:00:00.000Z')
-    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_versing_mislukt).toBeFalsy()
+    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_verversing_mislukt).toBeFalsy()
   })
 
   it('bewaart geen stale data als er nooit goede data was (mislukt blijft mislukt)', () => {
@@ -263,7 +280,7 @@ describe('voegVerrijkingSamen', () => {
 
     expect(samengevoegd.bronnen?.woz).toBe('niet_gekoppeld')
     expect(samengevoegd.woz).toBeNull()
-    expect(samengevoegd.bronMeta?.woz?.laatste_versing_mislukt).toBe(false)
+    expect(samengevoegd.bronMeta?.woz?.laatste_verversing_mislukt).toBe(false)
   })
 
   it('valideert het resultaat alsnog via het schema (regressiebescherming)', () => {

@@ -282,7 +282,7 @@ function BronMelding({ status, leeg }: { status: FetchStatus; leeg: string }) {
  * referenties"-waarschuwing elders in dit scherm.
  */
 function VerversMislukt({ meta }: { meta?: BronMeta }) {
-  if (!meta?.laatste_versing_mislukt) return null
+  if (!meta?.laatste_verversing_mislukt) return null
   return (
     <p style={{ fontSize: 12, color: '#B45309', margin: '12px 0 0' }}>
       Verversen lukte niet — dit zijn je gegevens van {datum(meta.opgehaald_op)}.

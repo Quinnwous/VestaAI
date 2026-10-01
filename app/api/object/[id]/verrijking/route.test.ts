@@ -205,6 +205,6 @@ describe('POST /api/object/[id]/verrijking — item 10.3', () => {
     expect(data.verrijking.voorzieningen).toEqual(vorigeOpslag.voorzieningen)
     expect(data.verrijking.bronnen.voorzieningen).toBe('ok')
     expect(data.verrijking.bronMeta.voorzieningen.opgehaald_op).toBe('2026-10-01T08:00:00.000Z')
-    expect(data.verrijking.bronMeta.voorzieningen.laatste_versing_mislukt).toBe(true)
+    expect(data.verrijking.bronMeta.voorzieningen.laatste_verversing_mislukt).toBe(true)
   })
 })
