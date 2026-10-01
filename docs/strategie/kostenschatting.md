@@ -1,190 +1,249 @@
 # VestaAI — Kostenschatting
 
-> ⚠️ **Deels verouderd (stand 16 sep 2026).** Rekent nog met 17 contenttypes
-> per run (nu: 7 kernteksten + extra's op aanvraag), gratis Gemini 2.0 (nu
-> `gemini-2.5-flash-image`, betaald) en de Vercel-limieten van toen. Bijwerken
-> vóór het prijsgesprek met i4 Housing — roadmap F8.
+> **Stand 1 oktober 2026.** Gebaseerd op de code zoals die nu draait (Outputset
+> v2, `lib/aiModellen.ts`, `lib/claude.ts`) en op actuele tarieven — bron en
+> datum staan per regel. Vóór het prijsgesprek met i4 Housing — roadmap F8.
 
-> Doel: inzicht in de variabele API-kosten per pand en de infrastructuurkosten bij het
-> huidige gebruik door i4housing, de enige klant.
-> Gaat over kosten die VestaAI zelf maakt, niet over wat klanten betalen — zie `goals.md` § Prijzen.
-> Tarieven zijn indicatief en gebaseerd op prijzen medio 2026. Controleer actuele tarieven vóór financiële beslissingen.
-
----
-
-## Wat is een "volledige run"?
-
-Eén volledige run = alles wat VestaAI kan doen voor één pand:
-
-1. **Hoofdgeneratie** — 17 content-types via Claude Sonnet 4.6
-2. **Virtual staging × 10** — Gemini genereert een gestylede kamer per lege kamerfoto
-3. **Document-assistent** — 1 PDF uploaden + 5 vragen stellen via Claude (juridische documenten)
-4. **Prijswijziging** — 1 extra Claude-call voor VERKOCHT of PRIJSREDUCTIE social content
-
-Niet meegenomen als "basisrun" (incidenteel gebruik):
-- Per-veld herschrijven (~€0,01 per rewrite)
+> Doel: inzicht in de variabele API-kosten per dossier en de infrastructuurkosten
+> bij het huidige gebruik door i4housing, de enige klant.
+> Gaat over kosten die VestaAI zelf maakt, niet over wat klanten betalen — zie
+> `doelen.md` § Prijzen (daar bewust nog geen cijfers: toegang is admin-beheerd,
+> i4housing betaalt nog niets vast).
 
 ---
 
-## Kostensplit per feature
+## 1. Wat genereert één dossier nu?
 
-### Tarieven Claude Sonnet 4.6 (Anthropic)
-| | Prijs |
-|---|---|
-| Input tokens | $3,00 per 1M |
-| Output tokens | $15,00 per 1M |
+Sinds item 8.3 (Outputset v2, `docs/architectuur.md` § 4) is de hoofdgeneratie
+geen 17-velden-call meer, maar een kleine **kern** (altijd) plus **extra's** op
+knopdruk:
 
-### Tarieven Gemini 2.0 Flash (Google)
-| | Prijs |
-|---|---|
-| Nu (`gemini-2.0-flash-exp`) | **Gratis** — experimenteel model, geen productietarief |
-| Straks (verwacht na productierelease) | ~$0,04 per gegenereerde afbeelding (referentie: Imagen 3-tarief) |
+- **Kern** (één Claude-call per taal, altijd NL **en** EN parallel sinds het
+  besluit van 16 sep): `funda_tekst`, `brochure_tekst`, `instagram`,
+  `linkedin_kantoor`, `sneak_preview`, `koper_email`, `buurtomschrijving`.
+- **Extra's** (los, op aanvraag via "Meer…"): `open_huis`, `followup_positief`,
+  `followup_negatief`, `video_script`, `kopersvragen_faq`, `energie_advies`.
+  Blijven staan bij een nieuwe kerngeneratie.
+- **Sjabloon-herkansing**: alleen als het kantoor een tekstsjabloon heeft
+  (i4housing wel) én `funda_tekst` de kop-/structuureis niet volgt — een
+  gerichte, kleine herschrijving van alléén dat veld.
+- **Virtual staging**: los, per foto, op knopdruk.
+- **Documentassistent**: los, per vraag over een geüpload document.
+- **Prijswijziging / herschrijven**: losse, kleine calls, incidenteel.
+- **Kwartaalbericht, USP-extractie, stijlprofiel destilleren**: geen
+  dossierkosten — periodiek resp. bij intake/huisstijl-setup.
 
----
+## 2. Modellen (uit `lib/aiModellen.ts`)
 
-### 1. Hoofdgeneratie (17 content-types, per taal)
-
-| | Tokens | Kosten |
+| Constante | Model-id | Gebruikt voor |
 |---|---|---|
-| Input (systeem + user) | ~2.000 | $0,006 |
-| Output (alle 17 velden) | ~8.000 | $0,120 |
-| **Subtotaal per taal** | | **~€0,12** |
+| `CONTENT` | `claude-sonnet-4-6` | Kern, extra's, prijswijziging, sjabloon-herkansing, kwartaalbericht |
+| `CONTENT_KANDIDAAT` | `claude-sonnet-5` | Nog **niet productief** — alleen de blinde evaluatieset (item 8.1), wacht op Quinns oordeel |
+| `EXTRACTIE` / `HERSCHRIJF` | `claude-haiku-4-5` | Letterlijke extractie (huisstijl-PDF, brochure-seed); `HERSCHRIJF` = per-veld herschrijven |
+| `SAMENVATTING` | `claude-sonnet-4-6` | Documentassistent-chat, USP-extractie, stijlprofiel/geleerde-regels destilleren |
+| `GEMINI_STAGING` | `gemini-2.5-flash-image` | Virtual staging |
 
-**Toelichting output:** funda_tekst (750 woorden), brochure_kort/lang, 3× Instagram, 2× LinkedIn, koper_email, buurtomschrijving, open_huis, 2× bezichtiging-followup, video_script, energie_advies, kopersvragen_faq, marktanalyse.
+**Prompt caching** (`lib/claude.ts`, item 8.1): de kern-call (en de
+sjabloon-herkansing) cachen het huisstijlblok + taalspecifieke basisblok via
+`cache_control`. **Niet** gecached: de documentassistent-chat (elke vraag stuurt
+het document opnieuw volledig mee, geen `cache_control` op dat blok) en de
+losse extra/prijswijziging/kwartaalbericht-calls (geen systeemprompt om te
+cachen). Effect op de kern-call is bescheiden (zie § 3) — de aanbeveling uit de
+vorige versie van dit document ("caching kan de documentassistent 70–90%
+goedkoper maken") is dus nog steeds **niet geïmplementeerd**, geen gerealiseerd
+voordeel.
 
-⚠️ **Sinds 16 sep 2026 draait de hoofdgeneratie altijd NL + EN parallel** (`generateContentBeideTalen`, besluit "elke tekst standaard NL+EN") — dat verdubbelt deze post naar **~€0,24 per pand** (de Engelse generatie is best-effort en telt hier toch mee als kostenpost, ook als hij een keer mislukt en leeg terugkomt). De keuzevinkjes voor optionele content (follow-up/video/energieadvies/kopersvragen/marktanalyse) filteren pas ná ontvangst — ze besparen dus nog geen tokens, alleen scherm-ruimte. Vóór 16 sep was dit €0,12; nog eerder (vóór energie_advies/kopersvragen_faq/marktanalyse) €0,08.
+## 3. Tarieven (bron + datum per regel)
 
-Pro/Kantoor-klanten sturen ook huisstijl-voorbeeldteksten mee: +~1.000 input tokens = extra ~€0,003. Verwaarloosbaar.
-
----
-
-### 2. Virtual staging × 10 (Gemini 2.0 Flash)
-
-| | Nu | Na productierelease |
+| Dienst | Tarief | Bron / datum |
 |---|---|---|
-| Per staging | €0,00 (gratis) | ~€0,04 |
-| **10 stagings** | **€0,00** | **~€0,37** |
+| Claude Sonnet 4.6 (`claude-sonnet-4-6`) | $3,00 / 1M input · $15,00 / 1M output | `claude-api`-skill, modeltabel (gecachet 24 jun 2026, geraadpleegd 1 okt 2026) |
+| Claude Haiku 4.5 (`claude-haiku-4-5`) | $1,00 / 1M input · $5,00 / 1M output | idem |
+| Claude Sonnet 5 (`claude-sonnet-5`, kandidaat, nog niet productief) | $2,00 / 1M input · $10,00 / 1M output | idem |
+| Prompt cache write / read | ~1,25× / ~0,10× van het input-tarief | idem (Anthropic-standaard, ephemeral 5 min TTL) |
+| Gemini 2.5 Flash Image (`gemini-2.5-flash-image`, betaalde laag, GA) | $30,00 / 1M output-tokens → **$0,039 per gegenereerde afbeelding** (1.290 tokens/afbeelding); input $0,30/1M tokens | Google AI-pricing, via websearch 1 okt 2026 (ai.google.dev/gemini-api/docs/pricing) |
+| Vercel Pro | $20 / maand per seat (~€18) | Websearch 1 okt 2026 |
+| Supabase Pro | $25 / maand per project, incl. $10 compute-credit (~€22) | Websearch 1 okt 2026 |
+| Resend | Free tot 3.000 e-mails/mo; Pro $20/mo vanaf 50.000 e-mails (~€18) | Websearch 1 okt 2026 |
+| Plausible Starter | $9 / maand tot 10.000 pageviews (~€8) | Websearch 1 okt 2026 — **welk plan nu actief is, niet geverifieerd: controleren** |
+| Domein `vestaai.nl` (TransIP) | ~€16,50/jaar verlenging (~€1,40/mo) | Websearch 1 okt 2026 — richtprijs, TransIP's eigen factuur kan afwijken: **controleren bij volgende verlenging** |
 
-**Let op:** `gemini-2.0-flash-exp` is een experimenteel model. Google geeft geen garantie op beschikbaarheid of gratis gebruik. Reken hier niet op voor de lange termijn.
+Wisselkoers gebruikt: $1 ≈ €0,88 (1 okt 2026).
 
----
+⚠️ **Vercel-plan waarschijnlijk al Pro, niet Hobby**: `/api/generate` en
+`/api/object/[id]/hergenereer` staan op `maxDuration = 300`; Vercel's Hobby-plan
+staat functies van maximaal 60 s toe. Als deze routes in productie al werken
+(en dat doen ze), draait het project vermoedelijk al op Pro — dit document kon
+het actieve plan niet rechtstreeks bevestigen (geen bevoegdheid/veld in de
+Vercel-tools van deze sessie). **Controleer dit één keer in het Vercel-
+dashboard** voor de vaste-kosten-regel hieronder.
 
-### 3. Document-assistent (1 PDF + 5 vragen)
+## 4. Kostensplit per feature (per taal, tenzij anders vermeld)
 
-De code gebruikt de Anthropic Files API: PDF wordt éénmalig geüpload en opgeslagen bij Anthropic. Bij elke vraag stuurt de app de `file_id` mee — maar de PDF-tokens worden wél per call in rekening gebracht.
+### Kern (altijd NL + EN, 7 velden)
 
-| | Tokens | Kosten |
+Input bestaat uit het gedeelde huisstijlblok (**3.373 tokens**, gemeten via
+`count_tokens` op een i4housing-achtig profiel, zie `lib/claude.ts`
+commentaar) + het taalspecifieke basisblok (**1.569 tokens**, idem gemeten) +
+het tekstsjabloonblok (i4 heeft er een: schatting ~300 tokens) + de
+objectgegevens (~180 tokens) ≈ **5.400 tokens**. Output: `KERN_MAX_TOKENS =
+6000`, werkelijk gebruikt (code-schatting) ~3.300 tokens content + overhead ≈
+**3.500 tokens**.
+
+| | Zonder cache-hit | Met cache-write (1,25×) | Met cache-read (0,10×, binnen 5 min TTL) |
+|---|---|---|---|
+| Kosten per taal | $0,069 ≈ **€0,06** | $0,072 ≈ €0,07 | $0,055 ≈ €0,05 |
+
+Caching scheelt dus maar ~€0,01–0,02 per call (output domineert de kostprijs,
+niet input) — en is bij i4's lage volume (dossiers meestal niet binnen 5
+minuten na elkaar) in de praktijk onzeker. **Aanname voor de scenario's
+hieronder: €0,06 per taal, €0,12 per dossier voor NL + EN samen**, zonder op
+caching te rekenen.
+
+### Extra's (op aanvraag, geen systeemprompt/caching)
+
+| Type | `max_tokens` | Geschatte kosten |
 |---|---|---|
-| Input per vraag (PDF ~5.000 tk + systeem + vraag) | ~5.300 | $0,016 |
-| Output per vraag | ~500 | $0,008 |
-| **5 vragen totaal** | 26.500 in / 2.500 out | **~€0,11** |
+| `open_huis` | 500 | €0,005 |
+| `followup_positief` | 600 | €0,007 |
+| `followup_negatief` | 500 | €0,005 |
+| `video_script` | 500 | €0,005 |
+| `kopersvragen_faq` | 1.600 | €0,017 |
+| `energie_advies` | 1.300 | €0,012 |
 
-⚠️ De document-assistent is de duurste feature per sessie. Bij intensief gebruik (meerdere sessies per dag per klant) kunnen deze kosten snel oplopen. Overweeg rate-limiting of een sessielimiet per maand.
+Gemiddeld ≈ €0,008 per extra. **Aanname: gemiddeld 2 extra's per dossier** →
+≈ €0,02/dossier.
 
----
+### Overige losse calls
 
-### 4. Prijswijziging (VERKOCHT / PRIJSREDUCTIE)
+| Call | Model | Geschatte kosten | Frequentie (aanname) |
+|---|---|---|---|
+| Prijswijziging (VERKOCHT/PRIJSREDUCTIE) | CONTENT | €0,01 | ~50% van dossiers 1×: €0,005/dossier |
+| Herschrijven van één veld | HERSCHRIJF (Haiku) | €0,005–0,01 | ~2×/dossier: €0,02/dossier |
+| Sjabloon-herkansing (alleen bij afwijking) | CONTENT | €0,03 | incidenteel, niet in dossier-aanname |
+| USP-extractie | SAMENVATTING | <€0,01 | 1×/dossier (intake), verwaarloosbaar |
+| Kwartaalbericht | CONTENT | €0,01–0,02 | een paar keer per jaar per kantoor, **niet per dossier** |
 
-| | Tokens | Kosten |
+### Virtual staging (Gemini, betaald sinds de GA-release)
+
+€0,039 ≈ **€0,04 per foto** (plus een kleine invoerkost voor de kale
+kamerfoto, verwaarloosbaar). **Aanname: bij gebruik 10 foto's per pand**
+(ongewijzigd t.o.v. de vorige versie) → €0,37/pand als de feature wordt
+gebruikt.
+
+### Documentassistent (1 PDF + n vragen)
+
+Model is `SAMENVATTING` (**Claude Sonnet 4.6**, niet Haiku — ongewijzigd
+t.o.v. vorige versie, maar nu expliciet bevestigd in de code). Via de
+Anthropic Files API: de PDF wordt eenmalig geüpload, maar **de inhoud wordt
+per vraag opnieuw als tokens in rekening gebracht** (geen caching). Schatting:
+~5.000 tokens PDF + systeemprompt/vraag ≈ 5.100 input, ~500 output per vraag
+→ **≈ €0,02 per vraag**, 5 vragen ≈ **€0,10 per sessie**. **Aanname: 30% van
+de dossiers gebruikt dit 1× (5 vragen)** → €0,03/dossier gemiddeld.
+
+## 5. Totaal per dossier
+
+| Onderdeel | Aanname | Kosten |
 |---|---|---|
-| Input | ~300 | $0,001 |
-| Output (3 social posts) | ~600 | $0,009 |
-| **Subtotaal** | | **~€0,01** |
+| Kern NL + EN | altijd | €0,12 |
+| Extra's | gemiddeld 2 | €0,02 |
+| Prijswijziging | 50% van dossiers | €0,005 |
+| Herschrijven | gemiddeld 2× | €0,02 |
+| Documentassistent | 30% van dossiers, 5 vragen | €0,03 |
+| **Subtotaal zonder staging** | | **≈ €0,20/dossier** |
+| Virtual staging (10 foto's) | *indien gebruikt* | +€0,37 |
+| **Subtotaal met staging** | | **≈ €0,57/dossier** |
 
----
+> **Vuistregel:** zonder staging ~€0,20/dossier; met staging (10 foto's)
+> ~€0,57/dossier. Dit is lager dan de vorige schatting (€0,36/€0,73) — vooral
+> omdat de kern-call sinds Outputset v2 maar 7 velden schrijft in plaats van
+> 17, ook al staat er nu standaard een NL+EN-verdubbeling en een uitgebreider
+> systeemprompt (huisstijl + sjabloon) tegenover.
 
-## Totaal per pand
+## 6. Gebruik nu (alleen lezend, `gebruik_events` + `objecten`, 1 okt 2026)
 
-| Feature | Kosten nu | Kosten na Gemini-betaling |
-|---------|-----------|--------------------------|
-| Hoofdgeneratie (Claude, NL+EN) | €0,24 | €0,24 |
-| Virtual staging × 10 (Gemini) | **€0,00** | **€0,37** |
-| Document-assistent (1 PDF + 5 vragen) | €0,11 | €0,11 |
-| Prijswijziging (Claude) | €0,01 | €0,01 |
-| **TOTAAL** | **~€0,36** | **~€0,73** |
+- `gebruik_events` logt alleen `dossier_bekeken` (2.452 events, laatste 7 dagen)
+  — **geen enkele content-/staging-/documentassistent-actie wordt hier
+  gelogd**, dus deze tabel zegt niets over AI-kosten.
+- `objecten`: alleen het **demo-kantoor** heeft dossiers (15, allemaal binnen
+  2 seconden aangemaakt op 17 sep — duidelijk seed-/testdata, geen NL+EN, geen
+  echt gebruik). **i4housing heeft nog 0 objecten** (consistent met
+  `CLAUDE.md`).
+- `object_documenten` en `stijl_bewerkingen`: beide 0 rijen.
 
-> **Vuistregel:** zonder staging ~€0,36/pand; met staging (betaald) ~€0,73/pand.
+Conclusie: er is op dit moment **geen gemeten echt gebruik** om op te
+begroten — alles hieronder zijn aannames over toekomstig i4-gebruik, geen
+metingen. Zodra i4 een paar weken echt draait, dit hoofdstuk vervangen door
+werkelijke tellingen.
 
----
-
-## Infrastructuurkosten bij het huidige gebruik (i4housing, enige klant)
-
-> Abonnementsprijzen zijn op 15 sep 2026 uit het product gehaald (zie `goals.md` § Prijzen) —
-> deze sectie gaat dus alleen nog over de kale infra-/API-kosten, niet over marge of omzet.
-> **Open actiepunt:** het werkelijke aantal objecten/maand dat i4housing verwerkt is nog niet
-> bekend — de aanname hieronder is bewust laag en voorzichtig, geen gemeten getal. Bijwerken
-> zodra er een paar weken echt gebruik is geweest.
-
-### Variabele kosten (API)
-
-Aanname (voorlopig, niet gemeten): i4housing × ~15 objecten/mo = **15 runs/mo**
-
-| Scenario | Kosten/run | Totaal/mo |
-|----------|-----------|-----------|
-| Nu (Gemini gratis) | €0,36 | **~€5/mo** |
-| Na Gemini-betaling (alle objecten gestaged) | €0,73 | ~€11/mo |
-
-Op deze schaal is de variabele API-kost verwaarloosbaar t.o.v. de vaste infra-kosten
-hieronder — geen reden om hier nu op te sturen.
-
-### Vaste infra-kosten
+## 7. Vaste infrastructuurkosten
 
 | Service | Plan | Kosten/mo | Noodzakelijk? |
-|---------|------|-----------|---------------|
-| **Vercel** | Pro | $20 (~€18) | **JA — verplicht, klantaantal-onafhankelijk.** De virtual staging route heeft `maxDuration = 120s`; Hobby-plan heeft max 60s. Dit blokkeert de feature ook bij één klant. |
-| **Supabase** | Free of Pro | €0 of $25 (~€23) | Bij één kantoor is Free tier technisch ruim voldoende (500MB database, 1GB storage). Pro is vooral zinvol vanwege Point-in-Time Recovery en het uitblijven van sleep-mode — bij één actieve productieklant is dat de moeite waard, maar geen harde eis meer zoals bij 100 klanten. |
-| **Resend** | Free | €0 | Ruim voldoende bij één kantoor (limiet 3.000 e-mails/mo). |
-| **Plausible** | Starter | $9 (~€8) | Optioneel. Verifieer welk plan nu actief is. |
+|---|---|---|---|
+| **Vercel** | Pro (vermoedelijk al actief, zie ⚠️ hierboven) | $20 (~€18) | **JA, onafhankelijk van klantaantal** — de content-routes (`maxDuration = 300`) en virtual staging (`120`) passen niet binnen Hobby's 60 s-limiet. |
+| **Supabase** | Pro aanbevolen vóór een betalende klant (plan niet bevestigd via de tools in deze sessie) | $25 (~€22) | Voorkomt sleep-mode en geeft Point-in-Time Recovery; bij één kantoor technisch niet hard nodig, wel verstandig zodra i4 gaat betalen. |
+| **Resend** | Free | €0 | Ruim voldoende (limiet 3.000 e-mails/mo) bij één kantoor. |
+| **Plausible** | Starter (plan niet bevestigd) | $9 (~€8) | Optioneel. |
+| **Domein** `vestaai.nl` | — | ~€1,40 | Verplicht, verwaarloosbaar. |
 
-**Vaste infra totaal: ~€18–41/mo**, afhankelijk van de Supabase-plankeuze.
+**Vaste infra totaal: ~€18–50/mo**, afhankelijk van welke plannen al actief
+zijn en of Plausible wordt meegerekend.
 
-### Totale kostenstructuur (huidig, i4housing)
+## 8. Drie gebruiksscenario's voor i4 (aannames expliciet)
 
-| Post | /mo |
-|------|-----|
-| Variabele API-kosten (Gemini gratis) | ~€4 |
-| Vaste infra | €18–41 |
-| **Totale kosten** | **~€22–45/mo** |
+Alle scenario's: elk dossier krijgt altijd NL+EN-kern; staging-adoptie is de
+belangrijkste variabele en wordt hier op 50% gehouden (10 foto's bij de helft
+van de dossiers) om de scenario's onderling vergelijkbaar te houden — in
+werkelijkheid onbekend, zie § 6.
 
-Geen omzet-/margeberekening — er is geen betalende klant.
+| Scenario | Dossiers/mo | Staging (50%, 10 foto's) | Variabele kosten/mo | + Vaste infra | **Totaal/mo** |
+|---|---|---|---|---|---|
+| Klein | 5 | 2,5 panden gestaged | ≈ €1,40 | €18–50 | **≈ €19–51** |
+| Middel | 15 | 7,5 panden gestaged | ≈ €5,80 | €18–50 | **≈ €24–56** |
+| Groot | 30 | 15 panden gestaged | ≈ €11,60 | €18–50 | **≈ €30–62** |
 
----
+**Conclusie:** op dit volume is de variabele API-kost nog steeds
+verwaarloosbaar ten opzichte van de vaste infra — dat was ook de conclusie van
+de vorige versie en blijft onveranderd waar. De vaste kosten (Vercel/Supabase)
+zijn de eigenlijke bodemprijs, niet de AI-calls.
 
-## Waar credits storten?
+## 9. Wat de kandidaat-modelwissel (D3, Sonnet 5) zou schelen
 
-### Nu al betaald
+`CONTENT_KANDIDAAT = claude-sonnet-5` ($2/$10 per 1M) is ~33% goedkoper dan
+`CONTENT = claude-sonnet-4-6` ($3/$15) op zowel input als output, en is **nog
+niet productief** — alleen gebruikt in de blinde evaluatieset
+(`scripts/evalueer-content.mjs`, item 8.1), in afwachting van Quinns oordeel
+over de kwaliteit.
 
-| Waar | Voor wat | Actie |
-|------|----------|-------|
-| **Anthropic (console.anthropic.com)** | Alle Claude-calls: hoofdgeneratie, document-assistent, prijswijziging, herschrijven | Credits storten of maandelijkse automatische afschrijving instellen. **Dit is de grootste kostenpost.** |
+Als de wissel wordt gewonnen en doorgevoerd, scheelt dat ~33% op alles wat via
+`CONTENT` loopt: kern, extra's, prijswijziging, sjabloon-herkansing en
+kwartaalbericht — **niet** op de documentassistent/USP-extractie/herschrijven
+(die lopen via `SAMENVATTING`/`HERSCHRIJF`, een apart besluit). Op het
+"Groot"-scenario (30 dossiers/mo) zou dat de variabele kosten van ≈ €11,60
+naar ≈ €7,70 per maand brengen — een paar euro op dit volume, maar een
+besparing die meeschaalt zodra het klantenbestand groeit.
 
-### Nu gratis → straks betaald
+## 10. Kostprijs-ondergrens (geen prijsvoorstel)
 
-| Service | Situatie | Wanneer actie? |
-|---------|----------|----------------|
-| **Google AI Studio (aistudio.google.com)** | `gemini-2.0-flash-exp` is gratis experimental. Zodra Google dit model productief maakt, gaan er kosten aan zitten (~€0,04/afbeelding). | Monitor Google's aankondigingen. Overweeg de model-naam in `/api/fotos/staging/route.ts` bij te werken naar `gemini-2.0-flash` zodra het betaalde tarief bekend is, en een Google Cloud Billing-account te activeren. |
-| **Supabase Free → Pro** | Technisch nu gratis genoeg, maar Free draait periodiek in sleep-mode: slecht voor productie. | Upgraden naar Pro ($25/mo) vóór eerste betalende klant. |
-| **Resend Free → Pro** | Gratis tot 3.000 e-mails/mo | Upgraden bij ~250+ klanten ($20/mo). |
-| **Vercel Hobby → Pro** | De staging route vereist >60s timeout; dit werkt nu al niet op Hobby. | **Direct upgraden naar Pro ($20/mo)** als virtual staging actief wordt. |
+Dit document gaat uitsluitend over kostprijs — een prijsvoorstel aan i4housing
+is aan Quinn. Als ondergrens per maand (kostprijs, geen marge):
 
-### Gratis en blijft gratis
+- **Klein (5 dossiers/mo): ≈ €19–51/mo**
+- **Middel (15 dossiers/mo): ≈ €24–56/mo**
+- **Groot (30 dossiers/mo): ≈ €30–62/mo**
 
-| Service | Waarom gratis? |
-|---------|---------------|
-| **BAG API (PDOK)** | Nationaal Georegister, open data, geen gebruikslimiet voor normaal gebruik |
-| **Sharp** (foto-correcties) | Open-source npm-library, draait lokaal op Vercel — geen externe API |
-| **Anthropic Files API** (document storage) | Geen opslagkosten; tokens worden bij gebruik verrekend |
+De bandbreedte in elk scenario komt vrijwel volledig van de vaste
+infra-aannames (Supabase-plankeuze, wel/niet Plausible), niet van het
+dossiervolume.
 
----
+## 11. Open actiepunten
 
-## Aanbevelingen
-
-1. **Vercel Pro nu activeren.** Virtual staging heeft 120s timeout nodig. Dit is een harde vereiste zodra de feature live gaat.
-
-2. **Anthropic-budget instellen.** Zet een maandelijks spending limit in de Anthropic console (bijv. $100/mo om te beginnen) zodat je geen verrassingen krijgt bij onverwacht gebruik.
-
-3. **Document-assistent monitoren.** Eén actieve klant die dagelijks 10+ vragen stelt kost al €0,22/dag = €6,60/mo extra. Overweeg een sessielimiet (bijv. 10 vragen/dag per kantoor) of toon de klant hoeveel sessies hij heeft gebruikt.
-
-4. **Gemini-model pinnen.** De code gebruikt `gemini-2.0-flash-exp` — een experimenteel model dat zonder waarschuwing kan worden aangepast of afgeschaald. Houd een oog op de Google AI release notes en plan een switch naar het stabiele model.
-
-5. **Prompt caching overwegen.** Zodra het platform groeit, kan Anthropic's prompt caching (beschikbaar via `cache_control`) de kosten voor de document-assistent met 70–90% verlagen (hergebruik van gecachede PDF-tokens). Nu nog niet geïmplementeerd in de code.
+1. **Vercel-plan bevestigen** (zie ⚠️ § 3) — vermoedelijk al Pro vanwege de
+   300s-functielimiet, niet rechtstreeks bevestigd.
+2. **Supabase-plan bevestigen** — niet zichtbaar via de tools in deze sessie.
+3. **Plausible-plan bevestigen** — welk plan nu actief is, staat niet vast.
+4. **Werkelijk i4-gebruik meten** zodra er een paar weken productiedata is
+   (§ 6) — vervang de aannames in § 8 door tellingen.
+5. Domeinprijs is een richtprijs (TransIP-aggregators lopen uiteen) —
+   verwaarloosbaar bedrag, maar controleer bij de volgende jaarlijkse
+   verlenging.
