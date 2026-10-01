@@ -616,6 +616,23 @@ export type MarktEigenData = z.infer<typeof MarktEigenDataSchema>
 export const FetchStatusSchema = z.enum(['ok', 'leeg', 'mislukt', 'niet_gekoppeld'])
 export type FetchStatus = z.infer<typeof FetchStatusSchema>
 
+// Item 12.9 (1 okt 2026, "Verversen zonder dataverlies"): "Ververs" overschreef
+// `verrijking_json` altijd in zijn geheel — faalde een bron op dat moment (bv.
+// Overpass overbelast), dan was goede data domweg weg. `voegVerrijkingSamen()`
+// (lib/verrijkingOpslag.ts) houdt per bron de vorige goede data aan zolang een
+// verversing mislukt, en gebruikt dit veld om te onthouden wánneer die data
+// écht is opgehaald en of de laatste verversing daarna nog eens mislukte — de
+// UI (`BuurtDataTab.tsx`) toont dat eerlijk i.p.v. oud stilzwijgend als nieuw.
+// `.optional()`: rijen van vóór deze fix missen het veld; dan valt
+// `voegVerrijkingSamen()` terug op het top-level `opgehaald_op`.
+export const BronMetaSchema = z.object({
+  /** ISO-tijdstempel waarop déze brondata voor het laatst écht (succesvol) is opgehaald. */
+  opgehaald_op: z.string(),
+  /** `true` zodra de daaropvolgende verversing voor deze bron mislukte en de data hierboven dus ouder is dan `opgehaald_op` van de hele opslag. */
+  laatste_verversing_mislukt: z.boolean().optional(),
+})
+export type BronMeta = z.infer<typeof BronMetaSchema>
+
 export const VerrijkingOpslagSchema = z.object({
   versie: z.literal(1),
   woz: WozDataSchema.nullable(),
@@ -628,6 +645,12 @@ export const VerrijkingOpslagSchema = z.object({
     woz: FetchStatusSchema,
     cbs: FetchStatusSchema,
     voorzieningen: FetchStatusSchema,
+  }).optional(),
+  /** Per bron: zie `BronMetaSchema` hierboven. Optioneel — oudere opslag mist dit. */
+  bronMeta: z.object({
+    woz: BronMetaSchema.optional(),
+    cbs: BronMetaSchema.optional(),
+    voorzieningen: BronMetaSchema.optional(),
   }).optional(),
   /** ISO-tijdstempel van het moment waarop deze verrijking is opgehaald. */
   opgehaald_op: z.string(),

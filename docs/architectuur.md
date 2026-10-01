@@ -316,7 +316,19 @@ Productie: `https://www.vestaai.nl` (het kale domein stuurt door).
 | Brainbay / Realworks | transactiedataset | `scripts/import-transacties.mjs`, `lib/importPijplijn.ts` | concierge: Quinn importeert, het kantoor niet |
 
 Elke bron geeft `ok`/`leeg`/`mislukt`/`niet_gekoppeld`; een mislukte call wordt
-gelogd (zonder adres) en valt nooit stil terug op "geen resultaat".
+gelogd (zonder adres) en valt nooit stil terug op "geen resultaat". `pdokLookup()`
+geeft sinds item 12.9 (1 okt 2026) zelf ook een status: een PDOK-uitval maakt CBS
+en voorzieningen (die allebei PDOK's buurt/wijk/gemeentecode resp. coördinaat
+nodig hebben) `mislukt` in plaats van het misleidende `leeg`.
+
+**Verversen zonder dataverlies** (item 12.9): de "Ververs"-route
+(`POST /api/object/[id]/verrijking`) overschreef `verrijking_json` voorheen in
+zijn geheel — faalde één bron op dat moment (bv. Overpass overbelast), dan was
+goede data domweg weg. `voegVerrijkingSamen()` (`lib/verrijkingOpslag.ts`)
+voegt een verse poging nu per bron samen met de vorige opslag: mislukt een
+bron terwijl de vorige data `ok` was, dan blijft die staan (met de datum
+waarop die écht is opgehaald, `bronMeta` in `lib/schemas.ts`) en meldt
+`BuurtDataTab.tsx` dat eerlijk — nooit oud stilzwijgend als nieuw tonen.
 
 ## 12. Beveiliging en privacy
 

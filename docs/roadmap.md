@@ -22,9 +22,9 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 1 okt 2026. Laatst gedaan: ronde 1 okt — 12.7 buurtdata (CBS-fix,
-alle 15 demo-kantoordossiers ververst), 12.8 referentietabel, F1 CI op GitHub,
-F2 herstelplan, F5 audit 0, F6 docx-test (zie besluiten).*
+*Bijgewerkt 1 okt 2026. Laatst gedaan: rondes R en S op 1 okt — buurtdata
+(CBS-fix, verversen zonder dataverlies, PDOK-status), referentietabel, CI op
+GitHub, herstelplan, audit 0, docx-test, kostenschatting (zie besluiten).*
 
 - **Wat er staat:** het hele platform behalve het verkoopadviesdocument en de
   echte data van i4 Housing — zie `docs/productoverzicht.md`.
@@ -32,9 +32,9 @@ F2 herstelplan, F5 audit 0, F6 docx-test (zie besluiten).*
   data (§ 1).
 - **Kritiek pad:** exports van Quinn → 5.1 exportanalyse → 5.5 import →
   M1 tussencheck taxateur → demovoorbereiding (12.1, 12.5, 12.7) → demo.
-- **Volgende ronde, bouwbaar zonder input** (nul bestandsoverlap): 12.9
-  verversen zonder dataverlies · F8 kostenschatting. Daarna is alles wat nog
-  openstaat afhankelijk van Quinn (§ 2) of optioneel (F9 bij aanraking, F10).
+- **Volgende ronde:** er is geen bouwbaar item meer zonder input van Quinn.
+  Alles wat openstaat wacht op § 2 (exports, voorbeeld-verkoopadvies, akkoord
+  betaalde testruns, team-accounts) of is optioneel (F9 bij aanraking, F10).
 - **Wacht op Quinn:** § 2 — vooral de exports (blokkeert alles op het kritieke
   pad), het voorbeeld-verkoopadvies en akkoord op de betaalde testruns.
 - ⚠️ **Demo-realiteit:** i4 Housing heeft 0 transacties én 0 dossiers
@@ -122,7 +122,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 13. **Google Search Console** en de omleiding van de Vercel-alias.
 14. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
     slaapstand), definitieve verwerkersovereenkomst (⚠️ de import is formeel al
-    verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (eerst F8), en een
+    verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (kostprijs ≈ €43–62/mnd bij 5–30 dossiers: `docs/strategie/kostenschatting.md`), en een
     jurist die voorwaarden + privacyverklaring toetst.
 15. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
     zakelijk mailadres (bv. `info@vestaai.nl`). Deblokkeert E1. Uiterlijk vóór het
@@ -182,22 +182,6 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
     (branch `demo`, 48 uur geen deploys) · generale repetitie met screenshots.
   *Klaar als:* generale repetitie op i4-data zonder haperingen, alle checks
   groen.
-- [ ] **12.9 Verversen zonder dataverlies** *(gevonden 1 okt, demo-risico)* —
-  "Ververs" in Buurt & data (`POST /api/object/[id]/verrijking`) overschrijft
-  `verrijking_json` in zijn geheel. Faalt Overpass op dat moment (dag-op-dag
-  overbelast, HTTP 504), dan zijn goede voorzieningen weg: op 1 okt gebeurde
-  dat bij Haagweg 102 en Rembrandtlaan 14 (een tweede poging herstelde ze).
-  (a) Faalt een bron bij verversen terwijl de vorige opslag voor die bron `ok`
-  was, bewaar dan de vorige data mét de datum waarop die is opgehaald, en meld
-  eerlijk "verversen mislukt, gegevens van <datum>" (nooit stil oud als nieuw
-  tonen). Vraagt een optioneel veld per bron in `VerrijkingOpslagSchema`
-  (`lib/schemas.ts`), samenvoegen in de route of een pure functie in
-  `lib/verrijkingOpslag.ts` (met test), en de melding in `BuurtDataTab.tsx`.
-  (b) `pdokLookup()` gebruikt `fetchMet()` (alleen data, geen status): een
-  PDOK-uitval is nu onzichtbaar en leidt tot CBS/voorzieningen `leeg` in plaats
-  van `mislukt`. Zelfde patroon als de CBS-fix van 12.7 (`fetchMetStatus()`).
-  *Klaar als:* een mislukte bron overschrijft nooit goede data, de UI zegt
-  eerlijk hoe oud die is, en een PDOK-uitval geeft `mislukt`.
 
 ### C. Verkoopadvies (masterplan fase 11) — geblokkeerd op het voorbeeld
 
@@ -237,7 +221,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 
 ### F. Fundament en onderhoud — nieuw uit de opschoning van 30 sep
 
-Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6 en F7 zijn op
+Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6, F7 en F8 zijn op
 1 okt gedaan — zie besluiten.)
 
 - [ ] **F3 Bewaarbeleid back-ups** — `backups/` bevat 14 sets productiedata
@@ -249,16 +233,11 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6 en F7 zijn op
   demo)* — `meldFout()` logt nu alleen naar de console, dus fouten staan alleen
   kort in de Vercel-logs en niemand krijgt een seintje. Sentry (gratis laag) of
   een vergelijkbare dienst op `meldFout` aansluiten; account = actie Quinn.
-- [ ] **F8 Kostenschatting bijwerken** *(vóór het prijsgesprek)* —
-  `docs/strategie/kostenschatting.md` rekent nog met 17 contenttypes, Gemini
-  2.0 gratis en Vercel-limieten van toen. Opnieuw met outputset v2 + extra's,
-  Gemini 2.5 betaald, Vercel Pro en Supabase Pro.
 - [ ] **F9 Lint-omzeilingen herstructureren** *(bij aanraking)* — in
   `StatTile`, `WaardePresentatie`, `BuurtDataTab` en `KwartaalberichtModal`
   staat een setState in `requestAnimationFrame`/`queueMicrotask`. Werkt, maar
   is omzeilen. `WaardebepalingPaneel` is op 1 okt herschreven naar "state
-  aanpassen tijdens render" — dat is het patroon voor de rest
-  (`BuurtDataTab` hoort bij 12.9).
+  aanpassen tijdens render" — dat is het patroon voor de rest.
 - [ ] **F10 Codemappen herindelen** *(optioneel, laagste prioriteit)* — `lib/`
   heeft ± 80 modules plat naast elkaar, `components/` ± 45. Groeperen per domein
   (waardering, import, kaart, content, marktinzichten, …) maakt het beter te
@@ -278,7 +257,7 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6 en F7 zijn op
 | Brainbay-licentie staat tonen in een platform van derden niet toe | Schriftelijke bevestiging vóór 5.5; tot die tijd alleen fixture-data |
 | Taxateurs vertrouwen de waardering niet | Transparante referentietabel, WOZ-ijkpunt, backtest, M1-tussencheck |
 | Content NL + EN duurt langer dan de functielimiet | Meten (D2); splitsen of Vercel Pro |
-| Buurtbron faalt tijdens de demo (Overpass overbelast) | Opgeslagen data blijft staan zolang niemand op "Ververs" klikt — in de demo niet klikken; 12.9 |
+| Buurtbron faalt tijdens de demo (Overpass overbelast) | Verversen overschrijft nooit meer goede data (12.9, 1 okt); de UI meldt dan "gegevens van <datum>" — in de demo toch niet op "Ververs" klikken |
 | Dataverlies op productie (geen Supabase Pro) | Volledige back-up (alle tabellen + Storage + manifest) vóór elke risicovolle stap; herstelprocedure in werkwijze § 5; Supabase Pro vóór het eerste contract |
 | Supabase gratis pauzeert na 7 dagen inactiviteit | Dagelijks gebruik; check de dag vóór de demo |
 | Fouten bij de klant blijven onopgemerkt | F4 foutmonitoring; feedbackknop |

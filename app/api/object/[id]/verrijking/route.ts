@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking } from '@/lib/verrijking'
-import { naarVerrijkingOpslag } from '@/lib/verrijkingOpslag'
+import { naarVerrijkingOpslag, voegVerrijkingSamen, verwerkOpgeslagenVerrijking } from '@/lib/verrijkingOpslag'
 import { dataTotEnMet, marktanalyseSamenvatting } from '@/lib/transactiesQuery'
 import { PropertyInputSchema, type MarktEigenData } from '@/lib/schemas'
 import { meldFout } from '@/lib/fouten'
@@ -41,11 +41,16 @@ export async function POST(_req: NextRequest, props: { params: Promise<{ id: str
   const serviceClient = createServiceSupabaseClient()
   const { data: object } = await serviceClient
     .from('objecten')
-    .select('id, address, input_json')
+    .select('id, address, input_json, verrijking_json')
     .eq('id', params.id)
     .eq('kantoor_id', makelaar.kantoor_id)
     .single()
   if (!object) return NextResponse.json({ error: 'Woning niet gevonden' }, { status: 404 })
+
+  // Item 12.9: de vorige opslag is nodig om een mislukte bron straks tegen te
+  // kunnen houden (voegVerrijkingSamen() hieronder) — `null` bij een nieuw
+  // dossier of een onbruikbare oude vorm, dan wint de verse poging gewoon.
+  const vorigeOpslag = verwerkOpgeslagenVerrijking({ data: object, error: null })
 
   const invoer = PropertyInputSchema.safeParse(object.input_json)
   const oppervlak = invoer.success ? invoer.data.oppervlak_m2 : undefined
@@ -93,7 +98,10 @@ export async function POST(_req: NextRequest, props: { params: Promise<{ id: str
 
   try {
     const data = await fetchVerrijking(object.address, oppervlak)
-    const opslag = naarVerrijkingOpslag(data, new Date().toISOString(), marktEigen)
+    const verse = naarVerrijkingOpslag(data, new Date().toISOString(), marktEigen)
+    // Item 12.9: mislukt een bron hier terwijl de vorige opslag voor die bron
+    // goede data had, dan blijft die staan — zie lib/verrijkingOpslag.ts.
+    const opslag = voegVerrijkingSamen(vorigeOpslag, verse)
 
     const { error } = await serviceClient
       .from('objecten')

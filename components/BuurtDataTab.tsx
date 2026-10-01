@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { EmptyState, Skeleton } from '@/components/ui'
 import { WozKaart } from '@/components/WozKaart'
-import type { CbsNiveau, FetchStatus, VerrijkingOpslag } from '@/lib/schemas'
+import type { BronMeta, CbsNiveau, FetchStatus, VerrijkingOpslag } from '@/lib/schemas'
 import { euro, procent, dagen, datum, datumTijd, afstand, nlNL } from '@/lib/opmaak'
 
 /**
@@ -163,12 +163,15 @@ export function BuurtDataTab({
       <div style={cardStyle}>
         <p style={{ ...blokLabel, marginBottom: 12 }}>Buurtcijfers{cbs?.buurtnaam ? ` — ${cbs.buurtnaam}` : ''}</p>
         {statusCbs === 'ok' && cbs ? (
-          <div style={cijferGrid}>
-            {cbs.inkomen && <Cijfer titel="Gem. inkomen" waarde={euro(cbs.inkomen.waarde)} niveau={cbs.inkomen.niveau} />}
-            {cbs.pct_koop && <Cijfer titel="Koopwoningen" waarde={`${cbs.pct_koop.waarde}%`} niveau={cbs.pct_koop.niveau} />}
-            {cbs.pct_hoog_opgeleid && <Cijfer titel="Hbo/wo-opgeleid" waarde={`${cbs.pct_hoog_opgeleid.waarde}%`} niveau={cbs.pct_hoog_opgeleid.niveau} />}
-            {cbs.dichtheid_per_km2 && <Cijfer titel="Inwoners/km²" waarde={nlNL.format(cbs.dichtheid_per_km2.waarde)} niveau={cbs.dichtheid_per_km2.niveau} />}
-          </div>
+          <>
+            <div style={cijferGrid}>
+              {cbs.inkomen && <Cijfer titel="Gem. inkomen" waarde={euro(cbs.inkomen.waarde)} niveau={cbs.inkomen.niveau} />}
+              {cbs.pct_koop && <Cijfer titel="Koopwoningen" waarde={`${cbs.pct_koop.waarde}%`} niveau={cbs.pct_koop.niveau} />}
+              {cbs.pct_hoog_opgeleid && <Cijfer titel="Hbo/wo-opgeleid" waarde={`${cbs.pct_hoog_opgeleid.waarde}%`} niveau={cbs.pct_hoog_opgeleid.niveau} />}
+              {cbs.dichtheid_per_km2 && <Cijfer titel="Inwoners/km²" waarde={nlNL.format(cbs.dichtheid_per_km2.waarde)} niveau={cbs.dichtheid_per_km2.niveau} />}
+            </div>
+            <VerversMislukt meta={data.bronMeta?.cbs} />
+          </>
         ) : (
           <BronMelding status={statusCbs} leeg="Geen CBS-buurtcijfers gevonden voor dit adres." />
         )}
@@ -185,15 +188,18 @@ export function BuurtDataTab({
           {statusVoorzieningen === 'ok' && voorzieningen && <span style={badgeStijl}>{voorzieningen.nabijheid_beoordeling}</span>}
         </div>
         {statusVoorzieningen === 'ok' && voorzieningen ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-            <Voorziening titel="Supermarkt" items={voorzieningen.supermarkt} />
-            <Voorziening titel="Apotheek" items={voorzieningen.apotheek} />
-            <Voorziening titel="Huisarts" items={voorzieningen.huisarts} />
-            <Voorziening titel="School" items={voorzieningen.scholen} />
-            <Voorziening titel="OV-halte" items={voorzieningen.ov_haltes} />
-            <Voorziening titel="Station" items={voorzieningen.treinstation} />
-            <Voorziening titel="Groen" items={voorzieningen.groen} />
-          </div>
+          <>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+              <Voorziening titel="Supermarkt" items={voorzieningen.supermarkt} />
+              <Voorziening titel="Apotheek" items={voorzieningen.apotheek} />
+              <Voorziening titel="Huisarts" items={voorzieningen.huisarts} />
+              <Voorziening titel="School" items={voorzieningen.scholen} />
+              <Voorziening titel="OV-halte" items={voorzieningen.ov_haltes} />
+              <Voorziening titel="Station" items={voorzieningen.treinstation} />
+              <Voorziening titel="Groen" items={voorzieningen.groen} />
+            </div>
+            <VerversMislukt meta={data.bronMeta?.voorzieningen} />
+          </>
         ) : statusVoorzieningen === 'mislukt' && cbsNabijheid.length > 0 ? (
           // De publieke Overpass-servers zijn vaak overbelast (meting 24 sep 2026):
           // val dan terug op de CBS-buurtafstanden i.p.v. alleen "mislukt".
@@ -264,6 +270,24 @@ function BronMelding({ status, leeg }: { status: FetchStatus; leeg: string }) {
     return <p style={legeTekst}>Kon niet worden opgehaald — probeer <strong>Ververs</strong> hierboven opnieuw.</p>
   }
   return <p style={legeTekst}>{leeg}</p>
+}
+
+/**
+ * Item 12.9 ("Verversen zonder dataverlies", 1 okt 2026): zodra
+ * `voegVerrijkingSamen()` (lib/verrijkingOpslag.ts) de vorige goede data voor
+ * een bron aanhoudt omdat de laatste verversing mislukte, zet die data hier
+ * gewoon als `ok` — zonder deze melding zou je niet kunnen zien dat dit niet
+ * de data van zojuist is. Semantische kleur: nooit `--merk-accent` (rood leest
+ * bij i4 als fout), dus dezelfde neutrale amberkleur als de "weinig
+ * referenties"-waarschuwing elders in dit scherm.
+ */
+function VerversMislukt({ meta }: { meta?: BronMeta }) {
+  if (!meta?.laatste_verversing_mislukt) return null
+  return (
+    <p style={{ fontSize: 12, color: '#B45309', margin: '12px 0 0' }}>
+      Verversen lukte niet — dit zijn je gegevens van {datum(meta.opgehaald_op)}.
+    </p>
+  )
 }
 
 const cardStyle: React.CSSProperties = {

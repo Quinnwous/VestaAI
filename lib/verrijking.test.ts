@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cbsRegioCode, fetchVerrijking, pdokZoek, verrijkingNaarPrompt } from './verrijking'
+import { cbsRegioCode, fetchVerrijking, lookupCoordinaten, pdokZoek, verrijkingNaarPrompt } from './verrijking'
 
 // De verrijkingslaag mag nooit een gemeentecijfer als buurtfeit presenteren — CBS
 // onderdrukt cijfers voor kleine gebieden, dus per indicator zakken we naar het
@@ -304,6 +304,47 @@ describe('bronstatus WOZ en voorzieningen (24 sep 2026)', () => {
     const v = await fetchVerrijking('Prinsengracht 263 Amsterdam')
     expect(v.cbs?.nabijheid.supermarkt_km).toEqual({ waarde: 0.4, niveau: 'buurt' })
     expect(v.cbs?.nabijheid.huisarts_km).toBeNull()
+  })
+})
+
+// Item 12.9-fix (1 okt 2026): `pdokLookup()` gebruikte `fetchMet` (alleen de
+// data) — een PDOK-uitval was daardoor onzichtbaar en leidde tot CBS/
+// voorzieningen 'leeg' i.p.v. 'mislukt'. Zelfde patroon als de CBS-fix van
+// 12.7 (fetchMetStatus i.p.v. fetchMet).
+describe('PDOK-uitval (12.9-fix)', () => {
+  it('meldt cbs en voorzieningen als mislukt (niet leeg) als PDOK zelf niet bereikbaar is', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
+      const href = typeof url === 'string' ? url : url.toString()
+      if (href.includes('api.pdok.nl')) return new Response('kapot', { status: 503 })
+      // WOZ/Overpass/CBS worden hier nooit echt aangeroepen (geen coord/codes
+      // zonder PDOK-treffer) — dit antwoord is alleen een vangnet.
+      return new Response('nee', { status: 503 })
+    }))
+
+    const v = await fetchVerrijking('Onbekend adres 1')
+
+    expect(v.bronnen.cbs).toBe('mislukt')
+    expect(v.bronnen.voorzieningen).toBe('mislukt')
+    expect(v.gemeente).toBeNull()
+    expect(v.coord).toBeNull()
+  })
+
+  it('blijft leeg (niet mislukt) als PDOK gewoon antwoordt maar niets vindt voor dit adres', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string | URL) => {
+      const href = typeof url === 'string' ? url : url.toString()
+      if (href.includes('api.pdok.nl')) return new Response(JSON.stringify({ response: { docs: [] } }), { status: 200 })
+      return new Response('nee', { status: 503 })
+    }))
+
+    const v = await fetchVerrijking('Onbestaandestraat 1 Nergenshuizen')
+
+    expect(v.bronnen.cbs).toBe('leeg')
+    expect(v.bronnen.voorzieningen).toBe('leeg')
+  })
+
+  it('laat lookupCoordinaten gewoon null teruggeven bij een PDOK-uitval (gedrag ongewijzigd)', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('kapot', { status: 503 })))
+    expect(await lookupCoordinaten('Onbekend adres 1')).toBeNull()
   })
 })
 
