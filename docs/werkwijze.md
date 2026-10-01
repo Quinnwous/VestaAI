@@ -126,7 +126,7 @@ Er is één database (productie) en geen Supabase Pro, dus geen herstelpunten.
 - **Alles herstellen, in FK-volgorde:** `kantoren` → `makelaars` (ná de
   bijbehorende auth-gebruikers) → `imports` → `objecten` → `transacties` →
   `object_documenten`/`object_fotos`/`stijl_bewerkingen`/`gebruik_events`
-  (depend op `objecten`, onderling geen volgorde-eis).
+  (hangen af van `objecten`, onderling geen volgorde-eis).
 - **Storage herstellen:** upload elk bestand onder `storage/<bucket>/<pad>`
   terug naar diezelfde bucket/pad (`supabase.storage.from(bucket).upload(pad, …)`).
 - Draai na een herstel `node --env-file=.env.local scripts/controleer-schema.mjs`
