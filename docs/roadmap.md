@@ -22,8 +22,9 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 30 sep 2026 (opschoning: roadmap gesplitst, docs heringedeeld,
-dode code weg).*
+*Bijgewerkt 1 okt 2026. Laatst gedaan: opschoning (roadmap gesplitst, docs
+heringedeeld, dode code weg; PR #53, #54) en daarna opruimmigratie 2 + GitHub
+opgeruimd (zie besluiten).*
 
 - **Wat er staat:** het hele platform behalve het verkoopadviesdocument en de
   echte data van i4 Housing — zie `docs/productoverzicht.md`.
@@ -104,38 +105,32 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 8. **Oordelen:** pastelkleuren van de kaart (`/marktanalyse/kaart`) en i4-blauw
    op knoppen `#007BC0` in plaats van `#0080C8` (voor AA-contrast, met het oog
    niet te zien).
-9. **Akkoord opruimmigratie 2** (F7): tabel `nps_responses` (leeg) en kolom
-   `makelaars.first_generated_at` (nooit gevuld) weghalen.
-10. **Akkoord GitHub opruimen:** de 41 gemergde branches op GitHub weghalen en
-    voortaan na elke merge automatisch laten verwijderen
-    (`gh pr merge --delete-branch`). Alles zit al in `main`; er gaat niets
-    verloren.
-11. **Nieuwe juridische teksten lezen** (voorwaarden v1.1 en privacyverklaring,
+9. **Nieuwe juridische teksten lezen** (voorwaarden v1.1 en privacyverklaring,
     30 sep).
 
 ### Vóór de demo of vóór het eerste betaalde contract
 
-12. **Vercel Pro** — het Hobby-plan is volgens Vercels fair-use-regels voor
+10. **Vercel Pro** — het Hobby-plan is volgens Vercels fair-use-regels voor
     niet-commercieel gebruik; zodra i4 Housing betaalt is Pro nodig. Het geeft
     ook ruimere functieduur (content NL + EN) en terugrollen naar elke eerdere
     deploy. Liefst al vóór de demo.
-13. **Tussencheck taxateur (M1):** `docs/waardering/methode.md` (rekenvoorbeeld
+11. **Tussencheck taxateur (M1):** `docs/waardering/methode.md` (rekenvoorbeeld
     en vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
     https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm; contactpersoon noemen.
-14. **Blind oordeel content** (± 30 min, betaalde calls): huidige model tegen de
+12. **Blind oordeel content** (± 30 min, betaalde calls): huidige model tegen de
     kandidaat `claude-sonnet-5` — pas daarna een modelwissel.
-15. **Google Search Console** en de omleiding van de Vercel-alias.
-16. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
+13. **Google Search Console** en de omleiding van de Vercel-alias.
+14. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
     slaapstand), definitieve verwerkersovereenkomst (⚠️ de import is formeel al
     verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (eerst F8), en een
     jurist die voorwaarden + privacyverklaring toetst.
-17. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
+15. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
     zakelijk mailadres (bv. `info@vestaai.nl`). Deblokkeert E1. Uiterlijk vóór het
     eerste betaalde contract.
-18. **Gemini betaalde laag bevestigen** (Google AI Studio → API-sleutel →
+16. **Gemini betaalde laag bevestigen** (Google AI Studio → API-sleutel →
     billing aan): op de gratis laag mag Google ingestuurde foto's gebruiken, en
     dan klopt de privacyverklaring niet. Geen blokkade.
-19. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
+17. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
     contract of de verwerkersovereenkomst laten opnemen.
 
 ---
@@ -221,7 +216,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
   `e2e/content.spec.ts`. Komt hij boven ± 240 s, dan NL en EN in twee aparte
   functie-aanroepen splitsen (of Vercel Pro met langere duur). Plus één keer het
   EN-kwartaalbericht tegen de echte API.
-- [ ] **D3 Modelkeuze** *(na het blinde oordeel, § 2 punt 14)*: wint de
+- [ ] **D3 Modelkeuze** *(na het blinde oordeel, § 2 punt 12)*: wint de
   kandidaat, dan `CONTENT` in `lib/aiModellen.ts` wisselen en de kostenschatting
   bijwerken.
 - *Klaar als (fase):* i4-tekst volgt het sjabloon 1-op-1 in NL en EN; brochure
@@ -231,7 +226,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 ### E. Juridisch (masterplan fase 14)
 
 - [ ] **E1 (14.2) Bedrijfsgegevens + zakelijk e-mailadres** *(geblokkeerd: § 2
-  punt 17)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
+  punt 15)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
   Handelsregisterwet: naam, KvK-nummer, vestigingsadres, btw-id, e-mail) in één
   constante `lib/bedrijf.ts`, gelezen door de footer van de publieke pagina's,
   `/contact`, privacy en voorwaarden (art. 7 krijgt een plaats). Het gmail-adres
@@ -241,7 +236,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 ### F. Fundament en onderhoud — nieuw uit de opschoning van 30 sep
 
 Bouwbaar zonder input, tenzij anders vermeld. F1, F2, F5 en F6 hebben geen
-bestandsoverlap en kunnen parallel.
+bestandsoverlap en kunnen parallel. (F7, opruimmigratie 2, is op 1 okt gedaan.)
 
 - [ ] **F1 CI op GitHub** — er draait nu niets automatisch: typecheck, lint en
   tests gebeuren alleen lokaal. Eén workflow (`.github/workflows/ci.yml`) die bij
@@ -275,9 +270,6 @@ bestandsoverlap en kunnen parallel.
 - [ ] **F6 Docx-test draait nooit** — `lib/docx.test.ts` slaat zichzelf altijd
   over, omdat de fixture klantdata is en niet in git staat. Maak een kleine
   synthetische `.docx` als fixture, zodat de documentenassistent echt getest is.
-- [ ] **F7 Opruimmigratie 2** *(na akkoord, § 2 punt 9)*: `nps_responses` en
-  `makelaars.first_generated_at` droppen, het veld uit `lib/supabase.ts` halen.
-  Veilig: geen code gebruikt ze. Back-up vooraf.
 - [ ] **F8 Kostenschatting bijwerken** *(vóór het prijsgesprek)* —
   `docs/strategie/kostenschatting.md` rekent nog met 17 contenttypes, Gemini
   2.0 gratis en Vercel-limieten van toen. Opnieuw met outputset v2 + extra's,

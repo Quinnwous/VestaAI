@@ -53,7 +53,7 @@ referenties in hun fase — gecontroleerd in de database):
 | Fase | Dossier | Waarom |
 |---|---|---|
 | Verkoopadvies | Kerkehoutlaan 12 — `/object/0e4c5322-92a4-41f7-b005-57344f8b6a4e` | waardering met 25 referenties, geen content |
-| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 8 punt 6) |
+| In verkoop | Storm van 's-Gravesandeweg 3 — `/object/e86b86d7-5755-41c7-9319-ea02a9ec3423` | NL-content klaar, 22 referenties. ⚠️ nog **geen Engelse** content (geen enkel demo-dossier heeft die): één keer "Genereer content" draaien, en dat hoort bij de betaalde testruns (roadmap § 2 punt 6) |
 | Verkocht | Rust en Vreugdlaan 5 — `/object/f1db5bd7-133f-4e1a-989c-7be97d505f10` | content klaar, 25 referenties |
 
 Geen van de demo-dossiers heeft foto's; voor de brochure-pdf en virtual staging
@@ -83,7 +83,7 @@ klikken.
 
 ### Checklist — dag ervoor
 
-1. **Vercel** naar **Pro** (roadmap § 2 punt 12, staat nog op Hobby) —
+1. **Vercel** naar **Pro** (roadmap § 2 punt 10, staat nog op Hobby) —
    zonder Pro kapt een lange functie-aanroep (contentgeneratie) af.
 2. **Supabase-project actief**: log kort in, draai één query — een gratis
    project pauzeert na 7 dagen inactiviteit.

@@ -112,6 +112,9 @@ Er is één database (productie) en geen Supabase Pro, dus geen herstelpunten.
   pushen, PR naar `main` maken en mergen, en controleren dat de Vercel-deploy
   READY is zonder runtime-errors. Daarna pas de ronde melden.
 - Commitberichten in het Nederlands.
+- Mergen met `gh pr merge <nr> --merge --delete-branch`: GitHub haalt de
+  gemergde branch sinds 1 okt 2026 zelf weg (repo-instelling), `--delete-branch`
+  ruimt ook de lokale branch op en zet je terug op `main`.
 - **Doorlopende rondes:** is een ronde live, start dan meteen de volgende uit de
   roadmap (nul bestandsoverlap, met agents). Alleen stoppen bij iets
   onomkeerbaars (migratie op echte data, verwijderen van data, betaalde
@@ -136,6 +139,7 @@ Er is één database (productie) en geen Supabase Pro, dus geen herstelpunten.
 - `npx knip` — ongebruikte bestanden, exports en dependencies (scripts en e2e
   als entry meegeven, anders volgen er valse meldingen).
 - `npm audit` (productie moet 0 blijven) en gericht updaten.
-- Gemergde branches opruimen (lokaal en op GitHub).
+- Lokale branches die niet via `--delete-branch` zijn opgeruimd:
+  `git branch --merged main` (GitHub doet dit sinds 1 okt zelf).
 - `backups/` uitdunnen volgens het bewaarbeleid (roadmap).
 - `docs/productoverzicht.md` naast de code leggen: klopt het nog?

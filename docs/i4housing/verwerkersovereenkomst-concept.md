@@ -4,7 +4,7 @@
 > startpunt voor een gesprek met i4housing, niet om zonder toetsing te
 > ondertekenen. **Laat dit door een jurist (of een gespecialiseerde
 > AVG-dienst) beoordelen vóórdat het getekend wordt** — zie
-> `docs/roadmap.md` § 2 (punt 16, verwerkersovereenkomst). Dit document
+> `docs/roadmap.md` § 2 (punt 14, verwerkersovereenkomst). Dit document
 > bevat bewust geen paragraafnummering of juridisch bindende taal; dat hoort
 > in de definitieve versie thuis.
 
