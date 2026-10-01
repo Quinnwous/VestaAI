@@ -66,7 +66,18 @@ const EXPECTED_COLUMNS = {
     'content_status', 'content_gegenereerd_op', 'content_bezig_sinds',
     // item 3.4, migratie 20260917_object_fase_sinds.sql
     'fase_sinds',
+    // buurtdata-verrijking (lib/verrijking*.ts) — aanwezig op de live database,
+    // ontbrak hier (item F2, schemabaseline-refresh 1 okt 2026).
+    'verrijking_json',
   ],
+  // item F2 (schemabaseline-refresh 1 okt 2026): kantoren/makelaars stonden
+  // nog niet in deze controle — slug is de nieuwste toevoeging (publieke
+  // huisstijl-lookup, kantoor_branding_publiek()).
+  kantoren: [
+    'id', 'name', 'logo_url', 'huisstijl_json', 'created_at',
+    'admin_notified_at', 'instellingen_json', 'slug',
+  ],
+  makelaars: ['id', 'kantoor_id', 'name', 'email', 'role', 'created_at'],
 }
 
 // Kolommen die sinds item 2.1 NIET meer mogen bestaan — omgekeerde check
