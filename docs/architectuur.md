@@ -179,10 +179,16 @@ Rekenkern: `lib/waardering.ts` (`berekenWaarderingV2`), `lib/prijsindex.ts`,
 
 - **`lib/aiModellen.ts` is de enige plek met een modelstring** (guard:
   `lib/aiModellen.guard.test.ts`, vangt `claude-*` en `gemini-*`). Nu:
-  `CONTENT` = `claude-sonnet-4-6` (kandidaat `CONTENT_KANDIDAAT` =
-  `claude-sonnet-5`), `EXTRACTIE` en `HERSCHRIJF` = `claude-haiku-4-5`,
-  `SAMENVATTING` = `claude-sonnet-4-6`, `GEMINI_STAGING` =
-  `gemini-2.5-flash-image`.
+  `CONTENT` = `claude-sonnet-4-6` (kandidaten `CONTENT_KANDIDAAT` =
+  `claude-sonnet-5` en `CONTENT_KANDIDAAT_HAIKU` = `claude-haiku-4-5`, blind
+  vergeleken op 1 okt 2026: geen wissel), `EXTRACTIE` en `HERSCHRIJF` =
+  `claude-haiku-4-5`, `SAMENVATTING` = `claude-sonnet-4-6`, `GEMINI_STAGING` =
+  `gemini-3.1-flash-image` (vereist Gemini-billing).
+- Modellen die standaard denken (Sonnet 5): `denkenUit(model)` meegeven en de
+  tekst uit het eerste tekstblok lezen, nooit blind `content[0]` — anders
+  vreten denk-tokens `max_tokens` op en is blok 0 geen tekst.
+- De contentprompt krijgt de hele intake mee (`lib/contentKenmerken.ts`) plus
+  de regel "feiten alleen hieruit"; een nieuw intakeveld hoort daar ook bij.
 - Claude-calls alleen via `lib/claude.ts`; client components importeren
   schema's uit `lib/schemas.ts`, nooit uit `lib/claude.ts` (bundelt de SDK).
 - Prompt caching (`cache_control`) op systeemprompt + stijlprofiel: NL en EN

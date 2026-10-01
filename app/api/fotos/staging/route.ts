@@ -93,7 +93,7 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
         ],
       }],
       generationConfig: {
-        // @ts-expect-error — responseModalities wordt door gemini-2.5-flash-image ondersteund maar staat nog niet in de type-defs
+        // @ts-expect-error — responseModalities wordt door de beeldmodellen (GEMINI_STAGING) ondersteund maar staat nog niet in de type-defs
         responseModalities: ['IMAGE', 'TEXT'],
       },
     })

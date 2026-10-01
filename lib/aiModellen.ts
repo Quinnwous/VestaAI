@@ -110,8 +110,11 @@ export const SAMENVATTING = 'claude-sonnet-4-6'
 /**
  * Virtual staging (`app/api/fotos/staging/route.ts`) — enige niet-Claude-model
  * hier, maar dezelfde regel geldt: nergens anders een letterlijke modelstring.
- * gemini-2.5-flash-image ("Nano Banana"): het huidige GA-model voor
- * beeldbewerking — fotorealistisch meubels toevoegen met behoud van de
- * architectuur. Vervangt het verouderde experimentele gemini-2.0-flash-exp.
+ * gemini-3.1-flash-image ("Nano Banana 2", GA, $0,067 per 1K-afbeelding):
+ * fotorealistisch meubels toevoegen met behoud van de architectuur. Vervangt
+ * per 1 okt 2026 gemini-2.5-flash-image: Google sluit de 2.5-generatie voor
+ * nieuwe gebruikers af (2.5-flash: 404 "no longer available to new users",
+ * 2.5-flash-image: 403 "project has been denied access"). Werkt alleen met
+ * billing aan — op de gratis laag is het quotum voor beeldmodellen 0.
  */
-export const GEMINI_STAGING = 'gemini-2.5-flash-image'
+export const GEMINI_STAGING = 'gemini-3.1-flash-image'

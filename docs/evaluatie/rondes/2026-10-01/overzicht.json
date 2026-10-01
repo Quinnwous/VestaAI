@@ -1,0 +1,15 @@
+{
+  "datum": "2026-10-01",
+  "dossiers": [
+    "01-wassenaar-vrijstaand",
+    "02-leiden-appartement",
+    "03-den-haag-jaren30",
+    "04-voorschoten-halfvrijstaand",
+    "05-wassenaar-nieuwbouw-appartement"
+  ],
+  "labels": [
+    "A",
+    "B",
+    "C"
+  ]
+}

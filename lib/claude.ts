@@ -11,6 +11,7 @@ import {
 } from './schemas'
 import { CONTENT, SAMENVATTING, denkenUit } from './aiModellen'
 import { meldFout } from './fouten'
+import { kenmerkRegels, feitenRegel } from './contentKenmerken'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
 import { bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } from './contentExtra'
@@ -313,6 +314,11 @@ function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): strin
     : ''
 
   const verrijking = verrijkingTekst ? `\n${verrijkingTekst}` : ''
+  // Alle overige intakevelden (slaapkamers, woonlagen, tuin, balkon, …) —
+  // zie lib/contentKenmerken.ts waarom.
+  const kenmerken = kenmerkRegels(input, isEn ? 'en' : 'nl')
+  const kenmerkBlok = kenmerken.length ? `\n${kenmerken.join('\n')}` : ''
+  const feiten = `\n\n${feitenRegel(isEn ? 'en' : 'nl')}`
 
   if (isEn) {
     return `Property: ${input.adres}
@@ -320,9 +326,9 @@ Type: ${woningtypeLabel(input)}, ${input.kamers} rooms
 Floor area: ${input.oppervlak_m2} m²
 Year built: ${input.bouwjaar}
 Energy label: ${input.energielabel}
-Asking price: ${prijsFormatted}
+Asking price: ${prijsFormatted}${kenmerkBlok}
 USPs: ${input.usps}
-Target audience: ${input.doelgroep}${openHuisRegel}${verrijking}
+Target audience: ${input.doelgroep}${openHuisRegel}${verrijking}${feiten}
 
 Generate all content in English as JSON.`
   }
@@ -332,9 +338,9 @@ Type: ${woningtypeLabel(input)}, ${input.kamers} kamers
 Oppervlak: ${input.oppervlak_m2} m²
 Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}
-Vraagprijs: ${prijsFormatted}
+Vraagprijs: ${prijsFormatted}${kenmerkBlok}
 USP's: ${input.usps}
-Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}
+Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}${feiten}
 
 Genereer alle content als JSON.`
 }
