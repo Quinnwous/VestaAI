@@ -1,8 +1,11 @@
-# i4 Housing — team-accounts (klaar om aan te maken)
+# i4 Housing — team-accounts (aangemaakt 1 okt 2026)
 
 Bron: https://www.i4housing.nl/over-i4-housing/ons-team/ (opgehaald 29 sep 2026).
 Besluit Quinn (29 sep): elke makelaar een account; de lijst eerst vastleggen en
-later in één keer aanmaken. **Nog niet aangemaakt.**
+later in één keer aanmaken. **Aangemaakt op 1 okt 2026** (akkoord Quinn), zonder
+welkomstmail; alle zes getest (inloggen werkt, gekoppeld aan i4 Housing).
+Inloggegevens om uit te delen: `backups/i4housing-team-inloggegevens.md` (alleen
+op Quinns Mac, buiten git).
 
 ## Makelaars (aanmaken)
 
@@ -40,6 +43,7 @@ Namen bevestigd door Quinn (29 sep).
   met een willekeurig deel zodat een collega het niet kan raden: `Voornaam-xxxx-xxxx`.
 - **Lijst al gemaakt (29 sep):** `backups/team-startwachtwoorden-i4housing-team.tsv`
   — alleen op Quinns Mac, buiten git (`backups/` staat in `.gitignore`), rechten 600.
-  Het aanmaakcommando hierboven gebruikt precies deze wachtwoorden. **Accounts pas
-  later aanmaken** (besluit Quinn).
+  Het aanmaakcommando hierboven gebruikte precies deze wachtwoorden (1 okt).
+  Zijn ze uitgedeeld en door iedereen gewijzigd, dan kunnen deze lijst,
+  `team-wachtwoorden-2026-10-01.txt` en het inlogoverzicht weg (roadmap F3).
 - Bestaand: `quinn.berkouwer@icloud.com` (testaccount van Quinn bij i4 Housing).

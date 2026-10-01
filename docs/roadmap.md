@@ -22,19 +22,19 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 1 okt 2026. Laatst gedaan: rondes R en S op 1 okt — buurtdata
-(CBS-fix, verversen zonder dataverlies, PDOK-status), referentietabel, CI op
-GitHub, herstelplan, audit 0, docx-test, kostenschatting (zie besluiten).*
+*Bijgewerkt 1 okt 2026. Laatst gedaan: 12.1 op 1 okt — zes team-accounts
+van i4 aangemaakt en hun teamfoto als startbanner; eerder die dag rondes R en S
+(buurtdata, referentietabel, CI, herstelplan, audit 0, kostenschatting).*
 
 - **Wat er staat:** het hele platform behalve het verkoopadviesdocument en de
   echte data van i4 Housing — zie `docs/productoverzicht.md`.
 - **Doel:** de demo bij i4 Housing, begin tot half december 2026, op hun eigen
   data (§ 1).
 - **Kritiek pad:** exports van Quinn → 5.1 exportanalyse → 5.5 import →
-  M1 tussencheck taxateur → demovoorbereiding (12.1, 12.5, 12.7) → demo.
+  M1 tussencheck taxateur → demovoorbereiding (12.5, 12.7) → demo.
 - **Volgende ronde:** er is geen bouwbaar item meer zonder input van Quinn.
   Alles wat openstaat wacht op § 2 (exports, voorbeeld-verkoopadvies, akkoord
-  betaalde testruns, team-accounts) of is optioneel (F9 bij aanraking, F10).
+  betaalde testruns) of is optioneel (F9 bij aanraking, F10).
 - **Wacht op Quinn:** § 2 — vooral de exports (blokkeert alles op het kritieke
   pad), het voorbeeld-verkoopadvies en akkoord op de betaalde testruns.
 - ⚠️ **Demo-realiteit:** i4 Housing heeft 0 transacties én 0 dossiers
@@ -92,45 +92,43 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 4. **Supabase-dashboard, twee klikken:** self-signup uit (Auth → Providers →
    Email → "Allow new users to sign up") en leaked-password-protection aan
    (Auth → Attack Protection). De security-advisor meldt het nog.
-5. **Team-accounts i4** (12.1): akkoord om de zes accounts aan te maken
-   (`docs/i4housing/i4housing-team.md`), wachtwoorden en de teamfoto.
-6. **Akkoord betaalde testruns** (samen een paar euro): smoke-generatie NL + EN
+5. **Akkoord betaalde testruns** (samen een paar euro): smoke-generatie NL + EN
    (meet meteen de echte duur), staging-testrun, EN-kwartaalbericht, en
    EN-content voor het demo-dossier van scène 5.
-7. **Zes ongebruikte geheimen op Vercel verwijderen** (`STRIPE_SECRET_KEY`,
+6. **Zes ongebruikte geheimen op Vercel verwijderen** (`STRIPE_SECRET_KEY`,
    `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/_PRO/_KANTOOR`,
    `CRON_SECRET`): Vercel → project vesta-ai → Settings → Environment
    Variables → per regel ⋯ → Remove. Of eenmalig `npx vercel login`, dan doet
    Claude het. Daarna de Stripe-sleutel in het Stripe-dashboard intrekken.
-8. **Oordelen:** pastelkleuren van de kaart (`/marktanalyse/kaart`) en i4-blauw
+7. **Oordelen:** pastelkleuren van de kaart (`/marktanalyse/kaart`) en i4-blauw
    op knoppen `#007BC0` in plaats van `#0080C8` (voor AA-contrast, met het oog
    niet te zien).
-9. **Nieuwe juridische teksten lezen** (voorwaarden v1.1 en privacyverklaring,
+8. **Nieuwe juridische teksten lezen** (voorwaarden v1.1 en privacyverklaring,
     30 sep).
 
 ### Vóór de demo of vóór het eerste betaalde contract
 
-10. **Vercel Pro** — het Hobby-plan is volgens Vercels fair-use-regels voor
+9. **Vercel Pro** — het Hobby-plan is volgens Vercels fair-use-regels voor
     niet-commercieel gebruik; zodra i4 Housing betaalt is Pro nodig. Het geeft
     ook ruimere functieduur (content NL + EN) en terugrollen naar elke eerdere
     deploy. Liefst al vóór de demo.
-11. **Tussencheck taxateur (M1):** `docs/waardering/methode.md` (rekenvoorbeeld
+10. **Tussencheck taxateur (M1):** `docs/waardering/methode.md` (rekenvoorbeeld
     en vijf vragen in § 6) naar de taxateur van i4 Housing, met het prototype
     https://claude.ai/artifact/H1hunisisuRxJLPNHsaXWm; contactpersoon noemen.
-12. **Blind oordeel content** (± 30 min, betaalde calls): huidige model tegen de
+11. **Blind oordeel content** (± 30 min, betaalde calls): huidige model tegen de
     kandidaat `claude-sonnet-5` — pas daarna een modelwissel.
-13. **Google Search Console** en de omleiding van de Vercel-alias.
-14. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
+12. **Google Search Console** en de omleiding van de Vercel-alias.
+13. **Vóór het eerste betaalde contract:** Supabase Pro (herstelpunten, geen
     slaapstand), definitieve verwerkersovereenkomst (⚠️ de import is formeel al
     verwerking — hoort er vóór 5.5 te liggen), prijsafspraak (kostprijs ≈ €43–62/mnd bij 5–30 dossiers: `docs/strategie/kostenschatting.md`), en een
     jurist die voorwaarden + privacyverklaring toetst.
-15. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
+14. **Bedrijfsgegevens** — KvK-inschrijving, vestigingsadres, btw-id en een
     zakelijk mailadres (bv. `info@vestaai.nl`). Deblokkeert E1. Uiterlijk vóór het
     eerste betaalde contract.
-16. **Gemini betaalde laag bevestigen** (Google AI Studio → API-sleutel →
+15. **Gemini betaalde laag bevestigen** (Google AI Studio → API-sleutel →
     billing aan): op de gratis laag mag Google ingestuurde foto's gebruiken, en
     dan klopt de privacyverklaring niet. Geen blokkade.
-17. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
+16. *Later:* **beeldrechten** van i4 (sfeerbeelden, teamfoto, logo) in het
     contract of de verwerkersovereenkomst laten opnemen.
 
 ---
@@ -163,17 +161,12 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 
 ### B. Demo-klaar (masterplan fase 12)
 
-- [ ] **12.1 Team-accounts i4** *(na akkoord Quinn, § 2 punt 5)*: de zes
-  makelaars uit `docs/i4housing/i4housing-team.md` aanmaken **zonder
-  welkomstmail** met `scripts/maak-team-accounts.mjs` (dry-run eerst; gebruikt
-  de startwachtwoorden uit `backups/`), begroeting met voornaam, teamfoto als
-  banner via het bestaande `achtergrond_url`-veld (Quinn keurt de foto goed).
 - [ ] **12.5 Demovoorbereiding, rest:**
   - **Demo-dossiers in het i4-kantoor** — i4 heeft er nu 0; de drie gekozen
     demo-dossiers staan in het demo-kantoor. Na 5.5 drie echte, recente
     adressen van i4 aanmaken (één per fase), zodat de waardering op hun eigen
     data rekent.
-  - Het dossier van scène 5 met EN-content (betaald, § 2 punt 6) en foto's — in
+  - Het dossier van scène 5 met EN-content (betaald, § 2 punt 5) en foto's — in
     beide kantoren (het demo-kantoor is het terugvalplan). Nu heeft geen enkel
     demo-dossier EN-content of foto's.
   - `docs/i4housing/demoscript.md` en `npm run demo:repetitie` overzetten naar
@@ -202,7 +195,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
   `e2e/content.spec.ts`. Komt hij boven ± 240 s, dan NL en EN in twee aparte
   functie-aanroepen splitsen (of Vercel Pro met langere duur). Plus één keer het
   EN-kwartaalbericht tegen de echte API.
-- [ ] **D3 Modelkeuze** *(na het blinde oordeel, § 2 punt 12)*: wint de
+- [ ] **D3 Modelkeuze** *(na het blinde oordeel, § 2 punt 11)*: wint de
   kandidaat, dan `CONTENT` in `lib/aiModellen.ts` wisselen en de kostenschatting
   bijwerken.
 - *Klaar als (fase):* i4-tekst volgt het sjabloon 1-op-1 in NL en EN; brochure
@@ -212,7 +205,7 @@ staging-testrun · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvi
 ### E. Juridisch (masterplan fase 14)
 
 - [ ] **E1 (14.2) Bedrijfsgegevens + zakelijk e-mailadres** *(geblokkeerd: § 2
-  punt 15)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
+  punt 14)*: wettelijk verplichte gegevens (art. 3:15d BW, art. 20
   Handelsregisterwet: naam, KvK-nummer, vestigingsadres, btw-id, e-mail) in één
   constante `lib/bedrijf.ts`, gelezen door de footer van de publieke pagina's,
   `/contact`, privacy en voorwaarden (art. 7 krijgt een plaats). Het gmail-adres
@@ -225,9 +218,10 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6, F7 en F8 zijn op
 1 okt gedaan — zie besluiten.)
 
 - [ ] **F3 Bewaarbeleid back-ups** — `backups/` bevat 14 sets productiedata
-  (± 107 MB) op de laptop, plus een bestand met startwachtwoorden in platte tekst.
-  Voorstel: de laatste 5 bewaren plus de set vlak vóór elke migratie of import;
-  het wachtwoordbestand weg zodra 12.1 klaar is. Uitdunnen = verwijderen →
+  (± 107 MB) op de laptop, plus drie bestanden met de startwachtwoorden van het
+  i4-team in platte tekst. Voorstel: de laatste 5 bewaren plus de set vlak vóór
+  elke migratie of import; de wachtwoordbestanden weg zodra het team zijn
+  wachtwoord heeft gewijzigd (12.1 is op 1 okt gedaan). Uitdunnen = verwijderen →
   akkoord Quinn per keer.
 - [ ] **F4 Foutmonitoring** *(vóór i4 dagelijks gaat werken, uiterlijk na de
   demo)* — `meldFout()` logt nu alleen naar de console, dus fouten staan alleen
