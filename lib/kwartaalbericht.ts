@@ -265,6 +265,13 @@ function parseNlGetal(ruw: string): number {
 
 export type GevondenGetal = { ruw: string; waarde: number; groep: Groep }
 
+export type Taal = 'nl' | 'en'
+
+/** "2,064" → 2064, "1.2" → 1.2 — EN-notatie (komma = duizendtal, punt = decimaal). */
+function parseEnGetal(ruw: string): number {
+  return parseFloat(ruw.replace(/,/g, ''))
+}
+
 /**
  * Haalt alle geld-, percentage-, dagen- en aantal-achtige getallen uit een
  * tekst. Bewust behoudend qua patronen (alleen cijfers, geen uitgeschreven
@@ -272,7 +279,7 @@ export type GevondenGetal = { ruw: string; waarde: number; groep: Groep }
  * (`€ 425.000`, `3,2%`, `€ 1,2 mln`, "12 procent") zonder op willekeurige
  * jaartallen of adresnummers te reageren.
  */
-export function vindGetallenInTekst(tekst: string): GevondenGetal[] {
+function vindGetallenInTekstNl(tekst: string): GevondenGetal[] {
   const gevonden: GevondenGetal[] = []
 
   // Euro-bedragen, met optioneel een mln/miljoen- of k/duizend-schaal.
@@ -309,6 +316,64 @@ export function vindGetallenInTekst(tekst: string): GevondenGetal[] {
   return gevonden
 }
 
+/**
+ * EN-tegenhanger van `vindGetallenInTekstNl`: Engelse getalnotatie
+ * (duizendtal met komma, decimaal met punt). Zelfde terughoudendheid qua
+ * patronen, en dezelfde valkuil als de NL-variant maar dan gespiegeld — niet
+ * de punt aan het eind van een zin, maar de komma: "In 2025, 412 homes" mag
+ * geen "2025412 homes" worden. Daarom precies 3 cijfers na elke komma én
+ * geen spatie na de komma (een duizendtal in echte Engelse notatie heeft
+ * nooit een spatie na de komma).
+ */
+function vindGetallenInTekstEn(tekst: string): GevondenGetal[] {
+  const gevonden: GevondenGetal[] = []
+
+  // Euro-bedragen, Engelse notatie, met optioneel een m/million- of
+  // k/thousand-schaal. De schaal zit in een eigen groep met een eigen
+  // woordgrens, anders zou "€949,500 monthly" de "m" van "monthly" als
+  // miljoenenschaal lezen.
+  for (const m of Array.from(tekst.matchAll(/€\s?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(?:\s*(m|million|k|thousand)\b)?/gi))) {
+    const basis = parseEnGetal(m[1])
+    if (Number.isNaN(basis)) continue
+    const schaal = m[2]?.toLowerCase()
+    const waarde = schaal === 'm' || schaal === 'million' ? basis * 1_000_000 : schaal === 'k' || schaal === 'thousand' ? basis * 1_000 : basis
+    gevonden.push({ ruw: m[0], waarde, groep: 'geld' })
+  }
+
+  // Percentages: "11.3%", "11.3 percent", en "percentage point(s)" — telt
+  // als procent-groep, net zoals "procentpunt" in het NL-feitenblad bij de
+  // delta's hoort bij de procent-eenheid.
+  for (const m of Array.from(tekst.matchAll(/(-?\d+(?:\.\d+)?)\s?(%|\bpercent\b|\bpercentage\spoints?\b)/gi))) {
+    const waarde = parseEnGetal(m[1])
+    if (!Number.isNaN(waarde)) gevonden.push({ ruw: m[0], waarde, groep: 'procent' })
+  }
+
+  // Dagen: "34 days".
+  for (const m of Array.from(tekst.matchAll(/(\d+)\s?(days?)\b/gi))) {
+    gevonden.push({ ruw: m[0], waarde: parseInt(m[1], 10), groep: 'dagen' })
+  }
+
+  // Aantallen: "2,064 homes", "412 sales", "9 transactions". Getal in
+  // correcte EN-duizendtalnotatie (elke komma gevolgd door precies 3 cijfers,
+  // geen spatie na de komma) — zie de uitleg bij de functie hierboven.
+  for (const m of Array.from(tekst.matchAll(/(\d{1,3}(?:,\d{3})+|\d+)\s?(homes|sales|transactions|properties|months)\b/gi))) {
+    const waarde = parseEnGetal(m[1])
+    if (!Number.isNaN(waarde)) gevonden.push({ ruw: m[0], waarde, groep: 'aantal' })
+  }
+
+  return gevonden
+}
+
+/**
+ * Haalt alle geld-, percentage-, dagen- en aantal-achtige getallen uit een
+ * tekst, in de notatie die bij `taal` hoort (NL: punt = duizendtal, komma =
+ * decimaal; EN: komma = duizendtal, punt = decimaal — zie `vindGetallenInTekstNl`
+ * en `vindGetallenInTekstEn`).
+ */
+export function vindGetallenInTekst(tekst: string, taal: Taal = 'nl'): GevondenGetal[] {
+  return taal === 'en' ? vindGetallenInTekstEn(tekst) : vindGetallenInTekstNl(tekst)
+}
+
 export type GuardrailResultaat = {
   ok: boolean
   onbekend: GevondenGetal[]
@@ -318,12 +383,13 @@ export type GuardrailResultaat = {
 const TOLERANTIE: Record<Groep, number> = { geld: 0.5, procent: 0.05, dagen: 0.5, aantal: 0.5 }
 
 /**
- * Controleert of élk getal in `tekst` (in een voor de hand liggende NL-
- * afronding) in het feitenblad voorkomt. Dit is de kern van item 6.4: "elk
- * getal in de tekst moet in het feitenblad voorkomen".
+ * Controleert of élk getal in `tekst` (in een voor de hand liggende afronding,
+ * gelezen in de notatie van `taal`) in het feitenblad voorkomt. Dit is de kern
+ * van item 6.4: "elk getal in de tekst moet in het feitenblad voorkomen" —
+ * voor beide talen, elk met hun eigen getalnotatie.
  */
-export function controleerGuardrail(tekst: string, feitenblad: Feitenblad): GuardrailResultaat {
+export function controleerGuardrail(tekst: string, feitenblad: Feitenblad, taal: Taal = 'nl'): GuardrailResultaat {
   const toegestaan = toegestaneWaarden(feitenblad)
-  const onbekend = vindGetallenInTekst(tekst).filter(g => !toegestaan[g.groep].some(v => Math.abs(v - g.waarde) <= TOLERANTIE[g.groep]))
+  const onbekend = vindGetallenInTekst(tekst, taal).filter(g => !toegestaan[g.groep].some(v => Math.abs(v - g.waarde) <= TOLERANTIE[g.groep]))
   return { ok: onbekend.length === 0, onbekend }
 }

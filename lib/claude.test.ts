@@ -842,4 +842,48 @@ describe('schrijfKwartaalbericht (item 6.4)', () => {
     expect(aanroep.system).toContain('Makelaardij De Vries')
     expect(aanroep.system).toContain(feitenblad.tekst)
   })
+
+  describe('taal: en (item D4 — Engelse getalnotatie)', () => {
+    it('de EN-prompt vraagt om Engelse getalnotatie en bevat geen instructie om NL-notatie te gebruiken', async () => {
+      const create = vi.fn().mockResolvedValue(textResponse('The median sale price came in at €852,000.'))
+      const mockClient = { messages: { create } } as unknown as Anthropic
+
+      const { schrijfKwartaalbericht } = await import('./claude')
+      await schrijfKwartaalbericht(feitenblad, { taal: 'en' }, mockClient)
+
+      const aanroep = create.mock.calls[0][0] as { system: string }
+      expect(aanroep.system).toMatch(/Engelse getalnotatie/i)
+      expect(aanroep.system).toMatch(/percentage point/i)
+      // Geen instructie meer om de NL-notatie te behouden.
+      expect(aanroep.system).not.toMatch(/behoud de Nederlandse getalnotatie/i)
+      expect(aanroep.system).not.toMatch(/Vertaal getallen niet naar Engelse notatie/i)
+    })
+
+    it('geeft een EN-tekst met Engelse notatie terug zodra die de guardrail doorstaat', async () => {
+      const geldigeTekst = 'The median sale price came in at €852,000, up 5.2% from the previous period. A total of 47 transactions were recorded, including 9 by our office. Homes spent a median of 34 days on the market.'
+      const create = vi.fn().mockResolvedValue(textResponse(geldigeTekst))
+      const mockClient = { messages: { create } } as unknown as Anthropic
+
+      const { schrijfKwartaalbericht } = await import('./claude')
+      const result = await schrijfKwartaalbericht(feitenblad, { taal: 'en' }, mockClient)
+
+      expect(result.tekst).toBe(geldigeTekst)
+      expect(create).toHaveBeenCalledTimes(1)
+    })
+
+    it('verwerpt een EN-tekst met een verzonnen getal en probeert opnieuw', async () => {
+      const foutieveTekst = 'The median sale price came in at €999,999 this quarter.'
+      const geldigeTekst = 'The median sale price came in at €852,000 this quarter.'
+      const create = vi.fn()
+        .mockResolvedValueOnce(textResponse(foutieveTekst))
+        .mockResolvedValueOnce(textResponse(geldigeTekst))
+      const mockClient = { messages: { create } } as unknown as Anthropic
+
+      const { schrijfKwartaalbericht } = await import('./claude')
+      const result = await schrijfKwartaalbericht(feitenblad, { taal: 'en' }, mockClient)
+
+      expect(result.tekst).toBe(geldigeTekst)
+      expect(create).toHaveBeenCalledTimes(2)
+    })
+  })
 })
