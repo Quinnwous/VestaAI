@@ -151,6 +151,11 @@ fase, sinds wanneer en de kernbedragen.
   hieruit". Technische staat en duurzaamheid alleen uit de invoer, nooit
   uitspraken over gebreken of garanties, liever korter dan verzonnen. De
   aanspreekvorm volgt de schrijftoon van het kantoor (informeel = je/jouw).
+- **Buurtdata in de prompt** komt uit de opgeslagen data van het dossier (tab
+  Buurt & data, `verrijking_json`, tot 180 dagen oud); alleen zonder bruikbare
+  opslag wordt live opgehaald (`kiesVerrijkingsbron()` in
+  `lib/verrijkingOpslag.ts`, logregel `[verrijking] bron=…`). Scheelt de
+  Overpass-time-outs (± 18 s) en de voorzieningen vallen niet weg.
 - **Kernteksten:** Funda-tekst (volgt het i4-sjabloon: 4SALE! · WOONCOMFORT ·
   BUITENLEVEN · LOCATIE · GOED OM TE WETEN, met gerichte herkansing bij een
   afwijking), brochuretekst, Instagram, LinkedIn, WhatsApp-sneak-preview,
@@ -190,7 +195,9 @@ elke statistiek met n en "data t/m", standaardfilter = werkgebied.
   periode; grafieken prijs, € per m², looptijd en prijsklassen; "wij vs.
   markt"; **segment A vs. B**-vergelijking. Knop **Kwartaalbericht schrijven**:
   Claude schrijft een marktupdate met de echte cijfers, met een guardrail die
-  elk getal in de tekst controleert.
+  elk getal in de tekst controleert — in het Nederlands in NL-notatie, in het
+  Engels in Engelse notatie ("€949,500", "11.3%", "percentage points"; sinds
+  1 okt, item D4). In het Engels getest op productie (283 woorden, 13 s).
 - **Transacties opzoeken** (`/marktanalyse/transacties`): server-gepagineerde
   tabel met zoeken, filters, sortering, minikaart per transactie (met melding
   als de locatie benaderd is) en CSV-export van de eigen verkopen.
@@ -257,7 +264,7 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 
 ## 12. Kwaliteit en tooling
 
-- **Unit-tests** (Vitest): 1033 tests in 83 bestanden, met guard-tests die de
+- **Unit-tests** (Vitest): 1062 tests in 83 bestanden, met guard-tests die de
   architectuurregels afdwingen (transacties via één module, modelstrings op één
   plek, MapLibre-worker zelf gehost). De docx-extractie draait op een
   synthetische fixture (`lib/__fixtures__/voorbeeld.docx`).

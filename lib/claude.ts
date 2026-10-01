@@ -750,7 +750,7 @@ export async function schrijfKwartaalbericht(
   const c = client ?? new Anthropic()
   const stijlBlok = opts.huisstijl ? buildHuisstijlBlok(opts.huisstijl) : ''
   const taalInstructie = opts.taal === 'en'
-    ? 'Schrijf de lopende tekst in het Engels, maar behoud de Nederlandse getalnotatie EXACT zoals in het feitenblad (punt als duizendtal-scheiding, komma als decimaalteken — bv. "€ 1.235.000" en "3,2%"). Vertaal getallen niet naar Engelse notatie (geen "€1,235,000" of "3.2%").'
+    ? 'Schrijf de lopende tekst in het Engels. Het FEITENBLAD hieronder staat in Nederlandse getalnotatie (punt als duizendtal-scheiding, komma als decimaalteken) — neem de getallen zelf over, maar zet ze in je tekst om naar Engelse getalnotatie: komma als duizendtal-scheiding, punt als decimaalteken (bv. feitenblad "€ 949.500" wordt in je tekst "€949,500", feitenblad "11,3%" wordt "11.3%", feitenblad "2.064" wordt "2,064"). Vertaal "procentpunt" naar "percentage point(s)".'
     : 'Schrijf de tekst in het Nederlands.'
 
   const systemPrompt = `Je bent de kantoortekstschrijver van een makelaarskantoor. Je schrijft een kort, feitelijk kwartaalbericht over de woningmarkt voor de eigen website of nieuwsbrief van het kantoor.
@@ -783,7 +783,7 @@ ${feitenblad.tekst}`
     })
     const tekst = message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
 
-    const guardrail = controleerGuardrail(tekst, feitenblad)
+    const guardrail = controleerGuardrail(tekst, feitenblad, opts.taal)
     if (guardrail.ok) return { tekst }
 
     laatsteFout = { onbekend: guardrail.onbekend.map(g => g.ruw) }

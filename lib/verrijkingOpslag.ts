@@ -1,5 +1,5 @@
 import { VerrijkingOpslagSchema, type VerrijkingOpslag, type MarktEigenData, type BronMeta, type FetchStatus } from './schemas'
-import type { VerrijkingData } from './verrijking'
+import { verrijkingNaarPrompt, type VerrijkingData, type CbsData } from './verrijking'
 
 /**
  * Bouwt de opslagvorm van een verse `fetchVerrijking()`-uitkomst (item 10.3):
@@ -142,4 +142,96 @@ export function voegVerrijkingSamen(vorige: VerrijkingOpslag | null, nieuw: Verr
     bronnen: { woz: woz.status, cbs: cbs.status, voorzieningen: voorzieningen.status },
     bronMeta: { woz: woz.meta, cbs: cbs.meta, voorzieningen: voorzieningen.meta },
   })
+}
+
+/**
+ * Bouwt dezelfde prompttekst als `verrijkingNaarPrompt()` (lib/verrijking.ts),
+ * maar dan vanuit de opgeslagen vorm (`objecten.verrijking_json`) in plaats
+ * van een verse `fetchVerrijking()`-uitkomst (item D5, 1 okt 2026 — opgeslagen
+ * buurtdata hergebruiken i.p.v. bij elke contentgeneratie opnieuw live op te
+ * halen). Hergebruikt bewust `verrijkingNaarPrompt()` zelf i.p.v. de
+ * tekstopbouw te dupliceren, zodat een wijziging daar niet op twee plekken
+ * moet.
+ *
+ * De opslag kent geen `markt` (het vuistregel-marktblok uit
+ * `marktProfielOpzoeken()`) — dat blok is sinds item 10.3-fix uit het dossier
+ * gehaald (zie het schemacommentaar bij `MarktEigenDataSchema` in
+ * lib/schemas.ts) en bestaat alleen nog als live berekening. We verzinnen die
+ * niet: `markt` gaat hier altijd `null` mee, en `verrijkingNaarPrompt()` laat
+ * het marktblok dan vanzelf weg. `bronnen` leest `verrijkingNaarPrompt()` niet
+ * uit — een placeholder volstaat om aan het `VerrijkingData`-type te voldoen.
+ * Pure functie — geen netwerk/database, dus los te testen.
+ */
+export function verrijkingOpslagNaarPrompt(opslag: VerrijkingOpslag): string {
+  const data: VerrijkingData = {
+    woz: opslag.woz,
+    // `CbsDataSchema.nabijheid` is `.optional()` (oudere rijen van vóór 24 sep
+    // 2026 missen het), terwijl lib/verrijking.ts `CbsData.nabijheid` verplicht
+    // is — `verrijkingNaarPrompt()` leest het altijd via `v.cbs?.nabijheid`, dus
+    // `undefined` gedraagt zich daar identiek aan een afwezig veld.
+    cbs: opslag.cbs as CbsData | null,
+    voorzieningen: opslag.voorzieningen,
+    markt: null,
+    gemeente: opslag.gemeente,
+    coord: opslag.coord,
+    bronnen: opslag.bronnen ?? { woz: 'mislukt', cbs: 'mislukt', voorzieningen: 'mislukt' },
+  }
+  return verrijkingNaarPrompt(data)
+}
+
+/**
+ * Hoeveel dagen geleden `verrijking_json` voor het laatst is opgehaald
+ * (`opgehaald_op`). Zuiver rekenwerk, `nu` injecteerbaar zodat dit zonder klok
+ * te testen is.
+ */
+export function verrijkingOpslagLeeftijdDagen(opslag: VerrijkingOpslag, nu: Date = new Date()): number {
+  const opgehaaldOp = new Date(opslag.opgehaald_op).getTime()
+  const ms = nu.getTime() - opgehaaldOp
+  return Math.max(0, Math.floor(ms / (24 * 60 * 60 * 1000)))
+}
+
+/**
+ * Maximale leeftijd van opgeslagen buurtdata voordat `genereerContentVoorObject`
+ * toch weer live ophaalt (item D5, 1 okt 2026). Buurtcijfers bewegen traag: CBS
+ * publiceert de Kerncijfers wijken en buurten jaarlijks, en de voorzieningen-
+ * lijst (Overpass) verandert op de schaal van maanden, niet dagen. Een live
+ * fetch die faalt kost altijd meer dan een paar maanden oude data oplevert —
+ * op 1 okt 2026 ging zo ± 18s van de ± 102s per generatie verloren aan een
+ * dubbele Overpass-timeout, mét ontbrekende voorzieningen in de tekst als
+ * resultaat. 180 dagen (een halfjaar) blijft ruim onder de jaarlijkse
+ * CBS-cadans — de content blijft feitelijk actueel — maar voorkomt dat een
+ * dossier dat nooit wordt ververst (bv. een "Verkoopadvies" dat maandenlang
+ * blijft liggen) stilzwijgend op stokoude data blijft draaien.
+ */
+export const VERRIJKING_MAX_LEEFTIJD_DAGEN = 180
+
+export interface VerrijkingsbronKeuze {
+  bron: 'opgeslagen' | 'live'
+  /** Leeftijd (dagen) van de data die uiteindelijk de prompt voedt — altijd 0 bij 'live' (net opgehaald). */
+  leeftijdDagen: number
+}
+
+/** Geen enkele bron heeft data: dezelfde situatie als "geen opslag" — live geeft dan nog een kans op een geslaagde poging. */
+function opslagHeeftData(opslag: VerrijkingOpslag): boolean {
+  return opslag.woz !== null || opslag.cbs !== null || opslag.voorzieningen !== null
+}
+
+/**
+ * Kiest tussen de opgeslagen buurtdata (`objecten.verrijking_json`) en een
+ * live `fetchVerrijking()`-call (item D5): is er bruikbare, niet te oude
+ * opslag (`VERRIJKING_MAX_LEEFTIJD_DAGEN`), gebruik die — is er niets
+ * bruikbaars (geen rij, ongeldige vorm, of alle drie de bronnen leeg/mislukt)
+ * of is de opslag te oud, dan het bestaande gedrag: live ophalen.
+ *
+ * Pure functie (geen database/netwerk) — expres gescheiden van de query en
+ * van `fetchVerrijking()` zelf, zodat de keuze zonder mocks te testen is.
+ * `genereerContentVoorObject` roept hem aan met de echte klok.
+ */
+export function kiesVerrijkingsbron(opslag: VerrijkingOpslag | null, nu: Date = new Date()): VerrijkingsbronKeuze {
+  if (!opslag || !opslagHeeftData(opslag)) return { bron: 'live', leeftijdDagen: 0 }
+
+  const leeftijdDagen = verrijkingOpslagLeeftijdDagen(opslag, nu)
+  if (leeftijdDagen > VERRIJKING_MAX_LEEFTIJD_DAGEN) return { bron: 'live', leeftijdDagen: 0 }
+
+  return { bron: 'opgeslagen', leeftijdDagen }
 }

@@ -336,6 +336,15 @@ bron terwijl de vorige data `ok` was, dan blijft die staan (met de datum
 waarop die écht is opgehaald, `bronMeta` in `lib/schemas.ts`) en meldt
 `BuurtDataTab.tsx` dat eerlijk — nooit oud stilzwijgend als nieuw tonen.
 
+**Buurtdata in de contentprompt** (item D5, 1 okt 2026): `genereerContentVoorObject`
+leest eerst `verrijking_json` (`verwerkOpgeslagenVerrijking`) en maakt daar met
+`verrijkingOpslagNaarPrompt()` dezelfde prompttekst van als `verrijkingNaarPrompt()`
+— zonder het vuistregel-marktblok, dat niet wordt opgeslagen. Live
+`fetchVerrijking()` alleen als `kiesVerrijkingsbron()` niets bruikbaars vindt
+(geen opslag, alle bronnen leeg, of ouder dan `VERRIJKING_MAX_LEEFTIJD_DAGEN` =
+180). Reden: een live Overpass-call liep op productie in time-outs (± 18 s per
+generatie) terwijl het dossier de data al had.
+
 ## 12. Beveiliging en privacy
 
 - Kantoorscheiding via RLS (§ 9); isolatie getest in `e2e/rls.spec.ts`.

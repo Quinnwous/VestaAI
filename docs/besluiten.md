@@ -12,6 +12,17 @@
 
 ---
 
+### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
+
+Doorlopende ronde direct na de betaalde testronde: de twee items die daaruit
+voortkwamen, gebouwd door twee Sonnet-agents in eigen worktrees (nul overlap),
+beoordeeld en gemerged door de hoofdsessie.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| D4 EN-kwartaalbericht | De guardrail leest de notatie van de taal (`vindGetallenInTekst(tekst, taal)`, `controleerGuardrail(…, taal)`): EN met komma-duizendtal en puntdecimaal, `m`/`million`/`k`/`thousand`, `percent`, `percentage point(s)`, `days`, `homes/sales/transactions/properties/months`. De EN-prompt vraagt nu Engelse notatie; schrijft het model toch NL-notatie, dan keurt de guardrail dat af en volgt de herkansing. Valkuilen getest: "In 2025, 412 homes" (geen 2025412) en "€949,500 monthly" (geen miljoen). NL-gedrag ongewijzigd | Sonnet (agent) + Opus (review) |
+| D5 opgeslagen buurtdata | `genereerContentVoorObject` gebruikt eerst `verrijking_json`; live ophalen alleen zonder bruikbare opslag of als die ouder is dan 180 dagen (`VERRIJKING_MAX_LEEFTIJD_DAGEN`: CBS publiceert jaarlijks, voorzieningen veranderen op maanden). Een opslag waarin alle drie de bronnen leeg zijn telt als "geen opslag". Het vuistregel-marktblok (vaste cijfers per gemeentetype, sprak de eigen marktanalyse tegen) valt in de opgeslagen route weg — past bij "feiten alleen". Logregel `[verrijking] bron=opgeslagen\|live leeftijd=Nd` | Sonnet (agent) + Opus (review) |
+
 ### 1 okt 2026 (betaalde testronde) — modelkeuze, echte duur, promptfixes
 
 Akkoord Quinn op de betaalde testruns (roadmap § 2 punt 5) plus het blinde

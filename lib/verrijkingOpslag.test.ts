@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking, voegVerrijkingSamen } from './verrijkingOpslag'
-import type { VerrijkingData } from './verrijking'
+import {
+  naarVerrijkingOpslag,
+  verwerkOpgeslagenVerrijking,
+  voegVerrijkingSamen,
+  verrijkingOpslagNaarPrompt,
+  verrijkingOpslagLeeftijdDagen,
+  kiesVerrijkingsbron,
+  VERRIJKING_MAX_LEEFTIJD_DAGEN,
+} from './verrijkingOpslag'
+import { verrijkingNaarPrompt, type VerrijkingData } from './verrijking'
 import type { MarktEigenData, VerrijkingOpslag } from './schemas'
 
 const VOLLEDIGE_DATA: VerrijkingData = {
@@ -286,5 +294,100 @@ describe('voegVerrijkingSamen', () => {
   it('valideert het resultaat alsnog via het schema (regressiebescherming)', () => {
     const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
     expect(() => voegVerrijkingSamen(VORIGE, nieuw)).not.toThrow()
+  })
+})
+
+// Item D5 (1 okt 2026, "opgeslagen buurtdata gebruiken bij contentgeneratie"):
+// genereerContentVoorObject() leest voortaan eerst objecten.verrijking_json en
+// valt alleen live terug als er niets bruikbaars (of niets vers genoeg) ligt.
+describe('verrijkingOpslagNaarPrompt', () => {
+  it('bouwt uit een volledige opslag tekst met WOZ, CBS en voorzieningen', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z', MARKT_EIGEN)
+
+    const tekst = verrijkingOpslagNaarPrompt(opslag)
+
+    expect(tekst).toContain('WOZ-waarde: €500.000')
+    expect(tekst).toContain('Buurtdata')
+    expect(tekst).toContain('Albert Heijn')
+  })
+
+  it('laat ontbrekende delen gewoon weg bij lege/mislukte bronnen, zonder te crashen', () => {
+    const leeg: VerrijkingData = {
+      woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: null, coord: null,
+      bronnen: { woz: 'mislukt', cbs: 'mislukt', voorzieningen: 'mislukt' },
+    }
+    const opslag = naarVerrijkingOpslag(leeg, '2026-09-23T10:00:00.000Z', null)
+
+    const tekst = verrijkingOpslagNaarPrompt(opslag)
+
+    expect(tekst).toBe('')
+  })
+
+  it('laat alleen het marktblok weg — de opslag kent geen vuistregel-marktblok, de rest is identiek aan de live route', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-23T10:00:00.000Z', MARKT_EIGEN)
+
+    const uitOpslag = verrijkingOpslagNaarPrompt(opslag)
+    // Zelfde fixture, maar zonder markt — zodat dit een eerlijke vergelijking is
+    // met wat verrijkingNaarPrompt() voor de live route zou opleveren voor
+    // exact dezelfde woz/cbs/voorzieningen-data.
+    const uitLiveZonderMarkt = verrijkingNaarPrompt({ ...VOLLEDIGE_DATA, markt: null })
+
+    expect(uitOpslag).toBe(uitLiveZonderMarkt)
+    // En die tekst wijkt wél af van de volledige live tekst (mét marktblok) —
+    // anders zou deze test niets onderscheiden.
+    expect(uitOpslag).not.toBe(verrijkingNaarPrompt(VOLLEDIGE_DATA))
+  })
+})
+
+describe('verrijkingOpslagLeeftijdDagen', () => {
+  it('rekent het aantal hele dagen tussen opgehaald_op en nu uit', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-19T10:00:00.000Z', MARKT_EIGEN)
+    const nu = new Date('2026-10-01T10:00:00.000Z')
+
+    expect(verrijkingOpslagLeeftijdDagen(opslag, nu)).toBe(12)
+  })
+
+  it('geeft 0 voor data van zojuist', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T10:00:00.000Z', MARKT_EIGEN)
+    expect(verrijkingOpslagLeeftijdDagen(opslag, new Date('2026-10-01T10:00:00.000Z'))).toBe(0)
+  })
+})
+
+describe('kiesVerrijkingsbron', () => {
+  it('kiest live zonder opslag (nieuw dossier)', () => {
+    expect(kiesVerrijkingsbron(null)).toEqual({ bron: 'live', leeftijdDagen: 0 })
+  })
+
+  it('kiest live als de opslag geldig is maar alle drie de bronnen niets opleverden', () => {
+    const leeg: VerrijkingData = {
+      woz: null, cbs: null, voorzieningen: null, markt: null, gemeente: 'Wassenaar', coord: null,
+      bronnen: { woz: 'mislukt', cbs: 'mislukt', voorzieningen: 'mislukt' },
+    }
+    const opslag = naarVerrijkingOpslag(leeg, '2026-10-01T09:00:00.000Z', null)
+
+    expect(kiesVerrijkingsbron(opslag, new Date('2026-10-01T10:00:00.000Z'))).toEqual({ bron: 'live', leeftijdDagen: 0 })
+  })
+
+  it('kiest opgeslagen data als die vers genoeg is, met de leeftijd in dagen', () => {
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-09-19T10:00:00.000Z', MARKT_EIGEN)
+    const nu = new Date('2026-10-01T10:00:00.000Z')
+
+    expect(kiesVerrijkingsbron(opslag, nu)).toEqual({ bron: 'opgeslagen', leeftijdDagen: 12 })
+  })
+
+  it(`blijft 'opgeslagen' kiezen op precies de maximale leeftijd (${VERRIJKING_MAX_LEEFTIJD_DAGEN} dagen)`, () => {
+    const opgehaaldOp = '2026-01-01T10:00:00.000Z'
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, opgehaaldOp, MARKT_EIGEN)
+    const nu = new Date(new Date(opgehaaldOp).getTime() + VERRIJKING_MAX_LEEFTIJD_DAGEN * 24 * 60 * 60 * 1000)
+
+    expect(kiesVerrijkingsbron(opslag, nu)).toEqual({ bron: 'opgeslagen', leeftijdDagen: VERRIJKING_MAX_LEEFTIJD_DAGEN })
+  })
+
+  it('valt terug op live zodra de opslag ouder is dan de maximale leeftijd', () => {
+    const opgehaaldOp = '2026-01-01T10:00:00.000Z'
+    const opslag = naarVerrijkingOpslag(VOLLEDIGE_DATA, opgehaaldOp, MARKT_EIGEN)
+    const nu = new Date(new Date(opgehaaldOp).getTime() + (VERRIJKING_MAX_LEEFTIJD_DAGEN + 1) * 24 * 60 * 60 * 1000)
+
+    expect(kiesVerrijkingsbron(opslag, nu)).toEqual({ bron: 'live', leeftijdDagen: 0 })
   })
 })
