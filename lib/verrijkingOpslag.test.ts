@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking } from './verrijkingOpslag'
+import { naarVerrijkingOpslag, verwerkOpgeslagenVerrijking, voegVerrijkingSamen } from './verrijkingOpslag'
 import type { VerrijkingData } from './verrijking'
-import type { MarktEigenData } from './schemas'
+import type { MarktEigenData, VerrijkingOpslag } from './schemas'
 
 const VOLLEDIGE_DATA: VerrijkingData = {
   woz: {
@@ -162,5 +162,104 @@ describe('verwerkOpgeslagenVerrijking', () => {
   it('geeft null bij een ontbrekend of leeg resultaat', () => {
     expect(verwerkOpgeslagenVerrijking(null)).toBeNull()
     expect(verwerkOpgeslagenVerrijking(undefined)).toBeNull()
+  })
+})
+
+// Item 12.9 (1 okt 2026, "Verversen zonder dataverlies"): "Ververs" overschreef
+// `verrijking_json` altijd in zijn geheel. Faalde Overpass op dat moment (dag-op-
+// dag overbelast, HTTP 504), dan was goede data domweg weg — gebeurde op 1 okt bij
+// Haagweg 102 en Rembrandtlaan 14. `voegVerrijkingSamen()` moet dat voorkomen.
+describe('voegVerrijkingSamen', () => {
+  const VORIGE = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T08:00:00.000Z', MARKT_EIGEN)
+
+  it('houdt de vorige data van een bron aan zodra die mislukt terwijl de vorige ok was', () => {
+    const nieuwData: VerrijkingData = {
+      ...VOLLEDIGE_DATA,
+      voorzieningen: null,
+      bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'mislukt' },
+    }
+    const nieuw = naarVerrijkingOpslag(nieuwData, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+
+    const samengevoegd = voegVerrijkingSamen(VORIGE, nieuw)
+
+    // Data blijft staan — nooit stil "mislukt" tonen als er goede data was.
+    expect(samengevoegd.voorzieningen).toEqual(VOLLEDIGE_DATA.voorzieningen)
+    expect(samengevoegd.bronnen?.voorzieningen).toBe('ok')
+    // Maar de UI moet kunnen zien dat dit oude data is en dat de laatste poging mislukte.
+    expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-10-01T08:00:00.000Z')
+    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_versing_mislukt).toBe(true)
+  })
+
+  it('neemt de nieuwe data over zodra een bron wél slaagt', () => {
+    const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+
+    const samengevoegd = voegVerrijkingSamen(VORIGE, nieuw)
+
+    expect(samengevoegd.bronnen?.voorzieningen).toBe('ok')
+    expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-10-01T09:00:00.000Z')
+    expect(samengevoegd.bronMeta?.voorzieningen?.laatste_versing_mislukt).toBeFalsy()
+  })
+
+  it('bewaart geen stale data als er nooit goede data was (mislukt blijft mislukt)', () => {
+    const vorigeLeeg = naarVerrijkingOpslag(
+      { ...VOLLEDIGE_DATA, voorzieningen: null, bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'mislukt' } },
+      '2026-10-01T08:00:00.000Z',
+      MARKT_EIGEN,
+    )
+    const nieuw = naarVerrijkingOpslag(
+      { ...VOLLEDIGE_DATA, voorzieningen: null, bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'mislukt' } },
+      '2026-10-01T09:00:00.000Z',
+      MARKT_EIGEN,
+    )
+
+    const samengevoegd = voegVerrijkingSamen(vorigeLeeg, nieuw)
+
+    expect(samengevoegd.voorzieningen).toBeNull()
+    expect(samengevoegd.bronnen?.voorzieningen).toBe('mislukt')
+  })
+
+  it('geeft gewoon de nieuwe opslag terug als er geen vorige is (nieuw dossier)', () => {
+    const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+    expect(voegVerrijkingSamen(null, nieuw)).toEqual(nieuw)
+  })
+
+  it('valt terug op het top-level opgehaald_op als de vorige opslag nog geen bronMeta heeft (oude vorm)', () => {
+    // Oude rij: wél `bronnen` (12.7-vorm), geen `bronMeta` (12.9 is nieuw).
+    const vorigeOudeVorm: VerrijkingOpslag = {
+      versie: 1,
+      woz: VOLLEDIGE_DATA.woz,
+      cbs: VOLLEDIGE_DATA.cbs,
+      voorzieningen: VOLLEDIGE_DATA.voorzieningen,
+      marktEigen: MARKT_EIGEN,
+      gemeente: 'Wassenaar',
+      coord: { lat: 52.14, lon: 4.4 },
+      bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'ok' },
+      opgehaald_op: '2026-09-25T08:00:00.000Z',
+      // bronMeta ontbreekt bewust — dat is precies het geval dat we testen.
+    }
+    const nieuwData: VerrijkingData = {
+      ...VOLLEDIGE_DATA,
+      voorzieningen: null,
+      bronnen: { woz: 'ok', cbs: 'ok', voorzieningen: 'mislukt' },
+    }
+    const nieuw = naarVerrijkingOpslag(nieuwData, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+
+    const samengevoegd = voegVerrijkingSamen(vorigeOudeVorm, nieuw)
+
+    expect(samengevoegd.voorzieningen).toEqual(VOLLEDIGE_DATA.voorzieningen)
+    expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-09-25T08:00:00.000Z')
+  })
+
+  it('laat woz met rust zolang die alleen "niet_gekoppeld" is (geen echte mislukking)', () => {
+    // WOZ is structureel 'niet_gekoppeld' (lib/verrijking.ts WOZ_GEKOPPELD=false) —
+    // dat is geen "verversing mislukt", dus geen vorige-ok-status om te bewaren.
+    const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+    const samengevoegd = voegVerrijkingSamen(VORIGE, nieuw)
+    expect(samengevoegd.bronnen?.woz).toBe('ok')
+  })
+
+  it('valideert het resultaat alsnog via het schema (regressiebescherming)', () => {
+    const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+    expect(() => voegVerrijkingSamen(VORIGE, nieuw)).not.toThrow()
   })
 })
