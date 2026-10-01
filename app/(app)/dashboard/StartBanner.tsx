@@ -13,6 +13,13 @@ import { colors } from '@/components/ui/tokens'
  * foto aan (≥ 1600 px breed), dan zet `banner_url` in de huisstijl hem terug;
  * de uitsnede regel je met `banner_focus_y`.
  *
+ * Foto rechts op brede schermen (1 okt 2026, teamfoto i4): schermvullend werd
+ * een staande groepsfoto op 1920 px een strook gezichten met de begroeting
+ * eroverheen. Vanaf 1024 px staat de foto daarom in de rechter ~60 % en loopt
+ * hij zacht over in het merkverloop; de tekst staat op het merkvlak. Smal
+ * blijft hij schermvullend. De foto ligt bóven raster en glans, zodat die
+ * alleen op het merkvlak te zien zijn (CSS: `.vui-startbanner-foto`).
+ *
  * Bewust een **server component**: `new Date()` hier in de browser gaf een
  * andere begroeting dan op de UTC-server en dus een hydratiemismatch, die de
  * hele pagina half-levend achterliet — inclusief het profielmenu in de topbar.
@@ -55,33 +62,36 @@ export function StartBanner({
         background: 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',
       }}
     >
-      {url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={url}
-          alt={`Het team van ${kantoornaam}`}
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: `center ${focusY}%`,
-          }}
-        />
-      )}
-
       {/* Fijn raster + diagonale glans (prototype .kantoorbanner::before/::after).
           Puur decoratief, dus weg voor schermlezers. */}
       <div aria-hidden className="vui-startbanner-raster" />
       <div aria-hidden className="vui-startbanner-glans" />
 
-      {/* Leesbaarheid van de tekst, ook op een lichte foto. */}
-      <div
-        aria-hidden
-        style={{
-          position: 'absolute', inset: 0,
-          background: url
-            ? 'linear-gradient(0deg, rgba(14,20,17,.66) 0%, rgba(14,20,17,.10) 58%, rgba(14,20,17,0) 100%)'
-            : 'linear-gradient(0deg, rgba(14,20,17,.28) 0%, rgba(14,20,17,0) 62%)',
-        }}
-      />
+      {url && (
+        <div className="vui-startbanner-foto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={url}
+            alt={`Het team van ${kantoornaam}`}
+            style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: `center ${focusY}%`,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Leesbaarheid van de tekst, ook op een lichte foto. Met foto via een
+          class: op brede schermen staat de tekst op het merkvlak en kan de
+          schaduw lichter. */}
+      {url ? (
+        <div aria-hidden className="vui-startbanner-schaduw" />
+      ) : (
+        <div
+          aria-hidden
+          style={{ position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(14,20,17,.28) 0%, rgba(14,20,17,0) 62%)' }}
+        />
+      )}
 
       <div style={{ position: 'relative', padding: 'clamp(20px, 3vw, 30px) clamp(20px, 3vw, 32px)', maxWidth: 640 }}>
         <p style={{ margin: '0 0 4px', fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.82)' }}>
