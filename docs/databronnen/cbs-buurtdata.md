@@ -48,6 +48,13 @@ inkomen €65.800 een **wijk**cijfer. Beide worden als zodanig gelabeld.
 De ingang komt uit PDOK (`buurtcode`, `wijkcode`, `gemeentecode`), die al in de
 verrijkingslaag zat. PDOK levert ook de buurt- en wijknáám; CBS doet dat niet bruikbaar.
 
+**PDOK-uitval (item 12.9, 1 okt 2026):** zonder buurt/wijk/gemeentecode kan
+`fetchCbs()` niets opvragen. Vóór deze fix was dat altijd `leeg` ("CBS kent dit
+gebied niet"), ook als de ontbrekende codes kwamen door een mislukte
+PDOK-opzoeking zelf. `pdokLookup()` geeft nu zijn eigen status terug
+(`fetchMetStatus` i.p.v. `fetchMet`, hetzelfde patroon als hierboven): mislukte
+die opzoeking, dan meldt `fetchCbs()` nu terecht `mislukt` in plaats van `leeg`.
+
 ## Gebruikte velden
 
 | Veld | Betekenis | Bewerking |
