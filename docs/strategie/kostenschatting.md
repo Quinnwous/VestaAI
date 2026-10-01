@@ -70,13 +70,13 @@ voordeel.
 
 Wisselkoers gebruikt: $1 ≈ €0,88 (1 okt 2026).
 
-⚠️ **Vercel-plan waarschijnlijk al Pro, niet Hobby**: `/api/generate` en
-`/api/object/[id]/hergenereer` staan op `maxDuration = 300`; Vercel's Hobby-plan
-staat functies van maximaal 60 s toe. Als deze routes in productie al werken
-(en dat doen ze), draait het project vermoedelijk al op Pro — dit document kon
-het actieve plan niet rechtstreeks bevestigen (geen bevoegdheid/veld in de
-Vercel-tools van deze sessie). **Controleer dit één keer in het Vercel-
-dashboard** voor de vaste-kosten-regel hieronder.
+**Huidige plannen** (`docs/productoverzicht.md` § 13, roadmap § 2 punt 10):
+Vercel **Hobby** en Supabase **gratis**. Dat `/api/generate` en
+`/api/object/[id]/hergenereer` met `maxDuration = 300` werken, zegt niets over
+het plan: met Fluid Compute is 300 s sinds 2025 op álle Vercel-plannen de
+standaard, ook op Hobby. Pro is nodig omdat Hobby volgens Vercels fair-use-
+regels niet-commercieel is (zodra i4 betaalt), en geeft een ruimere maximale
+functieduur (tot 800 s) plus terugrollen naar elke eerdere deploy.
 
 ## 4. Kostensplit per feature (per taal, tenzij anders vermeld)
 
@@ -180,14 +180,15 @@ werkelijke tellingen.
 
 | Service | Plan | Kosten/mo | Noodzakelijk? |
 |---|---|---|---|
-| **Vercel** | Pro (vermoedelijk al actief, zie ⚠️ hierboven) | $20 (~€18) | **JA, onafhankelijk van klantaantal** — de content-routes (`maxDuration = 300`) en virtual staging (`120`) passen niet binnen Hobby's 60 s-limiet. |
-| **Supabase** | Pro aanbevolen vóór een betalende klant (plan niet bevestigd via de tools in deze sessie) | $25 (~€22) | Voorkomt sleep-mode en geeft Point-in-Time Recovery; bij één kantoor technisch niet hard nodig, wel verstandig zodra i4 gaat betalen. |
+| **Vercel** | Pro (nu Hobby) | $20 (~€18) | **JA, zodra i4 betaalt** — Hobby is volgens de fair-use-regels niet-commercieel. Bonus: functieduur tot 800 s (ruimte voor content NL + EN, zie D2) en terugrollen naar elke deploy. |
+| **Supabase** | Pro vóór een betalende klant (nu gratis) | $25 (~€22) | Geen slaapstand na 7 dagen inactiviteit en dagelijkse back-ups (7 dagen bewaard); Point-in-Time Recovery is een aparte betaalde add-on. Er is één productiedatabase, dus dit is het vangnet naast de lokale back-up. |
 | **Resend** | Free | €0 | Ruim voldoende (limiet 3.000 e-mails/mo) bij één kantoor. |
 | **Plausible** | Starter (plan niet bevestigd) | $9 (~€8) | Optioneel. |
 | **Domein** `vestaai.nl` | — | ~€1,40 | Verplicht, verwaarloosbaar. |
 
-**Vaste infra totaal: ~€18–50/mo**, afhankelijk van welke plannen al actief
-zijn en of Plausible wordt meegerekend.
+**Vaste infra na het eerste contract: ≈ €41/mo** (Vercel Pro €18 + Supabase
+Pro €22 + domein €1,40), **≈ €50/mo met Plausible**. Nu (Hobby + gratis):
+alleen het domein en eventueel Plausible.
 
 ## 8. Drie gebruiksscenario's voor i4 (aannames expliciet)
 
@@ -198,9 +199,12 @@ werkelijkheid onbekend, zie § 6.
 
 | Scenario | Dossiers/mo | Staging (50%, 10 foto's) | Variabele kosten/mo | + Vaste infra | **Totaal/mo** |
 |---|---|---|---|---|---|
-| Klein | 5 | 2,5 panden gestaged | ≈ €1,40 | €18–50 | **≈ €19–51** |
-| Middel | 15 | 7,5 panden gestaged | ≈ €5,80 | €18–50 | **≈ €24–56** |
-| Groot | 30 | 15 panden gestaged | ≈ €11,60 | €18–50 | **≈ €30–62** |
+| Klein | 5 | 2,5 panden gestaged | ≈ €1,90 | €41–50 | **≈ €43–52** |
+| Middel | 15 | 7,5 panden gestaged | ≈ €5,80 | €41–50 | **≈ €47–56** |
+| Groot | 30 | 15 panden gestaged | ≈ €11,60 | €41–50 | **≈ €53–62** |
+
+Rekenwijze: gestaged dossier ≈ €0,57, niet-gestaged ≈ €0,20 (§ 5); bv. Klein
+= 2,5 × €0,57 + 2,5 × €0,20 ≈ €1,90.
 
 **Conclusie:** op dit volume is de variabele API-kost nog steeds
 verwaarloosbaar ten opzichte van de vaste infra — dat was ook de conclusie van
@@ -219,31 +223,32 @@ Als de wissel wordt gewonnen en doorgevoerd, scheelt dat ~33% op alles wat via
 `CONTENT` loopt: kern, extra's, prijswijziging, sjabloon-herkansing en
 kwartaalbericht — **niet** op de documentassistent/USP-extractie/herschrijven
 (die lopen via `SAMENVATTING`/`HERSCHRIJF`, een apart besluit). Op het
-"Groot"-scenario (30 dossiers/mo) zou dat de variabele kosten van ≈ €11,60
-naar ≈ €7,70 per maand brengen — een paar euro op dit volume, maar een
-besparing die meeschaalt zodra het klantenbestand groeit.
+"Groot"-scenario (30 dossiers/mo) is het niet-staging-deel ≈ 30 × €0,20 =
+€6,00, waarvan hooguit een derde wegvalt: de variabele kosten gaan van
+≈ €11,60 naar ≈ €9,60 per maand (staging loopt via Gemini en verandert niet).
+Op dit volume een paar euro; de modelkeuze hoort op kwaliteit te vallen, niet
+op prijs.
 
 ## 10. Kostprijs-ondergrens (geen prijsvoorstel)
 
 Dit document gaat uitsluitend over kostprijs — een prijsvoorstel aan i4housing
 is aan Quinn. Als ondergrens per maand (kostprijs, geen marge):
 
-- **Klein (5 dossiers/mo): ≈ €19–51/mo**
-- **Middel (15 dossiers/mo): ≈ €24–56/mo**
-- **Groot (30 dossiers/mo): ≈ €30–62/mo**
+- **Klein (5 dossiers/mo): ≈ €43–52/mo**
+- **Middel (15 dossiers/mo): ≈ €47–56/mo**
+- **Groot (30 dossiers/mo): ≈ €53–62/mo**
 
-De bandbreedte in elk scenario komt vrijwel volledig van de vaste
-infra-aannames (Supabase-plankeuze, wel/niet Plausible), niet van het
-dossiervolume.
+De bandbreedte komt alleen van wel/niet Plausible; het verschil tussen de
+scenario's komt van het dossiervolume, vooral van staging. Niet meegerekend:
+Quinns eigen tijd (support, import, onderhoud) — die is de echte kostprijs.
 
 ## 11. Open actiepunten
 
-1. **Vercel-plan bevestigen** (zie ⚠️ § 3) — vermoedelijk al Pro vanwege de
-   300s-functielimiet, niet rechtstreeks bevestigd.
-2. **Supabase-plan bevestigen** — niet zichtbaar via de tools in deze sessie.
-3. **Plausible-plan bevestigen** — welk plan nu actief is, staat niet vast.
-4. **Werkelijk i4-gebruik meten** zodra er een paar weken productiedata is
+1. **Vercel Pro en Supabase Pro afsluiten** vóór het eerste betaalde contract
+   (roadmap § 2 punten 10 en 14) — nu Hobby en gratis.
+2. **Plausible-plan bevestigen** — welk plan nu actief is, staat niet vast.
+3. **Werkelijk i4-gebruik meten** zodra er een paar weken productiedata is
    (§ 6) — vervang de aannames in § 8 door tellingen.
-5. Domeinprijs is een richtprijs (TransIP-aggregators lopen uiteen) —
+4. Domeinprijs is een richtprijs (TransIP-aggregators lopen uiteen) —
    verwaarloosbaar bedrag, maar controleer bij de volgende jaarlijkse
    verlenging.
