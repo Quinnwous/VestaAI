@@ -1,16 +1,22 @@
 /**
- * Back-up van de belangrijkste tabellen naar lokale JSON-bestanden, vóór elke
- * risicovolle actie op de productiedatabase (migratie, import, bulk-update,
- * opruimen) — zie CLAUDE.md § Vangrails en docs/werkwijze.md
+ * Back-up van alle bedrijfstabellen én Storage naar lokale bestanden, vóór
+ * elke risicovolle actie op de productiedatabase (migratie, import,
+ * bulk-update, opruimen) — zie CLAUDE.md § Vangrails en docs/werkwijze.md § 5.
  *
  * We draaien op het gratis Supabase-plan zonder herstelbare back-ups, dus dit
- * script is de enige vangnet vóór een destructieve actie. Standaard alléén
+ * script is het enige vangnet vóór een destructieve actie. Standaard alléén
  * lezen en wegschrijven (nooit destructief zelf); er is geen --write-vlag
  * nodig omdat dit script niets in de database verandert.
  *
- *   node --env-file=.env.local scripts/backup-data.mjs
+ *   node --env-file=.env.local scripts/backup-data.mjs [--zonder-storage]
  *
- * Schrijft naar VestaAI/backups/<ISO-tijdstip>/<tabel>.json (in .gitignore).
+ * Schrijft naar VestaAI/backups/<ISO-tijdstip>/ (in .gitignore):
+ *   - <tabel>.json per tabel
+ *   - storage/<bucket>/<pad> per Storage-object (overgeslagen met --zonder-storage)
+ *   - manifest.json — tijdstip, per tabel het aantal rijen, per bucket aantal
+ *     bestanden en bytes (docs/werkwijze.md § 5 "Herstelprocedure" gebruikt dit
+ *     om te controleren of een herstel compleet is).
+ *
  * Controleert na afloop of het aantal weggeschreven rijen overeenkomt met het
  * aantal rijen dat de database rapporteert (count via head-request) — bij een
  * afwijking stopt het script met een foutcode in plaats van stilzwijgend door
@@ -20,13 +26,17 @@ import { createClient } from '@supabase/supabase-js'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { berekenPaginas, isStorageMap, maakManifest, storageBestandsPad } from './lib/backupPijplijn.mjs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 
-// De tabellen die er echt toe doen — zie CLAUDE.md § Datamodel. Bewust geen
-// dode tabellen (post_planning/chatbot_*/referrals) en geen system-tabellen
-// (spatial_ref_sys, wijken is publieke SEO-content, geen bedrijfsdata).
+const ZONDER_STORAGE = process.argv.includes('--zonder-storage')
+
+// Alle bedrijfstabellen in schema public — gecontroleerd tegen de live
+// database op 1 okt 2026 (`list_tables`). Bewust uitgesloten:
+// - spatial_ref_sys: PostGIS-systeemtabel (SRID-referentiedata), geen
+//   bedrijfsdata en niet per kantoor (8500+ vaste rijen, RLS staat uit).
 const TABELLEN = [
   'kantoren',
   'makelaars',
@@ -35,7 +45,13 @@ const TABELLEN = [
   'object_documenten',
   'object_fotos',
   'stijl_bewerkingen',
+  // Bevat snapshot_json waarmee een import wordt teruggedraaid (lib/importPijplijn.ts) —
+  // zonder deze tabel in de back-up is een import na een herstel niet meer terug te draaien.
+  'imports',
+  'gebruik_events',
 ]
+
+const PAGE = 1000
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -58,17 +74,13 @@ async function backupTabel(naam, dir) {
   if (countError) {
     // Een tabel die (nog) niet bestaat is geen fout van dit script — meld het
     // en ga door met de rest, zodat een back-up vóór fase 1/3 niet blokkeert
-    // op een tabel die pas later gebouwd wordt (bv. gebruik_events).
+    // op een tabel die pas later gebouwd wordt.
     console.warn(`⚠️  ${naam}: kon niet tellen (${countError.message}) — overgeslagen.`)
     return { naam, overgeslagen: true }
   }
 
-  // Pagineren i.p.v. één grote select — dezelfde reden als fase 4.2 van het
-  // masterplan: Supabase geeft standaard hooguit 1000 rijen per query terug.
-  const PAGE = 1000
   let alleRijen = []
-  for (let from = 0; from < (verwachtAantal ?? 0) || from === 0; from += PAGE) {
-    const to = from + PAGE - 1
+  for (const { from, to } of berekenPaginas(verwachtAantal ?? 0, PAGE)) {
     const { data, error } = await supabase.from(naam).select('*').range(from, to)
     if (error) throw new Error(`${naam}: leesfout bij rijen ${from}-${to}: ${error.message}`)
     if (!data || data.length === 0) break
@@ -83,7 +95,118 @@ async function backupTabel(naam, dir) {
   const symbool = klopt ? '✅' : '❌'
   console.log(`${symbool} ${naam}: ${alleRijen.length} rijen weggeschreven (verwacht: ${verwachtAantal})`)
 
-  return { naam, aantal: alleRijen.length, verwacht: verwachtAantal, klopt }
+  return { naam, aantal: alleRijen.length, verwacht: verwachtAantal, overgeslagen: false }
+}
+
+/**
+ * Loopt één map in één bucket recursief door (Supabase's `list()` geeft
+ * zowel bestanden als submappen terug binnen één `prefix`) en downloadt elk
+ * bestand naar `<backupDir>/storage/<bucket>/<pad>`. Geeft het aantal
+ * bestanden en totale bytes terug.
+ */
+async function backupStorageMap(bucket, prefix, backupDir) {
+  let offset = 0
+  let aantalBestanden = 0
+  let totaalBytes = 0
+
+  for (;;) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .list(prefix, { limit: 100, offset, sortBy: { column: 'name', order: 'asc' } })
+
+    if (error) throw new Error(`storage/${bucket}/${prefix}: kon niet lezen: ${error.message}`)
+    if (!data || data.length === 0) break
+
+    for (const item of data) {
+      const objectPad = prefix ? `${prefix}/${item.name}` : item.name
+
+      if (isStorageMap(item)) {
+        const sub = await backupStorageMap(bucket, objectPad, backupDir)
+        aantalBestanden += sub.aantalBestanden
+        totaalBytes += sub.totaalBytes
+        continue
+      }
+
+      const { data: bestand, error: downloadError } = await supabase.storage.from(bucket).download(objectPad)
+      if (downloadError) {
+        throw new Error(`storage/${bucket}/${objectPad}: download mislukt: ${downloadError.message}`)
+      }
+      const lokaalPad = storageBestandsPad(backupDir, bucket, objectPad)
+      await mkdir(path.dirname(lokaalPad), { recursive: true })
+      await writeFile(lokaalPad, Buffer.from(await bestand.arrayBuffer()))
+
+      aantalBestanden += 1
+      totaalBytes += item.metadata?.size ?? bestand.size ?? 0
+    }
+
+    if (data.length < 100) break
+    offset += 100
+  }
+
+  return { aantalBestanden, totaalBytes }
+}
+
+/** Meet eerst de totale omvang (alleen listen, niet downloaden) zodat die vooraf gemeld kan worden. */
+async function meetStorageMap(bucket, prefix) {
+  let offset = 0
+  let aantalBestanden = 0
+  let totaalBytes = 0
+
+  for (;;) {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .list(prefix, { limit: 100, offset, sortBy: { column: 'name', order: 'asc' } })
+    if (error) throw new Error(`storage/${bucket}/${prefix}: kon niet lezen: ${error.message}`)
+    if (!data || data.length === 0) break
+
+    for (const item of data) {
+      const objectPad = prefix ? `${prefix}/${item.name}` : item.name
+      if (isStorageMap(item)) {
+        const sub = await meetStorageMap(bucket, objectPad)
+        aantalBestanden += sub.aantalBestanden
+        totaalBytes += sub.totaalBytes
+      } else {
+        aantalBestanden += 1
+        totaalBytes += item.metadata?.size ?? 0
+      }
+    }
+
+    if (data.length < 100) break
+    offset += 100
+  }
+
+  return { aantalBestanden, totaalBytes }
+}
+
+function formatteerBytes(bytes) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function backupStorage(dir) {
+  const { data: buckets, error } = await supabase.storage.listBuckets()
+  if (error) throw new Error(`storage: kon buckets niet listen: ${error.message}`)
+
+  console.log(`\n📏 Storage-omvang meten (${buckets.length} bucket(s)) …`)
+  const metingen = []
+  for (const bucket of buckets) {
+    const meting = await meetStorageMap(bucket.name, '')
+    metingen.push({ naam: bucket.name, ...meting })
+    console.log(`   ${bucket.name}: ${meting.aantalBestanden} bestanden, ${formatteerBytes(meting.totaalBytes)}`)
+  }
+  const totaalBytes = metingen.reduce((n, m) => n + m.totaalBytes, 0)
+  console.log(`   Totaal: ${formatteerBytes(totaalBytes)}`)
+
+  console.log(`\n📦 Storage downloaden naar backups/${path.basename(dir)}/storage/ …`)
+  const resultaten = []
+  for (const bucket of buckets) {
+    const res = await backupStorageMap(bucket.name, '', dir)
+    resultaten.push({ naam: bucket.name, aantalBestanden: res.aantalBestanden, totaalBytes: res.totaalBytes })
+    console.log(`✅ ${bucket.name}: ${res.aantalBestanden} bestanden gedownload (${formatteerBytes(res.totaalBytes)})`)
+  }
+
+  return { overgeslagen: false, buckets: resultaten }
 }
 
 async function main() {
@@ -93,22 +216,32 @@ async function main() {
 
   console.log(`📦 Back-up naar backups/${tijdstip}/ …\n`)
 
-  const resultaten = []
+  const tabelResultaten = []
   for (const tabel of TABELLEN) {
-    resultaten.push(await backupTabel(tabel, dir))
+    tabelResultaten.push(await backupTabel(tabel, dir))
   }
 
-  const mismatches = resultaten.filter(r => !r.overgeslagen && !r.klopt)
-  if (mismatches.length > 0) {
-    console.error(`\n❌ Back-up incompleet voor: ${mismatches.map(m => m.naam).join(', ')}`)
+  let storageResultaat = { overgeslagen: true, buckets: [] }
+  if (ZONDER_STORAGE) {
+    console.log('\n⏭️  Storage overgeslagen (--zonder-storage).')
+  } else {
+    storageResultaat = await backupStorage(dir)
+  }
+
+  const manifest = maakManifest({ tijdstip, tabellen: tabelResultaten, storage: storageResultaat })
+  await writeFile(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2), 'utf-8')
+
+  if (!manifest.volledig) {
+    const namen = manifest.tabellen.filter((t) => t.klopt === false).map((t) => t.naam)
+    console.error(`\n❌ Back-up incompleet voor: ${namen.join(', ')}`)
     console.error('   Niet doorgaan met de geplande risicovolle actie — controleer handmatig.')
     process.exit(1)
   }
 
-  console.log(`\n✅ Back-up compleet: backups/${tijdstip}/`)
+  console.log(`\n✅ Back-up compleet: backups/${tijdstip}/ (manifest.json geschreven)`)
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Back-up mislukt:', err.message)
   process.exit(1)
 })
