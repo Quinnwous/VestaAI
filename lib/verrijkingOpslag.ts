@@ -66,6 +66,13 @@ interface BronUitkomst<T> {
  * mislukte poging) en een vlag dat de laatste verversing mislukte. In alle
  * andere gevallen (de nieuwe poging slaagt, of er was ook vorige keer al niets
  * goeds) wint de nieuwe uitkomst gewoon.
+ *
+ * `laatste_versing_mislukt` is bewust alléén `true` in de eerste tak: het
+ * vlagt specifiek "de data die hier als `ok` wordt getoond is ouder dan je
+ * zou verwachten". Komt de nieuwe status zelf door (ook als die `leeg` of
+ * `niet_gekoppeld` is, bv. WOZ dat structureel niet gekoppeld is), dan toont
+ * `BuurtDataTab.tsx` toch al de eerlijke melding voor die status — geen losse
+ * "verversen mislukte"-banner nodig voor iets dat geen mislukking is.
  */
 function voegBronSamen<T>(
   vorige: { data: T | null; status: FetchStatus | undefined; meta: BronMeta | undefined; opgehaaldOp: string },
@@ -84,7 +91,7 @@ function voegBronSamen<T>(
   return {
     data: nieuw.data,
     status: nieuw.status,
-    meta: { opgehaald_op: nieuw.opgehaaldOp, laatste_versing_mislukt: nieuw.status !== 'ok' },
+    meta: { opgehaald_op: nieuw.opgehaaldOp, laatste_versing_mislukt: false },
   }
 }
 

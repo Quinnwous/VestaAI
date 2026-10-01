@@ -250,12 +250,20 @@ describe('voegVerrijkingSamen', () => {
     expect(samengevoegd.bronMeta?.voorzieningen?.opgehaald_op).toBe('2026-09-25T08:00:00.000Z')
   })
 
-  it('laat woz met rust zolang die alleen "niet_gekoppeld" is (geen echte mislukking)', () => {
-    // WOZ is structureel 'niet_gekoppeld' (lib/verrijking.ts WOZ_GEKOPPELD=false) —
-    // dat is geen "verversing mislukt", dus geen vorige-ok-status om te bewaren.
-    const nieuw = naarVerrijkingOpslag(VOLLEDIGE_DATA, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
-    const samengevoegd = voegVerrijkingSamen(VORIGE, nieuw)
-    expect(samengevoegd.bronnen?.woz).toBe('ok')
+  it('laat woz op "niet_gekoppeld" staan zonder een mislukt-vlag te zetten (geen echte mislukking)', () => {
+    // WOZ is in de praktijk structureel 'niet_gekoppeld' (WOZ_GEKOPPELD=false in
+    // lib/verrijking.ts) — dat is geen "verversing mislukt" en er is ook geen
+    // eerdere 'ok'-data om te bewaren, dus de nieuwe (niet_gekoppeld) uitkomst
+    // moet gewoon blijven staan, zonder de staleness-banner te triggeren.
+    const data = { ...VOLLEDIGE_DATA, woz: null, bronnen: { woz: 'niet_gekoppeld' as const, cbs: 'ok' as const, voorzieningen: 'ok' as const } }
+    const vorigeNietGekoppeld = naarVerrijkingOpslag(data, '2026-10-01T08:00:00.000Z', MARKT_EIGEN)
+    const nieuwNietGekoppeld = naarVerrijkingOpslag(data, '2026-10-01T09:00:00.000Z', MARKT_EIGEN)
+
+    const samengevoegd = voegVerrijkingSamen(vorigeNietGekoppeld, nieuwNietGekoppeld)
+
+    expect(samengevoegd.bronnen?.woz).toBe('niet_gekoppeld')
+    expect(samengevoegd.woz).toBeNull()
+    expect(samengevoegd.bronMeta?.woz?.laatste_versing_mislukt).toBe(false)
   })
 
   it('valideert het resultaat alsnog via het schema (regressiebescherming)', () => {
