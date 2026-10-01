@@ -284,6 +284,35 @@ describe('generateContent — kern-only prompt (item 8.3, outputset v2)', () => 
   })
 })
 
+describe('generateContent — modellen die standaard denken (blinde ronde 1 okt 2026)', () => {
+  it('leest de tekst uit het eerste tekstblok, ook als er een denkblok vóór staat', async () => {
+    const mockStream = vi.fn().mockReturnValue({
+      finalMessage: () => Promise.resolve({
+        content: [{ type: 'thinking', thinking: '' }, { type: 'text', text: JSON.stringify(validOutput) }],
+      }),
+    })
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    const result = await generateContent(validInput, mockClient)
+
+    expect(result.funda_tekst).toBe(validOutput.funda_tekst)
+  })
+
+  it('zet denken expliciet uit voor CONTENT_KANDIDAAT, niet voor het huidige model', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const { CONTENT_KANDIDAAT } = await import('./aiModellen')
+
+    const { generateContent } = await import('./claude')
+    await generateContent(validInput, undefined, mockClient, undefined, undefined, CONTENT_KANDIDAAT)
+    await generateContent(validInput, mockClient)
+
+    expect((mockStream.mock.calls[0][0] as { thinking?: unknown }).thinking).toEqual({ type: 'disabled' })
+    expect((mockStream.mock.calls[1][0] as { thinking?: unknown }).thinking).toBeUndefined()
+  })
+})
+
 describe('generateContentBeideTalen', () => {
   const inputBasis = {
     adres: 'Herengracht 1, Amsterdam', woningtype_groep: 'appartement' as const, kamers: 3,

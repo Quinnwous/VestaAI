@@ -9,7 +9,7 @@ import {
   type HuisstijlConfig,
   type PrijswijzigingOutput,
 } from './schemas'
-import { CONTENT, SAMENVATTING } from './aiModellen'
+import { CONTENT, SAMENVATTING, denkenUit } from './aiModellen'
 import { meldFout } from './fouten'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
@@ -339,6 +339,15 @@ Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}
 Genereer alle content als JSON.`
 }
 
+/**
+ * Tekst uit het eerste tekstblok — niet blind `content[0]`: bij een model dat
+ * denkt (zie `denkenUit` in lib/aiModellen.ts) is blok 0 een denkblok.
+ */
+function eersteTekst(content: { type: string; text?: string }[] | undefined): string {
+  const blok = content?.find(b => b.type === 'text')
+  return blok?.text ?? ''
+}
+
 function parseClaudeResponse(text: string): ContentOutput {
   const cleaned = text.replace(/^```json?\n?/, '').replace(/\n?```$/, '').trim()
   return ContentOutputSchema.parse(JSON.parse(cleaned))
@@ -410,8 +419,9 @@ async function herschrijfFundaTekstMetSjabloon(
     max_tokens: HERKANSING_MAX_TOKENS,
     system: systemBlokken,
     messages: [{ role: 'user', content: userText }],
+    ...denkenUit(model),
   })
-  return message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
+  return eersteTekst(message.content).trim()
 }
 
 export async function generateContent(
@@ -488,17 +498,19 @@ export async function generateContent(
         system: systemBlokken,
         messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
         betas: ['files-api-2025-04-14'],
+        ...denkenUit(model),
       })
       const raw = await stream.finalMessage()
-      text = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
+      text = eersteTekst(raw.content)
     } else {
       const message = await client.messages.stream({
         model,
         max_tokens: KERN_MAX_TOKENS,
         system: systemBlokken,
         messages: [{ role: 'user', content: userText }],
+        ...denkenUit(model),
       }).finalMessage()
-      text = message.content[0].type === 'text' ? message.content[0].text : ''
+      text = eersteTekst(message.content)
     }
 
     try {

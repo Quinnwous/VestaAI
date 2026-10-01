@@ -37,6 +37,20 @@ export const CONTENT_KANDIDAAT = 'claude-sonnet-5'
 export const CONTENT_KANDIDAAT_HAIKU = 'claude-haiku-4-5'
 
 /**
+ * Modellen die zonder `thinking`-parameter adaptief gaan denken (claude-api-
+ * skill: Sonnet 5 "runs adaptive" bij weglaten; Sonnet 4.6 en Haiku 4.5 denken
+ * dan niet). Ontdekt in de blinde ronde van 1 okt 2026: de denk-tokens aten de
+ * 6.000 max_tokens van de kern-call op en blok 0 was een denkblok in plaats
+ * van tekst. `denkenUit()` zet het expliciet uit, zodat zo'n model onder
+ * dezelfde voorwaarden draait als het huidige CONTENT-model.
+ */
+const DENKT_STANDAARD = new Set<string>([CONTENT_KANDIDAAT])
+
+export function denkenUit(model: string): { thinking?: { type: 'disabled' } } {
+  return DENKT_STANDAARD.has(model) ? { thinking: { type: 'disabled' } } : {}
+}
+
+/**
  * De modellen die `scripts/evalueer-content.mjs` blind naast elkaar zet, met
  * de naam van hun constante (komt in het sleutelbestand, nooit in de map die
  * Quinn beoordeelt).

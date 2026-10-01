@@ -5,6 +5,7 @@ import { CONTENT_VERGRENDELD, contentVergrendeldAntwoord } from '@/lib/features'
 import { meldFout } from '@/lib/fouten'
 import { GEMINI_STAGING } from '@/lib/aiModellen'
 import { labelAlsVirtueleInrichting } from '@/lib/stagingLabel'
+import { soortGeminiFout } from '@/lib/geminiFout'
 
 export const maxDuration = 120
 
@@ -128,13 +129,19 @@ Output a single high-resolution, photorealistic interior photo of the staged roo
     return NextResponse.json({ error: 'Geen afbeelding ontvangen van Gemini — probeer opnieuw' }, { status: 502 })
   } catch (err) {
     const ref = meldFout('fotos/staging', err, { stijl, ruimte })
-    // Rate limit (te veel aanvragen op de Gemini-tier) apart benoemen zodat de makelaar
-    // een begrijpelijke melding krijgt i.p.v. een generieke fout.
-    const msg = err instanceof Error ? err.message : ''
-    if (/429|quota|rate/i.test(msg)) {
+    // Per soort fout een melding die klopt (lib/geminiFout.ts): alleen bij een
+    // echte limiet helpt "probeer het zo opnieuw".
+    const soort = soortGeminiFout(err)
+    if (soort === 'limiet') {
       return NextResponse.json(
         { error: 'De staging-dienst is even druk (limiet bereikt). Probeer het over een minuut opnieuw.', ref },
         { status: 429 },
+      )
+    }
+    if (soort === 'geweigerd') {
+      return NextResponse.json(
+        { error: 'Virtual staging is nu niet beschikbaar: de beelddienst weigert de aanvraag. Dit ligt niet aan je foto en opnieuw proberen helpt niet. Laat het ons weten via de feedbackknop.', ref },
+        { status: 503 },
       )
     }
     return NextResponse.json({ error: 'Staging mislukt — probeer opnieuw', ref }, { status: 502 })
