@@ -90,3 +90,12 @@ maakt de gemeente nog niet duur.
 Valt CBS uit, dan is `verrijking.cbs` `null` en gaat de generatie gewoon door zonder
 buurtprofiel. Er wordt bewust **geen** statische fallback meer geserveerd: verouderde
 cijfers tonen als "landelijk gemiddelde" was precies het probleem dat deze koppeling oplost.
+
+**Item 12.7-fix (1 okt 2026):** `fetchCbs()` gebruikte tot dan `fetchMet()` (alleen de
+data), die een netwerkfout/timeout/5xx tot dezelfde `null` verzwolg als "CBS kent dit
+gebied niet" — `bronnen.cbs` stond daardoor altijd op `leeg`, nooit op `mislukt`. In
+productie bleek dat geen theoretisch risico: twee demo-dossiers (Damlaan 7, Storm van
+'s-Gravesandeweg 3) hadden `cbs: 'leeg'` in `verrijking_json` terwijl een verse aanroep
+voor exact dezelfde PDOK-codes gewoon buurt/wijk/gemeente-rijen teruggaf — de bron was
+niet leeg, de ópgeslagen call was destijds mislukt. `fetchCbs()` gebruikt nu
+`fetchMetStatus()` en geeft dat onderscheid door, net als WOZ en Overpass.

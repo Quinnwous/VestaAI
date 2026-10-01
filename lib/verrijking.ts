@@ -530,6 +530,17 @@ function toVoorzieningItems(elements: OverpassElement[], lat: number, lon: numbe
 // terugval-mirror (z., zelfde project) na lz4; meer instances belasten
 // vrijwilligersservers voor weinig winst. Faalt ook die, dan toont de UI de
 // CBS-buurtafstanden (`CbsData.nabijheid`).
+//
+// Onderzoek item 12.7 (1 okt 2026, demo-dossiers alle vier op 'mislukt'): bij
+// overbelasting geven lz4 én z een expliciete `HTTP 504` terug (geen hangende
+// request) — de server geeft zelf op, niet onze `AbortSignal`-timeout. Een
+// ruimere timeout helpt dus niet; dat is geen client-side bug maar externe
+// overbelasting. Twee extra kandidaat-mirrors (overpass.private.coffee,
+// overpass.kumi.systems) bleken in dezelfde test ook niet bereikbaar (eigen
+// timeout) — niet toegevoegd: een derde dode/overbelaste mirror vertraagt
+// alleen het faalpad. Op een moment dat de mirrors niet overbelast zijn,
+// werkt de bestaande fallback gewoon (3-6s); dit is dag-op-dag externe
+// instabiliteit, geen reproduceerbare bug in deze code.
 const OVERPASS_URLS = ['https://lz4.overpass-api.de/api/interpreter', 'https://z.overpass-api.de/api/interpreter']
 const OVERPASS_USER_AGENT = 'VestaAI-platform/1.0 (+https://vestaai.nl; makelaarsplatform, buurtdata-verrijking)'
 const OVERPASS_TIMEOUT = 9000
