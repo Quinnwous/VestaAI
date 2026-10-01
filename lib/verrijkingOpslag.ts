@@ -1,5 +1,5 @@
 import { VerrijkingOpslagSchema, type VerrijkingOpslag, type MarktEigenData, type BronMeta, type FetchStatus } from './schemas'
-import { verrijkingNaarPrompt, type VerrijkingData } from './verrijking'
+import { verrijkingNaarPrompt, type VerrijkingData, type CbsData } from './verrijking'
 
 /**
  * Bouwt de opslagvorm van een verse `fetchVerrijking()`-uitkomst (item 10.3):
@@ -165,7 +165,11 @@ export function voegVerrijkingSamen(vorige: VerrijkingOpslag | null, nieuw: Verr
 export function verrijkingOpslagNaarPrompt(opslag: VerrijkingOpslag): string {
   const data: VerrijkingData = {
     woz: opslag.woz,
-    cbs: opslag.cbs,
+    // `CbsDataSchema.nabijheid` is `.optional()` (oudere rijen van vóór 24 sep
+    // 2026 missen het), terwijl lib/verrijking.ts `CbsData.nabijheid` verplicht
+    // is — `verrijkingNaarPrompt()` leest het altijd via `v.cbs?.nabijheid`, dus
+    // `undefined` gedraagt zich daar identiek aan een afwezig veld.
+    cbs: opslag.cbs as CbsData | null,
     voorzieningen: opslag.voorzieningen,
     markt: null,
     gemeente: opslag.gemeente,
