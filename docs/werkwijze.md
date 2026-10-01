@@ -103,6 +103,32 @@ Er is één database (productie) en geen Supabase Pro, dus geen herstelpunten.
 - `.env.local` wijst naar productie: ook `npm run dev`, e2e en de DoD-scripts
   praten met de echte database (lezend, of alleen in het demo-kantoor).
 
+### Herstelprocedure
+
+- **Back-up bevat:** alle bedrijfstabellen (`scripts/backup-data.mjs` §
+  `TABELLEN`) als JSON, Storage (alle buckets, tenzij `--zonder-storage`) onder
+  `storage/<bucket>/<pad>`, en `manifest.json` (tijdstip, per tabel het
+  aantal rijen, per bucket aantal bestanden/bytes).
+- **Niet in de back-up: `auth.users`** (Supabase Auth, geen `public`-tabel).
+  Bij een volledig herstel (lege database) moeten de accounts eerst opnieuw
+  via de Supabase Auth Admin API of het dashboard worden aangemaakt — met
+  dezelfde `id`'s als in `makelaars.json`, anders faalt de foreign key
+  `makelaars.id → auth.users.id`.
+- **Controleer eerst het manifest** (`backups/<tijdstip>/manifest.json`):
+  `volledig: true` en per tabel `klopt: true`, vóór je iets terugzet.
+- **Eén tabel herstellen:** lees `<tabel>.json`, upsert per batch van ~500
+  rijen via de service-client (zelfde patroon als `maakUpsertBatches()` in
+  `lib/importPijplijn.ts` — nooit kale upserts, die wissen aanvulbare velden).
+- **Alles herstellen, in FK-volgorde:** `kantoren` → `makelaars` (ná de
+  bijbehorende auth-gebruikers) → `imports` → `objecten` → `transacties` →
+  `object_documenten`/`object_fotos`/`stijl_bewerkingen`/`gebruik_events`
+  (depend op `objecten`, onderling geen volgorde-eis).
+- **Storage herstellen:** upload elk bestand onder `storage/<bucket>/<pad>`
+  terug naar diezelfde bucket/pad (`supabase.storage.from(bucket).upload(pad, …)`).
+- Draai na een herstel `node --env-file=.env.local scripts/controleer-schema.mjs`
+  — een herstel naar een oudere back-up kan een kolom missen die een latere
+  migratie toevoegde.
+
 ## 6. Git en live
 
 - Tijdens een ronde alleen lokaal committen, op een featurebranch
