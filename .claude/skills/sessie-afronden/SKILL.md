@@ -48,8 +48,9 @@ feilloos verder kan via `sessie-start`.
 3. **Commit, push, merge, live — in één keer, zonder opnieuw te vragen,
    automatisch aan het einde van elke ronde** (besluit Quinn 17 en 26 sep, zie
    CLAUDE.md). Commitbericht in het Nederlands. Push de featurebranch
-   (`feat/…`), maak of werk de PR naar `main` bij, merge hem, en controleer
-   daarna: deploy READY en geen runtime-errors (Vercel-MCP). Tijdens de sessie
+   (`feat/…`), maak of werk de PR naar `main` bij, merge hem met
+   `gh pr merge <nr> --merge --delete-branch` (GitHub verwijdert de branch daar
+   ook zelf), en controleer daarna: deploy READY en geen runtime-errors (Vercel-MCP). Tijdens de sessie
    zelf niet tussendoor pushen. Uitzondering: een migratie die echte data raakt
    blijft akkoord-plichtig.
 4. **Bevestig aan Quinn** in een paar regels: wat er gedaan is, wat nu live

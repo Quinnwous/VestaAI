@@ -237,13 +237,13 @@ Rekenkern: `lib/waardering.ts` (`berekenWaarderingV2`), `lib/prijsindex.ts`,
 
 ## 9. Datamodel (Supabase, project `uvpcjpejocjmlxxyhqyz`, eu-central-1)
 
-Live gecontroleerd op 30 sep 2026.
+Live gecontroleerd op 30 sep 2026; `nps_responses` en
+`makelaars.first_generated_at` zijn op 1 okt weggehaald (opruimmigratie 2).
 
 ```
 kantoren          id, name, slug, logo_url, huisstijl_json, instellingen_json,
                   admin_notified_at, created_at
-makelaars         id (= auth.users.id), kantoor_id, name, email, role, created_at,
-                  first_generated_at (ongebruikt)
+makelaars         id (= auth.users.id), kantoor_id, name, email, role, created_at
 objecten          id, kantoor_id, makelaar_id, address, fase, fase_sinds, status,
                   input_json, outputs_json, outputs_json_en, content_status,
                   content_gegenereerd_op, content_bezig_sinds, waardering_json,
@@ -263,7 +263,6 @@ imports           id, kantoor_id, bron, bestandsnaam, aantal_rijen/_nieuw/
                   _bijgewerkt/_uitgesloten, kwaliteitsrapport_json, snapshot_json,
                   status, gestart_op, klaar_op, teruggedraaid_op
 gebruik_events    id, kantoor_id, makelaar_id, object_id, type, created_at
-nps_responses     ongebruikt, leeg (opruimkandidaat)
 view              transacties_met_coordinaten (security_invoker, + lat/lng)
 ```
 

@@ -12,6 +12,17 @@
 
 ---
 
+### 1 okt 2026 — opruimmigratie 2 en GitHub opgeruimd
+
+Akkoord Quinn op de twee nieuwe actiepunten uit de opschoning ("doe punt 1 en
+2, wacht met de volgende ronde").
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Opruimmigratie 2 | Tabel `nps_responses` en kolom `makelaars.first_generated_at` weg (migratie `20261001053851_opruimen_nps_first_generated.sql`, via `apply_migration`). Vooraf: back-up `backups/2026-10-01T05-37-56-484Z/`, 0 rijen / 0 gevuld, geen functie, view, trigger of FK die ernaar verwees. Achteraf: `controleer-schema.mjs` groen, `dod:screens` groen tegen de gemigreerde database. Het veld is ook uit het type `Makelaar` (`lib/supabase.ts`) gehaald | Quinn + Opus |
+| GitHub | De 41 gemergde branches op GitHub verwijderd (alle volledig in `main`, geen open PR's); alleen `main` blijft. Repo-instelling "Automatically delete head branches" aan, en mergen voortaan met `gh pr merge --merge --delete-branch` (skill sessie-afronden, werkwijze § 6) | Quinn + Opus |
+| Volgende ronde | Bewust nog niet gestart: Quinn wil eerst de chat clearen. Klaar om op te pakken: 12.7, 12.8, F1, F2, F5, F6 | Quinn |
+
 ### 30 sep 2026 (opschoning) — roadmap gesplitst, docs heringedeeld, dode code weg
 
 Opdracht Quinn: "de hele map opfrissen en opschonen; de roadmap alleen nog wat

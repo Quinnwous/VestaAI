@@ -28,7 +28,6 @@ export type Makelaar = {
   email: string
   role: 'admin' | 'makelaar'
   created_at?: string
-  first_generated_at?: string | null
 }
 
 // Transactiedataset (F4, zie CLAUDE.md § Hoofdstructuur) — referentiebasis
