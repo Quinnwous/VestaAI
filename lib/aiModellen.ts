@@ -29,6 +29,25 @@ export const CONTENT = 'claude-sonnet-4-6'
 export const CONTENT_KANDIDAAT = 'claude-sonnet-5'
 
 /**
+ * Tweede kandidaat voor CONTENT (besluit Quinn 1 okt 2026): Haiku in dezelfde
+ * blinde ronde — sneller en goedkoper, dus ruimer binnen de functielimiet van
+ * 300 s, mits de kwaliteit standhoudt. Net als CONTENT_KANDIDAAT alleen in
+ * `scripts/evalueer-content.mjs`.
+ */
+export const CONTENT_KANDIDAAT_HAIKU = 'claude-haiku-4-5'
+
+/**
+ * De modellen die `scripts/evalueer-content.mjs` blind naast elkaar zet, met
+ * de naam van hun constante (komt in het sleutelbestand, nooit in de map die
+ * Quinn beoordeelt).
+ */
+export const EVALUATIE_MODELLEN = [
+  { naam: 'CONTENT', model: CONTENT },
+  { naam: 'CONTENT_KANDIDAAT', model: CONTENT_KANDIDAAT },
+  { naam: 'CONTENT_KANDIDAAT_HAIKU', model: CONTENT_KANDIDAAT_HAIKU },
+] as const
+
+/**
  * Letterlijke tekstextractie uit een document (OCR-achtig, geen interpretatie):
  * `app/api/huisstijl/extract/route.ts` (PDF → platte tekst voor de huisstijl-
  * upload) en `scripts/seed-i4housing-content.mjs` (brochure-PDF → platte

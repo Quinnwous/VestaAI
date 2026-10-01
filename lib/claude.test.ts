@@ -311,12 +311,19 @@ describe('generateContentBeideTalen', () => {
       return call === 1 ? streamReturning(JSON.stringify(validOutput)) : streamReturning('geen json')
     })
     const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleInfo = vi.spyOn(console, 'info').mockImplementation(() => {})
 
     const { generateContentBeideTalen } = await import('./claude')
     const result = await generateContentBeideTalen(inputBasis, undefined, undefined, undefined, mockClient)
 
     expect(result.nl.funda_tekst).toContain('Herengracht')
     expect(result.en).toBeNull()
+    // Nooit meer stil: de EN-fout staat in de log, en de duurregel meldt en_ok=false.
+    expect(consoleError.mock.calls.some(args => String(args[0]).includes('generate:en'))).toBe(true)
+    expect(consoleInfo.mock.calls.some(args => String(args[0]).includes('en_ok=false'))).toBe(true)
+    consoleError.mockRestore()
+    consoleInfo.mockRestore()
   })
 })
 
@@ -496,6 +503,18 @@ describe('generateContent — tekstsjabloon-validatie en -herkansing (item 8.2)'
     // Klein t.o.v. de kern-call (zie KERN_MAX_TOKENS) — 1 veld, niet 7.
     expect(herkansingsAanroep.max_tokens).toBeLessThan(6000)
     expect(herkansingsAanroep.messages[0].content).toContain('sjabloon')
+  })
+
+  it('herkanst met hetzelfde model als de kern-call bij een modelOverride (blinde evaluatie)', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify({ ...validOutput, funda_tekst: AFWIJKENDE_FUNDA_TEKST })))
+    const mockCreate = vi.fn().mockReturnValue(createReturning(CONFORME_FUNDA_TEKST))
+    const mockClient = { messages: { stream: mockStream, create: mockCreate } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent(inputBasis, huisstijlMetSjabloon, mockClient, undefined, undefined, 'kandidaat-model')
+
+    expect((mockStream.mock.calls[0][0] as { model: string }).model).toBe('kandidaat-model')
+    expect((mockCreate.mock.calls[0][0] as { model: string }).model).toBe('kandidaat-model')
   })
 
   it('behoudt de oorspronkelijke funda_tekst met een waarschuwing als de gerichte herkansing niets teruggeeft', async () => {
