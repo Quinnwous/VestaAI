@@ -2,6 +2,7 @@ import { revalidatePath } from 'next/cache'
 import { generateContentBeideTalen } from '@/lib/claude'
 import { createServiceSupabaseClient } from '@/lib/supabase'
 import { fetchVerrijking, verrijkingNaarPrompt } from '@/lib/verrijking'
+import { verwerkOpgeslagenVerrijking, kiesVerrijkingsbron, verrijkingOpslagNaarPrompt } from '@/lib/verrijkingOpslag'
 import { meldFout } from '@/lib/fouten'
 import { behoudExtras } from '@/lib/contentExtra'
 import type { HuisstijlConfig, PropertyInput } from '@/lib/schemas'
@@ -30,7 +31,7 @@ export async function genereerContentVoorObject(objectId: string, kantoorId: str
 
   const { data: object } = await service
     .from('objecten')
-    .select('id, input_json, content_status, content_bezig_sinds')
+    .select('id, input_json, content_status, content_bezig_sinds, verrijking_json')
     .eq('id', objectId)
     .eq('kantoor_id', kantoorId)
     .single()
@@ -72,11 +73,30 @@ export async function genereerContentVoorObject(objectId: string, kantoorId: str
   const huisstijl = (kantoor?.huisstijl_json as HuisstijlConfig | null) ?? undefined
 
   try {
-    const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
-      meldFout('generate:verrijking', err, { adres: input.adres })
-      return null
-    })
-    const verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
+    // Item D5 (1 okt 2026): eerst de al opgeslagen buurtdata proberen (tab
+    // "Buurt & data"), live alleen als terugval — op 1 okt liep een live
+    // Overpass-call op productie twee keer in een timeout (± 18s van de
+    // ± 102s per generatie verloren, voorzieningen ontbraken in de tekst).
+    // `kiesVerrijkingsbron()` is puur en bepaalt ook of de opslag te oud is
+    // (`VERRIJKING_MAX_LEEFTIJD_DAGEN`, lib/verrijkingOpslag.ts).
+    const opgeslagenVerrijking = verwerkOpgeslagenVerrijking({ data: object, error: null })
+    const verrijkingKeuze = kiesVerrijkingsbron(opgeslagenVerrijking)
+
+    let verrijkingTekst: string | undefined
+    if (verrijkingKeuze.bron === 'opgeslagen' && opgeslagenVerrijking) {
+      verrijkingTekst = verrijkingOpslagNaarPrompt(opgeslagenVerrijking)
+    } else {
+      const verrijking = await fetchVerrijking(input.adres, input.oppervlak_m2).catch(err => {
+        meldFout('generate:verrijking', err, { adres: input.adres })
+        return null
+      })
+      verrijkingTekst = verrijking ? verrijkingNaarPrompt(verrijking) : undefined
+    }
+
+    // Welke bron de prompt voedde, naast [contentduur] (lib/claude.ts) handig
+    // om een trage/mislukte live verrijking te herkennen. Zonder adres
+    // (privacy, zie CLAUDE.md "Verrijking").
+    console.info(`[verrijking] bron=${verrijkingKeuze.bron} leeftijd=${verrijkingKeuze.leeftijdDagen}d`)
 
     // NL + EN parallel (besluit 16 sep 2026, F8) — de wandkloktijd blijft
     // ~gelijk aan één generatie, begrensd door de traagste van de twee.
