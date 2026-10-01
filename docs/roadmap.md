@@ -22,7 +22,8 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 1 okt 2026. Laatst gedaan: de betaalde testronde op 1 okt —
+*Bijgewerkt 1 okt 2026. Laatst gedaan: ronde D4 + D5 (EN-kwartaalbericht in
+Engelse notatie, opgeslagen buurtdata bij het genereren); daarvoor de betaalde testronde op 1 okt —
 blinde modelvergelijking (CONTENT blijft Sonnet 4.6), de echte duur van NL + EN
 op Vercel gemeten (± 102 s), EN-content voor het scène 5-dossier, het
 EN-kwartaalbericht getest, en daaruit drie promptfixes (hele intake mee, geen
@@ -34,8 +35,8 @@ gedwongen verzinsels, aanspreekvorm). Eerder die dag 12.1 en rondes R en S.*
   data (§ 1).
 - **Kritiek pad:** exports van Quinn → 5.1 exportanalyse → 5.5 import →
   M1 tussencheck taxateur → demovoorbereiding (12.5, 12.7) → demo.
-- **Volgende ronde:** D4 (EN-getalnotatie kwartaalbericht) en D5 (opgeslagen
-  buurtdata bij het genereren) — allebei bouwbaar zonder input, nul overlap.
+- **Volgende ronde:** er is geen bouwbaar item meer zonder input van Quinn
+  (F9 en F10 zijn optioneel). D1 staging wacht op Gemini-billing (§ 2 punt 5).
 - **Wacht op Quinn:** § 2 — vooral de exports (blokkeert alles op het kritieke
   pad), het voorbeeld-verkoopadvies en Gemini-billing (staging werkt pas dan).
 - ⚠️ **Demo-realiteit:** i4 Housing heeft 0 transacties én 0 dossiers
@@ -45,7 +46,8 @@ gedwongen verzinsels, aanspreekvorm). Eerder die dag 12.1 en rondes R en S.*
   demo-kantoor in i4-huisstijl (beslissing Quinn, pas nodig als half december
   in gevaar komt).
 - **Contentgeneratie gemeten (1 okt):** NL + EN op Vercel ± 102 s (NL ± 82 s,
-  EN ± 63 s, plus ± 18 s Overpass-time-outs vooraf) — ruim binnen 300 s. Gemeten
+  EN ± 63 s, plus ± 18 s Overpass-time-outs vooraf, die sinds D5 wegvallen
+  als het dossier opgeslagen buurtdata heeft) — ruim binnen 300 s. Gemeten
   op het demo-kantoor zonder sjabloon; i4 mét sjabloon kan ± 10-20 s langer
   duren (herkansing). Opnieuw meten: `scripts/meet-contentgeneratie.mjs`.
 
@@ -196,17 +198,6 @@ staging · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvies
   `gemini-3.1-flash-image` op productie (stockfoto klaar: Unsplash, Lisa Anna,
   lege woonkamer); label "Virtueel ingericht" zichtbaar, kwaliteit beoordeeld,
   origineel + resultaat in het scène 5-dossier.
-- [ ] **D4 EN-kwartaalbericht in Engelse notatie** *(bouwbaar)*: de guardrail
-  dwingt nu ook in het Engels de NL-notatie af ("2.064 homes", "€ 949.500") en
-  "procentpunt" blijft onvertaald. Voor Engelse lezers (expats, 4RENT) leest
-  dat als een fout. `controleerGuardrail` beide notaties laten accepteren,
-  Engelse notatie en "percentage point" laten schrijven, test die beide rendert.
-- [ ] **D5 Opgeslagen buurtdata bij het genereren** *(bouwbaar)*:
-  `genereerContentVoorObject` haalt de buurtdata live op (Overpass liep op 1 okt
-  twee keer in een time-out, ± 18 s per generatie, en dan ontbreken de
-  voorzieningen in de tekst), terwijl het dossier ze al opgeslagen heeft
-  (`verrijking_json`). Eerst de opgeslagen versie gebruiken; alleen live ophalen
-  als die er niet is.
 - *Klaar als (fase):* i4-tekst volgt het sjabloon 1-op-1 in NL en EN; brochure
   niet te onderscheiden van hun eigen werk; scène 5 loopt zonder wachttijd-
   verrassing.
