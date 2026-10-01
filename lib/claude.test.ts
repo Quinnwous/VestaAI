@@ -301,6 +301,21 @@ describe('generateContent — de hele intake gaat mee in de prompt (blinde ronde
     expect(tekst).toContain('Balkon of dakterras: ja')
     expect(tekst).toContain('verzin er geen bij')
   })
+
+  it('dwingt geen verzinsels meer af: geen harde 700-woordengrens, geen gebrekenclaims', async () => {
+    const mockStream = vi.fn().mockReturnValue(streamReturning(JSON.stringify(validOutput)))
+    const mockClient = { messages: { stream: mockStream } } as unknown as Anthropic
+
+    const { generateContent } = await import('./claude')
+    await generateContent(validInput, mockClient)
+    await generateContent({ ...validInput, taal: 'en' }, mockClient)
+
+    for (const aanroep of mockStream.mock.calls) {
+      const system = (aanroep[0] as GevangenSysteemAanroep).system.map(b => b.text).join('\n')
+      expect(system).not.toMatch(/harde ondergrens|hard minimum/)
+      expect(system).toMatch(/verborgen\) gebreken|hidden\) defects/)
+    }
+  })
 })
 
 describe('generateContent — modellen die standaard denken (blinde ronde 1 okt 2026)', () => {
