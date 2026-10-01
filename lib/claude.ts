@@ -9,8 +9,9 @@ import {
   type HuisstijlConfig,
   type PrijswijzigingOutput,
 } from './schemas'
-import { CONTENT, SAMENVATTING } from './aiModellen'
+import { CONTENT, SAMENVATTING, denkenUit } from './aiModellen'
 import { meldFout } from './fouten'
+import { kenmerkRegels, feitenRegel } from './contentKenmerken'
 import { controleerGuardrail, type Feitenblad } from './kwartaalbericht'
 import { renderTekstsjabloonPrompt, valideerTekstsjabloon, bouwSjabloonCorrectie } from './tekstsjabloon'
 import { bouwExtraPrompt, schrijftoonLabel, EXTRA_MAX_TOKENS, type ExtraType } from './contentExtra'
@@ -313,6 +314,11 @@ function buildUserMessage(input: PropertyInput, verrijkingTekst?: string): strin
     : ''
 
   const verrijking = verrijkingTekst ? `\n${verrijkingTekst}` : ''
+  // Alle overige intakevelden (slaapkamers, woonlagen, tuin, balkon, …) —
+  // zie lib/contentKenmerken.ts waarom.
+  const kenmerken = kenmerkRegels(input, isEn ? 'en' : 'nl')
+  const kenmerkBlok = kenmerken.length ? `\n${kenmerken.join('\n')}` : ''
+  const feiten = `\n\n${feitenRegel(isEn ? 'en' : 'nl')}`
 
   if (isEn) {
     return `Property: ${input.adres}
@@ -320,9 +326,9 @@ Type: ${woningtypeLabel(input)}, ${input.kamers} rooms
 Floor area: ${input.oppervlak_m2} m²
 Year built: ${input.bouwjaar}
 Energy label: ${input.energielabel}
-Asking price: ${prijsFormatted}
+Asking price: ${prijsFormatted}${kenmerkBlok}
 USPs: ${input.usps}
-Target audience: ${input.doelgroep}${openHuisRegel}${verrijking}
+Target audience: ${input.doelgroep}${openHuisRegel}${verrijking}${feiten}
 
 Generate all content in English as JSON.`
   }
@@ -332,11 +338,20 @@ Type: ${woningtypeLabel(input)}, ${input.kamers} kamers
 Oppervlak: ${input.oppervlak_m2} m²
 Bouwjaar: ${input.bouwjaar}
 Energielabel: ${input.energielabel}
-Vraagprijs: ${prijsFormatted}
+Vraagprijs: ${prijsFormatted}${kenmerkBlok}
 USP's: ${input.usps}
-Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}
+Doelgroep: ${input.doelgroep}${openHuisRegel}${verrijking}${feiten}
 
 Genereer alle content als JSON.`
+}
+
+/**
+ * Tekst uit het eerste tekstblok — niet blind `content[0]`: bij een model dat
+ * denkt (zie `denkenUit` in lib/aiModellen.ts) is blok 0 een denkblok.
+ */
+function eersteTekst(content: { type: string; text?: string }[] | undefined): string {
+  const blok = content?.find(b => b.type === 'text')
+  return blok?.text ?? ''
 }
 
 function parseClaudeResponse(text: string): ContentOutput {
@@ -410,8 +425,9 @@ async function herschrijfFundaTekstMetSjabloon(
     max_tokens: HERKANSING_MAX_TOKENS,
     system: systemBlokken,
     messages: [{ role: 'user', content: userText }],
+    ...denkenUit(model),
   })
-  return message.content[0]?.type === 'text' ? message.content[0].text.trim() : ''
+  return eersteTekst(message.content).trim()
 }
 
 export async function generateContent(
@@ -488,17 +504,19 @@ export async function generateContent(
         system: systemBlokken,
         messages: [{ role: 'user', content: [...docBlocks, { type: 'text', text: userText }] }],
         betas: ['files-api-2025-04-14'],
+        ...denkenUit(model),
       })
       const raw = await stream.finalMessage()
-      text = raw.content?.[0]?.type === 'text' ? raw.content[0].text : ''
+      text = eersteTekst(raw.content)
     } else {
       const message = await client.messages.stream({
         model,
         max_tokens: KERN_MAX_TOKENS,
         system: systemBlokken,
         messages: [{ role: 'user', content: userText }],
+        ...denkenUit(model),
       }).finalMessage()
-      text = message.content[0].type === 'text' ? message.content[0].text : ''
+      text = eersteTekst(message.content)
     }
 
     try {

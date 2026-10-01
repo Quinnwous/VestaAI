@@ -23,6 +23,7 @@
  *
  *   npx tsx --env-file=.env.local scripts/evalueer-content.mjs
  *   npx tsx --env-file=.env.local scripts/evalueer-content.mjs --write
+ *   npx tsx --env-file=.env.local scripts/evalueer-content.mjs --alleen CONTENT_KANDIDAAT --write
  *
  * (tsx i.p.v. node: dit script importeert lib/claude.ts en lib/aiModellen.ts
  * rechtstreeks — zelfde patroon als scripts/backtest-waardering.mjs, zie
@@ -41,6 +42,9 @@ const SCHRIJVEN = process.argv.includes('--write')
 const OVERSCHRIJVEN = process.argv.includes('--overschrijf')
 const ZONDER_HUISSTIJL = process.argv.includes('--zonder-huisstijl')
 const KANTOOR_SLUG = argWaarde('--kantoor') ?? 'i4housing'
+// Alleen de varianten van één model opnieuw genereren in de ronde van vandaag,
+// onder dezelfde labels (blijft blind); de vorige poging blijft in de sleutel.
+const ALLEEN = argWaarde('--alleen')
 const LABELS = ['A', 'B', 'C', 'D', 'E']
 const HIER = dirname(fileURLToPath(import.meta.url))
 const EVALUATIE_ROOT = join(HIER, '..', 'docs', 'evaluatie')
@@ -99,7 +103,7 @@ function wijsToe() {
 function meetClient(aanroepen) {
   const echt = new Anthropic({ maxRetries: 1, timeout: 280_000 })
   const noteer = (soort, model, bericht, ms) =>
-    aanroepen.push({ soort, model, ms, stop_reason: bericht.stop_reason, usage: bericht.usage })
+    aanroepen.push({ soort, model, ms, stop_reason: bericht.stop_reason, blokken: bericht.content?.map((b) => b.type), usage: bericht.usage })
   return {
     beta: echt.beta,
     messages: {
@@ -138,6 +142,33 @@ async function genereerVariant(input, huisstijl, { label, naam, model }, dossier
   }
 }
 
+async function herhaalModel(datum, dossiers, rondeDir, sleutelPad, bron) {
+  const variant = EVALUATIE_MODELLEN.find((m) => m.naam === ALLEEN)
+  if (!variant) throw new Error(`Onbekend model "${ALLEEN}" — kies uit ${EVALUATIE_MODELLEN.map((m) => m.naam).join(', ')}`)
+  if (!existsSync(sleutelPad)) throw new Error(`Geen ronde van ${datum} om aan te vullen (${sleutelPad}).`)
+  const sleutel = JSON.parse(readFileSync(sleutelPad, 'utf8'))
+
+  kop(`Alleen ${variant.naam} (${variant.model}) opnieuw — zelfde labels`)
+  if (!SCHRIJVEN) {
+    for (const { naam } of dossiers) {
+      const label = Object.entries(sleutel.dossiers[naam] ?? {}).find(([, r]) => r.naam === variant.naam)?.[0]
+      log(`  ${naam}: ${label ? `label verborgen, wordt opnieuw gegenereerd` : 'niet in de ronde — overgeslagen'}`)
+    }
+    log('\nDraai met --write om dit echt uit te voeren (kost API-geld).')
+    return
+  }
+  for (const { naam, input } of dossiers) {
+    const entry = Object.entries(sleutel.dossiers[naam] ?? {}).find(([, r]) => r.naam === variant.naam)
+    if (!entry) continue
+    const [label, oud] = entry
+    kop(naam)
+    const nieuw = await genereerVariant(input, bron?.huisstijl, { label, ...variant }, join(rondeDir, naam))
+    sleutel.dossiers[naam][label] = { ...nieuw, eerderePoging: { ms: oud.ms, fout: oud.fout ?? null, aanroepen: oud.aanroepen } }
+    writeFileSync(sleutelPad, JSON.stringify(sleutel, null, 2))
+  }
+  kop('Klaar')
+}
+
 async function main() {
   const datum = vandaag()
   const dossiers = laadDossiers()
@@ -153,6 +184,8 @@ async function main() {
     : 'geen (--zonder-huisstijl)')
   log('Uitvoer naar:', rondeDir)
   log('Sleutel apart naar:', sleutelPad)
+
+  if (ALLEEN) return herhaalModel(datum, dossiers, rondeDir, sleutelPad, bron)
 
   const aantal = dossiers.length * EVALUATIE_MODELLEN.length
   if (!SCHRIJVEN) {
