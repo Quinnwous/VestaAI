@@ -67,7 +67,7 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
 ## 2. Startpagina (`/dashboard`)
 
 Begroeting op tijd van de dag (server-side berekend), merkverloop of
-teamfoto (`StartBanner`, `banner_url` + `banner_focus_y`; vanaf 1024 px staat
+teamfoto (`StartBanner`, `banner_url` + `banner_focus_y`; vanaf 640 px staat
 de foto rechts en loopt hij over in het merkverloop, smaller schermvullend),
 **kerncijfers** (verkocht laatste 12 maanden,
 gemiddelde looptijd, marktaandeel in de hoofdplaats, prijs t.o.v. vraagprijs,

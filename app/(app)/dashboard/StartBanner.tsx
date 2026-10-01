@@ -15,7 +15,7 @@ import { colors } from '@/components/ui/tokens'
  *
  * Foto rechts op brede schermen (1 okt 2026, teamfoto i4): schermvullend werd
  * een staande groepsfoto op 1920 px een strook gezichten met de begroeting
- * eroverheen. Vanaf 1024 px staat de foto daarom in de rechter ~60 % en loopt
+ * eroverheen. Vanaf 640 px staat de foto daarom in de rechter ~60 % en loopt
  * hij zacht over in het merkverloop; de tekst staat op het merkvlak. Smal
  * blijft hij schermvullend. De foto ligt bóven raster en glans, zodat die
  * alleen op het merkvlak te zien zijn (CSS: `.vui-startbanner-foto`).
