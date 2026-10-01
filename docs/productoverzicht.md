@@ -36,7 +36,7 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
 | Platform-admin | ✅ | kantoren, accounts, huisstijl, instellingen, import |
 | Importpijplijn transacties | 🟡 | klaar, wacht op de Brainbay-/Realworks-exports |
 | Publieke site + juridische teksten | ✅ | KvK-gegevens ontbreken nog; jurist-toets open |
-| Kwaliteitsbewaking (tests, CI, DoD-scripts) | ✅ | 1007 unit-tests, CI op GitHub, e2e, axe, generale repetitie |
+| Kwaliteitsbewaking (tests, CI, DoD-scripts) | ✅ | 1019 unit-tests, CI op GitHub, e2e, axe, generale repetitie |
 
 ---
 
@@ -89,8 +89,13 @@ fase, sinds wanneer en de kernbedragen.
   makelaar zelf invult. Een mislukte bron staat er als "mislukt", niet als leeg
   — sinds 1 okt ook bij CBS (een serverfout werd eerder als "leeg" opgeslagen).
   Alle 15 dossiers van het demo-kantoor zijn op 1 okt ververst: CBS en
-  voorzieningen `ok`. ⚠️ Overpass is dag-op-dag overbelast (HTTP 504) en
-  "Ververs" overschrijft dan goede data met "mislukt" (roadmap 12.9).
+  voorzieningen `ok`. **Verversen zonder dataverlies:** faalt een bron bij
+  "Ververs" terwijl er goede data stond, dan blijft die staan met de melding
+  "Verversen lukte niet — dit zijn je gegevens van <datum>" (per bron
+  `bronMeta` in `verrijking_json`, `voegVerrijkingSamen()` in
+  `lib/verrijkingOpslag.ts`). Ook een PDOK-uitval meldt nu `mislukt`, en
+  gemeente/coördinaat blijven staan. Overpass is dag-op-dag overbelast
+  (HTTP 504), dus de melding kan voorkomen.
 - **Tab Content en media** (vanaf In verkoop) — Teksten, Media, Documenten en
   Export (§ 5).
 - **AI USP-extractor**: zet de vrije intaketekst om in gestructureerde
@@ -234,7 +239,7 @@ Ontbreekt nog: KvK-nummer, adres en zakelijk mailadres.
 
 ## 12. Kwaliteit en tooling
 
-- **Unit-tests** (Vitest): 1007 tests in 81 bestanden, met guard-tests die de
+- **Unit-tests** (Vitest): 1019 tests in 81 bestanden, met guard-tests die de
   architectuurregels afdwingen (transacties via één module, modelstrings op één
   plek, MapLibre-worker zelf gehost). De docx-extractie draait op een
   synthetische fixture (`lib/__fixtures__/voorbeeld.docx`).

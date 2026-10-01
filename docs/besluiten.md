@@ -12,6 +12,21 @@
 
 ---
 
+### 1 okt 2026 (ronde S) — verversen zonder dataverlies, kostenschatting
+
+Doorlopende ronde direct na ronde R: de twee items die nog zonder input
+bouwbaar waren. Twee Sonnet-agents (12.9 · F8); de hoofdsessie corrigeerde en
+voegde samen. Daarna is er geen bouwbaar item meer zonder input van Quinn.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| 12.9 samenvoegen | "Ververs" voegt de nieuwe verrijking samen met de vorige (`voegVerrijkingSamen()` in `lib/verrijkingOpslag.ts`, TDD): faalt een bron terwijl de vorige `ok` was, dan blijft die data staan met per bron `bronMeta.<bron>.opgehaald_op` en `laatste_verversing_mislukt`; oude opslag zonder `bronMeta` parset nog. De UI meldt per bron (CBS, voorzieningen) "Verversen lukte niet — dit zijn je gegevens van <datum>" in de bestaande amber waarschuwingskleur. WOZ krijgt geen melding: de automatische WOZ-bron is altijd `niet_gekoppeld` | Sonnet |
+| 12.9 PDOK | `pdokLookup()` via `fetchMetStatus()`: een PDOK-uitval geeft nu `mislukt` voor CBS en voorzieningen in plaats van `leeg`. `pdokZoek()` (geocodeerpijplijn) ongemoeid | Sonnet |
+| 12.9 correcties hoofdsessie | Veldnaam `laatste_versing_mislukt` → `laatste_verversing_mislukt` (vóór er ooit één is opgeslagen); gemeente en coördinaat vallen bij een PDOK-uitval terug op de vorige waarde (test eerst rood gezien). Buurt & data van Damlaan 7 lokaal bekeken met de nieuwe code: CBS en voorzieningen zichtbaar, geen paginafouten | Opus |
+| F8 kostenschatting | Herschreven uit de code: outputset v2, modellen uit `lib/aiModellen.ts`, prompt caching (alleen de kern-call), Gemini 2.5 betaald ($0,039/foto), tarieven met bron en datum. ≈ €0,20 per dossier zonder staging, ≈ €0,57 met; vaste kosten na het eerste contract ≈ €41/mnd (Vercel Pro + Supabase Pro + domein), €50 met Plausible; kostprijs ≈ €43–62/mnd bij 5–30 dossiers. Geen echt gebruik om op te meten — aannames expliciet | Sonnet |
+| F8 correcties hoofdsessie | De agent concludeerde "Vercel vermoedelijk al Pro" uit `maxDuration = 300`; onjuist (300 s is sinds 2025 op álle plannen de standaard) → plannen volgens productoverzicht: Hobby + gratis. Rekenfouten hersteld: scenario Klein (€1,40 → €1,90) en de besparing van de modelwissel D3 (staging via Gemini telt niet mee: €11,60 → €9,60, niet €7,70). Supabase Pro geeft dagelijkse back-ups; PITR is een add-on | Opus |
+| Volgende ronde | Geen: alles wat openstaat wacht op Quinn (§ 2) of is optioneel (F9 bij aanraking, F10). Volgens de afspraak doorlopende rondes hier stoppen en melden | Opus |
+
 ### 1 okt 2026 (ronde R) — buurtdata, referentietabel, CI, herstelplan, audit 0, docx-test
 
 Ronde na `/sessie-start`: de zes items die zonder input bouwbaar waren. Vier
