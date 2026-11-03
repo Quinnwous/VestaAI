@@ -48,8 +48,9 @@ export function Kantel({
     if (!el) return
     cancelAnimationFrame(frame.current)
     el.dataset.actief = 'false'
-    el.style.setProperty('--rx', '0deg')
-    el.style.setProperty('--ry', '0deg')
+    // Terug naar de rustand uit CSS (0, of een schuine stand per element).
+    el.style.removeProperty('--rx')
+    el.style.removeProperty('--ry')
   }
 
   return (

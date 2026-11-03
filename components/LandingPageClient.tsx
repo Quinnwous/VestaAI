@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Kantel } from '@/components/ui/Kantel'
+import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -200,6 +202,7 @@ export function LandingPageClient() {
   const [activeTab, setActiveTab] = useState('funda')
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileOpen, setMobileOpen] = useState(false)
+  useSpotlightVolger()
 
   const activeTabObj = TABS_DATA.find(t => t.key === activeTab) || TABS_DATA[0]
 
@@ -278,7 +281,7 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '76px 28px 64px' }}>
         <div className="vhg" style={{ display: 'grid', gridTemplateColumns: '1.04fr .96fr', gap: 60, alignItems: 'center' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 26 }}>
+            <div className="vui-binnen" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 26 }}>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 9, background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 999, padding: '7px 14px 7px 11px', fontSize: 13, fontWeight: 600, color: '#1A6B45' }}>
                 <span style={{ position: 'relative', display: 'inline-flex', width: 8, height: 8 }}>
                   <span style={{ position: 'absolute', inset: 0, borderRadius: 999, background: '#4CAF80', animation: 'vping 1.8s cubic-bezier(0,0,.2,1) infinite' }} />
@@ -287,16 +290,16 @@ export function LandingPageClient() {
                 Eén platform op úw eigen verkoopdata
               </div>
             </div>
-            <h1 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(40px,5.2vw,66px)', lineHeight: 1.03, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 22px' }}>
+            <h1 className="vui-binnen" style={{ ['--i' as string]: 1, fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(40px,5.2vw,66px)', lineHeight: 1.03, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 22px' }}>
               Waardebepaling en marktinzicht,<br />
               <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>onderbouwd met úw data.</span>
             </h1>
 
-            <p style={{ fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 520, margin: '0 0 32px' }}>
+            <p className="vui-binnen" style={{ ['--i' as string]: 2, fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 520, margin: '0 0 32px' }}>
               Eén platform voor het woningdossier: een uitlegbare waardebepaling op vergelijkbare verkopen, marktinzicht en concurrentieanalyse op uw eigen cijfers, en een contentsuite in het Nederlands en Engels — alles in de huisstijl van uw kantoor.
             </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-              <Link href="/contact" className="vg" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
+            <div className="vui-binnen" style={{ ['--i' as string]: 3, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+              <Link href="/contact" className="vg vui-knop-glans" style={{ fontSize: 16, fontWeight: 700, color: '#fff', background: '#1A6B45', padding: '15px 26px', borderRadius: 13, textDecoration: 'none', boxShadow: '0 10px 24px rgba(26,107,69,.26)', transition: 'background .15s' }}>
                 Toegang aanvragen →
               </Link>
               <Link href="/login" style={{ fontSize: 15, fontWeight: 600, color: '#1A6B45', textDecoration: 'none' }}>
@@ -307,9 +310,13 @@ export function LandingPageClient() {
           </div>
 
           {/* Waardebepaling snapshot */}
-          <div id="demo" style={{ position: 'relative' }}>
-            <div style={{ position: 'absolute', inset: '-22px -16px -22px -16px', background: 'radial-gradient(60% 55% at 70% 30%, rgba(124,196,160,.22), transparent 70%)', filter: 'blur(8px)', zIndex: 0 }} />
-            <div style={{ position: 'relative', zIndex: 1, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.32)', overflow: 'hidden' }}>
+          <div id="demo" className="vl-hero-scene vui-binnen" style={{ ['--i' as string]: 2, position: 'relative' }}>
+            <div className="vl-hero-gloed" style={{ position: 'absolute', inset: '-22px -16px -22px -16px', background: 'radial-gradient(60% 55% at 70% 30%, rgba(124,196,160,.22), transparent 70%)', filter: 'blur(8px)', zIndex: 0 }} />
+            {/* 3D: de kaart staat licht schuin in de ruimte en kantelt mee met
+                de muis; de zwevende chips liggen er op verschillende diepte
+                boven (translateZ), dus ze bewegen er net anders mee. */}
+            <Kantel sterkte={5} className="vl-hero-kantel">
+            <div className="vl-hero-kaart vui-spot" style={{ position: 'relative', zIndex: 1, background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.32)', overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '15px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                   <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
@@ -343,6 +350,19 @@ export function LandingPageClient() {
                 </div>
               </div>
             </div>
+              <div aria-hidden className="vl-chip vl-chip-1">
+                <span className="vl-chip-icoon">+</span>
+                <span><b>Garage</b> · +€ 12.000</span>
+              </div>
+              <div aria-hidden className="vl-chip vl-chip-2">
+                <span className="vl-chip-stip" />
+                <span><b>6</b> referenties · n = 6</span>
+              </div>
+              <div aria-hidden className="vl-chip vl-chip-3">
+                <span className="vl-chip-icoon">✓</span>
+                <span>Pdf in uw huisstijl</span>
+              </div>
+            </Kantel>
           </div>
         </div>
       </section>
@@ -351,8 +371,17 @@ export function LandingPageClient() {
       <section style={{ borderTop: '1px solid #EEF2EF', borderBottom: '1px solid #EEF2EF', background: '#fff' }}>
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '24px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 32, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#626C67', letterSpacing: '.01em' }}>Gebouwd voor de Nederlandse markt</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
-            {TRUST_BADGES.map(t => <span key={t} style={{ fontSize: 15, fontWeight: 700, color: '#3A463F', letterSpacing: '.01em' }}>{t}</span>)}
+          {/* Lopende band (pauzeert bij aanwijzen; onder reduced motion
+              gewoon een stilstaande rij). De tweede set is alleen voor de
+              naadloze lus en dus verborgen voor schermlezers. */}
+          <div className="vl-band">
+            <div className="vl-band-spoor">
+              {[...TRUST_BADGES, ...TRUST_BADGES].map((t, i) => (
+                <span key={t + i} aria-hidden={i >= TRUST_BADGES.length ? true : undefined} style={{ fontSize: 15, fontWeight: 700, color: '#3A463F', letterSpacing: '.01em', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: 28 }}>
+                  {t}<span aria-hidden style={{ width: 5, height: 5, borderRadius: 9, background: '#C7E6D5' }} />
+                </span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -360,7 +389,7 @@ export function LandingPageClient() {
       {/* WAT IS VESTA AI */}
       <section style={{ maxWidth: 980, margin: '0 auto', padding: '96px 28px 72px', textAlign: 'center' }}>
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 18 }}>Wat is Vesta&nbsp;AI</div>
-        <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 26px', maxWidth: 780 }}>
+        <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 26px', maxWidth: 780 }}>
           Eén werkplek voor de hele weg van verkoopadvies tot verkocht, op <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>úw eigen data.</span>
         </h2>
         <p style={{ fontSize: 18.5, lineHeight: 1.66, color: '#445249', maxWidth: 700, margin: '0 auto' }}>
@@ -372,13 +401,13 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '24px 28px 96px' }}>
         <div style={{ marginBottom: 40, maxWidth: 640 }}>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Wat wij bieden</div>
-          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: 0 }}>
+          <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: 0 }}>
             Eén platform voor waardebepaling, marktinzicht en verkoopklare content.
           </h2>
         </div>
         <div className="veg" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 18 }}>
           {FEATURES.map(f => (
-            <div key={f.titel} className="vc" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: 26, display: 'flex', flexDirection: 'column', gap: 14, transition: 'border-color .2s, transform .2s' }}>
+            <div key={f.titel} className="vc vui-onthul vui-spot" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: 26, display: 'flex', flexDirection: 'column', gap: 14, transition: 'border-color .2s, transform .2s' }}>
               <div style={{ width: 46, height: 46, borderRadius: 13, background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1A6B45' }}>
                 <IcoSvg name={f.icon} />
               </div>
@@ -396,12 +425,12 @@ export function LandingPageClient() {
         <div style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
           <div style={{ textAlign: 'center', marginBottom: 42 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Het woningdossier van dichtbij</div>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 18px', maxWidth: 760 }}>
+            <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 18px', maxWidth: 760 }}>
               Elke tekst die bij de woning hoort, <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in één keer klaar.</span>
             </h2>
             <p style={{ fontSize: 18, color: '#5A6B61', maxWidth: 600, margin: '0 auto' }}>Klik op een type en lees een voorbeeld voor de woning uit de demo. Elke generatie komt automatisch ook in het Engels beschikbaar.</p>
           </div>
-          <div className="vtg" style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 22, alignItems: 'start' }}>
+          <div className="vtg vui-onthul" style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 22, alignItems: 'start' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {TABS_DATA.map(t => (
                 <button key={t.key} onClick={() => setActiveTab(t.key)} className={t.key === activeTab ? 'vtab-a' : 'vtab-i'}>
@@ -437,7 +466,7 @@ export function LandingPageClient() {
         <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 54, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Automatische woningdata</div>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
+            <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
               Adres ingevoerd. De rest vult Vesta.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 440 }}>
@@ -492,13 +521,13 @@ export function LandingPageClient() {
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '96px 28px' }}>
         <div style={{ textAlign: 'center', marginBottom: 46 }}>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Waarom Vesta&nbsp;AI</div>
-          <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto', maxWidth: 700 }}>
+          <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto', maxWidth: 700 }}>
             Een platform dat de <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>Nederlandse markt verstaat.</span>
           </h2>
         </div>
         <div className="vwg" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
           {REDENEN.map(r => (
-            <div key={r.nr} className="vr" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: 28, transition: 'border-color .2s' }}>
+            <div key={r.nr} className="vr vui-onthul vui-spot" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: 28, transition: 'border-color .2s' }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: '#EAF5EE', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
                 <span style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontSize: 19, fontWeight: 600, color: '#1A6B45' }}>{r.nr}</span>
               </div>
@@ -511,11 +540,11 @@ export function LandingPageClient() {
 
       {/* HUISSTIJL & CONCIERGE */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px 96px' }}>
-        <div className="vhs" style={{ background: 'linear-gradient(135deg,#114230,#1A6B45)', borderRadius: 26, padding: 60, display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 48, alignItems: 'center', overflow: 'hidden', position: 'relative' }}>
+        <div className="vhs vui-onthul" style={{ background: 'linear-gradient(135deg,#114230,#1A6B45)', borderRadius: 26, padding: 60, display: 'grid', gridTemplateColumns: '1.1fr .9fr', gap: 48, alignItems: 'center', overflow: 'hidden', position: 'relative' }}>
           <div style={{ position: 'absolute', top: -60, right: -40, width: 280, height: 280, borderRadius: 999, background: 'rgba(124,196,160,.16)', filter: 'blur(10px)' }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#7DC4A0', marginBottom: 16 }}>Uw platform, geen technisch werk</div>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.4vw,40px)', lineHeight: 1.12, color: '#fff', margin: '0 0 18px' }}>
+            <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.4vw,40px)', lineHeight: 1.12, color: '#fff', margin: '0 0 18px' }}>
               Van eerste login tot elk rapport — in úw huisstijl.
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.65, color: '#C8D7CF', margin: '0 0 24px', maxWidth: 460 }}>
@@ -543,7 +572,7 @@ export function LandingPageClient() {
         <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 54, alignItems: 'center' }}>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Woningwaardering</div>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
+            <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
               Onderbouwd advies, <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>geen onderbuikgevoel.</span>
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 460 }}>
@@ -610,7 +639,7 @@ export function LandingPageClient() {
           <div className="vfg" style={{ display: 'grid', gridTemplateColumns: '1fr 1.05fr', gap: 54, alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Marktinzichten</div>
-              <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
+              <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 0 18px' }}>
                 Weet wat er speelt <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>in uw regio.</span>
               </h2>
               <p style={{ fontSize: 17, lineHeight: 1.65, color: '#445249', margin: '0 0 24px', maxWidth: 460 }}>
@@ -663,7 +692,7 @@ export function LandingPageClient() {
 
       {/* FAQ */}
       <section style={{ maxWidth: 760, margin: '0 auto', padding: '96px 28px' }}>
-        <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', textAlign: 'center', margin: '0 0 42px' }}>
+        <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', textAlign: 'center', margin: '0 0 42px' }}>
           Veelgestelde vragen
         </h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -689,7 +718,7 @@ export function LandingPageClient() {
         <div style={{ background: '#0E1A13', borderRadius: 28, padding: '72px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)', width: 520, height: 300, background: 'radial-gradient(closest-side, rgba(42,138,92,.32), transparent)', filter: 'blur(8px)' }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <h2 style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(32px,4.6vw,54px)', lineHeight: 1.08, color: '#fff', margin: '0 auto 20px', maxWidth: 680 }}>
+            <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(32px,4.6vw,54px)', lineHeight: 1.08, color: '#fff', margin: '0 auto 20px', maxWidth: 680 }}>
               Eén platform voor waardebepaling, marktinzicht <span style={{ fontStyle: 'italic', color: '#7DC4A0' }}>en content.</span>
             </h2>
             <p style={{ fontSize: 18, color: '#A8BBB0', margin: '0 auto 34px', maxWidth: 520 }}>

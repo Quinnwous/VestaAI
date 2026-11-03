@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
 import { FeedbackSheet, FEEDBACK_TRIGGER_DESKTOP_STYLE, FEEDBACK_TRIGGER_MOBIEL_STYLE } from '@/components/FeedbackKnop'
 import { ZoekPalet, ZoekKnop } from '@/components/ZoekPalet'
+import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -77,20 +78,8 @@ export function AppTopbar({
   const [zoekOpen, setZoekOpen] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
 
-  // Spotlight op elke tegel (`.vui-spot`): één passieve listener voor de hele
-  // omgeving zet de muispositie op de tegel onder de cursor. Puur versiering.
-  useEffect(() => {
-    const beweeg = (e: PointerEvent) => {
-      if (e.pointerType !== 'mouse') return
-      const el = (e.target as Element | null)?.closest?.<HTMLElement>('.vui-spot')
-      if (!el || el.closest('.vui-spot-groep')) return
-      const r = el.getBoundingClientRect()
-      el.style.setProperty('--mx', `${e.clientX - r.left}px`)
-      el.style.setProperty('--my', `${e.clientY - r.top}px`)
-    }
-    document.addEventListener('pointermove', beweeg, { passive: true })
-    return () => document.removeEventListener('pointermove', beweeg)
-  }, [])
+  // Spotlight op elke tegel (`.vui-spot`), zie hooks/useSpotlightVolger.ts.
+  useSpotlightVolger()
 
   // ⌘K/Ctrl+K opent het zoekpalet — overal in de ingelogde omgeving, ook met
   // focus in een ander invoerveld (zelfde gedrag als Linear/Notion/GitHub).
