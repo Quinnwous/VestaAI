@@ -523,7 +523,7 @@ export function TransactiesZoeken({
             placeholder="Zoek op adres…"
             aria-label="Zoek op adres"
             className="vui-input"
-            style={{ width: 200, height: 36, borderRadius: 10, border: `1px solid ${colors.borderStrong}`, padding: '0 12px', fontSize: 13, background: colors.surfaceAlt }}
+            style={{ width: 200, height: 36, borderRadius: 'var(--merk-radius-sm, 10px)', border: `1px solid ${colors.borderStrong}`, padding: '0 12px', fontSize: 13, background: colors.surfaceAlt }}
           />
 
           <span style={{ flex: 1 }} />
@@ -543,7 +543,7 @@ export function TransactiesZoeken({
       </div>
 
       {fout && (
-        <div style={{ marginBottom: 14, padding: '12px 16px', borderRadius: 12, background: '#FFFBEE', border: '1px solid #F1DFA6', color: '#7A5A00', fontSize: 13.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <div style={{ marginBottom: 14, padding: '12px 16px', borderRadius: 'var(--merk-radius-md, 12px)', background: '#FFFBEE', border: '1px solid #F1DFA6', color: '#7A5A00', fontSize: 13.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <span>{fout}</span>
           <Button variant="secondary" size="sm" onClick={() => zetFilterVolledig({ ...filter })}>Opnieuw proberen</Button>
         </div>
@@ -688,7 +688,7 @@ export function TransactiesZoeken({
             value={dossierZoek}
             onChange={e => setDossierZoek(e.target.value)}
             placeholder="Zoek op adres…"
-            style={{ width: '100%', borderRadius: 10, border: `1px solid ${colors.borderStrong}`, padding: '9px 12px', fontSize: 13.5, marginBottom: 12 }}
+            style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 10px)', border: `1px solid ${colors.borderStrong}`, padding: '9px 12px', fontSize: 13.5, marginBottom: 12 }}
           />
           {dossierFout && <p style={{ fontSize: 12.5, color: '#DC2626', margin: '0 0 10px' }}>{dossierFout}</p>}
           {dossiers === null ? (

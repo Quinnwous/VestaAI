@@ -455,7 +455,7 @@ export function MarktanalyseExplorer({
       </FilterBar>
 
       {fout && (
-        <div style={{ marginBottom: 14, padding: '12px 16px', borderRadius: 12, background: '#FFFBEE', border: '1px solid #F1DFA6', color: '#7A5A00', fontSize: 13.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+        <div style={{ marginBottom: 14, padding: '12px 16px', borderRadius: 'var(--merk-radius-md, 12px)', background: '#FFFBEE', border: '1px solid #F1DFA6', color: '#7A5A00', fontSize: 13.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <span>{fout}</span>
           <Button variant="secondary" size="sm" onClick={() => zetFilterVolledig({ ...filter })}>Opnieuw proberen</Button>
         </div>
@@ -654,8 +654,8 @@ function PrijsklasseVerdeling({
           >
             <span style={{ fontSize: 13, fontWeight: 600, color: isActief ? colors.primary : colors.bodyStrong }}>{r.label}</span>
             <span style={{ height: 20, background: colors.borderSoft, borderRadius: 999, position: 'relative', overflow: 'hidden', boxShadow: isActief ? `0 0 0 2px var(--merk-rand, ${colors.primary}33)` : 'none' }}>
-              <span style={{ position: 'absolute', inset: 0, width: `${(aandeelMarkt / maxAandeel) * 100}%`, background: SERIE.markt, opacity: 0.45, borderRadius: 999 }} />
-              <span style={{ position: 'absolute', top: 6, bottom: 6, left: 0, width: `${(aandeelWij / maxAandeel) * 100}%`, background: SERIE.wij, borderRadius: 999 }} />
+              <span style={{ position: 'absolute', inset: 0, width: `${(aandeelMarkt / maxAandeel) * 100}%`, background: SERIE.markt, opacity: 0.45, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
+              <span style={{ position: 'absolute', top: 6, bottom: 6, left: 0, width: `${(aandeelWij / maxAandeel) * 100}%`, background: SERIE.wij, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
             </span>
             <span style={{ fontSize: 13, fontWeight: 800, textAlign: 'right', whiteSpace: 'nowrap' }}>
               {procent(aandeelWij * 100, false)} <small style={{ color: colors.muted, fontWeight: 600 }}>· {procent(aandeelMarkt * 100, false)}</small>

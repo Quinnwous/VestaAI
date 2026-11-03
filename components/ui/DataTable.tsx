@@ -244,7 +244,7 @@ function knopStyle(uit: boolean) {
     padding: '0 14px',
     fontSize: 13,
     fontWeight: 600,
-    borderRadius: 10,
+    borderRadius: 'var(--merk-radius-sm, 10px)',
     border: `1px solid ${colors.borderStrong}`,
     background: colors.surface,
     color: uit ? colors.muted : colors.bodyStrong,
