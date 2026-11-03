@@ -118,6 +118,9 @@ export function StatTile({
 
   return (
     <div
+      // vui-tegel: 2 px omhoog bij aanwijzen; vui-spot: lichtvlek die de muis
+      // volgt binnen een <Spotlight>-groep (globals.css § Bewegingssysteem).
+      className={hero ? 'vui-tegel vui-spot vui-spot-licht' : 'vui-tegel vui-spot'}
       style={{
         background: hero ? 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)' : colors.surface,
         border: hero ? 'none' : `1px solid ${colors.border}`,

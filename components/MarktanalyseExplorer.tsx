@@ -463,6 +463,7 @@ export function MarktanalyseExplorer({
 
       {geenResultaten ? (
         <EmptyState
+          illustratie="data"
           titel="Geen verkopen in deze selectie"
           beschrijving="Er zijn geen transacties die aan alle filters voldoen. Verbreed de periode, haal een filter weg of kies een extra plaats."
           actie={<Button variant="primary" size="sm" onClick={() => zetFilterVolledig(standaard)}>Herstel filters</Button>}

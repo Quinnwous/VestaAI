@@ -218,7 +218,11 @@ export function AppTopbar({
 
       <header
         ref={balkRef}
+        // vui-topbar: schaduw verschijnt pas bij scrollen. viewTransitionName:
+        // de balk staat stil als anker tijdens een paginaovergang.
+        className="vui-topbar"
         style={{
+          viewTransitionName: 'app-topbar',
           position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.93)',
           backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
@@ -259,6 +263,9 @@ export function AppTopbar({
                     background: actief ? '#fff' : 'transparent',
                     boxShadow: actief ? '0 1px 3px rgba(20,24,27,.12)' : 'none',
                     transition: 'background .15s, color .15s',
+                    // De actieve pil glijdt bij navigeren naar zijn nieuwe plek
+                    // (view transition, globals.css § nav-actief).
+                    viewTransitionName: actief ? 'nav-actief' : undefined,
                   }}
                 >
                   {item.label}

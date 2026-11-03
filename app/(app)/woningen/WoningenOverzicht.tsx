@@ -295,6 +295,7 @@ export function WoningenOverzicht({
 
       {totalCount === 0 ? (
         <EmptyState
+          illustratie={geenEnkeleFilterActief ? 'woning' : undefined}
           titel={geenEnkeleFilterActief ? 'Nog geen woningen' : 'Geen woningen gevonden'}
           beschrijving={
             geenEnkeleFilterActief

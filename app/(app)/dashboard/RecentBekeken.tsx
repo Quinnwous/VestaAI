@@ -73,6 +73,7 @@ export function RecentBekeken({ items }: { items: RecentBekekenItem[] }) {
       {items.length === 0 ? (
         <div style={{ padding: 20 }}>
           <EmptyState
+            illustratie="woning"
             titel="Nog geen dossiers bekeken"
             beschrijving="Open een woningdossier en het verschijnt hier, zodat je snel terug kunt naar waar je gebleven was."
             actie={

@@ -424,6 +424,7 @@ export function WaardebepalingPaneel({
     }
     return (
       <EmptyState
+        illustratie={ophaalFout ? undefined : 'data'}
         titel="Nog geen waardebepaling"
         beschrijving={ophaalFout ?? 'Er zijn nog geen vergelijkbare verkopen gevonden om een waarde op te baseren — dit vult zich zodra transacties zijn geïmporteerd.'}
       />

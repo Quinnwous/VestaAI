@@ -317,3 +317,252 @@
 
 /* Kaartattributie (PDOK): link onderscheidbaar zonder kleur — axe link-in-text-block */
 .maplibregl-ctrl.maplibregl-ctrl-attrib a { text-decoration: underline !important; }
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Bewegingssysteem (visuele polish, nov 2026) — docs/ontwerp/principes.md
+   § Beweging: één curve, geen bounce, alles uit onder prefers-reduced-motion.
+   Bewust zo veel mogelijk pure CSS (scroll-driven animations, view
+   transitions): niets hangt van hydratie af, dus een element kan nooit
+   "onzichtbaar blijven" als JavaScript faalt (valkuil 19 sep). Een browser
+   zonder ondersteuning toont gewoon de eindstaat.
+   ═════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --ease-uit: cubic-bezier(.4,0,1,1);
+  --t: 220ms;
+  --t-hover: 150ms;
+}
+
+/* Binnenkomst bij het laden: rustig omhoog, gestaffeld via --i (0, 1, 2 …). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-binnen {
+    animation: vui-rijs 560ms var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  .vui-binnen-zacht {
+    animation: vui-fade-in 600ms var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+}
+/* Gestaffeld: elk direct kind komt 55 ms na het vorige binnen (tegelrijen,
+   rasters). `backwards`, zodat de hover-transform daarna gewoon werkt. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-gestaffeld > * { animation: vui-rijs 560ms var(--ease) backwards; }
+  .vui-gestaffeld > :nth-child(2) { animation-delay: 55ms; }
+  .vui-gestaffeld > :nth-child(3) { animation-delay: 110ms; }
+  .vui-gestaffeld > :nth-child(4) { animation-delay: 165ms; }
+  .vui-gestaffeld > :nth-child(5) { animation-delay: 220ms; }
+  .vui-gestaffeld > :nth-child(6) { animation-delay: 275ms; }
+  .vui-gestaffeld > :nth-child(7) { animation-delay: 330ms; }
+  .vui-gestaffeld > :nth-child(n+8) { animation-delay: 385ms; }
+}
+@keyframes vui-rijs {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Onthullen bij scrollen: alleen wat ónder de vouw staat beweegt; wat bij
+   het laden al in beeld is, staat er meteen (de tijdlijn is dan al voorbij). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-onthul {
+      animation: vui-onthul linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    .vui-onthul-links {
+      animation: vui-onthul-links linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+@keyframes vui-onthul {
+  from { opacity: .001; transform: translateY(28px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes vui-onthul-links {
+  from { opacity: .001; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Spotlight: een zachte gloed in de merkkleur die de cursor volgt
+   (components/ui/Spotlight.tsx zet --mx/--my). Alleen op apparaten met een
+   echte muis; op touch is er niets om te volgen. */
+.vui-spot { position: relative; isolation: isolate; }
+.vui-spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(var(--merk-rgb), .09), transparent 62%);
+}
+.vui-spot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+  padding: 1px;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), rgba(var(--merk-rgb), .55), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.vui-spot-licht::before { background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.16), transparent 60%); }
+.vui-spot-licht::after { background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.55), transparent 70%); }
+@media (hover: hover) and (pointer: fine) {
+  .vui-spot-groep:hover .vui-spot::before,
+  .vui-spot-groep:hover .vui-spot::after,
+  .vui-spot:hover::before,
+  .vui-spot:hover::after { opacity: 1; }
+}
+
+/* Tegels en kaarten die je kunt aanwijzen: 2 px omhoog, schaduw met een
+   zweem merkkleur (README § 1.5). */
+.vui-tegel { transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease); }
+@media (hover: hover) and (pointer: fine) {
+  .vui-tegel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(20,24,27,.04), 0 14px 32px -16px rgba(var(--merk-rgb), .38) !important;
+  }
+}
+
+/* 3D-kanteling (components/ui/Kantel.tsx zet --rx/--ry in graden). */
+.vui-kantel {
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 500ms var(--ease);
+  will-change: transform;
+}
+.vui-kantel[data-actief='true'] { transition: transform 120ms linear; }
+@media (prefers-reduced-motion: reduce) {
+  .vui-kantel { transform: none !important; }
+}
+
+/* Zwevende illustratie (components/ui/HuisIllustratie.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-zweef { animation: vui-zweef 6s ease-in-out infinite; }
+  .vui-zweef-schaduw { animation: vui-zweef-schaduw 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .vui-raam-gloed { animation: vui-raam 4.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
+}
+@keyframes vui-zweef { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes vui-zweef-schaduw { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(.9); opacity: .6; } }
+@keyframes vui-raam { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* Topbar: schaduw verschijnt pas zodra je scrolt. */
+@supports (animation-timeline: scroll()) {
+  .vui-topbar {
+    animation: vui-topbar-schaduw linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 96px;
+  }
+}
+@keyframes vui-topbar-schaduw {
+  from { box-shadow: 0 0 0 rgba(20,24,27,0); }
+  to { box-shadow: 0 10px 30px -18px rgba(20,24,27,.28); background-color: rgba(255,255,255,.82); }
+}
+
+/* Startbanner: lichtstreep die één keer langskomt, en diepte bij het scrollen
+   (raster en foto bewegen trager dan de tekst). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-glans { animation: vui-glans 1600ms var(--ease) 250ms both; }
+  .vui-startbanner-tekst > * { animation: vui-rijs 640ms var(--ease) both; }
+  .vui-startbanner-tekst > :nth-child(1) { animation-delay: 120ms; }
+  .vui-startbanner-tekst > :nth-child(2) { animation-delay: 190ms; }
+  .vui-startbanner-tekst > :nth-child(3) { animation-delay: 260ms; }
+  .vui-startbanner-bol { animation: vui-bol 14s ease-in-out infinite alternate; }
+}
+@keyframes vui-glans {
+  from { transform: translateX(-70%); opacity: 0; }
+  30% { opacity: 1; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes vui-bol {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-6%, 10%) scale(1.12); }
+}
+.vui-startbanner-bol {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(36px);
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-startbanner-foto img, .vui-startbanner-raster {
+      animation: vui-parallax linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 420px;
+    }
+  }
+}
+@keyframes vui-parallax {
+  from { transform: translateY(0) scale(1.04); }
+  to { transform: translateY(36px) scale(1.04); }
+}
+
+/* Schuivende indicator onder de actieve tab (components/ui/TabBar.tsx). */
+.vui-tabbalk[data-gemeten='true'] > button { border-bottom-color: transparent !important; }
+.vui-tabindicator {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--merk);
+  transition: transform 300ms var(--ease), width 300ms var(--ease);
+  pointer-events: none;
+}
+.vui-tabpaneel { animation: vui-rijs 320ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) {
+  .vui-tabindicator { transition: none; }
+  .vui-tabpaneel { animation: none; }
+}
+
+/* Paginaovergangen (React <ViewTransition>, zie components/ui/AppPagina.tsx).
+   De topbar staat stil als anker; alleen de inhoud wisselt: oud vervaagt
+   snel, nieuw komt rustig iets omhoog. De actieve navigatiepil glijdt mee. */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(app-topbar) { animation: none; z-index: 100; }
+::view-transition-old(app-topbar) { display: none; }
+::view-transition-new(app-topbar) { animation: none; }
+::view-transition-group(nav-actief) { animation-duration: 340ms; animation-timing-function: cubic-bezier(.2,.8,.2,1); z-index: 101; }
+::view-transition-old(.vui-pagina) { animation: 140ms var(--ease-uit) both vui-fade-out; }
+::view-transition-new(.vui-pagina) { animation: 360ms var(--ease) 90ms both vui-pagina-in; }
+@keyframes vui-pagina-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* Focusring in de merkkleur, overal waar een eigen stijl ontbreekt. */
+:where(a, button, [role='tab'], [role='button'], summary):focus-visible {
+  outline: 2px solid var(--merk);
+  outline-offset: 2px;
+}
+
+/* 3D-woning rechts in de startbanner (alleen zonder foto, vanaf 640 px). */
+.vui-startbanner-huis {
+  position: absolute;
+  right: clamp(24px, 6vw, 96px);
+  bottom: 14px;
+  display: none;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 24px rgba(0,0,0,.18));
+}
+@media (min-width: 640px) { .vui-startbanner-huis { display: block; } }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-huis { animation: vui-rijs 900ms var(--ease) 200ms both; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-staaf-groei { animation: vui-staaf 900ms var(--ease) backwards; animation-delay: var(--d, 0ms); }
+}
+@keyframes vui-staaf { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }

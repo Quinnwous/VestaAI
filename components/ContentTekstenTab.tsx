@@ -116,6 +116,7 @@ export function ContentTekstenTab({
   if (status === 'geen') {
     return (
       <EmptyState
+        illustratie="woning"
         titel="Nog geen content gegenereerd"
         beschrijving="Genereer de volledige tekstsuite (Funda, brochure, social, e-mail, buurt) in het Nederlands én Engels."
         actie={

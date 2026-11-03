@@ -551,6 +551,7 @@ export function TransactiesZoeken({
 
       {geenResultaten ? (
         <EmptyState
+          illustratie="data"
           titel="Geen transacties met deze filters"
           beschrijving="Er voldoen geen transacties aan de huidige combinatie van filters. Verbreed de zoekopdracht of wis de filters."
           actie={<Button variant="primary" size="sm" onClick={() => { setZoekInput(''); zetFilterVolledig(standaard) }}>Filters wissen</Button>}

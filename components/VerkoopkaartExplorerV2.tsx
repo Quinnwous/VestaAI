@@ -212,6 +212,7 @@ export function VerkoopkaartExplorerV2({
 
       {geenData ? (
         <EmptyState
+          illustratie="data"
           titel="Nog geen eigen verkopen"
           beschrijving="Zodra je kantoor een import heeft (via /admin/transacties), vult de verkoopkaart zich automatisch."
         />

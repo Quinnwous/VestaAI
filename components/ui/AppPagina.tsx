@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { PaginaOvergang } from './PaginaOvergang'
 
 /**
  * Gedeelde paginabreedte voor de ingelogde omgeving — fluïde tot
@@ -14,15 +15,19 @@ export function AppPagina({
   children,
   paddingTop = 44,
   paddingBottom = 80,
+  overgang = true,
   style,
 }: {
   children: ReactNode
   /** Verticale ruimte boven de content. Zet op 0 in een layout die zelf al padding zet. */
   paddingTop?: number | string
   paddingBottom?: number | string
+  /** Paginaovergang bij navigeren (components/ui/PaginaOvergang.tsx). Uit in
+   *  een layout: daar wisselt alleen de inhoud, die zelf een overgang krijgt. */
+  overgang?: boolean
   style?: CSSProperties
 }) {
-  return (
+  const pagina = (
     <main
       style={{
         maxWidth: 'var(--app-breedte)',
@@ -34,4 +39,5 @@ export function AppPagina({
       {children}
     </main>
   )
+  return overgang ? <PaginaOvergang>{pagina}</PaginaOvergang> : pagina
 }
