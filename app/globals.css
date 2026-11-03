@@ -732,3 +732,17 @@
   .vui-login-vlek-1 { animation: vui-bol 16s ease-in-out infinite alternate; }
   .vui-login-vlek-2 { animation: vui-bol 19s ease-in-out -6s infinite alternate-reverse; }
 }
+
+/* Modal (components/ui/Modal.tsx): sluier vervaagt in, venster groeit iets
+   op vanaf 96 % (zelfde taal als de popovers). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-modal-sluier { animation: vui-fade-in 200ms var(--ease); }
+  .vui-modal { animation: vui-modal-in 260ms var(--ease); }
+}
+@keyframes vui-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Knoppen: voelbaar indrukken. */
+.vui-btn:active:not(:disabled) { transform: scale(.98); }

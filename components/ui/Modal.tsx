@@ -39,6 +39,7 @@ export function Modal({
   return (
     <div
       onClick={onClose}
+      className="vui-modal-sluier"
       style={{
         position: 'fixed',
         inset: 0,
@@ -54,6 +55,7 @@ export function Modal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        className="vui-modal"
         style={{
           width: '100%',
           maxWidth,

@@ -263,7 +263,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 1 — Adres */}
-      <div style={{ display: stap === 1 ? 'block' : 'none' }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 1 ? 'block' : 'none' }}>
         <label style={labelStyle}>
           {isEn ? 'Address' : 'Adres'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
@@ -303,7 +303,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 2 — Woning */}
-      <div style={{ display: stap === 2 ? 'grid' : 'none', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 2 ? 'grid' : 'none', gap: 24 }}>
       {/* Woningtype + Kamers */}
       <div className="form-grid-2">
         <div>
@@ -447,7 +447,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 3 — Staat & afwerking */}
-      <div style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
             <label style={labelStyle}>Onderhoud binnen <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
@@ -504,7 +504,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 4 — Ligging & buitenruimte */}
-      <div style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
             <label style={labelStyle}>Ligging <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
@@ -582,7 +582,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 5 — Verhaal */}
-      <div style={{ display: stap === 5 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 5 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       {/* USP's */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -672,7 +672,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 6 — Commercieel (Verkoopadvies-fase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
-      <div style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
