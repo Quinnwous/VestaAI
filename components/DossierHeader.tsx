@@ -3,6 +3,7 @@
 import { useState, useTransition, type CSSProperties, type ReactNode } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { setObjectFase } from '@/app/(app)/object/[id]/actions'
+import { HuisIllustratie } from '@/components/ui/HuisIllustratie'
 import { StatusToggle } from '@/app/(app)/object/[id]/StatusToggle'
 import { colors, radius, shadow, Eyebrow, SerifTitle, StatTile } from '@/components/ui'
 import { WaardebepalingPdfButton } from '@/components/WaardebepalingPdfButton'
@@ -137,6 +138,7 @@ export function DossierHeader({
 
   return (
     <div
+      className="vui-binnen"
       style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -189,7 +191,7 @@ export function DossierHeader({
         {acties && <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', whiteSpace: 'nowrap' }}>{acties}</div>}
         {/* auto-fit i.p.v. een vaste 3-koloms grid: op 390 px klapt "€ 733.000"
             anders af tegen de tegelrand (DoD: "op 390 px breekt niets"). */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, width: '100%' }}>
+        <div className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, width: '100%' }}>
           <StatTile
             label="Waarde"
             waarde={waarde ?? undefined}
@@ -245,20 +247,19 @@ function DossierFoto({ url }: { url: string | null }) {
       </div>
     )
   }
-  // Zonder foto: merkverloop (item 10.2) i.p.v. een lege/gestippelde placeholder.
+  // Zonder foto: merkverloop (item 10.2) met de isometrische woning erop —
+  // een bewust beeld in de huisstijl i.p.v. een lege placeholder.
   return (
     <div
+      className="vui-dossierfoto-leeg"
       style={{
-        width: 104, height: 96, borderRadius: radius.lg, flex: 'none',
-        background: 'linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',
-        display: 'grid', placeItems: 'center', color: 'rgba(255,255,255,.85)',
+        width: 104, height: 96, borderRadius: radius.lg, flex: 'none', position: 'relative', overflow: 'hidden',
+        background: 'radial-gradient(circle at 30% 20%, var(--merk-licht) 0%, transparent 60%), linear-gradient(135deg, var(--merk) 0%, var(--merk-diep) 100%)',
+        display: 'grid', placeItems: 'center',
       }}
       aria-hidden="true"
     >
-      <svg width={30} height={30} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 11.5 12 4l8 7.5" />
-        <path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" />
-      </svg>
+      <HuisIllustratie variant="opMerk" breedte={92} pin={false} style={{ marginTop: 6 }} />
     </div>
   )
 }
@@ -310,12 +311,17 @@ function FaseStepper({
                 type="button"
                 disabled={isPending}
                 onClick={() => onKlik(f, i > huidigeIndex ? 'vooruit' : 'terug')}
+                className="vui-fasepil"
                 style={klikbaarPil}
               >
                 {label}
               </button>
             ) : (
-              <span style={isActief ? actiefPil : basisPil}>{label}</span>
+              <span style={isActief ? actiefPil : basisPil}>
+                {/* Zachte puls: hier staat het dossier nu. */}
+                {isActief && <span aria-hidden className="vui-fase-puls" />}
+                {label}
+              </span>
             )}
             {i < FASE_ORDE.length - 1 && (
               <span style={{ color: colors.muted, fontSize: 12 }} aria-hidden="true">›</span>

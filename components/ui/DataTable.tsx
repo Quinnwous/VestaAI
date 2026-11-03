@@ -172,7 +172,7 @@ export function DataTable<T extends RowData>({
                     tabIndex={onRijKlik ? 0 : undefined}
                     onClick={onRijKlik ? () => onRijKlik(row.original) : undefined}
                     onKeyDown={onRijKlik ? e => { if (e.key === 'Enter') onRijKlik(row.original) } : undefined}
-                    className={onRijKlik ? 'vui-datatable-rij' : undefined}
+                    className={onRijKlik ? 'vui-tabelrij vui-datatable-rij' : 'vui-tabelrij'}
                     style={{ cursor: onRijKlik ? 'pointer' : undefined }}
                   >
                     {row.getAllCells().map(cell => (

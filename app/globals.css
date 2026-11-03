@@ -566,3 +566,67 @@
   .vui-staaf-groei { animation: vui-staaf 900ms var(--ease) backwards; animation-delay: var(--d, 0ms); }
 }
 @keyframes vui-staaf { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+
+/* Verkenners: tegelrijen komen gestaffeld binnen, grafiekrasters onthullen
+   bij scrollen — op de gedeelde rasterclasses, zodat elk scherm meedoet. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-marktanalyse-tegels > * { animation: vui-rijs 560ms var(--ease) backwards; }
+  .vui-marktanalyse-tegels > :nth-child(2) { animation-delay: 55ms; }
+  .vui-marktanalyse-tegels > :nth-child(3) { animation-delay: 110ms; }
+  .vui-marktanalyse-tegels > :nth-child(4) { animation-delay: 165ms; }
+  .vui-marktanalyse-tegels > :nth-child(5) { animation-delay: 220ms; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-marktanalyse-grafieken > *,
+    .vui-concurrentie-matrix-ranglijst > *,
+    .vui-wij-vs-markt > * {
+      animation: vui-onthul linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+/* Tabelrijen (components/ui/DataTable.tsx) vloeien na elkaar binnen — bij
+   laden en bij een nieuwe pagina; een rij die blijft staan beweegt niet. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-tabelrij { animation: vui-rij-in 380ms var(--ease) backwards; }
+  .vui-tabelrij:nth-child(2) { animation-delay: 18ms; }
+  .vui-tabelrij:nth-child(3) { animation-delay: 36ms; }
+  .vui-tabelrij:nth-child(4) { animation-delay: 54ms; }
+  .vui-tabelrij:nth-child(5) { animation-delay: 72ms; }
+  .vui-tabelrij:nth-child(6) { animation-delay: 90ms; }
+  .vui-tabelrij:nth-child(7) { animation-delay: 108ms; }
+  .vui-tabelrij:nth-child(8) { animation-delay: 126ms; }
+  .vui-tabelrij:nth-child(9) { animation-delay: 144ms; }
+  .vui-tabelrij:nth-child(n+10) { animation-delay: 160ms; }
+}
+@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Fasestepper (components/DossierHeader.tsx): klikbare buurfase licht op,
+   de actieve fase heeft een zachte puls in de merkkleur. */
+.vui-fasepil { transition: background var(--t-hover), color var(--t-hover), box-shadow var(--t-hover), transform var(--t-hover) var(--ease); }
+.vui-fasepil:hover:not(:disabled) { background: var(--merk-zacht) !important; color: var(--merk-diep) !important; box-shadow: 0 0 0 1px var(--merk-rand) inset; }
+.vui-fasepil:active:not(:disabled) { transform: scale(.97); }
+.vui-fase-puls {
+  position: relative;
+  width: 7px; height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--merk);
+  flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-fase-puls::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var(--merk);
+    animation: vui-puls 2.4s var(--ease) infinite;
+  }
+}
+@keyframes vui-puls {
+  0% { transform: scale(1); opacity: .55; }
+  70%, 100% { transform: scale(2.8); opacity: 0; }
+}
