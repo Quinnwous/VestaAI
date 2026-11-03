@@ -710,3 +710,25 @@
 @media (prefers-reduced-motion: no-preference) {
   .vui-knop-glans:hover::after { transition: transform 700ms var(--ease); transform: translateX(120%); }
 }
+
+/* ─────────────────────────────────────────────────────────
+   Inlogpagina (components/InlogFormulier.tsx): VestaAI-groen op /login,
+   merkkleur op de kantoorlogin (de --merk*-variabelen staan dan op de
+   wrapper).
+   ───────────────────────────────────────────────────────── */
+.vui-login-decor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.vui-login-vlek { position: absolute; border-radius: 50%; filter: blur(70px); }
+.vui-login-vlek-1 { width: 520px; height: 520px; top: -200px; left: -140px; background: rgba(var(--merk-rgb), .16); }
+.vui-login-vlek-2 { width: 460px; height: 460px; bottom: -220px; right: -120px; background: color-mix(in srgb, var(--merk-licht) 28%, transparent); }
+.vui-login-raster {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(20,24,27,.10) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 50% 45% at 50% 50%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 45% at 50% 50%, #000 0%, transparent 100%);
+  opacity: .6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-login-vlek-1 { animation: vui-bol 16s ease-in-out infinite alternate; }
+  .vui-login-vlek-2 { animation: vui-bol 19s ease-in-out -6s infinite alternate-reverse; }
+}

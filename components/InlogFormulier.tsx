@@ -221,12 +221,23 @@ export function InlogFormulier({ branding, slug }: Props) {
         justifyContent: 'center',
         padding: '24px 16px',
         fontFamily: branding ? 'var(--merk-font-body, inherit)' : undefined,
+        position: 'relative',
+        overflow: 'hidden',
+        isolation: 'isolate',
       }}
     >
-      <div style={{ width: '100%', maxWidth: 400 }}>
+      {/* Sfeer: twee trage lichtvlekken in de merkkleur en een fijn
+          stippenraster dat naar de randen vervaagt (globals.css
+          § Inlogpagina). Puur decoratief. */}
+      <div aria-hidden className="vui-login-decor">
+        <span className="vui-login-vlek vui-login-vlek-1" />
+        <span className="vui-login-vlek vui-login-vlek-2" />
+        <span className="vui-login-raster" />
+      </div>
+      <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
 
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+        <div className="vui-binnen" style={{ textAlign: 'center', marginBottom: 36 }}>
           {branding ? (
             <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 11 }}>
               {logoUrl ? (
@@ -256,7 +267,7 @@ export function InlogFormulier({ branding, slug }: Props) {
           </p>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 'var(--merk-radius-card-lg, 20px)', border: '1px solid #E4EAE6', overflow: 'hidden', boxShadow: 'var(--merk-shadow-card, 0 4px 24px rgba(14,26,19,.06))' }}>
+        <div className="vui-binnen" style={{ ['--i' as string]: 2, background: '#fff', borderRadius: 'var(--merk-radius-card-lg, 20px)', border: '1px solid #E4EAE6', overflow: 'hidden', boxShadow: '0 1px 2px rgba(14,26,19,.04), 0 24px 60px -28px rgba(var(--merk-rgb, 26,107,69), .35)' }}>
 
           {/* Sfeerbeeld van het kantoor — alleen op de kantoorlogin, alleen als gezet. */}
           {branding && achtergrondUrl && (

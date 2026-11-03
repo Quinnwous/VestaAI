@@ -11,6 +11,10 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Tests draaien op de eindstaat: geen paginaovergangen, binnenkomst of
+    // scroll-onthulling (app/globals.css § Bewegingssysteem) die een klik of
+    // screenshot kunnen vertragen.
+    contextOptions: { reducedMotion: 'reduce' },
   },
   projects: [
     {
