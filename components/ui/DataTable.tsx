@@ -57,7 +57,7 @@ export type DataTablePaginatie = {
 // overflow-x:auto én valt de sticky kop terug op position:static — exact het prototype-gedrag.
 const DATATABLE_STYLE = `
   .vui-datatable-rij:hover td { background: var(--merk-zacht); }
-  .vui-datatable-th-sorteerbaar:hover { color: var(--merk); }
+  .vui-datatable-th-sorteerbaar:hover { color: var(--merk-tekst); }
   @media (max-width: 1040px) {
     .vui-datatable-wrap { overflow-x: auto; }
     .vui-datatable-th { position: static !important; }

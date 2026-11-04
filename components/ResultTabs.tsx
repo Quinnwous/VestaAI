@@ -392,7 +392,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                       onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
                     >
                       <span>{item.label}</span>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#5C6470' : heeftInhoud ? 'var(--merk)' : '#5C6470' }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#5C6470' : heeftInhoud ? 'var(--merk-tekst)' : '#5C6470' }}>
                         {bezig ? 'Bezig…' : heeftInhoud ? '✓ Bekijk' : 'Genereren'}
                       </span>
                     </button>

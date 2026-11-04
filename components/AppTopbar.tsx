@@ -207,7 +207,7 @@ export function AppTopbar({
     <div>
       <style>{`
         .vui-menuitem:hover { background: var(--merk-zacht); }
-        .vui-navpil:hover { color: var(--merk); }
+        .vui-navpil:hover { color: var(--merk-tekst); }
         .topbar-menus, .topbar-rechts { display: flex; align-items: center; }
         .topbar-mobiel-knop { display: none; }
         @media (max-width: 900px) {

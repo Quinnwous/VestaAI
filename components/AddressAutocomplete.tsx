@@ -90,7 +90,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
   const inputStyle: React.CSSProperties = {
     width: '100%',
     borderRadius: 'var(--merk-radius-md, 11px)',
-    border: '1px solid #DCE5DF',
+    border: '1px solid #E1E5E9',
     padding: '11px 40px 11px 14px',
     fontSize: 14,
     color: '#14181B',
@@ -141,7 +141,7 @@ export function AddressAutocomplete({ value, onChange, onSelect, disabled, place
             zIndex: 50,
             marginTop: 4,
             borderRadius: 'var(--merk-radius-md, 11px)',
-            border: '1px solid #DCE5DF',
+            border: '1px solid #E1E5E9',
             background: '#fff',
             boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
             listStyle: 'none',

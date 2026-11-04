@@ -261,7 +261,7 @@ export function TransactiesZoeken({
       meta: { num: true, sorteerbaar: true },
       cell: ({ row }) => {
         const r = ratioTovVraagprijs(row.original)
-        return <span style={{ color: r != null && r > 0 ? colors.primary : r != null && r < 0 ? '#B45309' : undefined }}>{procent(r)}</span>
+        return <span style={{ color: r != null && r > 0 ? 'var(--merk-tekst)' : r != null && r < 0 ? '#92400E' : undefined }}>{procent(r)}</span>
       },
     },
     { id: 'looptijd', header: 'Looptijd', meta: { num: true, sorteerbaar: true }, cell: ({ row }) => dagen(row.original.looptijd_dagen) },
@@ -871,7 +871,7 @@ function SheetInhoud({
         {veld('Verkoopprijs', euro(rij.verkoopprijs))}
         {veld('Vraagprijs', euro(rij.vraagprijs))}
         {veld('€ per m²', euro(rij.prijs_m2))}
-        {veld('T.o.v. vraagprijs', procent(ratio), ratio != null && ratio > 0 ? colors.primary : ratio != null && ratio < 0 ? '#B45309' : undefined)}
+        {veld('T.o.v. vraagprijs', procent(ratio), ratio != null && ratio > 0 ? 'var(--merk-tekst)' : ratio != null && ratio < 0 ? '#92400E' : undefined)}
       </SheetSectie>
       <SheetSectie titel="Verkoop">
         {veld('Verkoopdatum', datum(rij.verkoopdatum))}
