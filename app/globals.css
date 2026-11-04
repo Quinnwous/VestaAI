@@ -356,9 +356,10 @@
   .vui-gestaffeld > :nth-child(7) { animation-delay: 330ms; }
   .vui-gestaffeld > :nth-child(n+8) { animation-delay: 385ms; }
 }
+/* Alleen een begintoestand: het eind is de eigen waarde van het element
+   (bv. een halfdoorzichtige uitgesloten rij), dus geen sprong na afloop. */
 @keyframes vui-rijs {
   from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
 }
 
 /* Onthullen bij scrollen: alleen wat ónder de vouw staat beweegt; wat bij
@@ -379,7 +380,6 @@
 }
 @keyframes vui-onthul {
   from { opacity: .001; transform: translateY(28px) scale(.985); }
-  to { opacity: 1; transform: none; }
 }
 @keyframes vui-onthul-links {
   from { opacity: .001; transform: translateX(-24px); }
@@ -602,7 +602,7 @@
   .vui-tabelrij:nth-child(9) { animation-delay: 144ms; }
   .vui-tabelrij:nth-child(n+10) { animation-delay: 160ms; }
 }
-@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } }
 
 /* Fasestepper (components/DossierHeader.tsx): klikbare buurfase licht op,
    de actieve fase heeft een zachte puls in de merkkleur. */
@@ -825,4 +825,126 @@
 /* In het zoekpalet korter: de lijst wisselt bij elke toetsaanslag. */
 @media (prefers-reduced-motion: no-preference) {
   [aria-label='Zoekresultaten'] [role='option'] { animation-duration: 200ms; }
+}
+
+/* ── Ronde 3: rustige, doorlopende beweging ─────────────────────────── */
+
+/* Ambient achter de kantooromgeving (app/(app)/layout.tsx). */
+.vui-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.vui-ambient > span { position: absolute; border-radius: 50%; filter: blur(90px); }
+.vui-ambient-primair { width: 56vw; height: 56vw; top: -30vw; left: -18vw; background: rgba(var(--merk-rgb), .07); }
+.vui-ambient-accent { width: 40vw; height: 40vw; top: -22vw; right: -14vw; background: rgba(var(--merk-accent-rgb), .045); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-ambient-primair { animation: vui-bol 26s ease-in-out infinite alternate; }
+  .vui-ambient-accent { animation: vui-bol 32s ease-in-out -11s infinite alternate-reverse; }
+}
+
+/* Scrollvoortgang: een dunne merkstreep onder de topbar die meegroeit met
+   hoe ver je op de pagina bent. Alleen waar scroll-timelines bestaan. */
+@supports (animation-timeline: scroll()) {
+  .vui-topbar::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--merk-licht), var(--merk));
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: vui-scrollvoortgang linear both;
+    animation-timeline: scroll(root);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .vui-topbar::after { display: none; } }
+}
+@keyframes vui-scrollvoortgang { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Sparklines tekenen zich bij het verschijnen. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-spark-lijn { stroke-dasharray: 1; animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
+  .vui-spark-vlak { animation: vui-fade-in 900ms var(--ease) 600ms backwards; }
+}
+@keyframes vui-spark-teken { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* Pins in de illustraties: een zachte ring die uitdijt (locatie "leeft"). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-pin-ring { transform-box: fill-box; transform-origin: center; animation: vui-pin-ring 2.8s var(--ease) infinite; }
+}
+@keyframes vui-pin-ring { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(2.4); opacity: 0; } }
+
+/* Landing § Automatische woningdata (components/LandingPageClient.tsx):
+   adres typt zich, velden vullen zich na elkaar (InBeeld-trigger). */
+.vl-bag-typ { display: inline-block; white-space: nowrap; max-width: 100%; overflow: hidden; vertical-align: bottom; }
+.vl-bag[data-in-beeld='false'] .vl-bag-typ { clip-path: inset(0 100% 0 0); }
+.vl-bag[data-in-beeld='false'] .vl-bag-veld,
+.vl-bag[data-in-beeld='false'] .vl-bag-klaar { opacity: 0; }
+.vl-bag[data-in-beeld='true'] .vl-bag-typ { animation: vl-typ 1400ms steps(34, end) both; border-right: 2px solid #1A6B45; animation-name: vl-typ, vl-caret; animation-duration: 1400ms, 1400ms; animation-timing-function: steps(34, end), linear; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld { animation: vl-veld 520ms var(--ease) both; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(1) { animation-delay: 1500ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(2) { animation-delay: 1650ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(3) { animation-delay: 1800ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-klaar { animation: vui-rijs 520ms var(--ease) 2150ms both; }
+@keyframes vl-typ { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes vl-caret { 0%, 95% { border-right-color: #1A6B45; } 100% { border-right-color: transparent; } }
+@keyframes vl-veld {
+  from { opacity: 0; transform: translateY(8px) scale(.96); background: #fff; }
+  60% { background: #D5EEDF; }
+  to { opacity: 1; transform: none; background: #EAF5EE; }
+}
+.vl-correctie { font-family: inherit; cursor: pointer; transition: background var(--t) var(--ease), color var(--t) var(--ease), border-color var(--t) var(--ease), transform var(--t-hover) var(--ease); }
+.vl-correctie:hover { border-color: #1A6B45 !important; }
+.vl-correctie:active { transform: scale(.97); }
+.vl-staven[data-in-beeld='false'] .vl-staaf { transform: scaleY(0); }
+.vl-staven[data-in-beeld='true'] .vl-staaf { transform-origin: bottom; animation: vui-staaf 900ms var(--ease) var(--d, 0ms) both; }
+
+/* Accentwoord in paginakoppen (components/ui/PageHeader.tsx): markeerstreep
+   die eenmalig van links naar rechts doorloopt. */
+.vui-accent {
+  background-image: linear-gradient(rgba(var(--merk-rgb), .14), rgba(var(--merk-rgb), .14));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% .28em;
+  padding: 0 .06em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-accent { animation: vui-accent-streep 900ms var(--ease) 260ms backwards; }
+}
+@keyframes vui-accent-streep { from { background-size: 0% .28em; } to { background-size: 100% .28em; } }
+
+/* Chevron in "Recent bekeken" schuift iets op bij aanwijzen. */
+.vui-recentrij-chev { transition: opacity var(--t-hover), transform var(--t) var(--ease); }
+.vui-recentrij:hover .vui-recentrij-chev { transform: translateX(3px); }
+.vui-datatable-rij td { transition: background var(--t-hover); }
+.vui-refrij td { transition: background var(--t-hover); } .vui-refrij:hover td { background: var(--merk-zacht); }
+
+/* Teamfoto in de startbanner: heel trage zoom (Ken Burns), los van de
+   parallax — `scale` en `transform` zijn aparte eigenschappen. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-foto img { animation: vui-kenburns 24s ease-in-out infinite alternate; }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-startbanner-foto img {
+      animation: vui-parallax linear both, vui-kenburns 24s ease-in-out infinite alternate;
+      animation-timeline: scroll(root), auto;
+      animation-range: 0 420px, normal;
+    }
+  }
+}
+@keyframes vui-kenburns { from { scale: 1; } to { scale: 1.07; } }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-kenburns-foto { animation: vui-kenburns 26s ease-in-out infinite alternate; }
+}
+.vui-dossierfoto img { transition: scale 600ms var(--ease); }
+.vui-dossierfoto:hover img { scale: 1.06; }
+
+/* Kaartpins (components/kaart/Pin.tsx): landen zacht op de kaart en komen
+   iets omhoog bij aanwijzen. MapLibre zet zijn eigen transform op de
+   marker-container; hier beweegt alleen de svg erin. */
+.vui-kaartpin { transform-origin: 50% 100%; transition: transform var(--t) var(--ease); }
+.maplibregl-marker:hover .vui-kaartpin { transform: translateY(-3px) scale(1.06); }
+/* Het landen zit op de marker-container (die blijft bestaan), niet op de svg:
+   de lagen wisselen de svg bij hover via innerHTML, en dan zou elke hover het
+   landen opnieuw afspelen. Alleen opacity — MapLibre bezit de transform. */
+@media (prefers-reduced-motion: no-preference) {
+  .maplibregl-marker { animation: vui-fade-in 420ms var(--ease) backwards; }
 }

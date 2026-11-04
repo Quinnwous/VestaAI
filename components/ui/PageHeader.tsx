@@ -38,7 +38,9 @@ export function SerifTitle({
       {accent != null && (
         <>
           {' '}
-          <span style={{ fontStyle: 'var(--merk-titel-stijl, italic)' as CSSProperties['fontStyle'], color: colors.primary }}>{accent}</span>
+          {/* vui-accent: een zachte markeerstreep in de merktint die bij het
+              laden onder het accentwoord doorloopt (globals.css). */}
+          <span className="vui-accent" style={{ fontStyle: 'var(--merk-titel-stijl, italic)' as CSSProperties['fontStyle'], color: 'var(--merk-tekst)' }}>{accent}</span>
         </>
       )}
     </Tag>

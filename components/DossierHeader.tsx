@@ -241,7 +241,7 @@ export function DossierHeader({
 function DossierFoto({ url }: { url: string | null }) {
   if (url) {
     return (
-      <div style={{ width: 104, height: 96, borderRadius: radius.lg, flex: 'none', overflow: 'hidden', background: colors.surfaceAlt }}>
+      <div className="vui-dossierfoto" style={{ width: 104, height: 96, borderRadius: radius.lg, flex: 'none', overflow: 'hidden', background: colors.surfaceAlt }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       </div>

@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Kantel } from '@/components/ui/Kantel'
+import { InBeeld } from '@/components/ui/InBeeld'
 import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -110,11 +111,42 @@ const HUISSTIJL_RIJEN = [
 ]
 
 const WAARDE_VARIABELEN = [
-  { l: 'Garage', v: '+€ 12.000', aan: true },
-  { l: 'Tuin', v: '+€ 9.000', aan: true },
-  { l: 'Energielabel → A', v: '+€ 24.000', aan: false },
-  { l: 'Bouwperiode vóór 1975', v: '−€ 9.000', aan: false },
+  { l: 'Garage', v: '+€ 12.000', n: 12000, aan: true },
+  { l: 'Tuin', v: '+€ 9.000', n: 9000, aan: true },
+  { l: 'Energielabel → A', v: '+€ 24.000', n: 24000, aan: false },
+  { l: 'Bouwperiode vóór 1975', v: '−€ 9.000', n: -9000, aan: false },
 ]
+// Bandbreedte zonder correcties; met garage + tuin aan is het € 862.000 – € 895.000.
+const BAND_BASIS = { laag: 841000, hoog: 874000 }
+
+const euroNl = (n: number) => `€ ${(Math.round(n / 500) * 500).toLocaleString('nl-NL')}`
+
+/** Rustige getal-tween (ease-out, ~500 ms); direct onder reduced motion. */
+function useTween(doel: number, duur = 520) {
+  const [waarde, setWaarde] = useState(doel)
+  const vanRef = useRef(doel)
+  useEffect(() => {
+    const van = vanRef.current
+    if (van === doel) return
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      const f = requestAnimationFrame(() => { setWaarde(doel); vanRef.current = doel })
+      return () => cancelAnimationFrame(f)
+    }
+    let frame = 0
+    const start = performance.now()
+    const tik = (nu: number) => {
+      const t = Math.min(1, (nu - start) / duur)
+      const e = 1 - Math.pow(1 - t, 3)
+      const v = van + (doel - van) * e
+      setWaarde(v)
+      vanRef.current = v
+      if (t < 1) frame = requestAnimationFrame(tik)
+    }
+    frame = requestAnimationFrame(tik)
+    return () => cancelAnimationFrame(frame)
+  }, [doel, duur])
+  return waarde
+}
 
 const FAQS = [
   { v: 'Wat kan VestaAI precies?', a: 'VestaAI berekent een onderbouwde woningwaardering op uw eigen verkoopdata, geeft marktinzicht en concurrentieanalyse in uw regio, en genereert de volledige contentsuite voor een woning — Funda-tekst, brochure, social en koper-e-mail, in het Nederlands en Engels.' },
@@ -203,6 +235,12 @@ export function LandingPageClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileOpen, setMobileOpen] = useState(false)
   useSpotlightVolger()
+  // Correcties in het waarderingsvoorbeeld zijn aan/uit te zetten; de
+  // bandbreedte telt rustig mee.
+  const [correcties, setCorrecties] = useState(() => new Set(WAARDE_VARIABELEN.filter(v => v.aan).map(v => v.l)))
+  const correctieSom = WAARDE_VARIABELEN.filter(v => correcties.has(v.l)).reduce((t, v) => t + v.n, 0)
+  const bandLaag = useTween(BAND_BASIS.laag + correctieSom)
+  const bandHoog = useTween(BAND_BASIS.hoog + correctieSom)
 
   const activeTabObj = TABS_DATA.find(t => t.key === activeTab) || TABS_DATA[0]
 
@@ -215,8 +253,8 @@ export function LandingPageClient() {
         .vr:hover { border-color: #C7E6D5 !important; }
         .vg:hover { background: #114230 !important; }
         .vw:hover { background: #EAF5EE !important; }
-        .vtab-a { width:100%; cursor:pointer; font-family:inherit; text-align:left; border:1px solid #1A6B45; background:#fff; color:#0E1A13; border-radius:13px; padding:13px 15px; box-shadow:0 6px 18px -10px rgba(26,107,69,.45); }
-        .vtab-i { width:100%; cursor:pointer; font-family:inherit; text-align:left; border:1px solid #E4EAE6; background:#FBFDFC; color:#3A463F; border-radius:13px; padding:13px 15px; }
+        .vtab-a { transition: border-color .2s, box-shadow .2s, transform .2s; transform: translateX(4px); width:100%; cursor:pointer; font-family:inherit; text-align:left; border:1px solid #1A6B45; background:#fff; color:#0E1A13; border-radius:13px; padding:13px 15px; box-shadow:0 6px 18px -10px rgba(26,107,69,.45); }
+        .vtab-i { transition: border-color .2s, box-shadow .2s, transform .2s; width:100%; cursor:pointer; font-family:inherit; text-align:left; border:1px solid #E4EAE6; background:#FBFDFC; color:#3A463F; border-radius:13px; padding:13px 15px; }
         .vtab-i:hover { border-color: #C7E6D5; }
         ::-webkit-scrollbar { width:10px; height:10px; }
         ::-webkit-scrollbar-thumb { background:#D5E0DA; border-radius:9px; border:3px solid #FBFCFB; }
@@ -453,7 +491,7 @@ export function LandingPageClient() {
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '5px 11px', cursor: 'default' }}>Kopieer</span>
               </div>
-              <div style={{ padding: '24px 26px', fontSize: 15, lineHeight: 1.7, color: '#2A372F', whiteSpace: 'pre-line', maxHeight: 520, overflowY: 'auto' }}>
+              <div key={activeTab} className="vui-tabpaneel" style={{ padding: '24px 26px', fontSize: 15, lineHeight: 1.7, color: '#2A372F', whiteSpace: 'pre-line', maxHeight: 520, overflowY: 'auto' }}>
                 {TAB_BODIES[activeTab] || ''}
               </div>
             </div>
@@ -481,7 +519,9 @@ export function LandingPageClient() {
               ))}
             </div>
           </div>
-          <div>
+          {/* Speelt zich af zodra het in beeld komt: het adres typt zich, de
+              drie BAG-velden vullen zich na elkaar, dan het vinkje. */}
+          <InBeeld className="vl-bag">
             <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
@@ -491,7 +531,7 @@ export function LandingPageClient() {
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 6 }}>Adres</div>
                   <div style={{ border: '2px solid #1A6B45', borderRadius: 10, padding: '11px 14px', fontSize: 14.5, color: '#0E1A13', background: '#fff', marginBottom: 16 }}>
-                    Lijsterbeslaan 14, 2023 BN Haarlem
+                    <span className="vl-bag-typ">Lijsterbeslaan 14, 2023 BN Haarlem</span>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 9 }}>
@@ -500,20 +540,20 @@ export function LandingPageClient() {
                     { l: 'Oppervlak', v: '185 m²', src: 'BAG' },
                     { l: 'Energielabel', v: 'B', src: 'BAG' },
                   ].map(f => (
-                    <div key={f.l} style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 10, padding: '10px 12px' }}>
+                    <div key={f.l} className="vl-bag-veld" style={{ background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 10, padding: '10px 12px' }}>
                       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 3 }}>{f.l}</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', letterSpacing: '-.01em' }}>{f.v}</div>
                       <div style={{ fontSize: 10.5, color: '#2F7350', marginTop: 3 }}>↗ {f.src}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 10, padding: '9px 12px', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 9, fontSize: 12.5, color: '#5A6B61', display: 'flex', alignItems: 'center', gap: 7 }}>
+                <div className="vl-bag-klaar" style={{ marginTop: 10, padding: '9px 12px', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 9, fontSize: 12.5, color: '#5A6B61', display: 'flex', alignItems: 'center', gap: 7 }}>
                   <span style={{ color: '#1A6B45', fontWeight: 700, fontSize: 13 }}>✓</span>
                   3 velden automatisch ingevuld vanuit het BAG — buurtdata volgt via CBS
                 </div>
               </div>
             </div>
-          </div>
+          </InBeeld>
         </div>
       </section>
 
@@ -599,19 +639,25 @@ export function LandingPageClient() {
               </div>
               <div style={{ padding: 22 }}>
                 <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 6 }}>Geschatte waarde</div>
-                <div style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 32, color: '#0E1A13', letterSpacing: '-.01em', marginBottom: 4 }}>
-                  € 862.000 – € 895.000
+                <div aria-live="polite" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 32, color: '#0E1A13', letterSpacing: '-.01em', marginBottom: 4, fontVariantNumeric: 'tabular-nums' }}>
+                  {euroNl(bandLaag)} – {euroNl(bandHoog)}
                 </div>
                 <div style={{ fontSize: 12.5, color: '#2F7350', marginBottom: 20 }}>Gebaseerd op 6 vergelijkbare woningen binnen 1,2 km — een onderbouwde indicatie, geen taxatie</div>
 
-                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 9 }}>Correcties per kenmerk</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 9 }}>Correcties per kenmerk <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 600 }}>— klik om aan/uit te zetten</span></div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 20 }}>
-                  {WAARDE_VARIABELEN.map(b => (
-                    <span key={b.l} style={b.aan
+                  {WAARDE_VARIABELEN.map(v => ({ ...v, aan: correcties.has(v.l) })).map(b => (
+                    <button
+                      type="button"
+                      key={b.l}
+                      aria-pressed={b.aan}
+                      className="vl-correctie"
+                      onClick={() => setCorrecties(huidig => { const n = new Set(huidig); if (n.has(b.l)) n.delete(b.l); else n.add(b.l); return n })}
+                      style={b.aan
                       ? { fontSize: 12, fontWeight: 700, color: '#1A6B45', background: '#EAF5EE', border: '1px solid #C7E6D5', borderRadius: 999, padding: '6px 11px', display: 'inline-flex', gap: 6 }
                       : { fontSize: 12, fontWeight: 600, color: '#626C67', background: '#F7FAF8', border: '1px solid #EDF2EF', borderRadius: 999, padding: '6px 11px', display: 'inline-flex', gap: 6 }}>
                       {b.aan ? '✓' : '+'} {b.l} <span>{b.v}</span>
-                    </span>
+                    </button>
                   ))}
                 </div>
 
@@ -666,13 +712,13 @@ export function LandingPageClient() {
                 </div>
                 <div style={{ padding: 22 }}>
                   <div style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#626C67', marginBottom: 10 }}>Gem. verkoopprijs per kwartaal</div>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100, marginBottom: 20 }}>
+                  <InBeeld className="vl-staven" style={{ display: 'flex', alignItems: 'flex-end', gap: 10, height: 100, marginBottom: 20 }}>
                     {[54, 61, 58, 70, 76, 84].map((h, i) => (
                       <div key={i} style={{ flex: 1, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', alignItems: 'center', gap: 6 }}>
-                        <div style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#2A8A5C)' : '#D5E8DD' }} />
+                        <div className="vl-staaf" style={{ width: '100%', height: `${h}%`, borderRadius: '6px 6px 3px 3px', background: i === 5 ? 'linear-gradient(180deg,#1A6B45,#2A8A5C)' : '#D5E8DD', ['--d' as string]: `${i * 90}ms` }} />
                       </div>
                     ))}
-                  </div>
+                  </InBeeld>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
                     <div style={{ background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 10, padding: '10px 12px' }}>
                       <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 3 }}>Gem. doorlooptijd</div>

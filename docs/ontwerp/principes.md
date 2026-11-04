@@ -105,6 +105,15 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
   - Altijd `animation-fill-mode: backwards`, nooit `both`: een vastgehouden
     eindtransform zet de hover-transform buiten werking.
   - Screenshots, axe en e2e draaien met `reducedMotion: 'reduce'` (eindstaat).
+  - Doorlopend en rustig (ronde 3): ambient-verlopen achter de kantooromgeving
+    (26-32 s), scrollvoortgang onder de topbar, trage zoom op teamfoto's
+    (`scale`, los van de parallax-`transform`), sparklines die zich tekenen,
+    pulserende ring om illustratiepins, markeerstreep onder het accentwoord.
+  - `InBeeld` (components/ui/InBeeld.tsx) voor een eenmalige, tijdgebaseerde
+    animatie zodra iets in beeld komt (landing: BAG-blok typt zich, staven
+    groeien). Zonder JavaScript staat alles er gewoon.
+  - Keyframes voor binnenkomst hebben alleen een `from`: het eind is de eigen
+    waarde van het element, dus geen sprong bij bv. een halfdoorzichtige rij.
 - **3D-beeld:** `HuisIllustratie`/`DataIllustratie` (isometrisch, volledig in
   `var(--merk*)`) voor lege staten (`EmptyState illustratie="woning|data"`),
   de startbanner zonder foto en de dossierkop zonder foto.

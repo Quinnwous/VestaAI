@@ -16,6 +16,7 @@ export function Pin({ variant = 'normaal', aantal }: { variant?: PinVariant; aan
   if (variant === 'cluster') {
     return (
       <svg
+        className="vui-kaartpin"
         width={34}
         height={34}
         viewBox="0 0 34 34"
@@ -35,6 +36,7 @@ export function Pin({ variant = 'normaal', aantal }: { variant?: PinVariant; aan
 
   return (
     <svg
+      className="vui-kaartpin"
       width={26}
       height={32}
       viewBox="0 0 26 32"

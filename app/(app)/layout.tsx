@@ -78,6 +78,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div style={{ ...brandingCssVars(branding), minHeight: '100vh', background: '#FAFBFB', fontFamily: 'var(--merk-font-body, var(--font-jakarta))' }}>
       {/* Ook op :root, zodat Radix-portals (in <body>, buiten deze div) de kantoorkleuren erven. */}
       <style dangerouslySetInnerHTML={{ __html: brandingRootCss(branding) }} />
+      {/* Ambient: twee zachte verlopen (primair linksboven, accent rechtsboven,
+          principes § Kleur) die heel traag ademen. Vast achter alles, puur
+          decoratief. */}
+      <div aria-hidden className="vui-ambient">
+        <span className="vui-ambient-primair" />
+        <span className="vui-ambient-accent" />
+      </div>
       {/* Contactbalk (telefoon/e-mail) verwijderd — masterplan fase 1.2, 16-17 sep 2026,
           zie docs/roadmap.md. branding.telefoon/branding.email blijven bestaan voor
           gebruik in pdf's en e-mails. */}

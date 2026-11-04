@@ -143,7 +143,7 @@ export function BuurtDataTab({
   ] as const).flatMap(([titel, m]) => (m ? [{ titel, m }] : []))
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
+    <div className="vui-gestaffeld" style={{ display: 'grid', gap: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <p style={{ fontSize: 12, color: '#5C6470', margin: 0 }}>Opgehaald op {datumTijd(data.opgehaald_op)}</p>
         {verversKnop}
@@ -165,7 +165,7 @@ export function BuurtDataTab({
         <p style={{ ...blokLabel, marginBottom: 12 }}>Buurtcijfers{cbs?.buurtnaam ? ` — ${cbs.buurtnaam}` : ''}</p>
         {statusCbs === 'ok' && cbs ? (
           <>
-            <div style={cijferGrid}>
+            <div className="vui-gestaffeld" style={cijferGrid}>
               {cbs.inkomen && <Cijfer titel="Gem. inkomen" waarde={euro(cbs.inkomen.waarde)} niveau={cbs.inkomen.niveau} />}
               {cbs.pct_koop && <Cijfer titel="Koopwoningen" waarde={`${cbs.pct_koop.waarde}%`} niveau={cbs.pct_koop.niveau} />}
               {cbs.pct_hoog_opgeleid && <Cijfer titel="Hbo/wo-opgeleid" waarde={`${cbs.pct_hoog_opgeleid.waarde}%`} niveau={cbs.pct_hoog_opgeleid.niveau} />}
@@ -190,7 +190,7 @@ export function BuurtDataTab({
         </div>
         {statusVoorzieningen === 'ok' && voorzieningen ? (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+            <div className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
               <Voorziening titel="Supermarkt" items={voorzieningen.supermarkt} />
               <Voorziening titel="Apotheek" items={voorzieningen.apotheek} />
               <Voorziening titel="Huisarts" items={voorzieningen.huisarts} />

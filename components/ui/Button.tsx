@@ -72,7 +72,7 @@ export function Button({
 } & ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
-      className={[buttonClass(variant), className].filter(Boolean).join(' ')}
+      className={[buttonClass(variant), variant === 'primary' ? 'vui-knop-glans' : '', className].filter(Boolean).join(' ')}
       style={{ ...buttonStyle(variant, size, { full }), ...style }}
       {...rest}
     >

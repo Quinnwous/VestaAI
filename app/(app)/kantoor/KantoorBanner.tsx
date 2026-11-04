@@ -23,7 +23,7 @@ export function KantoorBanner({ url, naam }: { url: string; naam: string }) {
         src={url}
         alt={`Sfeerbeeld van ${naam}`}
         onError={() => setKapot(true)}
-        className="w-full aspect-[21/9] object-cover block"
+        className="w-full aspect-[21/9] object-cover block vui-kenburns-foto"
       />
     </div>
   )
