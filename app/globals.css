@@ -915,3 +915,24 @@
 .vui-recentrij:hover .vui-recentrij-chev { transform: translateX(3px); }
 .vui-datatable-rij td { transition: background var(--t-hover); }
 .vui-refrij td { transition: background var(--t-hover); } .vui-refrij:hover td { background: var(--merk-zacht); }
+
+/* Teamfoto in de startbanner: heel trage zoom (Ken Burns), los van de
+   parallax — `scale` en `transform` zijn aparte eigenschappen. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-foto img { animation: vui-kenburns 24s ease-in-out infinite alternate; }
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-startbanner-foto img {
+      animation: vui-parallax linear both, vui-kenburns 24s ease-in-out infinite alternate;
+      animation-timeline: scroll(root), auto;
+      animation-range: 0 420px, normal;
+    }
+  }
+}
+@keyframes vui-kenburns { from { scale: 1; } to { scale: 1.07; } }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-kenburns-foto { animation: vui-kenburns 26s ease-in-out infinite alternate; }
+}
+.vui-dossierfoto img { transition: scale 600ms var(--ease); }
+.vui-dossierfoto:hover img { scale: 1.06; }
