@@ -895,3 +895,22 @@
 .vl-correctie:active { transform: scale(.97); }
 .vl-staven[data-in-beeld='false'] .vl-staaf { transform: scaleY(0); }
 .vl-staven[data-in-beeld='true'] .vl-staaf { transform-origin: bottom; animation: vui-staaf 900ms var(--ease) var(--d, 0ms) both; }
+
+/* Accentwoord in paginakoppen (components/ui/PageHeader.tsx): markeerstreep
+   die eenmalig van links naar rechts doorloopt. */
+.vui-accent {
+  background-image: linear-gradient(rgba(var(--merk-rgb), .14), rgba(var(--merk-rgb), .14));
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: 100% .28em;
+  padding: 0 .06em;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-accent { animation: vui-accent-streep 900ms var(--ease) 260ms backwards; }
+}
+@keyframes vui-accent-streep { from { background-size: 0% .28em; } to { background-size: 100% .28em; } }
+
+/* Chevron in "Recent bekeken" schuift iets op bij aanwijzen. */
+.vui-recentrij-chev { transition: opacity var(--t-hover), transform var(--t) var(--ease); }
+.vui-recentrij:hover .vui-recentrij-chev { transform: translateX(3px); }
+.vui-datatable-rij td { transition: background var(--t-hover); }
