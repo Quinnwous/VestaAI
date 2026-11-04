@@ -37,6 +37,7 @@ gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
 | Les: nieuw bestand niet mee-gecommit | `git commit -am` neemt geen nieuwe bestanden mee: `hooks/useSchuifIndicator.ts` ontbrak in #71, dus typecheck en Vercel-build op `main` faalden van #71 t/m #75 (productie bleef op #70) tot #76 hem alsnog meenam. Lokaal was alles groen omdat het bestand er wél stond. Voortaan `git add -A` + `git status` schoon vóór de PR, en na de merge de CI-run op `main` controleren | Opus |
 | Snelkoppelingen op de startpagina | Geen nieuwe snelkoppelingenrij (besluit 1.9c blijft: rustige startpagina), wel bestaande elementen klikbaar gemaakt: de contextregel en de twee dossiertegels openen de woningenlijst op de juiste fase | Opus |
 | Voor/na bij virtual staging | Standaardweergave is een vergelijking met schuifregelaar (gewone range-input, dus toetsenbord en schermlezer werken); "Origineel" en "Gestaged" blijven als losse weergave | Opus |
+| Afronding polishronde (4 nov) | Wat nog niet in de nieuwe look staat, is per bestand geïnventariseerd (grep) en als spoor § 3 G in de roadmap gezet; CLAUDE.md schrijft voortaan voor dat nieuwe UI de primitives en bewegingsclasses gebruikt, zodat er niet opnieuw twee looks ontstaan. Paginakoppen van de verkenners (eigen `<h1>` vs `PageHeader`) is als ontwerpkeuze G8 opengelaten | Opus |
 
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 
