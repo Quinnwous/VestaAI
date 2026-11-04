@@ -561,7 +561,10 @@ export function WaardebepalingPaneel({
           <div className="wb-grid">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
               {/* Hero: puntwaarde + band + badges */}
-              <div style={{ borderRadius: radius.cardLg, padding: '22px 22px 24px', background: 'linear-gradient(135deg, var(--merk-licht) 0%, var(--merk-diep) 100%)', color: '#fff', boxShadow: `0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb),.7)` }}>
+              <div className="vui-waardehero vui-spot vui-spot-licht vui-binnen" style={{ position: 'relative', overflow: 'hidden', borderRadius: radius.cardLg, padding: '22px 22px 24px', background: 'linear-gradient(135deg, var(--merk-licht) 0%, var(--merk-diep) 100%)', color: '#fff', boxShadow: `0 2px 4px rgba(20,24,27,.06), 0 16px 36px -14px rgba(var(--merk-rgb),.7)` }}>
+                {/* Fijn raster + glans, dezelfde beeldtaal als de startbanner. */}
+                <span aria-hidden className="vui-startbanner-raster vui-waardehero-deco" />
+                <span aria-hidden className="vui-startbanner-glans vui-waardehero-deco" />
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,.78)' }}>Indicatieve waarde</div>
                 <div className="wb-hero-val num" style={{ fontSize: 46, fontWeight: 800, letterSpacing: '-.03em', lineHeight: 1, marginTop: 2 }}>
                   {gewogenTween == null ? '—' : formatEuro(gewogenTween)}
@@ -576,7 +579,9 @@ export function WaardebepalingPaneel({
                     <span>{formatEuro(uitkomst.laag)}<small style={{ display: 'block', fontWeight: 600, color: 'rgba(255,255,255,.72)', fontSize: 10.5 }}>laag</small></span>
                     <span style={{ textAlign: 'right' }}>{formatEuro(uitkomst.hoog)}<small style={{ display: 'block', fontWeight: 600, color: 'rgba(255,255,255,.72)', fontSize: 10.5 }}>hoog</small></span>
                   </div>
-                  <div style={{ position: 'relative', height: 8, borderRadius: radius.pill, background: 'rgba(255,255,255,.62)' }}>
+                  <div style={{ position: 'relative', height: 8, borderRadius: radius.pill, background: 'rgba(255,255,255,.30)' }}>
+                    {/* Vulling tot de puntwaarde: groeit bij het laden van links in. */}
+                    <div aria-hidden className="vui-band-vulling" style={{ position: 'absolute', inset: 0, right: 'auto', width: `${bandPct}%`, borderRadius: radius.pill, background: 'linear-gradient(90deg, rgba(255,255,255,.45), rgba(255,255,255,.88))', transition: 'width 220ms cubic-bezier(.2,.8,.2,1)' }} />
                     <div style={{ position: 'absolute', top: -5, width: 3, height: 18, borderRadius: 2, background: '#fff', boxShadow: '0 0 0 4px rgba(255,255,255,.28)', left: `${bandPct}%`, transition: 'left 220ms cubic-bezier(.2,.8,.2,1)' }} />
                   </div>
                 </div>

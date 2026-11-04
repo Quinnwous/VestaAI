@@ -762,3 +762,12 @@
 
 /* Navigatiepillen: zachte hover op de grijze balk. */
 .vui-navpil:not([aria-current='page']):hover { background: rgba(255,255,255,.7) !important; color: var(--merk-tekst) !important; }
+
+/* Waarde-hero (components/WaardebepalingPaneel.tsx). */
+.vui-waardehero > :not(.vui-waardehero-deco) { position: relative; z-index: 1; }
+.vui-waardehero-deco { z-index: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-band-vulling { transform-origin: left center; animation: vui-band-groei 900ms var(--ease) 250ms backwards; }
+}
+@keyframes vui-band-groei { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.vui-startbanner-raster.vui-waardehero-deco { animation: none; }
