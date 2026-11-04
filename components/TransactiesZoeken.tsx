@@ -503,13 +503,13 @@ export function TransactiesZoeken({
                   <input
                     type="date" aria-label="Van datum" value={filter.datumVan}
                     onChange={e => zetFilterDeel({ datumVan: e.target.value })}
-                    style={{ height: 34, border: `1px solid ${colors.borderStrong}`, borderRadius: 8, padding: '0 8px', font: 'inherit', color: colors.bodyStrong, background: colors.surfaceAlt }}
+                    style={{ height: 34, border: `1px solid ${colors.borderStrong}`, borderRadius: 'var(--merk-radius-sm, 8px)', padding: '0 8px', font: 'inherit', color: colors.bodyStrong, background: colors.surfaceAlt }}
                   />
                   <span style={{ color: colors.muted }}>–</span>
                   <input
                     type="date" aria-label="Tot datum" value={filter.datumTot}
                     onChange={e => zetFilterDeel({ datumTot: e.target.value })}
-                    style={{ height: 34, border: `1px solid ${colors.borderStrong}`, borderRadius: 8, padding: '0 8px', font: 'inherit', color: colors.bodyStrong, background: colors.surfaceAlt }}
+                    style={{ height: 34, border: `1px solid ${colors.borderStrong}`, borderRadius: 'var(--merk-radius-sm, 8px)', padding: '0 8px', font: 'inherit', color: colors.bodyStrong, background: colors.surfaceAlt }}
                   />
                 </div>
               </div>
@@ -650,7 +650,7 @@ export function TransactiesZoeken({
       )}
 
       {melding && (
-        <div style={{ marginTop: 14, borderRadius: 10, background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '9px 14px' }}>
+        <div style={{ marginTop: 14, borderRadius: 'var(--merk-radius-sm, 10px)', background: 'var(--merk-zacht)', border: '1px solid var(--merk-rand)', padding: '9px 14px' }}>
           <p style={{ fontSize: 12.5, color: 'var(--merk-diep)', margin: 0 }}>{melding}</p>
         </div>
       )}
@@ -703,7 +703,7 @@ export function TransactiesZoeken({
                   type="button"
                   disabled={toevoegenBezig !== null}
                   onClick={() => meenemenAlsReferentie(d)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: `1px solid ${colors.border}`, borderRadius: 10, padding: '10px 12px', background: colors.surface, cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: colors.text, fontWeight: 600 }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, textAlign: 'left', border: `1px solid ${colors.border}`, borderRadius: 'var(--merk-radius-sm, 10px)', padding: '10px 12px', background: colors.surface, cursor: toevoegenBezig !== null ? 'default' : 'pointer', fontSize: 13, color: colors.text, fontWeight: 600 }}
                 >
                   <span>{d.adres}</span>
                   <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--merk-tekst)' }}>{toevoegenBezig === d.id ? 'Bezig…' : 'Kies'}</span>
@@ -737,7 +737,7 @@ function PlaatsWijkKiezer({
         placeholder="Zoek plaats of wijk…"
         aria-label="Zoek plaats of wijk"
         className="vui-input"
-        style={{ width: '100%', height: 34, borderRadius: 8, border: `1px solid ${colors.borderStrong}`, padding: '0 10px', marginBottom: 8, background: colors.surfaceAlt, fontSize: 13 }}
+        style={{ width: '100%', height: 34, borderRadius: 'var(--merk-radius-sm, 8px)', border: `1px solid ${colors.borderStrong}`, padding: '0 10px', marginBottom: 8, background: colors.surfaceAlt, fontSize: 13 }}
       />
       {plaatsen
         .filter(p => !t || p.label.toLowerCase().includes(t) || p.wijken.some(w => w.label.toLowerCase().includes(t)))

@@ -147,15 +147,15 @@ export function ContentTekstenTab({
             <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--merk-tekst)' }}>Content wordt geschreven (NL + EN)</span>
             <span style={{ marginLeft: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 13, color: '#5C6470' }} aria-label="Verstreken tijd">{formatMmSs(verstreken)}</span>
           </div>
-          <div role="progressbar" aria-label="Geschatte voortgang" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(voortgang * 100)} style={{ position: 'relative', height: 6, borderRadius: 9999, background: 'rgba(var(--merk-rgb), .14)', overflow: 'hidden', margin: '14px 0 10px' }}>
-            <div className="vui-voortgang" style={{ position: 'absolute', inset: 0, right: 'auto', width: `${(voortgang * 100).toFixed(1)}%`, borderRadius: 9999, background: 'linear-gradient(90deg, var(--merk-licht), var(--merk))', transition: 'width 1s linear' }} />
+          <div role="progressbar" aria-label="Geschatte voortgang" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(voortgang * 100)} style={{ position: 'relative', height: 6, borderRadius: 'var(--merk-radius-pill, 9999px)', background: 'rgba(var(--merk-rgb), .14)', overflow: 'hidden', margin: '14px 0 10px' }}>
+            <div className="vui-voortgang" style={{ position: 'absolute', inset: 0, right: 'auto', width: `${(voortgang * 100).toFixed(1)}%`, borderRadius: 'var(--merk-radius-pill, 9999px)', background: 'linear-gradient(90deg, var(--merk-licht), var(--merk))', transition: 'width 1s linear' }} />
           </div>
           <p style={{ fontSize: 12.5, color: '#5C6470', margin: 0 }}>
             Duurt meestal ± 1½ minuut. Je kunt intussen gewoon verder werken; de teksten verschijnen hier vanzelf.
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
             {['Funda-tekst', 'Brochure', 'Instagram', 'LinkedIn', 'Koper-e-mail', 'Buurtomschrijving', 'Engelse versie'].map((t, i) => (
-              <span key={t} className="vui-skeleton vui-binnen" style={{ ['--i' as string]: i, display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 12px', borderRadius: 9999, background: '#fff', border: '1px solid var(--merk-rand)', fontSize: 12.5, fontWeight: 600, color: '#2C3238' }}>
+              <span key={t} className="vui-skeleton vui-binnen" style={{ ['--i' as string]: i, display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 12px', borderRadius: 'var(--merk-radius-pill, 9999px)', background: '#fff', border: '1px solid var(--merk-rand)', fontSize: 12.5, fontWeight: 600, color: '#2C3238' }}>
                 {t}
               </span>
             ))}

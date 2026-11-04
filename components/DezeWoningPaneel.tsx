@@ -108,8 +108,8 @@ export function DezeWoningPaneel({ control, kantoorInstellingen }: Props) {
         {/* Vier segmenten die zich vullen naarmate de basis compleet is. */}
         <div aria-hidden style={{ display: 'grid', gridTemplateColumns: `repeat(${STAPPEN_KLAAR.length}, 1fr)`, gap: 4, marginBottom: 8 }}>
           {STAPPEN_KLAAR.map((klaar, i) => (
-            <span key={i} style={{ height: 4, borderRadius: 9999, background: '#E6E9EC', overflow: 'hidden' }}>
-              <span style={{ display: 'block', height: '100%', borderRadius: 9999, background: 'var(--merk)', transformOrigin: 'left center', transform: `scaleX(${klaar ? 1 : 0})`, transition: 'transform 420ms cubic-bezier(.2,.8,.2,1)' }} />
+            <span key={i} style={{ height: 4, borderRadius: 'var(--merk-radius-pill, 9999px)', background: '#E6E9EC', overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', borderRadius: 'var(--merk-radius-pill, 9999px)', background: 'var(--merk)', transformOrigin: 'left center', transform: `scaleX(${klaar ? 1 : 0})`, transition: 'transform 420ms cubic-bezier(.2,.8,.2,1)' }} />
             </span>
           ))}
         </div>
