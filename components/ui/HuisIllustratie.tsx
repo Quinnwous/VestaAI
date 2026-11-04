@@ -75,6 +75,8 @@ const PALET = {
     boomDonker: 'color-mix(in srgb, var(--merk) 52%, #FFFFFF)',
     stam: 'var(--merk-diep)',
     schaduw: 'rgba(20,24,27,.07)',
+    pinRing: 'var(--merk-accent)',
+    pinKern: 'var(--merk)',
   },
   // Op een merkvlak (startbanner): witte gevels, donker dak.
   opMerk: {
@@ -92,6 +94,28 @@ const PALET = {
     boomDonker: 'rgba(255,255,255,.22)',
     stam: 'rgba(255,255,255,.45)',
     schaduw: 'rgba(0,0,0,.10)',
+    pinRing: 'var(--merk-accent)',
+    pinKern: 'var(--merk)',
+  },
+  // Vaste VestaAI-kleuren (de gemengde waarden van `licht` voor #1A6B45 vooraf
+  // uitgerekend), voor plekken zonder CSS-variabelen: de OpenGraph-afbeelding.
+  vestaVast: {
+    gevelLinks: '#E8F0EC',
+    gevelRechts: '#D1E1DA',
+    dakVoor: '#1A6B45',
+    dakAchter: '#0C301F',
+    schoorsteen: '#0C301F',
+    raam: '#81AE99',
+    raamGloed: '#FFFFFF',
+    deur: '#0C301F',
+    grond: '#EFF5F2',
+    grondRand: '#CDDED6',
+    boom: '#A8C7B8',
+    boomDonker: '#88B29E',
+    stam: '#0C301F',
+    schaduw: 'rgba(20,24,27,.07)',
+    pinRing: '#2A8A5C',
+    pinKern: '#1A6B45',
   },
 } as const
 
@@ -169,10 +193,10 @@ export function HuisIllustratie({
 
         {pin && (
           <g transform={`translate(${nokEind[0] - 26}, ${nokEind[1] - 30})`}>
-            <line x1={0} y1={6} x2={0} y2={22} stroke="var(--merk-accent)" strokeWidth={2} strokeLinecap="round" />
-            <circle className="vui-pin-ring" r={10.5} fill="none" stroke="var(--merk-accent)" strokeWidth={1.6} />
-            <circle r={10.5} fill="#FFFFFF" stroke="var(--merk-accent)" strokeWidth={2.4} />
-            <circle r={4.4} fill="var(--merk)" />
+            <line x1={0} y1={6} x2={0} y2={22} stroke={kleur.pinRing} strokeWidth={2} strokeLinecap="round" />
+            <circle className="vui-pin-ring" r={10.5} fill="none" stroke={kleur.pinRing} strokeWidth={1.6} />
+            <circle r={10.5} fill="#FFFFFF" stroke={kleur.pinRing} strokeWidth={2.4} />
+            <circle r={4.4} fill={kleur.pinKern} />
           </g>
         )}
       </g>
