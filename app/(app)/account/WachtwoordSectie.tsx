@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { wijzigWachtwoord } from './actions'
-import { Card, Label, Input, Button } from '@/components/ui'
+import { Label, Input, Button } from '@/components/ui'
 import { colors } from '@/components/ui/tokens'
 
 /** Wachtwoord wijzigen zonder de reset-mail — vereist het huidige wachtwoord. */
@@ -29,7 +29,7 @@ export function WachtwoordSectie() {
   const klaarOmTeWijzigen = huidig.length > 0 && nieuw.length >= 10
 
   return (
-    <Card style={{ display: 'grid', gap: 16, maxWidth: 420 }}>
+    <div style={{ display: 'grid', gap: 16, maxWidth: 420 }}>
       <div>
         <Label htmlFor="huidig-wachtwoord">Huidig wachtwoord</Label>
         <Input
@@ -62,6 +62,6 @@ export function WachtwoordSectie() {
         {status === 'saved' && <span className="vui-wissel" style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Gewijzigd</span>}
         {status === 'error' && <span style={{ fontSize: 13, color: '#B42318' }}>{foutmelding}</span>}
       </div>
-    </Card>
+    </div>
   )
 }
