@@ -24,7 +24,7 @@ export default function OverOnsPage() {
       <main>
         {/* Hero */}
         <section style={{ maxWidth: 840, margin: '0 auto', padding: '80px 28px 72px' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Over ons</div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Over ons</div>
           <h1 className="vui-binnen" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,58px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 24px' }}>
             Gebouwd voor de Nederlandse makelaardij.
           </h1>

@@ -832,8 +832,8 @@
 /* Ambient achter de kantooromgeving (app/(app)/layout.tsx). */
 .vui-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .vui-ambient > span { position: absolute; border-radius: 50%; filter: blur(90px); }
-.vui-ambient-primair { width: 56vw; height: 56vw; top: -30vw; left: -18vw; background: rgba(var(--merk-rgb), .07); }
-.vui-ambient-accent { width: 40vw; height: 40vw; top: -22vw; right: -14vw; background: rgba(var(--merk-accent-rgb), .045); }
+.vui-ambient-primair { width: 56vw; height: 56vw; top: -30vw; left: -18vw; background: rgba(var(--merk-rgb), .045); }
+.vui-ambient-accent { width: 40vw; height: 40vw; top: -22vw; right: -14vw; background: rgba(var(--merk-accent-rgb), .03); }
 @media (prefers-reduced-motion: no-preference) {
   .vui-ambient-primair { animation: vui-bol 26s ease-in-out infinite alternate; }
   .vui-ambient-accent { animation: vui-bol 32s ease-in-out -11s infinite alternate-reverse; }
