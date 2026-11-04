@@ -33,12 +33,17 @@ export function Badge({
       }}
     >
       {dot && (
+        // Live-stip: een zachte ring die uitdijt (globals.css .vui-badge-stip).
         <span
+          aria-hidden
+          className="vui-badge-stip"
           style={{
+            position: 'relative',
             width: 6,
             height: 6,
             borderRadius: '50%',
             background: color,
+            color,
             flexShrink: 0,
           }}
         />

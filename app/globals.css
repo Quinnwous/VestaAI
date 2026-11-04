@@ -958,3 +958,14 @@
 @keyframes vui-autogevuld {
   from { background-color: var(--merk-zacht); box-shadow: 0 0 0 4px rgba(var(--merk-rgb), .14); }
 }
+
+/* Live-stip in databadges (components/ui/Badge.tsx `dot`). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-badge-stip::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: currentColor;
+    animation: vui-puls 2.6s var(--ease) infinite;
+  }
+}
