@@ -331,7 +331,7 @@ export function LandingPageClient() {
             </div>
             <h1 className="vui-binnen" style={{ ['--i' as string]: 1, fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(40px,5.2vw,66px)', lineHeight: 1.03, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 22px' }}>
               Waardebepaling en marktinzicht,<br />
-              <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>onderbouwd met úw data.</span>
+              <span className="vui-accent vl-accent-laat" style={{ fontStyle: 'italic', color: '#1A6B45' }}>onderbouwd met úw data.</span>
             </h1>
 
             <p className="vui-binnen" style={{ ['--i' as string]: 2, fontSize: 18, lineHeight: 1.6, color: '#445249', maxWidth: 520, margin: '0 0 32px' }}>
