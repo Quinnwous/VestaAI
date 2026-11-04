@@ -800,3 +800,14 @@
 /* Typografie: koppen in evenwichtige regels, alinea's zonder weeswoord. */
 :where(h1, h2, h3) { text-wrap: balance; }
 :where(p, li) { text-wrap: pretty; }
+
+/* Voortgangsbalk tijdens contentgeneratie: zachte glans die meeloopt. */
+.vui-voortgang { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-voortgang::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation: vui-skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+}
