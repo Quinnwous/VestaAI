@@ -81,6 +81,15 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   en een "Deze woning"-paneel waarin bijgewerkte waarden oplichten; op de
   landing een isometrische wijk, een BAG-demo die zich typt en klikbare
   waardecorrecties.
+  Ronde 5-14 (4 nov): balken in de verkenners groeien in en schuiven mee,
+  schuivende tabstreep in de contentsuite, Switch/Checkbox/schuivers vloeiend
+  (vinkje tekent zich), focusgloed op invoervelden, FAQ op de landing klapt
+  vloeiend open, admin in dezelfde kaart-/tegelstijl, huisstijlcontrole
+  (geen groen-getinte grijzen, merkkleurige tekst via `--merk-tekst`, vaste
+  radiussen naar `--merk-radius-*`), waardebepaling-pdf met bandbalk,
+  brochure met contactkaart, contentsuite-pdf zonder groene lijn op de
+  omslag, OpenGraph-beeld met de 3D-woning, en de contentsuite-mail in de
+  huisstijl van het kantoor (informeel, zonder productnaam).
 
 ## 2. Startpagina (`/dashboard`)
 
