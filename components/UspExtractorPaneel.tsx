@@ -36,7 +36,8 @@ export function UspExtractorPaneel({ objectId, initieleUsps }: { objectId: strin
       </div>
       {fout && <p style={{ fontSize: 12, color: '#DC2626', margin: '4px 0 0' }}>{fout}</p>}
       {usps.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        // Gestaffeld: de USP's komen na elkaar binnen zodra de analyse klaar is.
+        <div className="vui-gestaffeld" style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {usps.map(u => (
             <span key={u} style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--merk-tekst)', background: 'var(--merk-zacht)', borderRadius: 'var(--merk-radius-pill, 9999px)', padding: '4px 10px' }}>
               {u}
