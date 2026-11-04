@@ -1,53 +1,59 @@
+import { AppPagina, Skeleton } from '@/components/ui'
+
+/**
+ * Laadstaat van het woningdossier in de vorm van de echte pagina
+ * (components/DossierHeader.tsx + ObjectWorkspace): kop-kaart met foto,
+ * adres, kenmerken en fasestepper links en drie tegels rechts, de tabbalk,
+ * en de waarderingstab (hero + referentietabel). Geen layoutsprong zodra het
+ * dossier er is; skeletons, geen spinner.
+ */
 export default function ObjectDetailLoading() {
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="h-3 w-24 bg-gray-200 rounded animate-pulse" />
-          <div className="h-5 w-24 bg-gray-100 rounded-full animate-pulse" />
-        </div>
-        <div className="h-6 w-72 bg-gray-200 rounded animate-pulse" />
-      </div>
-
-      {/* InvoerToggle skeleton */}
-      <div className="mb-6 rounded-xl border border-gray-100 bg-white px-5 py-3">
-        <div className="flex items-center justify-between">
-          <div className="h-4 w-32 bg-gray-200 rounded animate-pulse" />
-          <div className="h-4 w-4 bg-gray-100 rounded animate-pulse" />
-        </div>
-      </div>
-
-      {/* ResultTabs skeleton */}
-      <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-8">
-        {/* Tab bar */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="h-5 w-40 bg-gray-200 rounded animate-pulse" />
-          <div className="flex gap-3">
-            <div className="h-8 w-28 bg-gray-100 rounded-lg animate-pulse" />
-            <div className="h-8 w-24 bg-gray-100 rounded-lg animate-pulse" />
+    <AppPagina overgang={false}>
+      <div aria-busy="true" aria-label="Dossier wordt geladen">
+        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24, flexWrap: 'wrap', background: '#fff', border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-card-lg, 18px)', padding: 24, marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 18, flex: '1 1 380px', minWidth: 0 }}>
+            <Skeleton width={104} height={96} rounded={14} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <Skeleton width={70} height={11} style={{ marginBottom: 10 }} />
+              <Skeleton width="70%" height={28} style={{ marginBottom: 14 }} />
+              <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+                <Skeleton width={110} height={25} rounded={999} />
+                <Skeleton width={90} height={25} rounded={999} />
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <Skeleton width={100} height={28} rounded={999} />
+                <Skeleton width={90} height={28} rounded={999} />
+                <Skeleton width={80} height={28} rounded={999} />
+              </div>
+            </div>
+          </div>
+          <div style={{ flex: '0 1 500px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, alignContent: 'start' }}>
+            <Skeleton height={92} rounded={16} />
+            <Skeleton height={92} rounded={16} />
+            <Skeleton height={92} rounded={16} />
           </div>
         </div>
 
-        <div className="flex gap-1 border-b border-gray-100 mb-6">
-          {['Funda', 'Brochure', 'Instagram', 'LinkedIn', 'E-mail', 'Buurt'].map((label, i) => (
-            <div key={label} className={`px-4 py-2 text-sm ${i === 0 ? 'border-b-2 border-[var(--merk-rand)]' : ''}`}>
-              <div className="h-4 bg-gray-100 rounded animate-pulse" style={{ width: `${label.length * 8}px` }} />
+        <div style={{ display: 'flex', gap: 14, borderBottom: '1px solid #E6E9EC', margin: '24px 0 26px', paddingBottom: 12 }}>
+          <Skeleton width={90} height={16} />
+          <Skeleton width={110} height={16} />
+          <Skeleton width={130} height={16} />
+        </div>
+
+        <div className="vui-marktanalyse-grafieken">
+          <Skeleton height={200} rounded={18} />
+          <Skeleton height={200} rounded={18} />
+        </div>
+        <div style={{ marginTop: 12, background: '#fff', border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-card-lg, 18px)', padding: 18 }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '9px 0', opacity: 1 - i * 0.1 }}>
+              <Skeleton width={`${30 + (i % 3) * 8}%`} height={12} />
+              <Skeleton width={80} height={12} />
             </div>
           ))}
         </div>
-
-        {/* Content skeleton */}
-        <div className="space-y-3">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-4 bg-gray-100 rounded animate-pulse"
-              style={{ width: `${60 + Math.sin(i) * 30}%` }}
-            />
-          ))}
-        </div>
       </div>
-    </main>
+    </AppPagina>
   )
 }
