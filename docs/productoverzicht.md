@@ -75,6 +75,12 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   wachtscherm tijdens de contentgeneratie (geschatte voortgang op basis van de
   gemeten ± 100 s, nooit 100 % vóór "klaar"), en in de presentatiemodus
   schuiven de stappen in de leesrichting.
+  Ronde 3-4 (4 nov): ambient-achtergrond, scrollvoortgang onder de topbar,
+  trage zoom op foto's, sparklines die zich tekenen, ademende live-stip,
+  kaartpins die inlopen, in de intake een "uit het BAG"-label met oplichting
+  en een "Deze woning"-paneel waarin bijgewerkte waarden oplichten; op de
+  landing een isometrische wijk, een BAG-demo die zich typt en klikbare
+  waardecorrecties.
 
 ## 2. Startpagina (`/dashboard`)
 
