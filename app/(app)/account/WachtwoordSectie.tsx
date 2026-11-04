@@ -59,7 +59,7 @@ export function WachtwoordSectie() {
         >
           {status === 'saving' ? 'Wijzigen…' : 'Wachtwoord wijzigen'}
         </Button>
-        {status === 'saved' && <span style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Gewijzigd</span>}
+        {status === 'saved' && <span className="vui-wissel" style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Gewijzigd</span>}
         {status === 'error' && <span style={{ fontSize: 13, color: '#B42318' }}>{foutmelding}</span>}
       </div>
     </Card>
