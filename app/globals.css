@@ -942,7 +942,9 @@
    marker-container; hier beweegt alleen de svg erin. */
 .vui-kaartpin { transform-origin: 50% 100%; transition: transform var(--t) var(--ease); }
 .maplibregl-marker:hover .vui-kaartpin { transform: translateY(-3px) scale(1.06); }
+/* Het landen zit op de marker-container (die blijft bestaan), niet op de svg:
+   de lagen wisselen de svg bij hover via innerHTML, en dan zou elke hover het
+   landen opnieuw afspelen. Alleen opacity — MapLibre bezit de transform. */
 @media (prefers-reduced-motion: no-preference) {
-  .vui-kaartpin { animation: vui-pin-land 420ms var(--ease) backwards; }
+  .maplibregl-marker { animation: vui-fade-in 420ms var(--ease) backwards; }
 }
-@keyframes vui-pin-land { from { opacity: 0; transform: translateY(-10px) scale(.7); } }
