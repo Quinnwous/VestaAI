@@ -1,5 +1,6 @@
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
+import { SerifTitle } from '@/components/ui/PageHeader'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { HuisstijlForm } from '../HuisstijlForm'
@@ -32,9 +33,9 @@ export default async function AdminKantoorPage(props: { params: Promise<{ id: st
   const slug: string | null = (kantoor as Kantoor).slug ?? null
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
+    <main className="mx-auto max-w-3xl px-4 py-10 vui-binnen">
       <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600">← Alle kantoren</Link>
-      <h1 className="text-xl font-bold text-gray-900 mt-2 mb-8">{kantoor.name}</h1>
+      <SerifTitle size={30} style={{ margin: '10px 0 32px' }}>{kantoor.name}</SerifTitle>
 
       <section className="mb-12">
         <h2 className="text-sm font-semibold text-gray-700 mb-4">Huisstijl</h2>

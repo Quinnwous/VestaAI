@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import { SerifTitle } from '@/components/ui/PageHeader'
 import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/supabase'
 import { isPlatformAdmin } from '@/lib/admin'
 import { TransactieImportForm } from './TransactieImportForm'
@@ -37,9 +38,9 @@ export default async function AdminTransactiesPage() {
   const importHistorie = await haalImportHistorie(kantoorNaamPerId)
 
   return (
-    <main className="mx-auto max-w-3xl px-4 py-10">
+    <main className="mx-auto max-w-3xl px-4 py-10 vui-binnen">
       <Link href="/admin" className="text-xs text-gray-400 hover:text-gray-600">← Admin</Link>
-      <h1 className="text-xl font-bold text-gray-900 mt-2 mb-1">Transacties importeren</h1>
+      <SerifTitle accent="importeren" size={30} style={{ margin: '10px 0 6px' }}>Transacties</SerifTitle>
       <p className="text-xs text-gray-400 mb-8">Voedt waardering, marktinzichten en de verkoopkaart. Alleen &ldquo;eigen verkoop&rdquo;-rijen krijgen een vlaggetje op de kaart.</p>
 
       <div className="mb-8 rounded-xl border border-gray-200 overflow-hidden">
