@@ -870,3 +870,28 @@
   .vui-pin-ring { transform-box: fill-box; transform-origin: center; animation: vui-pin-ring 2.8s var(--ease) infinite; }
 }
 @keyframes vui-pin-ring { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(2.4); opacity: 0; } }
+
+/* Landing § Automatische woningdata (components/LandingPageClient.tsx):
+   adres typt zich, velden vullen zich na elkaar (InBeeld-trigger). */
+.vl-bag-typ { display: inline-block; white-space: nowrap; max-width: 100%; overflow: hidden; vertical-align: bottom; }
+.vl-bag[data-in-beeld='false'] .vl-bag-typ { clip-path: inset(0 100% 0 0); }
+.vl-bag[data-in-beeld='false'] .vl-bag-veld,
+.vl-bag[data-in-beeld='false'] .vl-bag-klaar { opacity: 0; }
+.vl-bag[data-in-beeld='true'] .vl-bag-typ { animation: vl-typ 1400ms steps(34, end) both; border-right: 2px solid #1A6B45; animation-name: vl-typ, vl-caret; animation-duration: 1400ms, 1400ms; animation-timing-function: steps(34, end), linear; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld { animation: vl-veld 520ms var(--ease) both; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(1) { animation-delay: 1500ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(2) { animation-delay: 1650ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-veld:nth-child(3) { animation-delay: 1800ms; }
+.vl-bag[data-in-beeld='true'] .vl-bag-klaar { animation: vui-rijs 520ms var(--ease) 2150ms both; }
+@keyframes vl-typ { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes vl-caret { 0%, 95% { border-right-color: #1A6B45; } 100% { border-right-color: transparent; } }
+@keyframes vl-veld {
+  from { opacity: 0; transform: translateY(8px) scale(.96); background: #fff; }
+  60% { background: #D5EEDF; }
+  to { opacity: 1; transform: none; background: #EAF5EE; }
+}
+.vl-correctie { font-family: inherit; cursor: pointer; transition: background var(--t) var(--ease), color var(--t) var(--ease), border-color var(--t) var(--ease), transform var(--t-hover) var(--ease); }
+.vl-correctie:hover { border-color: #1A6B45 !important; }
+.vl-correctie:active { transform: scale(.97); }
+.vl-staven[data-in-beeld='false'] .vl-staaf { transform: scaleY(0); }
+.vl-staven[data-in-beeld='true'] .vl-staaf { transform-origin: bottom; animation: vui-staaf 900ms var(--ease) var(--d, 0ms) both; }
