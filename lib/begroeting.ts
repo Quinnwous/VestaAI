@@ -63,3 +63,18 @@ export function contextregel({ wachtOpContent, inVerkoop, verkoopadviezen }: {
   }
   return 'Nog geen lopende dossiers'
 }
+
+/**
+ * Waar de contextregel in de startbanner naartoe linkt — dezelfde volgorde
+ * als `contextregel()`: wat er aandacht vraagt, opent gefilterd in de
+ * woningenlijst; zonder lopende dossiers naar "nieuwe woning".
+ */
+export function contextLink({ wachtOpContent, inVerkoop, verkoopadviezen }: {
+  wachtOpContent: number
+  inVerkoop: number
+  verkoopadviezen: number
+}): string {
+  if (wachtOpContent > 0 || inVerkoop > 0) return '/woningen?fase=in_verkoop'
+  if (verkoopadviezen > 0) return '/woningen?fase=verkoopadvies'
+  return '/object/new'
+}

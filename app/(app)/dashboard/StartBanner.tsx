@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { colors } from '@/components/ui/tokens'
 import { Kantel } from '@/components/ui/Kantel'
 import { HuisIllustratie } from '@/components/ui/HuisIllustratie'
@@ -35,6 +36,7 @@ export function StartBanner({
   datum,
   begroeting,
   context,
+  contextHref,
 }: {
   /** Optionele kantoorfoto; leeg = het merkverloop uit het prototype. */
   url: string | null
@@ -44,6 +46,8 @@ export function StartBanner({
   datum: string
   begroeting: string
   context: string
+  /** Waar de contextregel heen linkt (lib/begroeting.ts `contextLink`). */
+  contextHref?: string
 }) {
   const voornaam = naam?.trim().split(/\s+/)[0] ?? null
 
@@ -115,7 +119,12 @@ export function StartBanner({
           {begroeting}{voornaam ? `, ${voornaam}` : ''}
         </h1>
         <p style={{ margin: '8px 0 0', fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,.86)' }}>
-          {context}
+          {contextHref ? (
+            // De contextregel is een snelkoppeling naar wat er aandacht vraagt.
+            <Link href={contextHref} className="vui-banner-link">
+              {context} <span aria-hidden className="vui-banner-pijl">→</span>
+            </Link>
+          ) : context}
         </p>
       </div>
 

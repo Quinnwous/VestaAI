@@ -14,7 +14,7 @@ import {
 import { plaatsVarianten } from '@/lib/plaatsNormalisatie'
 import { haalEigenVerkopen, marktanalyseSamenvatting, dataTotEnMet } from '@/lib/transactiesQuery'
 import { KantoorInstellingenSchema } from '@/lib/schemas'
-import { begroetingVoor, datumVoor, contextregel } from '@/lib/begroeting'
+import { begroetingVoor, datumVoor, contextregel, contextLink } from '@/lib/begroeting'
 import { haalRecentBekekenOp, dedupliceerRecentBekeken, relatieveTijdVoorGebruik } from '@/lib/gebruik'
 import { StartBanner } from './StartBanner'
 import { Kerncijfers } from './Kerncijfers'
@@ -142,6 +142,11 @@ export default async function DashboardPage() {
         datum={datumVoor(nu)}
         begroeting={begroetingVoor(nu)}
         context={contextregel({
+          wachtOpContent: wachtOpContent,
+          inVerkoop: fases.inVerkoop,
+          verkoopadviezen: fases.verkoopadvies,
+        })}
+        contextHref={contextLink({
           wachtOpContent: wachtOpContent,
           inVerkoop: fases.inVerkoop,
           verkoopadviezen: fases.verkoopadvies,
