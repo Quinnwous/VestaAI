@@ -248,9 +248,10 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             style={{
               flex: '1 0 auto', padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: s.id < stap ? 'pointer' : 'default',
               borderBottom: `3px solid ${s.id === stap ? 'var(--merk)' : s.id < stap ? 'var(--merk-rand)' : '#E6E9EC'}`,
+              transition: 'border-color 300ms cubic-bezier(.2,.8,.2,1)',
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#2C3238' : '#5C6470', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, transition: 'color 300ms', color: s.id === stap ? 'var(--merk-tekst)' : s.id < stap ? '#2C3238' : '#5C6470', whiteSpace: 'nowrap' }}>
               {s.id}. {s.label}
               {'kanLater' in s && s.kanLater && (
                 <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#5C6470', textTransform: 'none' }}>

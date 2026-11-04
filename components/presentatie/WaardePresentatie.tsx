@@ -65,6 +65,14 @@ function useTweenGetal(waarde: number | null, duurMs = 550): number | null {
 const PODIUM_CSS = `
 @keyframes presentatieFadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 .presentatie-stap-inhoud { animation: presentatieFadeIn 340ms cubic-bezier(.2,.8,.2,1); }
+@keyframes presentatieVooruit { from { opacity: 0; transform: translateX(48px); } to { opacity: 1; transform: none; } }
+@keyframes presentatieTerug { from { opacity: 0; transform: translateX(-48px); } to { opacity: 1; transform: none; } }
+.presentatie-stap-inhoud[data-richting='vooruit'] { animation: presentatieVooruit 420ms cubic-bezier(.2,.8,.2,1); }
+.presentatie-stap-inhoud[data-richting='terug'] { animation: presentatieTerug 420ms cubic-bezier(.2,.8,.2,1); }
+.presentatie-podium-vlek { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .presentatie-podium-vlek { animation: vui-bol 18s ease-in-out infinite alternate; }
+}
 @media (prefers-reduced-motion: reduce) { .presentatie-stap-inhoud { animation: none !important; } }
 @media (max-width: 720px) {
   .presentatie-waarde-getal { font-size: 46px !important; }
@@ -99,8 +107,12 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
   const laatsteIndex = stappen.length - 1
   const huidigeStap = stappen[Math.min(index, laatsteIndex)]
 
-  const vorige = useCallback(() => setIndex((i) => Math.max(0, i - 1)), [])
-  const volgende = useCallback(() => setIndex((i) => Math.min(laatsteIndex, i + 1)), [laatsteIndex])
+  // Richting van de laatste stap: de nieuwe inhoud schuift van rechts in bij
+  // "volgende" en van links bij "vorige" (zoals een pagina omslaan).
+  const [richting, setRichting] = useState<'vooruit' | 'terug'>('vooruit')
+  const vorige = useCallback(() => { setRichting('terug'); setIndex((i) => Math.max(0, i - 1)) }, [])
+  const volgende = useCallback(() => { setRichting('vooruit'); setIndex((i) => Math.min(laatsteIndex, i + 1)) }, [laatsteIndex])
+  const gaNaar = useCallback((i: number) => { setRichting(i < index ? 'terug' : 'vooruit'); setIndex(i) }, [index])
   const sluiten = useCallback(() => router.push(`/object/${objectId}`), [router, objectId])
 
   // Toetsenbordnavigatie — Sheet/Modal-patroon (Escape sluit), aangevuld met
@@ -163,6 +175,11 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
       }}
     >
       <style>{PODIUM_CSS}</style>
+      {/* Diepte op het podium: twee trage lichtvlekken in de merkkleur. */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: -1, overflow: 'hidden', pointerEvents: 'none' }}>
+        <span className="presentatie-podium-vlek" style={{ width: '48vw', height: '48vw', top: '-22vw', left: '-12vw', background: 'rgba(var(--merk-rgb), .14)' }} />
+        <span className="presentatie-podium-vlek" style={{ width: '40vw', height: '40vw', bottom: '-20vw', right: '-10vw', background: 'rgba(255,255,255,.9)', animationDelay: '-8s' }} />
+      </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '20px 24px 0', flexShrink: 0 }}>
         <RondeKnop onClick={toggleVolledigScherm} label={volledigScherm ? 'Scherm herstellen' : 'Volledig scherm'}>
@@ -174,7 +191,7 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
       </div>
 
       <div style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px 28px', overflow: 'auto' }}>
-        <div key={huidigeStap} className="presentatie-stap-inhoud" style={{ width: '100%', maxWidth: 880 }}>
+        <div key={huidigeStap} className="presentatie-stap-inhoud" data-richting={richting} style={{ width: '100%', maxWidth: 880 }}>
           {huidigeStap === 'woning' && <StapWoning address={address} invoer={invoer} fotoUrl={fotoUrl} kantoor={kantoor} />}
           {huidigeStap === 'waarde' && <StapWaarde uitkomst={uitkomst} />}
           {huidigeStap === 'kaart' && subject && (
@@ -186,7 +203,7 @@ export function WaardePresentatie({ objectId, address, invoer, fotoUrl, uitkomst
         </div>
       </div>
 
-      <PresentatieVoortgang stappen={stappen} index={index} onGaNaar={setIndex} onVorige={vorige} onVolgende={volgende} />
+      <PresentatieVoortgang stappen={stappen} index={index} onGaNaar={gaNaar} onVorige={vorige} onVolgende={volgende} />
     </div>
   )
 }
