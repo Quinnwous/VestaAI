@@ -600,7 +600,8 @@ function Ranglijst({ rijen, sort, onKies }: { rijen: RanglijstRij[]; sort: Concu
           tabIndex={0}
           onClick={() => onKies(r.kantoor)}
           onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onKies(r.kantoor) } }}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', alignItems: 'center', gap: 8, padding: '7px 0', cursor: 'pointer' }}
+          className="vui-rijhover vui-tabelrij"
+          style={{ display: 'grid', gridTemplateColumns: '1fr 2fr auto', alignItems: 'center', gap: 8, padding: '7px 8px', margin: '0 -8px', borderRadius: 'var(--merk-radius-sm, 8px)', cursor: 'pointer' }}
         >
           <span style={{ fontSize: 12.5, fontWeight: r.kantoor === ONS ? 800 : 500, color: r.kantoor === ONS ? 'var(--merk-diep)' : colors.bodyStrong, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {r.kantoor}
