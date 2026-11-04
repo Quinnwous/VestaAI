@@ -122,6 +122,13 @@ function makeStyles(kleur: string) {
     heroLabel: { fontSize: 8, color: 'rgba(255,255,255,0.8)', marginBottom: 2 },
     heroWaarde: { fontSize: 24, fontFamily: 'Helvetica-Bold', color: '#ffffff' },
     heroBand: { fontSize: 8.5, color: 'rgba(255,255,255,0.9)', marginTop: 4 },
+    // Bandbreedte als balk met een markering op de puntwaarde (zelfde beeld als
+    // de waarde-hero in de app, components/WaardebepalingPaneel.tsx).
+    bandBalk: { position: 'relative', height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.3)', marginTop: 9 },
+    bandVulling: { position: 'absolute', left: 0, top: 0, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.75)' },
+    bandMarker: { position: 'absolute', top: -3, width: 2.5, height: 10, borderRadius: 1, backgroundColor: '#ffffff' },
+    bandLabels: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+    bandLabel: { fontSize: 7, color: 'rgba(255,255,255,0.8)' },
     badgesBlok: { flex: 1, justifyContent: 'center', gap: 4 },
     badgeRij: { flexDirection: 'row', justifyContent: 'space-between', fontSize: 8.5, borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB', paddingBottom: 3 },
     badgeLabel: { color: '#6B7280' },
@@ -230,6 +237,10 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
 
   const straalLabel = uitkomst.straal_m == null ? '—' : uitkomst.straal_m >= 1000 ? `${uitkomst.straal_m / 1000} km` : `${uitkomst.straal_m} m`
   const indexBasisLabel = uitkomst.index_basis === 'eigen' ? 'eigen data' : uitkomst.index_basis === 'cbs' ? 'CBS' : 'geen correctie'
+  // Positie van de puntwaarde binnen de bandbreedte (0-100 %), voor de balk in de hero.
+  const bandPct = uitkomst.waarde != null && uitkomst.laag != null && uitkomst.hoog != null && uitkomst.hoog > uitkomst.laag
+    ? Math.max(0, Math.min(100, ((uitkomst.waarde - uitkomst.laag) / (uitkomst.hoog - uitkomst.laag)) * 100))
+    : null
 
   return (
     <Document title={`Waardebepaling — ${address}`} author={kantoor.naam} creator={kantoor.naam}>
@@ -255,6 +266,18 @@ export function WaardebepalingPdfTemplate({ address, input, uitkomst, correctie,
             <Text style={s.heroLabel}>Indicatieve waarde</Text>
             <Text style={s.heroWaarde}>{euro(uitkomst.waarde)}</Text>
             <Text style={s.heroBand}>Bandbreedte {euro(uitkomst.laag)} – {euro(uitkomst.hoog)}</Text>
+            {bandPct != null && (
+              <>
+                <View style={s.bandBalk}>
+                  <View style={[s.bandVulling, { width: `${bandPct}%` }]} />
+                  <View style={[s.bandMarker, { left: `${bandPct}%` }]} />
+                </View>
+                <View style={s.bandLabels}>
+                  <Text style={s.bandLabel}>laag</Text>
+                  <Text style={s.bandLabel}>hoog</Text>
+                </View>
+              </>
+            )}
           </View>
           <View style={s.badgesBlok}>
             <View style={s.badgeRij}><Text style={s.badgeLabel}>Referenties</Text><Text style={s.badgeWaarde}>n = {uitkomst.n}</Text></View>

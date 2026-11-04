@@ -111,6 +111,14 @@ function makeStyles(kleur: string, vorm: 'zacht' | 'strak') {
     slotTekst: { fontSize: 10.5, lineHeight: 1.7, color: '#374151' },
     slotContactBlok: { marginTop: 16, borderTopWidth: 1, borderTopColor: '#E6E9EC', paddingTop: 14 },
     slotContactRegel: { fontSize: 10, color: '#374151', marginTop: 3 },
+    // Contactkaart in de kantoorkleur onderaan de slotpagina — ook naast een
+    // eigen slottekst, zodat de brochure altijd eindigt met hoe je het kantoor bereikt.
+    contactKaart: { marginTop: 22, backgroundColor: kleur, borderRadius: cardRadius, paddingVertical: 18, paddingHorizontal: 20 },
+    contactKaartTitel: { fontSize: 13, fontFamily: 'Helvetica-Bold', color: '#ffffff', marginBottom: 2 },
+    contactKaartSub: { fontSize: 9, color: 'rgba(255,255,255,0.82)', marginBottom: 10 },
+    contactKaartRij: { flexDirection: 'row', marginTop: 3 },
+    contactKaartLabel: { width: 62, fontSize: 9, color: 'rgba(255,255,255,0.75)' },
+    contactKaartWaarde: { fontSize: 10, color: '#ffffff', fontFamily: 'Helvetica-Bold' },
     footer: {
       position: 'absolute', bottom: 24, left: 36, right: 36,
       flexDirection: 'row', justifyContent: 'space-between', fontSize: 7.5, color: '#98A0A6',
@@ -214,9 +222,20 @@ export function BrochurePdfTemplate({ address, input, introTekst, fotos, kantoor
         <Header s={s} kantoor={kantoor} address={address} />
         <Text style={s.sectieTitel}>{kantoor.naam}</Text>
         {slotTekst ? (
-          <View style={s.slotBlok}>
-            <Text style={s.slotTekst}>{slotTekst}</Text>
-          </View>
+          <>
+            <View style={s.slotBlok}>
+              <Text style={s.slotTekst}>{slotTekst}</Text>
+            </View>
+            {(kantoor.telefoon || kantoor.email || kantoor.website) && (
+              <View style={s.contactKaart}>
+                <Text style={s.contactKaartTitel}>{kantoor.naam}</Text>
+                <Text style={s.contactKaartSub}>Vragen over {address}? Wij helpen u graag.</Text>
+                {kantoor.telefoon && <View style={s.contactKaartRij}><Text style={s.contactKaartLabel}>Telefoon</Text><Text style={s.contactKaartWaarde}>{kantoor.telefoon}</Text></View>}
+                {kantoor.email && <View style={s.contactKaartRij}><Text style={s.contactKaartLabel}>E-mail</Text><Text style={s.contactKaartWaarde}>{kantoor.email}</Text></View>}
+                {kantoor.website && <View style={s.contactKaartRij}><Text style={s.contactKaartLabel}>Website</Text><Text style={s.contactKaartWaarde}>{kantoor.website.replace(/^https?:\/\//, '')}</Text></View>}
+              </View>
+            )}
+          </>
         ) : (
           <View style={s.slotContactBlok}>
             <Text style={s.slotContactRegel}>Interesse in deze woning? Neem contact op met {kantoor.naam}.</Text>
