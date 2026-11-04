@@ -936,3 +936,13 @@
 }
 .vui-dossierfoto img { transition: scale 600ms var(--ease); }
 .vui-dossierfoto:hover img { scale: 1.06; }
+
+/* Kaartpins (components/kaart/Pin.tsx): landen zacht op de kaart en komen
+   iets omhoog bij aanwijzen. MapLibre zet zijn eigen transform op de
+   marker-container; hier beweegt alleen de svg erin. */
+.vui-kaartpin { transform-origin: 50% 100%; transition: transform var(--t) var(--ease); }
+.maplibregl-marker:hover .vui-kaartpin { transform: translateY(-3px) scale(1.06); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-kaartpin { animation: vui-pin-land 420ms var(--ease) backwards; }
+}
+@keyframes vui-pin-land { from { opacity: 0; transform: translateY(-10px) scale(.7); } }
