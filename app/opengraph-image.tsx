@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { HuisIllustratie } from '@/components/ui/HuisIllustratie'
 
 export const alt = 'VestaAI — platform voor makelaars'
 export const size = { width: 1200, height: 630 }
@@ -92,11 +93,19 @@ export default function OgImage() {
           style={{
             fontSize: 24,
             color: '#6b7280',
-            maxWidth: 760,
+            maxWidth: 600,
             lineHeight: 1.5,
           }}
         >
           Woningwaardering, marktinzicht en een contentsuite — in de huisstijl van uw kantoor.
+        </div>
+
+        {/* Beeldmoment rechts: de 3D-woning op een zachte groene gloed */}
+        <div style={{ position: 'absolute', right: 40, top: 70, width: 500, height: 500, borderRadius: 500, background: 'radial-gradient(circle, rgba(26,107,69,.11) 0%, rgba(26,107,69,0) 68%)', display: 'flex' }} />
+        {/* De isometrische woning uit de app, in vaste VestaAI-kleuren (Satori
+            kent geen CSS-variabelen); Satori rendert de inline-svg zelf. */}
+        <div style={{ position: 'absolute', right: 70, top: 110, display: 'flex' }}>
+          <HuisIllustratie variant="vestaVast" breedte={440} />
         </div>
 
         {/* Bottom badges */}
