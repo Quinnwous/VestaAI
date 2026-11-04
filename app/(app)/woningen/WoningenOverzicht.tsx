@@ -162,7 +162,7 @@ export function WoningenOverzicht({
       id: 'address',
       header: 'Adres',
       cell: ({ row }) => (
-        <Link href={`/object/${row.original.id}`} style={{ color: colors.text, fontWeight: 700, textDecoration: 'none' }}>
+        <Link href={`/object/${row.original.id}`} onClick={e => e.stopPropagation()} style={{ color: colors.text, fontWeight: 700, textDecoration: 'none' }}>
           {row.original.address}
         </Link>
       ),
@@ -322,6 +322,8 @@ export function WoningenOverzicht({
             paginatie={paginatie}
             minBreedte={720}
             stickyTop={0}
+            // De hele rij opent het dossier (niet alleen het adres).
+            onRijKlik={(r) => router.push(`/object/${r.id}`)}
           />
         </div>
       ) : (
