@@ -781,3 +781,18 @@
   .vui-staaf-balk { transform-origin: bottom center; animation: vui-staaf 800ms var(--ease) backwards; }
   .vui-staaf-balk { animation-delay: 120ms; }
 }
+
+/* Segmented control (components/ui/SegmentedToggle.tsx): witte thumb die
+   naar de gekozen optie schuift. */
+.vui-seg[data-gemeten='true'] > button { background: transparent !important; box-shadow: none !important; }
+.vui-seg > button:hover { color: var(--merk-tekst) !important; }
+.vui-seg-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: var(--merk-radius-pill, 9999px);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(20,24,27,.14), 0 0 0 .5px rgba(20,24,27,.04);
+  transition: transform 260ms var(--ease), width 260ms var(--ease);
+}
+@media (prefers-reduced-motion: reduce) { .vui-seg-thumb { transition: none; } }
