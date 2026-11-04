@@ -914,3 +914,4 @@
 .vui-recentrij-chev { transition: opacity var(--t-hover), transform var(--t) var(--ease); }
 .vui-recentrij:hover .vui-recentrij-chev { transform: translateX(3px); }
 .vui-datatable-rij td { transition: background var(--t-hover); }
+.vui-refrij td { transition: background var(--t-hover); } .vui-refrij:hover td { background: var(--merk-zacht); }

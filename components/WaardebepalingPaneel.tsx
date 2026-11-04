@@ -685,7 +685,7 @@ export function WaardebepalingPaneel({
                     {tabelRijen.map((r, i) => {
                       const uitgesloten = uitgeslotenIds.has(r.id)
                       return (
-                        <tr key={r.id} style={{ borderTop: `1px solid ${colors.borderSoft}`, opacity: uitgesloten ? 0.48 : 1 }}>
+                        <tr key={r.id} className="vui-tabelrij vui-refrij" style={{ borderTop: `1px solid ${colors.borderSoft}`, opacity: uitgesloten ? 0.48 : 1, transition: "opacity 220ms cubic-bezier(.2,.8,.2,1)" }}>
                           <td style={{ padding: '10px 8px 10px 0', textAlign: 'right', color: colors.body }}>{i + 1}</td>
                           <td style={{ padding: '10px 8px 10px 0' }}>
                             <span style={{ fontWeight: 700, color: colors.text, textDecoration: uitgesloten ? 'line-through' : 'none' }}>{r.adres}</span>
