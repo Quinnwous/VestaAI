@@ -28,6 +28,8 @@ gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
 | SegmentedToggle | Naar de kit-vorm (grijze baan, witte schuivende thumb, tekst in `--merk-tekst`) i.p.v. een blauw gevulde knop — README § 1.6. Raakt alle 12 plekken in één keer | Opus |
 | Wachtscherm contentgeneratie | Tijdgebaseerde voortgangsbalk (1 − e^(−t/55 s), plafond 92 %) met "duurt meestal ± 1½ minuut": eerlijk over dat het een schatting is, en hij springt nooit vol vóór de status echt klaar is. `Date.now()` niet meer in de eerste render (hydratievalkuil) | Opus |
 | Kantoorpagina | Van losse Tailwind-blokken naar vier kaarten met kaartkop (zelfde opbouw als de verkenners); kleurstalen tonen de live `--merk*`-waarden | Opus |
+| Ronde 3: meer beweging, rustig (4 nov) | Op verzoek van Quinn ("veel bewegende onderdelen maar smooth en rustig"): ambient-achtergrond, scrollvoortgang, Ken Burns op foto's, tekenende sparklines, pinringen, markeerstreep onder accentwoorden, landing-demo's die zich afspelen bij in beeld komen (BAG typt, correcties klikbaar met meetellende waarde, staven groeien), kaartpins die inloopen. Alles langzaam (≥ 400 ms, doorlopend ≥ 20 s) en uit onder reduced motion | Opus |
+| Hero-tegel startpagina blijft | Quinn liet de keuze aan Claude: de blauwe hero-tegel onder de blauwe banner blijft — het prototype doet het ook, en de tegel is het enige getal dat er op dat moment toe doet. De banner heeft bij i4 een foto rechts, dus er staan geen twee gelijke blauwe vlakken | Opus |
 
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 
