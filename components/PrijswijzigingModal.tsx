@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import type { PrijswijzigingOutput } from '@/lib/schemas'
 import { TabContent } from './TabContent'
+import { SegmentedToggle } from '@/components/ui/SegmentedToggle'
 
 interface Props {
   objectId: string
@@ -61,15 +62,17 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setOpen(false)} />
-      <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 max-h-[90vh] overflow-y-auto">
+    // Zelfde gedrag en beweging als components/ui/Modal.tsx: sluier dimt zonder
+    // blur (norm kit.css), venster groeit zacht op, Escape sluit.
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4" onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }}>
+      <div className="absolute inset-0 bg-black/40 vui-modal-sluier" onClick={() => setOpen(false)} />
+      <div role="dialog" aria-modal="true" aria-labelledby="prijswijziging-titel" className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 max-h-[90vh] overflow-y-auto vui-modal">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-semibold text-gray-900">Prijswijziging / Verkoop</h2>
+            <h2 id="prijswijziging-titel" className="text-base font-semibold text-gray-900">Prijswijziging / Verkoop</h2>
             <p className="text-xs text-gray-500 mt-0.5">{adres}</p>
           </div>
-          <button onClick={() => setOpen(false)} className="text-gray-300 hover:text-gray-500">
+          <button onClick={() => setOpen(false)} aria-label="Sluiten" autoFocus className="text-gray-500 hover:text-gray-700 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -81,21 +84,11 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
             {/* Situatie */}
             <div>
               <p className="text-xs font-medium text-gray-700 mb-2">Situatie</p>
-              <div className="flex gap-2">
-                {(['prijsreductie', 'verkocht'] as const).map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setSituatie(s)}
-                    className={`flex-1 py-2 px-3 text-sm font-medium rounded-lg border transition-colors ${
-                      situatie === s
-                        ? 'bg-[var(--merk)] text-[var(--merk-op)] border-[var(--merk)]'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                    }`}
-                  >
-                    {s === 'prijsreductie' ? 'Prijsreductie' : 'Verkocht'}
-                  </button>
-                ))}
-              </div>
+              <SegmentedToggle
+                value={situatie}
+                onChange={setSituatie}
+                options={[{ value: 'prijsreductie', label: 'Prijsreductie' }, { value: 'verkocht', label: 'Verkocht' }]}
+              />
             </div>
 
             {/* Prijs */}
@@ -124,7 +117,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
             <button
               onClick={handleGenereer}
               disabled={status === 'loading'}
-              className="w-full rounded-lg bg-[var(--merk)] py-2.5 text-sm font-semibold text-[var(--merk-op)] hover:bg-[var(--merk-hover)] disabled:opacity-50 transition-colors"
+              className="w-full rounded-lg bg-[var(--merk)] py-2.5 text-sm font-semibold text-[var(--merk-op)] hover:bg-[var(--merk-hover)] disabled:opacity-50 transition-colors vui-btn vui-knop-glans"
             >
               {status === 'loading' ? 'Genereren...' : 'Genereer content →'}
             </button>
@@ -133,26 +126,19 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
 
         {status === 'done' && output && (
           <div className="space-y-4">
-            <div className="flex gap-1.5 overflow-x-auto">
-              {([
-                { key: 'instagram_post' as const, label: 'Instagram' },
-                { key: 'linkedin_post' as const, label: 'LinkedIn' },
-                { key: 'email_geinteresseerden' as const, label: 'E-mail' },
-              ]).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => setActieveTab(key)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border whitespace-nowrap transition-colors ${
-                    actieveTab === key
-                      ? 'bg-[var(--merk)] text-[var(--merk-op)] border-[var(--merk)]'
-                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
+            <SegmentedToggle
+              size="sm"
+              value={actieveTab}
+              onChange={setActieveTab}
+              options={[
+                { value: 'instagram_post', label: 'Instagram' },
+                { value: 'linkedin_post', label: 'LinkedIn' },
+                { value: 'email_geinteresseerden', label: 'E-mail' },
+              ]}
+            />
+            <div key={actieveTab} className="vui-tabpaneel">
+              <TabContent content={output[actieveTab]} />
             </div>
-            <TabContent content={output[actieveTab]} />
             <button
               onClick={() => { setStatus('idle'); setOutput(null) }}
               className="text-xs text-gray-500 hover:text-gray-600 underline"
