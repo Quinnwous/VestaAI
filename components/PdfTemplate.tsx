@@ -58,9 +58,14 @@ function makeStyles(kleur: string) {
     },
     coverFooter: {
       marginTop: 40,
-      paddingTop: 20,
-      borderTopWidth: 1,
-      borderTopColor: 'rgba(255,255,255,0.2)',
+    },
+    // Scheidingslijn als eigen View met opacity: een rgba-randkleur rendert
+    // react-pdf niet betrouwbaar (kwam als groene lijn uit de pdf).
+    coverFooterLijn: {
+      height: 1,
+      backgroundColor: '#ffffff',
+      opacity: 0.25,
+      marginBottom: 20,
     },
     coverFooterText: {
       fontSize: 8,
@@ -165,7 +170,7 @@ const ALLE_SECTIES: { badge: string; titel: string; key: keyof ContentOutput; op
 ]
 
 export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProps) {
-  const kleur = kantoor.huisstijl_json?.primaire_kleur ?? '#1d4ed8'
+  const kleur = kantoor.huisstijl_json?.primaire_kleur ?? '#1A6B45'
   const s = makeStyles(kleur)
   const datum = new Date().toLocaleDateString('nl-NL', {
     day: 'numeric', month: 'long', year: 'numeric',
@@ -187,10 +192,11 @@ export function PdfTemplate({ address, output, kantoor, fotos }: PdfTemplateProp
           <View style={s.coverSpacer} />
 
           <Text style={s.coverTitle}>{address}</Text>
-          <Text style={s.coverSubtitle}>Content-suite · {datum}</Text>
+          <Text style={s.coverSubtitle}>Contentsuite · {datum}</Text>
 
           <View style={s.coverFooter}>
-            <Text style={s.coverFooterText}>Gegenereerd met dit platform</Text>
+            <View style={s.coverFooterLijn} />
+            <Text style={s.coverFooterText}>Opgesteld door {kantoor.name}</Text>
           </View>
         </View>
       </Page>
