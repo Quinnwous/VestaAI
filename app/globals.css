@@ -860,10 +860,13 @@
 
 /* Sparklines tekenen zich bij het verschijnen. */
 @media (prefers-reduced-motion: no-preference) {
-  .vui-spark-lijn { stroke-dasharray: 1; animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
+  /* clip-path i.p.v. stroke-dasharray: met vector-effect non-scaling-stroke
+     rekent de browser de streepjes in schermpixels, dan wordt de lijn een
+     stippellijn. */
+  .vui-spark-lijn { animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
   .vui-spark-vlak { animation: vui-fade-in 900ms var(--ease) 600ms backwards; }
 }
-@keyframes vui-spark-teken { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes vui-spark-teken { from { clip-path: inset(-4px 100% -4px 0); } to { clip-path: inset(-4px 0 -4px 0); } }
 
 /* Pins in de illustraties: een zachte ring die uitdijt (locatie "leeft"). */
 @media (prefers-reduced-motion: no-preference) {

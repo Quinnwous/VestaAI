@@ -72,8 +72,8 @@ function Sparkline({ waarden, kleur }: { waarden: (number | null)[]; kleur: stri
   return (
     <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true" style={{ position: 'absolute', left: 0, right: 0, bottom: 0, width: '100%', height: 32 }}>
       <path className="vui-spark-vlak" d={vlak} fill={kleur} opacity={0.1} />
-      {/* pathLength=1: de lijn "tekent" zich in CSS van links naar rechts. */}
-      <path className="vui-spark-lijn" d={d} pathLength={1} fill="none" stroke={kleur} strokeWidth={1.6} opacity={0.65} vectorEffect="non-scaling-stroke" />
+      {/* De lijn "tekent" zich in CSS van links naar rechts (.vui-spark-lijn). */}
+      <path className="vui-spark-lijn" d={d} fill="none" stroke={kleur} strokeWidth={1.6} opacity={0.65} vectorEffect="non-scaling-stroke" />
     </svg>
   )
 }
