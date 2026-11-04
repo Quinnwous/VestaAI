@@ -119,7 +119,7 @@ export function WaardebepalingPdfButton({ objectId }: Props) {
       </Popover>
 
       {fout && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: radius.sm, padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: `0 8px 20px ${colors.border}` }}>
+        <div className="vui-menu-uitklap" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: radius.sm, padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: `0 8px 20px ${colors.border}` }}>
           {fout}
         </div>
       )}

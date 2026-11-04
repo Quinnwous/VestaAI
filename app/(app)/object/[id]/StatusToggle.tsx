@@ -40,6 +40,9 @@ export function StatusToggle({ objectId, initialStatus }: Props) {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(v => !v)}
+        onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }}
+        aria-haspopup="menu"
+        aria-expanded={open}
         disabled={isPending}
         className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all ${config.kleur} disabled:opacity-60`}
       >
@@ -53,11 +56,13 @@ export function StatusToggle({ objectId, initialStatus }: Props) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 z-20 w-44 rounded-xl border border-gray-200 bg-white shadow-lg py-1 text-xs overflow-hidden">
+          <div role="menu" onKeyDown={e => { if (e.key === 'Escape') setOpen(false) }} className="absolute left-0 top-full mt-1 z-20 w-44 rounded-xl border border-gray-200 bg-white shadow-lg py-1 text-xs overflow-hidden vui-menu-uitklap" style={{ transformOrigin: 'top left' }}>
             {(Object.keys(STATUS_CONFIG) as ObjectStatus[]).map(s => (
               <button
                 key={s}
                 onClick={() => handleKies(s)}
+                role="menuitemradio"
+                aria-checked={s === status}
                 className={`w-full text-left px-3 py-2 flex items-center gap-2 transition-colors ${
                   s === status ? 'bg-gray-50 font-semibold' : 'hover:bg-gray-50'
                 }`}
