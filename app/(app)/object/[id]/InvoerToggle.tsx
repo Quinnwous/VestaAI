@@ -41,7 +41,8 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
     <div className="mb-6">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-600 transition-colors"
+        aria-expanded={open}
+        className="flex items-center gap-2 text-xs text-gray-500 hover:text-gray-700 transition-colors"
       >
         <svg
           className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-90' : ''}`}
@@ -54,12 +55,12 @@ export function InvoerToggle({ invoer }: { invoer: PropertyInput }) {
           <span className="text-xs bg-[var(--merk-zacht)] text-[var(--merk-tekst)] border border-[var(--merk-rand)] rounded-full px-1.5 py-0.5 leading-none">EN</span>
         )}
         {invoer.open_huis_datum && (
-          <span className="text-xs bg-amber-50 text-amber-600 border border-amber-200 rounded-full px-1.5 py-0.5 leading-none">Open huis {invoer.open_huis_datum}</span>
+          <span className="text-xs bg-amber-50 text-amber-800 border border-amber-200 rounded-full px-1.5 py-0.5 leading-none">Open huis {invoer.open_huis_datum}</span>
         )}
       </button>
 
       {open && (
-        <div className="mt-3 rounded-xl bg-gray-50 border border-gray-100 px-5 py-4">
+        <div className="mt-3 rounded-xl bg-gray-50 border border-gray-100 px-5 py-4 vui-binnen-zacht">
           <dl className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-3">
             {HOOFD_VELDEN.map(key => (
               <div key={key}>
