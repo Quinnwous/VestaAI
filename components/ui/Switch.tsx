@@ -27,8 +27,9 @@ export function Switch({
         borderRadius: 'var(--merk-radius-pill, 9999px)',
         border: 'none',
         cursor: disabled ? 'not-allowed' : 'pointer',
-        background: checked ? colors.primary : '#D5E0DA',
-        transition: 'background .18s',
+        // Neutraal grijs uit (geen groene ondertoon achter de login).
+        background: checked ? colors.primary : '#D5D9DE',
+        transition: 'background 220ms cubic-bezier(.2,.8,.2,1)',
         flexShrink: 0,
         opacity: disabled ? 0.6 : 1,
         padding: 0,
@@ -44,8 +45,9 @@ export function Switch({
           borderRadius: '50%',
           background: '#fff',
           boxShadow: '0 1px 3px rgba(20,24,27,.22)',
-          transition: 'left .18s',
+          transition: 'left 220ms cubic-bezier(.2,.8,.2,1), width 160ms cubic-bezier(.2,.8,.2,1)',
         }}
+        className="vui-switch-knop"
       />
     </button>
   )

@@ -56,11 +56,13 @@ export function Checkbox({
         style={{
           width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${checked || indeterminate ? 'var(--merk)' : colors.borderStrong}`,
           background: checked || indeterminate ? 'var(--merk)' : colors.surface, display: 'grid', placeItems: 'center', flexShrink: 0,
+          transition: 'background 160ms, border-color 160ms',
         }}
       >
         {(checked || indeterminate) && (
           <svg viewBox="0 0 12 12" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" width={11} height={11}>
-            {indeterminate && !checked ? <path d="M3 6h6" /> : <path d="m2.5 6.5 2.5 2.5 4.5-5" />}
+            {/* Het vinkje "tekent" zich bij aanvinken (globals.css .vui-vinkje). */}
+            {indeterminate && !checked ? <path className="vui-vinkje" pathLength={1} d="M3 6h6" /> : <path className="vui-vinkje" pathLength={1} d="m2.5 6.5 2.5 2.5 4.5-5" />}
           </svg>
         )}
       </span>
