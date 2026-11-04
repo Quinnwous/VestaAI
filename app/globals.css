@@ -1046,3 +1046,9 @@ button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
 @keyframes vui-bericht { from { opacity: 0; transform: translate(-8px, 6px); } }
 @keyframes vui-bericht-eigen { from { opacity: 0; transform: translate(8px, 6px); } }
 @keyframes vui-denk { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+/* Zweefkaartjes boven kaartpins (WoningenKaartHover, kaart/HoverKaart). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-zweefkaart { animation: vui-zweefkaart 180ms var(--ease); transform-origin: 50% 100%; }
+}
+@keyframes vui-zweefkaart { from { opacity: 0; scale: .96; } }

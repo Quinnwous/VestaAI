@@ -49,6 +49,8 @@ export function WoningenKaartHover({ info }: { info: WoningHoverInfo | null }) {
   return (
     <div
       ref={ref}
+      // Verschijnt zacht (opacity + scale; de transform is van de positionering).
+      className="vui-zweefkaart"
       style={{
         position: 'absolute',
         left: x,
