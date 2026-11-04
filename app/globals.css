@@ -948,3 +948,13 @@
 @media (prefers-reduced-motion: no-preference) {
   .maplibregl-marker { animation: vui-fade-in 420ms var(--ease) backwards; }
 }
+
+/* Intake (components/PropertyForm.tsx): velden die uit het BAG kwamen
+   lichten één keer zacht op in de merktint. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-autogevuld { animation: vui-autogevuld 1600ms var(--ease) 200ms backwards; }
+  .vui-bag-label { animation: vui-pop-in 300ms var(--ease) backwards; display: inline-block; }
+}
+@keyframes vui-autogevuld {
+  from { background-color: var(--merk-zacht); box-shadow: 0 0 0 4px rgba(var(--merk-rgb), .14); }
+}
