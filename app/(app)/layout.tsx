@@ -97,7 +97,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         {branding.primair === VESTA_MERK.primair && !branding.logoUrl && (
           <div style={{ background: 'var(--merk-zacht)', borderBottom: '1px solid var(--merk-rand)', padding: '9px var(--app-marge)', textAlign: 'center' }}>
             <p style={{ fontSize: 13, color: '#2A362D', margin: 0 }}>
-              Deze omgeving draait nog op de standaardstijl — huisstijl wordt door VestaAI ingesteld.
+              Deze omgeving draait nog op de standaardstijl — je platformbeheerder stelt de huisstijl van je kantoor in.
             </p>
           </div>
         )}
