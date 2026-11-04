@@ -34,6 +34,7 @@ gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
 | Contentsuite-mail | Van kale HTML ("Het VestaAI-team", u-vorm, aanhef met de naam van de afzender) naar `contentSuiteMail()` in `lib/email.ts`: huisstijl van het kantoor, informeel, aanhef bij de ontvanger, weergavenaam = kantoornaam (adres blijft noreply@vestaai.nl) | Opus |
 | Brochure-paginaopbouw | Ongewijzigd gelaten (de tests leggen het aantal pagina's vast en lange teksten vullen de pagina's); wel een contactkaart in de kantoorkleur op de slotpagina | Opus |
 | react-pdf en rgba-randen | Een `borderTopColor` in rgba kwam als groene lijn uit de contentsuite-pdf; scheidingslijnen in pdf's voortaan als eigen `View` met `backgroundColor` + `opacity` | Opus |
+| Les: nieuw bestand niet mee-gecommit | `git commit -am` neemt geen nieuwe bestanden mee: `hooks/useSchuifIndicator.ts` ontbrak in #71, dus typecheck en Vercel-build op `main` faalden van #71 t/m #75 (productie bleef op #70) tot #76 hem alsnog meenam. Lokaal was alles groen omdat het bestand er wél stond. Voortaan `git add -A` + `git status` schoon vóór de PR, en na de merge de CI-run op `main` controleren | Opus |
 
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 
