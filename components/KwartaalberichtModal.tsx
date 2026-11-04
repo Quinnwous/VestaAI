@@ -183,7 +183,7 @@ export function KwartaalberichtModal({
         <Button variant="secondary" size="sm" onClick={onClose}>Sluiten</Button>
         <Button variant="secondary" size="sm" onClick={download} disabled={!actief}>Download .md</Button>
         <Button variant="primary" size="sm" onClick={kopieer} disabled={!actief}>
-          {gekopieerd ? 'Gekopieerd' : 'Kopiëren'}
+          <span key={gekopieerd ? 'ja' : 'nee'} className="vui-wissel">{gekopieerd ? '✓ Gekopieerd' : 'Kopiëren'}</span>
         </Button>
       </div>
     </Modal>

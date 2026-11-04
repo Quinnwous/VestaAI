@@ -981,3 +981,10 @@
   .vui-waarde-nieuw { animation: vui-waarde-nieuw 1200ms var(--ease); }
 }
 @keyframes vui-waarde-nieuw { from { background: var(--merk-zacht); color: var(--merk-tekst); } }
+
+/* Knoplabel dat wisselt (Kopieer → ✓ Gekopieerd): schuift zacht omhoog in. */
+.vui-wissel { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-wissel { animation: vui-wissel 260ms var(--ease); }
+}
+@keyframes vui-wissel { from { opacity: 0; transform: translateY(5px); } }
