@@ -523,6 +523,7 @@ export function WaardebepalingPaneel({
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <button
             type="button" onClick={herbereken} disabled={herberekenBezig}
+            className="vui-btn vui-btn-secondary"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, cursor: herberekenBezig ? 'default' : 'pointer', opacity: herberekenBezig ? 0.6 : 1 }}
           >
             {herberekenBezig ? 'Herberekenen…' : 'Herbereken'}
@@ -530,6 +531,7 @@ export function WaardebepalingPaneel({
           {opgeslagenUitkomst && (
             <Link
               href={`/object/${objectId}/presentatie`}
+              className="vui-btn vui-btn-secondary"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px', fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`, background: colors.surface, color: colors.bodyStrong, textDecoration: 'none' }}
             >
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} width={15} height={15}>

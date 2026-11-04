@@ -907,6 +907,8 @@
   background-position: 0 88%;
   background-size: 100% .28em;
   padding: 0 .06em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 @media (prefers-reduced-motion: no-preference) {
   .vui-accent { animation: vui-accent-streep 900ms var(--ease) 260ms backwards; }
@@ -1080,4 +1082,8 @@ button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
   .vui-sheet-inhoud > :nth-child(2) { animation-delay: 170ms; }
   .vui-sheet-inhoud > :nth-child(3) { animation-delay: 220ms; }
   .vui-sheet-inhoud > :nth-child(n+4) { animation-delay: 270ms; }
+}
+/* Landing-hero: de markeerstreep loopt pas door als de kop er staat. */
+@media (prefers-reduced-motion: no-preference) {
+  .vl-accent-laat { animation-delay: 700ms; animation-duration: 1100ms; }
 }
