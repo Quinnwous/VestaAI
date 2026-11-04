@@ -826,3 +826,47 @@
 @media (prefers-reduced-motion: no-preference) {
   [aria-label='Zoekresultaten'] [role='option'] { animation-duration: 200ms; }
 }
+
+/* ── Ronde 3: rustige, doorlopende beweging ─────────────────────────── */
+
+/* Ambient achter de kantooromgeving (app/(app)/layout.tsx). */
+.vui-ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.vui-ambient > span { position: absolute; border-radius: 50%; filter: blur(90px); }
+.vui-ambient-primair { width: 56vw; height: 56vw; top: -30vw; left: -18vw; background: rgba(var(--merk-rgb), .07); }
+.vui-ambient-accent { width: 40vw; height: 40vw; top: -22vw; right: -14vw; background: rgba(var(--merk-accent-rgb), .045); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-ambient-primair { animation: vui-bol 26s ease-in-out infinite alternate; }
+  .vui-ambient-accent { animation: vui-bol 32s ease-in-out -11s infinite alternate-reverse; }
+}
+
+/* Scrollvoortgang: een dunne merkstreep onder de topbar die meegroeit met
+   hoe ver je op de pagina bent. Alleen waar scroll-timelines bestaan. */
+@supports (animation-timeline: scroll()) {
+  .vui-topbar::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--merk-licht), var(--merk));
+    transform-origin: left center;
+    transform: scaleX(0);
+    animation: vui-scrollvoortgang linear both;
+    animation-timeline: scroll(root);
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) { .vui-topbar::after { display: none; } }
+}
+@keyframes vui-scrollvoortgang { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Sparklines tekenen zich bij het verschijnen. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-spark-lijn { stroke-dasharray: 1; animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
+  .vui-spark-vlak { animation: vui-fade-in 900ms var(--ease) 600ms backwards; }
+}
+@keyframes vui-spark-teken { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+/* Pins in de illustraties: een zachte ring die uitdijt (locatie "leeft"). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-pin-ring { transform-box: fill-box; transform-origin: center; animation: vui-pin-ring 2.8s var(--ease) infinite; }
+}
+@keyframes vui-pin-ring { 0% { transform: scale(1); opacity: .5; } 70%, 100% { transform: scale(2.4); opacity: 0; } }

@@ -167,6 +167,7 @@ export function HuisIllustratie({
         {pin && (
           <g transform={`translate(${nokEind[0] - 26}, ${nokEind[1] - 30})`}>
             <line x1={0} y1={6} x2={0} y2={22} stroke="var(--merk-accent)" strokeWidth={2} strokeLinecap="round" />
+            <circle className="vui-pin-ring" r={10.5} fill="none" stroke="var(--merk-accent)" strokeWidth={1.6} />
             <circle r={10.5} fill="#FFFFFF" stroke="var(--merk-accent)" strokeWidth={2.4} />
             <circle r={4.4} fill="var(--merk)" />
           </g>
@@ -223,6 +224,7 @@ export function DataIllustratie({ breedte = 168, style }: { breedte?: number; st
         {/* Pin boven de hoogste staaf (accent: de toegestane ring + stokje). */}
         <g transform={`translate(${at(O, 51, 37, 84)[0]}, ${at(O, 51, 37, 84)[1] - 30})`}>
           <line x1={0} y1={6} x2={0} y2={20} stroke="var(--merk-accent)" strokeWidth={2} strokeLinecap="round" />
+          <circle className="vui-pin-ring" r={9} fill="none" stroke="var(--merk-accent)" strokeWidth={1.4} />
           <circle r={9} fill="#FFFFFF" stroke="var(--merk-accent)" strokeWidth={2.2} />
           <circle r={3.8} fill="var(--merk)" />
         </g>
