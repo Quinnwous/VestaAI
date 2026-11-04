@@ -223,6 +223,7 @@ export function DossierHeader({
             onClick={naarContent}
             disabled={!magNaarContent}
             title={magNaarContent ? undefined : "Beschikbaar vanaf 'In verkoop'"}
+            className="vui-btn vui-btn-secondary"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px',
               fontWeight: 700, fontSize: 13, borderRadius: radius.md, border: `1px solid ${colors.borderStrong}`,

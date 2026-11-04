@@ -63,6 +63,7 @@ export function WaardebepalingPdfButton({ objectId }: Props) {
         type="button"
         onClick={() => handleDownload('intern')}
         disabled={bezigMet}
+        className="vui-btn vui-btn-primary vui-knop-glans"
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 8, height: 36, padding: '0 14px',
           fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap', borderRadius: `${radius.md} 0 0 ${radius.md}`, border: 'none',
