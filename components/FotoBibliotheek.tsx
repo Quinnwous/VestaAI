@@ -84,6 +84,7 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
         <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadFoto} style={{ display: 'none' }} id={`bib-upload-${objectId}`} />
         <label
           htmlFor={`bib-upload-${objectId}`}
+          className="vui-btn vui-btn-secondary"
           style={{ display: 'inline-block', borderRadius: 'var(--merk-radius-md, 11px)', border: '1px solid #DDE1E5', padding: '8px 14px', fontSize: 13, fontWeight: 600, color: '#14181B', cursor: uploaden ? 'default' : 'pointer', background: '#fff', opacity: uploaden ? 0.6 : 1 }}
         >
           {uploaden ? 'Uploaden…' : '+ Foto uploaden'}
@@ -96,10 +97,10 @@ export function FotoBibliotheek({ objectId, refreshSignal }: { objectId: string;
           Nog geen bewaarde foto&apos;s. Upload er een, of gebruik &ldquo;Bewaar in bibliotheek&rdquo; bij een gestagede foto.
         </p>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
+        <div className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 12 }}>
           {fotos.map(foto => (
-        <div key={foto.id} style={{ border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-md, 12px)', overflow: 'hidden', background: '#fff' }}>
-          <div style={{ position: 'relative', aspectRatio: '4 / 3', background: '#14181B' }}>
+        <div key={foto.id} className="vui-tegel vui-fotokaart" style={{ border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-md, 12px)', overflow: 'hidden', background: '#fff' }}>
+          <div style={{ position: 'relative', aspectRatio: '4 / 3', background: '#14181B', overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={foto.url} alt={foto.bestandsnaam ?? 'Woningfoto'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             <span style={{ position: 'absolute', top: 6, left: 6, fontSize: 10.5, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,.55)', borderRadius: 'var(--merk-radius-sm, 6px)', padding: '2px 7px' }}>
