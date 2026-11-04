@@ -212,3 +212,33 @@ export async function sendFeedbackEmail(input: {
     `),
   })
 }
+
+/**
+ * Begeleidende mail bij de contentsuite-pdf (app/api/object/[id]/email-pdf):
+ * in de huisstijl van het kantoor, informeel (de ontvanger is een collega
+ * binnen hetzelfde kantoor) en zonder de productnaam — de mail komt "van" het
+ * kantoor. Pure functie, zodat hij te testen is zonder Resend.
+ */
+export function contentSuiteMail(input: {
+  kantoorNaam: string
+  /** Knop- en merkkleur; `merkTekst` uit lib/branding.ts haalt AA op wit. */
+  kleur?: string | null
+  ontvangerNaam?: string | null
+  adres: string
+  dossierUrl: string
+}): { subject: string; html: string; text: string } {
+  const kleur = input.kleur ?? VESTA_GROEN
+  const aanhef = input.ontvangerNaam?.trim() ? `Hoi ${esc(input.ontvangerNaam.trim().split(/\s+/)[0])},` : 'Hoi,'
+  const html = baseTemplate(`
+      <p style="margin:0 0 6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${kleur};">Contentsuite</p>
+      <h2 style="margin:0 0 16px;font-size:22px;font-weight:700;color:#111827;line-height:1.25;">${esc(input.adres)}</h2>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">${aanhef}</p>
+      <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#374151;">
+        In de bijlage vind je de contentsuite voor deze woning als pdf: Funda-tekst, brochure, social en koper-e-mail.
+        Aanpassen of opnieuw kopiëren kan altijd in het dossier.
+      </p>
+      ${btn(input.dossierUrl, 'Naar het dossier', kleur)}
+    `, { naam: input.kantoorNaam, kleur })
+  const text = `${input.ontvangerNaam?.trim() ? `Hoi ${input.ontvangerNaam.trim().split(/\s+/)[0]},` : 'Hoi,'}\n\nIn de bijlage vind je de contentsuite voor ${input.adres} als pdf. Aanpassen of opnieuw kopiëren kan altijd in het dossier:\n${input.dossierUrl}\n\n${input.kantoorNaam}`
+  return { subject: `Contentsuite: ${input.adres}`, html, text }
+}
