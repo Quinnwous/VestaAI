@@ -494,7 +494,7 @@ export function LandingPageClient() {
                 </div>
                 <span style={{ fontSize: 12, fontWeight: 600, color: '#1A6B45', background: '#EAF5EE', borderRadius: 999, padding: '5px 11px', cursor: 'default' }}>Kopieer</span>
               </div>
-              <div key={activeTab} className="vui-tabpaneel" style={{ padding: '24px 26px', fontSize: 15, lineHeight: 1.7, color: '#2A372F', whiteSpace: 'pre-line', maxHeight: 520, overflowY: 'auto' }}>
+              <div key={activeTab} className="vui-tabpaneel" tabIndex={0} aria-label={`Voorbeeldtekst: ${activeTabObj.label}`} style={{ padding: '24px 26px', fontSize: 15, lineHeight: 1.7, color: '#2A372F', whiteSpace: 'pre-line', maxHeight: 520, overflowY: 'auto' }}>
                 {TAB_BODIES[activeTab] || ''}
               </div>
             </div>

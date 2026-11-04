@@ -102,8 +102,8 @@ export function TabContent({ label, content, wordCount, wordLimit, charLimit, on
             </>
           ) : (
             <>
-              <button onClick={handleCopy} style={{ ...btnBase, color: copied ? 'var(--merk)' : '#5C6470' }}>
-                {copied ? '✓ Gekopieerd' : 'Kopieer'}
+              <button onClick={handleCopy} style={{ ...btnBase, color: copied ? 'var(--merk-tekst)' : '#5C6470' }}>
+                <span key={copied ? 'ja' : 'nee'} className="vui-wissel">{copied ? '✓ Gekopieerd' : 'Kopieer'}</span>
               </button>
               {onSave && (
                 <button

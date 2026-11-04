@@ -407,7 +407,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                 d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-            {copiedAll ? '✓ Gekopieerd' : (isEn ? 'Copy all' : 'Kopieer alles')}
+            <span key={copiedAll ? 'ja' : 'nee'} className="vui-wissel">{copiedAll ? '✓ Gekopieerd' : (isEn ? 'Copy all' : 'Kopieer alles')}</span>
           </button>
 
           {objectId && (
@@ -458,7 +458,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             aria-selected={activeTab === tab.id}
             aria-controls={`panel-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
-            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk)' : '#5C6470', transition: 'all .15s', marginBottom: -1 }}
+            style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk-tekst)' : '#5C6470', transition: 'all .15s', marginBottom: -1 }}
           >
             {tab.label}
           </button>
@@ -467,7 +467,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
 
       {/* Tab content */}
       <div>
-        <div role="tabpanel" id="panel-funda" aria-labelledby="tab-funda" hidden={activeTab !== 'funda'} className="space-y-3">
+        <div role="tabpanel" id="panel-funda" aria-labelledby="tab-funda" hidden={activeTab !== 'funda'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Funda limit: max 800 words' : 'Funda-limiet: max 800 woorden'}
           </p>
@@ -475,7 +475,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           {rewrite('funda_tekst')}
         </div>
 
-        <div role="tabpanel" id="panel-brochure" aria-labelledby="tab-brochure" hidden={activeTab !== 'brochure'} className="space-y-3">
+        <div role="tabpanel" id="panel-brochure" aria-labelledby="tab-brochure" hidden={activeTab !== 'brochure'} className="space-y-3 vui-tabpaneel">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-gray-400">
               {isEn ? 'Suitable for both a printed and a digital brochure' : 'Geschikt voor zowel een gedrukte als digitale brochure'}
@@ -507,7 +507,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           {rewrite('brochure_tekst')}
         </div>
 
-        <div role="tabpanel" id="panel-instagram" aria-labelledby="tab-instagram" hidden={activeTab !== 'instagram'} className="space-y-3">
+        <div role="tabpanel" id="panel-instagram" aria-labelledby="tab-instagram" hidden={activeTab !== 'instagram'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Instagram limit: 2,200 characters' : 'Instagram-limiet: 2.200 tekens'}
           </p>
@@ -515,7 +515,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           {rewrite('instagram')}
         </div>
 
-        <div role="tabpanel" id="panel-linkedin" aria-labelledby="tab-linkedin" hidden={activeTab !== 'linkedin'} className="space-y-3">
+        <div role="tabpanel" id="panel-linkedin" aria-labelledby="tab-linkedin" hidden={activeTab !== 'linkedin'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'LinkedIn limit: 3,000 characters' : 'LinkedIn-limiet: 3.000 tekens'}
           </p>
@@ -523,7 +523,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           {rewrite('linkedin_kantoor')}
         </div>
 
-        <div role="tabpanel" id="panel-sneak" aria-labelledby="tab-sneak" hidden={activeTab !== 'sneak'} className="space-y-3">
+        <div role="tabpanel" id="panel-sneak" aria-labelledby="tab-sneak" hidden={activeTab !== 'sneak'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn
               ? 'Short WhatsApp message — Dutch only, max 600 characters'
@@ -533,17 +533,17 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
           {rewrite('sneak_preview')}
         </div>
 
-        <div role="tabpanel" id="panel-email" aria-labelledby="tab-email" hidden={activeTab !== 'email'} className="space-y-3">
+        <div role="tabpanel" id="panel-email" aria-labelledby="tab-email" hidden={activeTab !== 'email'} className="space-y-3 vui-tabpaneel">
           <TabContent content={weergaveData.koper_email} onSave={saveField('koper_email')} />
           {rewrite('koper_email')}
         </div>
 
-        <div role="tabpanel" id="panel-buurt" aria-labelledby="tab-buurt" hidden={activeTab !== 'buurt'} className="space-y-3">
+        <div role="tabpanel" id="panel-buurt" aria-labelledby="tab-buurt" hidden={activeTab !== 'buurt'} className="space-y-3 vui-tabpaneel">
           <TabContent content={weergaveData.buurtomschrijving} onSave={saveField('buurtomschrijving')} />
           {rewrite('buurtomschrijving')}
         </div>
 
-        <div role="tabpanel" id="panel-openhuis" aria-labelledby="tab-openhuis" hidden={activeTab !== 'openhuis'} className="space-y-3">
+        <div role="tabpanel" id="panel-openhuis" aria-labelledby="tab-openhuis" hidden={activeTab !== 'openhuis'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Open house announcement for Instagram/social' : 'Open huis-aankondiging voor Instagram/social'}
           </p>
@@ -569,21 +569,21 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             : extraPaneel('followup_negatief', 'followup', weergaveData.followup_negatief)}
         </div>
 
-        <div role="tabpanel" id="panel-video" aria-labelledby="tab-video" hidden={activeTab !== 'video'} className="space-y-3">
+        <div role="tabpanel" id="panel-video" aria-labelledby="tab-video" hidden={activeTab !== 'video'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Voice-over script for property video (±60 seconds)' : 'Voice-over script voor woningvideo (±60 seconden)'}
           </p>
           {extraPaneel('video_script', 'video', weergaveData.video_script, { wordCount: true })}
         </div>
 
-        <div role="tabpanel" id="panel-kopersvragen" aria-labelledby="tab-kopersvragen" hidden={activeTab !== 'kopersvragen'} className="space-y-3">
+        <div role="tabpanel" id="panel-kopersvragen" aria-labelledby="tab-kopersvragen" hidden={activeTab !== 'kopersvragen'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Frequently asked questions from buyers — ready to share or export as PDF' : 'Veelgestelde vragen van kopers — klaar om te delen of als PDF te exporteren'}
           </p>
           {extraPaneel('kopersvragen_faq', 'kopersvragen', weergaveData.kopersvragen_faq, { wordCount: true })}
         </div>
 
-        <div role="tabpanel" id="panel-energieadvies" aria-labelledby="tab-energieadvies" hidden={activeTab !== 'energieadvies'} className="space-y-3">
+        <div role="tabpanel" id="panel-energieadvies" aria-labelledby="tab-energieadvies" hidden={activeTab !== 'energieadvies'} className="space-y-3 vui-tabpaneel">
           <p className="text-xs text-gray-400">
             {isEn ? 'Energy advice and subsidy overview based on the energy label' : 'Energieadvies en subsidieoverzicht op basis van het energielabel'}
           </p>

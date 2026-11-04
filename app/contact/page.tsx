@@ -23,7 +23,7 @@ export default function ContactPage() {
 
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '80px 28px 120px' }}>
         <div style={{ marginBottom: 56 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Contact</div>
+          <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 16 }}>Contact</div>
           <h1 className="vui-binnen" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,54px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 20px' }}>
             Laten we kennismaken.
           </h1>
@@ -77,7 +77,7 @@ export default function ContactPage() {
         </div>
 
         <div style={{ background: '#F1F7F3', border: '1px solid #D5E8DD', borderRadius: 18, padding: '28px 30px' }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#2A8A5C', letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 10 }}>Direct bereikbaar</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#1F6B45', letterSpacing: '.04em', textTransform: 'uppercase', marginBottom: 10 }}>Direct bereikbaar</div>
           <a href="mailto:quinn.berkouwer@gmail.com" style={{ fontSize: 20, fontWeight: 700, color: '#1A6B45', textDecoration: 'none' }}>
             quinn.berkouwer@gmail.com
           </a>
