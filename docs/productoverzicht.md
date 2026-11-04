@@ -69,6 +69,12 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   isometrische 3D-illustraties in de merkkleuren op lege staten, de startbanner
   en de dossierkop zonder foto. Alles valt weg onder "beweging beperken".
   Regels: `docs/ontwerp/principes.md` § Beweging.
+  Verder: segmented controls met schuivende witte thumb, laadstaten als
+  skelet (nergens meer een spinner), een 404 met de 3D-woning, een kantoorpagina
+  in kaartstijl (huisstijl met live kleurstalen, team met initialen), een
+  wachtscherm tijdens de contentgeneratie (geschatte voortgang op basis van de
+  gemeten ± 100 s, nooit 100 % vóór "klaar"), en in de presentatiemodus
+  schuiven de stappen in de leesrichting.
 
 ## 2. Startpagina (`/dashboard`)
 
