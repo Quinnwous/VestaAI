@@ -14,6 +14,7 @@
  */
 
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip } from 'recharts'
+import { useGrafiekAnimatie } from '@/hooks/useGrafiekAnimatie'
 import { colors, radius } from '@/components/ui/tokens'
 import { procent } from '@/lib/opmaak'
 
@@ -29,6 +30,7 @@ function Onbeschikbaar({ tekst }: { tekst: string }) {
 }
 
 export function TrendGrafiek({ series }: { series: TrendSerie[] }) {
+  const anim = useGrafiekAnimatie()
   if (series.length === 0) return <Onbeschikbaar tekst="Onvoldoende data voor een trend." />
   const jaren = series[0].punten.map(p => p.jaar)
   const data = jaren.map((jaar, i) => {
@@ -42,9 +44,9 @@ export function TrendGrafiek({ series }: { series: TrendSerie[] }) {
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
         <XAxis dataKey="jaar" tick={{ fontSize: 11, fill: colors.muted }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fontSize: 11, fill: colors.muted }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} width={38} />
-        <RTooltip content={<TrendTooltip series={series} />} />
+        <RTooltip cursor={{ stroke: 'var(--merk-rand)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<TrendTooltip series={series} />} />
         {series.map(s => (
-          <Line
+          <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }}
             key={s.key} type="monotone" dataKey={s.key} name={s.key} stroke={s.kleur}
             strokeWidth={s.naam === ONS ? 2.5 : 1.5} dot={s.naam === ONS ? { r: 3, fill: s.kleur, strokeWidth: 0 } : false}
             connectNulls
