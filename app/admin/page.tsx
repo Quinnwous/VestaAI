@@ -4,17 +4,15 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { isPlatformAdmin } from '@/lib/admin'
 import { AdminBeheer, type KantoorRow } from './AdminBeheer'
 import { AccountBeheer } from './AccountBeheer'
+import { StatTile } from '@/components/ui/StatTile'
+import { PageHeader } from '@/components/ui/PageHeader'
 
 export const metadata = { title: 'Admin — VestaAI' }
 
-function Kaart({ label, waarde, sub }: { label: string; waarde: string | number; sub?: string }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5">
-      <p className="text-2xl font-bold text-gray-900">{waarde}</p>
-      <p className="text-xs font-medium text-gray-500 mt-0.5">{label}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-    </div>
-  )
+// Tegels in dezelfde stijl als de app (StatTile: getal-tween, spotlight),
+// hier in VestaAI-groen (de :root-fallback buiten de kantooromgeving).
+function Kaart({ label, waarde, sub, hero = false }: { label: string; waarde: number; sub?: string; hero?: boolean }) {
+  return <StatTile label={label} waarde={waarde} bijschrift={sub} hero={hero} />
 }
 
 export default async function AdminPage() {
@@ -106,22 +104,25 @@ export default async function AdminPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Platform admin</h1>
-            <p className="text-xs text-gray-400 mt-0.5">Platform-eigenaar · beheer alle kantoren</p>
-          </div>
-          <Link href="/admin/transacties" className="text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg border border-gray-300 px-3 py-1.5">
-            Transacties importeren
-          </Link>
-        </div>
+      <div className="vui-binnen">
+        <PageHeader
+          eyebrow="Platform-eigenaar"
+          title="Platform"
+          accent="beheer"
+          subtitle="Alle kantoren, accounts en imports op één plek."
+          titleSize={32}
+          action={
+            <Link href="/admin/transacties" className="vui-btn vui-btn-secondary text-sm font-semibold text-gray-700 rounded-xl border border-gray-300 bg-white px-4 py-2">
+              Transacties importeren
+            </Link>
+          }
+        />
       </div>
 
       {/* Overzicht */}
       <h2 className="text-sm font-semibold text-gray-700 mb-3">Overzicht</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-        <Kaart label="Kantoren" waarde={totalKantoren} />
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8 vui-gestaffeld">
+        <Kaart hero label="Kantoren" waarde={totalKantoren} />
         <Kaart label="Objecten vandaag" waarde={objectenVandaagResult.count ?? 0} />
         <Kaart label="Deze week" waarde={objectenWeekResult.count ?? 0} />
         <Kaart label="Deze maand" waarde={objectenMaandResult.count ?? 0} />
