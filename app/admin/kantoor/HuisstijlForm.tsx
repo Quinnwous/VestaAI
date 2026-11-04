@@ -6,6 +6,7 @@ import type { HuisstijlConfig, TekstsjabloonConfig } from '@/lib/schemas'
 import { slaHuisstijlOpAlsAdmin } from '../actions'
 import { LogoUpload } from './LogoUpload'
 import { AchtergrondUpload } from './AchtergrondUpload'
+import { HuisstijlVoorbeeld } from './HuisstijlVoorbeeld'
 import { FONT_OPTIES, VORM_OPTIES, type LettertypeKeuze, type VormKeuze } from '@/lib/branding'
 
 type SectieVeld = { kop: string; instructie: string; en_kop: string }
@@ -228,6 +229,8 @@ export function HuisstijlForm({ kantoor }: Props) {
           </select>
         </div>
       </div>
+
+      <HuisstijlVoorbeeld naam={kantoor.name} primair={primaire_kleur} accent={accent_kleur} lettertype={lettertype} vorm={vorm} />
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Voorbeeldteksten <span className="text-gray-400 font-normal">(tot 20)</span></label>
