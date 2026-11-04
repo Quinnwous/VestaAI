@@ -356,9 +356,10 @@
   .vui-gestaffeld > :nth-child(7) { animation-delay: 330ms; }
   .vui-gestaffeld > :nth-child(n+8) { animation-delay: 385ms; }
 }
+/* Alleen een begintoestand: het eind is de eigen waarde van het element
+   (bv. een halfdoorzichtige uitgesloten rij), dus geen sprong na afloop. */
 @keyframes vui-rijs {
   from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
 }
 
 /* Onthullen bij scrollen: alleen wat ónder de vouw staat beweegt; wat bij
@@ -379,7 +380,6 @@
 }
 @keyframes vui-onthul {
   from { opacity: .001; transform: translateY(28px) scale(.985); }
-  to { opacity: 1; transform: none; }
 }
 @keyframes vui-onthul-links {
   from { opacity: .001; transform: translateX(-24px); }
@@ -602,7 +602,7 @@
   .vui-tabelrij:nth-child(9) { animation-delay: 144ms; }
   .vui-tabelrij:nth-child(n+10) { animation-delay: 160ms; }
 }
-@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } }
 
 /* Fasestepper (components/DossierHeader.tsx): klikbare buurfase licht op,
    de actieve fase heeft een zachte puls in de merkkleur. */
