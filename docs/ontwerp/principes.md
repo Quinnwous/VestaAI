@@ -91,6 +91,23 @@ Geen van deze producten wordt gekopieerd — ze zijn een kompas voor het
 - Kleine, doelgerichte CSS-transities en een losse `requestAnimationFrame`-tween
   waar nodig (zie `StatTile.tsx`). Een animatielibrary komt er alleen als een
   concreet item hem nodig heeft (roadmap v2: geen losse primitives-fase).
+- **Bewegingssysteem** (nov 2026, `app/globals.css` § Bewegingssysteem) — pure
+  CSS, geen library, niets hangt van hydratie af:
+  - `.vui-binnen` (+ `--i` voor de volgorde) en `.vui-gestaffeld` (op de
+    ouder) voor binnenkomst bij het laden; tegelrijen, dossierkop, startbanner.
+  - `.vui-onthul` voor wat onder de vouw staat (scroll-driven
+    `animation-timeline: view()`); `ChartCard` en de gedeelde grafiekrasters
+    doen het al. Niet op hele secties die hoger zijn dan het scherm.
+  - `.vui-spot` (lichtvlek die de muis volgt) + `.vui-tegel` (2 px omhoog):
+    standaard op `StatTile`. `Kantel` = 3D-kanteling, maximaal één per pagina.
+  - Paginaovergang via React `<ViewTransition>` in `AppPagina` (Marktinzichten:
+    `RouteOvergang` in de layout); de topbar staat stil, de actieve pil glijdt.
+  - Altijd `animation-fill-mode: backwards`, nooit `both`: een vastgehouden
+    eindtransform zet de hover-transform buiten werking.
+  - Screenshots, axe en e2e draaien met `reducedMotion: 'reduce'` (eindstaat).
+- **3D-beeld:** `HuisIllustratie`/`DataIllustratie` (isometrisch, volledig in
+  `var(--merk*)`) voor lege staten (`EmptyState illustratie="woning|data"`),
+  de startbanner zonder foto en de dossierkop zonder foto.
 
 ## Data-weergave
 

@@ -59,7 +59,9 @@ async function main() {
   }
 
   const browser = await chromium.launch()
-  const context = await browser.newContext({ baseURL: BASE_URL })
+  // reducedMotion: fullPage-screenshots tonen dan de eindstaat — anders staat
+  // wat onder de vouw "onthult bij scrollen" er nog half doorzichtig op.
+  const context = await browser.newContext({ baseURL: BASE_URL, reducedMotion: 'reduce' })
   await context.addCookies([cookie])
   const page = await context.newPage()
   const paginaFouten = []

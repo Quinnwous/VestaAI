@@ -1,4 +1,5 @@
 import { AppPagina, Eyebrow } from '@/components/ui'
+import { RouteOvergang } from '@/components/ui/RouteOvergang'
 
 /**
  * Gedeeld omhulsel voor de vier Marktinzichten-schermen (macro, los van één
@@ -13,9 +14,11 @@ import { AppPagina, Eyebrow } from '@/components/ui'
  */
 export default function MarktinzichtenLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AppPagina>
+    <AppPagina overgang={false}>
       <Eyebrow>Marktinzichten</Eyebrow>
-      {children}
+      {/* De layout blijft staan bij wisselen tussen de vier verkenners; de
+          overgang zit daarom om de wisselende inhoud (key = route). */}
+      <RouteOvergang>{children}</RouteOvergang>
     </AppPagina>
   )
 }

@@ -251,6 +251,7 @@ export function ConcurrentieExplorer({
 
       {rpcBeschikbaar && !heeftData && !laden ? (
         <EmptyState
+          illustratie="data"
           titel="Verkopend kantoor onbekend in deze export"
           beschrijving={
             <>

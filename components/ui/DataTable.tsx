@@ -172,7 +172,7 @@ export function DataTable<T extends RowData>({
                     tabIndex={onRijKlik ? 0 : undefined}
                     onClick={onRijKlik ? () => onRijKlik(row.original) : undefined}
                     onKeyDown={onRijKlik ? e => { if (e.key === 'Enter') onRijKlik(row.original) } : undefined}
-                    className={onRijKlik ? 'vui-datatable-rij' : undefined}
+                    className={onRijKlik ? 'vui-tabelrij vui-datatable-rij' : 'vui-tabelrij'}
                     style={{ cursor: onRijKlik ? 'pointer' : undefined }}
                   >
                     {row.getAllCells().map(cell => (
@@ -244,7 +244,7 @@ function knopStyle(uit: boolean) {
     padding: '0 14px',
     fontSize: 13,
     fontWeight: 600,
-    borderRadius: 10,
+    borderRadius: 'var(--merk-radius-sm, 10px)',
     border: `1px solid ${colors.borderStrong}`,
     background: colors.surface,
     color: uit ? colors.muted : colors.bodyStrong,

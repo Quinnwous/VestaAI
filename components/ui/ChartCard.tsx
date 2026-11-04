@@ -33,6 +33,9 @@ export function ChartCard({
 }) {
   return (
     <div
+      // Onthult bij scrollen (globals.css § Bewegingssysteem); wat bij het
+      // laden al in beeld staat, staat er meteen.
+      className="vui-onthul"
       style={{
         background: colors.surface,
         border: `1px solid ${colors.border}`,

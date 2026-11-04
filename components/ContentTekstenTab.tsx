@@ -51,7 +51,9 @@ export function ContentTekstenTab({
   const router = useRouter()
   const [status, setStatus] = useState<ObjectContentStatus>(initieleStatus)
   const [starting, setStarting] = useState(false)
-  const [now, setNow] = useState(() => Date.now())
+  // null tot de eerste tik in de browser: Date.now() tijdens de server-render
+  // gaf een andere tijd dan bij de hydratie (valkuil 19 sep, CLAUDE.md).
+  const [now, setNow] = useState<number | null>(null)
   // Was een ref, maar wordt tijdens render gelezen (hieronder, voor de
   // verstreken tijd) — dat mag niet meer (react-hooks/refs), dus gewoon state.
   const [pollingSinds, setPollingSinds] = useState(contentBezigSinds)
@@ -73,6 +75,7 @@ export function ContentTekstenTab({
   useEffect(() => {
     if (status !== 'bezig') return
 
+    const eerste = requestAnimationFrame(() => setNow(Date.now()))
     const tick = setInterval(() => setNow(Date.now()), 1000)
     const poll = setInterval(() => {
       fetch(`/api/object/${objectId}/status`)
@@ -86,6 +89,7 @@ export function ContentTekstenTab({
     }, POLL_MS)
 
     return () => {
+      cancelAnimationFrame(eerste)
       clearInterval(tick)
       clearInterval(poll)
     }
@@ -116,6 +120,7 @@ export function ContentTekstenTab({
   if (status === 'geen') {
     return (
       <EmptyState
+        illustratie="woning"
         titel="Nog geen content gegenereerd"
         beschrijving="Genereer de volledige tekstsuite (Funda, brochure, social, e-mail, buurt) in het Nederlands én Engels."
         actie={
@@ -128,14 +133,33 @@ export function ContentTekstenTab({
   }
 
   if (status === 'bezig') {
-    const verstreken = pollingSinds ? now - new Date(pollingSinds).getTime() : 0
+    const verstreken = pollingSinds && now != null ? Math.max(0, now - new Date(pollingSinds).getTime()) : 0
+    // Tijdgebaseerde voortgang (geen echte meting): NL + EN duurt op Vercel
+    // ± 100 s (gemeten 1 okt, CLAUDE.md). De balk loopt daar zacht naartoe en
+    // blijft onder 92 % hangen tot de status echt "klaar" is — nooit een
+    // schijnbaar volle balk die nog op zich laat wachten.
+    const voortgang = Math.min(0.92, 1 - Math.exp(-verstreken / 55000))
     return (
-      <div style={{ display: 'grid', gap: 16 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 14, height: 14, border: '2px solid var(--merk-zacht)', borderTopColor: 'var(--merk)', borderRadius: '50%', animation: 'ctt-spin .8s linear infinite' }} />
-          <style>{'@keyframes ctt-spin { to { transform: rotate(360deg); } }'}</style>
-          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--merk-tekst)' }}>Content genereren (NL + EN)…</span>
-          <span style={{ fontFamily: 'monospace', fontSize: 13, color: '#5C6470' }}>{formatMmSs(verstreken)}</span>
+      <div className="vui-binnen-zacht" style={{ display: 'grid', gap: 16 }}>
+        <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid var(--merk-rand)', background: 'linear-gradient(180deg, var(--merk-zacht), #fff 80%)', padding: '18px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span aria-hidden className="vui-fase-puls" style={{ margin: 0 }} />
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--merk-tekst)' }}>Content wordt geschreven (NL + EN)</span>
+            <span style={{ marginLeft: 'auto', fontFamily: 'ui-monospace, SFMono-Regular, monospace', fontSize: 13, color: '#5C6470' }} aria-label="Verstreken tijd">{formatMmSs(verstreken)}</span>
+          </div>
+          <div role="progressbar" aria-label="Geschatte voortgang" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(voortgang * 100)} style={{ position: 'relative', height: 6, borderRadius: 9999, background: 'rgba(var(--merk-rgb), .14)', overflow: 'hidden', margin: '14px 0 10px' }}>
+            <div className="vui-voortgang" style={{ position: 'absolute', inset: 0, right: 'auto', width: `${(voortgang * 100).toFixed(1)}%`, borderRadius: 9999, background: 'linear-gradient(90deg, var(--merk-licht), var(--merk))', transition: 'width 1s linear' }} />
+          </div>
+          <p style={{ fontSize: 12.5, color: '#5C6470', margin: 0 }}>
+            Duurt meestal ± 1½ minuut. Je kunt intussen gewoon verder werken; de teksten verschijnen hier vanzelf.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
+            {['Funda-tekst', 'Brochure', 'Instagram', 'LinkedIn', 'Koper-e-mail', 'Buurtomschrijving', 'Engelse versie'].map((t, i) => (
+              <span key={t} className="vui-skeleton vui-binnen" style={{ ['--i' as string]: i, display: 'inline-flex', alignItems: 'center', height: 28, padding: '0 12px', borderRadius: 9999, background: '#fff', border: '1px solid var(--merk-rand)', fontSize: 12.5, fontWeight: 600, color: '#2C3238' }}>
+                {t}
+              </span>
+            ))}
+          </div>
         </div>
         <div style={{ display: 'grid', gap: 10 }}>
           <Skeleton height={22} width="35%" />

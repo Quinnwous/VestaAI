@@ -25,7 +25,7 @@ export default function OverOnsPage() {
         {/* Hero */}
         <section style={{ maxWidth: 840, margin: '0 auto', padding: '80px 28px 72px' }}>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Over ons</div>
-          <h1 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,58px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 24px' }}>
+          <h1 className="vui-binnen" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,58px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 24px' }}>
             Gebouwd voor de Nederlandse makelaardij.
           </h1>
           <p style={{ fontSize: 20, lineHeight: 1.65, color: '#445249', maxWidth: 660, margin: 0 }}>
@@ -36,7 +36,7 @@ export default function OverOnsPage() {
         {/* Missie */}
         <section style={{ background: '#F1F7F3', padding: '72px 28px' }}>
           <div style={{ maxWidth: 840, margin: '0 auto' }}>
-            <h2 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.6vw,40px)', lineHeight: 1.12, color: '#0E1A13', margin: '0 0 20px' }}>
+            <h2 className="vui-onthul" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.6vw,40px)', lineHeight: 1.12, color: '#0E1A13', margin: '0 0 20px' }}>
               Waarom Vesta AI?
             </h2>
             <p style={{ fontSize: 17, lineHeight: 1.7, color: '#445249', margin: '0 0 20px' }}>
@@ -50,7 +50,7 @@ export default function OverOnsPage() {
 
         {/* Waarden */}
         <section style={{ maxWidth: 1180, margin: '0 auto', padding: '80px 28px' }}>
-          <h2 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,40px)', lineHeight: 1.12, color: '#0E1A13', margin: '0 0 40px' }}>
+          <h2 className="vui-onthul" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.4vw,40px)', lineHeight: 1.12, color: '#0E1A13', margin: '0 0 40px' }}>
             Waar wij voor staan
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 20 }}>
@@ -60,7 +60,7 @@ export default function OverOnsPage() {
               { titel: 'Privacy boven alles', tekst: "Objectdata en uw eigen transactiedata worden uitsluitend gebruikt om uw omgeving te laten werken. Versleuteld opgeslagen in de EU, per kantoor afgeschermd. We verkopen nooit uw data." },
               { titel: 'Eén platform, niet tien tools', tekst: 'Waardering, marktinzicht en content samengebracht in één werkplek, op uw eigen verkoopdata. Minder logins, meer overzicht.' },
             ].map(({ titel, tekst }) => (
-              <div key={titel} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '26px 28px' }}>
+              <div key={titel} className="vui-onthul vui-tegel" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '26px 28px' }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: '0 0 10px' }}>{titel}</h3>
                 <p style={{ fontSize: 14.5, lineHeight: 1.6, color: '#5A6B61', margin: 0 }}>{tekst}</p>
               </div>
@@ -71,7 +71,7 @@ export default function OverOnsPage() {
         {/* CTA */}
         <section style={{ maxWidth: 840, margin: '0 auto', padding: '0 28px 100px' }}>
           <div style={{ background: 'linear-gradient(135deg,#114230,#1A6B45)', borderRadius: 24, padding: '54px 48px', textAlign: 'center' }}>
-            <h2 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.1, color: '#fff', margin: '0 0 16px' }}>
+            <h2 className="vui-onthul" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(28px,3.6vw,42px)', lineHeight: 1.1, color: '#fff', margin: '0 0 16px' }}>
               Interesse?
             </h2>
             <p style={{ fontSize: 17, color: '#C8D7CF', margin: '0 0 28px' }}>

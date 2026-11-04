@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { StatTile } from '@/components/ui'
+import { Spotlight } from '@/components/ui/Spotlight'
 import { formatDatum } from '@/lib/utils'
 import { MIN_N_VOOR_GEMIDDELDE, type VerkochtMetDelta, type LooptijdVergelijk, type Marktaandeel } from '@/lib/kerncijfers'
 
@@ -74,8 +75,11 @@ export function Kerncijfers({
   const marktaandeelTeWeinig = marktaandeel.eigenN < MIN_N_VOOR_GEMIDDELDE || marktaandeel.marktN === 0
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 32 }}>
+    <Spotlight className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 32 }}>
+      {/* Hero-tegel: één merkblauw hoogtepunt per rij, zoals in
+          docs/ontwerp/startpagina.html (README § 1 regel b). */}
       <StatTile
+        hero
         label="Verkocht laatste 12 maanden"
         waarde={geenEigenVerkopen ? undefined : verkocht.aantal}
         waarschuwing={geenEigenVerkopen ? 'Nog geen eigen verkopen in de transactiedataset' : undefined}
@@ -139,6 +143,6 @@ export function Kerncijfers({
       />
       <StatTile label="In verkoop" waarde={inVerkoop} />
       <StatTile label="Lopende verkoopadviezen" waarde={lopendeVerkoopadviezen} />
-    </div>
+    </Spotlight>
   )
 }

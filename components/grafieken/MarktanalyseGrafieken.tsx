@@ -17,6 +17,7 @@ import {
   ResponsiveContainer, ComposedChart, Area, Line, Bar,
   XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
 } from 'recharts'
+import { useGrafiekAnimatie } from '@/hooks/useGrafiekAnimatie'
 import { colors } from '@/components/ui/tokens'
 import { dagen } from '@/lib/opmaak'
 import { SERIE, SERIE_LABEL, TOOLTIP_STYLE } from '@/lib/grafiekThema'
@@ -80,6 +81,7 @@ export function LijnGrafiek({
   ttFmt: (v: number) => string
   segmentB: boolean
 }) {
+  const anim = useGrafiekAnimatie()
   const alleWaarden = data.flatMap(d => [d.markt, d.wij, d.b]).filter((v): v is number => v != null)
   if (!alleWaarden.length) return <LegeGrafiek />
   return (
@@ -105,11 +107,11 @@ export function LijnGrafiek({
           allowDecimals={false}
           domain={['dataMin', 'dataMax']}
         />
-        <RTooltip content={<GrafiekTooltip fmt={ttFmt} />} />
-        <Line type="monotone" dataKey="markt" stroke={SERIE.markt} strokeWidth={1.5} dot={false} connectNulls name="markt" />
-        {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
-        <Area type="monotone" dataKey="wij" stroke="none" fill="url(#vlak-wij)" connectNulls name="wij-vlak" legendType="none" />
-        <Line type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
+        <RTooltip cursor={{ stroke: 'var(--merk-rand)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<GrafiekTooltip fmt={ttFmt} />} />
+        <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }} type="monotone" dataKey="markt" stroke={SERIE.markt} strokeWidth={1.5} dot={false} connectNulls name="markt" />
+        {segmentB && <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }} type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
+        <Area {...anim} type="monotone" dataKey="wij" stroke="none" fill="url(#vlak-wij)" connectNulls name="wij-vlak" legendType="none" />
+        <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }} type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
       </ComposedChart>
     </ResponsiveContainer>
   )
@@ -123,6 +125,7 @@ export function LooptijdGrafiek({
   data: GrafiekRij[]
   segmentB: boolean
 }) {
+  const anim = useGrafiekAnimatie()
   const alleWaarden = data.flatMap(d => [d.markt, d.wij, d.b]).filter((v): v is number => v != null)
   if (!alleWaarden.length) return <LegeGrafiek />
   return (
@@ -131,10 +134,10 @@ export function LooptijdGrafiek({
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(20,24,27,.06)" vertical={false} />
         <XAxis dataKey="label" tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} />
         <YAxis tick={{ fontSize: 11, fill: colors.muted }} tickLine={false} axisLine={false} width={40} allowDecimals={false} />
-        <RTooltip content={<GrafiekTooltip fmt={v => dagen(v)} />} />
-        <Bar dataKey="markt" fill={SERIE.markt} fillOpacity={0.22} radius={[6, 6, 0, 0]} name="markt" />
-        <Line type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
-        {segmentB && <Line type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
+        <RTooltip cursor={{ stroke: 'var(--merk-rand)', strokeWidth: 1.5, strokeDasharray: '4 4' }} content={<GrafiekTooltip fmt={v => dagen(v)} />} />
+        <Bar {...anim} dataKey="markt" fill={SERIE.markt} fillOpacity={0.22} radius={[6, 6, 0, 0]} name="markt" />
+        <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }} type="monotone" dataKey="wij" stroke={SERIE.wij} strokeWidth={2.5} dot={{ r: 3, fill: SERIE.wij, strokeWidth: 0 }} connectNulls name="wij" />
+        {segmentB && <Line {...anim} activeDot={{ r: 5, strokeWidth: 3, stroke: '#fff' }} type="monotone" dataKey="b" stroke={SERIE.b} strokeWidth={2} dot={false} connectNulls name="b" />}
       </ComposedChart>
     </ResponsiveContainer>
   )

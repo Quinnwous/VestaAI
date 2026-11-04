@@ -317,3 +317,512 @@
 
 /* Kaartattributie (PDOK): link onderscheidbaar zonder kleur — axe link-in-text-block */
 .maplibregl-ctrl.maplibregl-ctrl-attrib a { text-decoration: underline !important; }
+
+/* ═════════════════════════════════════════════════════════════════════════
+   Bewegingssysteem (visuele polish, nov 2026) — docs/ontwerp/principes.md
+   § Beweging: één curve, geen bounce, alles uit onder prefers-reduced-motion.
+   Bewust zo veel mogelijk pure CSS (scroll-driven animations, view
+   transitions): niets hangt van hydratie af, dus een element kan nooit
+   "onzichtbaar blijven" als JavaScript faalt (valkuil 19 sep). Een browser
+   zonder ondersteuning toont gewoon de eindstaat.
+   ═════════════════════════════════════════════════════════════════════════ */
+:root {
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --ease-uit: cubic-bezier(.4,0,1,1);
+  --t: 220ms;
+  --t-hover: 150ms;
+}
+
+/* Binnenkomst bij het laden: rustig omhoog, gestaffeld via --i (0, 1, 2 …). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-binnen {
+    animation: vui-rijs 560ms var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  .vui-binnen-zacht {
+    animation: vui-fade-in 600ms var(--ease) backwards;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+}
+/* Gestaffeld: elk direct kind komt 55 ms na het vorige binnen (tegelrijen,
+   rasters). `backwards`, zodat de hover-transform daarna gewoon werkt. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-gestaffeld > * { animation: vui-rijs 560ms var(--ease) backwards; }
+  .vui-gestaffeld > :nth-child(2) { animation-delay: 55ms; }
+  .vui-gestaffeld > :nth-child(3) { animation-delay: 110ms; }
+  .vui-gestaffeld > :nth-child(4) { animation-delay: 165ms; }
+  .vui-gestaffeld > :nth-child(5) { animation-delay: 220ms; }
+  .vui-gestaffeld > :nth-child(6) { animation-delay: 275ms; }
+  .vui-gestaffeld > :nth-child(7) { animation-delay: 330ms; }
+  .vui-gestaffeld > :nth-child(n+8) { animation-delay: 385ms; }
+}
+@keyframes vui-rijs {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Onthullen bij scrollen: alleen wat ónder de vouw staat beweegt; wat bij
+   het laden al in beeld is, staat er meteen (de tijdlijn is dan al voorbij). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-onthul {
+      animation: vui-onthul linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+    .vui-onthul-links {
+      animation: vui-onthul-links linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+@keyframes vui-onthul {
+  from { opacity: .001; transform: translateY(28px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes vui-onthul-links {
+  from { opacity: .001; transform: translateX(-24px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Spotlight: een zachte gloed in de merkkleur die de cursor volgt
+   (components/ui/Spotlight.tsx zet --mx/--my). Alleen op apparaten met een
+   echte muis; op touch is er niets om te volgen. */
+.vui-spot { position: relative; isolation: isolate; }
+.vui-spot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(var(--merk-rgb), .09), transparent 62%);
+}
+.vui-spot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 300ms var(--ease);
+  padding: 1px;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 0%), rgba(var(--merk-rgb), .55), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.vui-spot-licht::before { background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.16), transparent 60%); }
+.vui-spot-licht::after { background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 0%), rgba(255,255,255,.55), transparent 70%); }
+@media (hover: hover) and (pointer: fine) {
+  .vui-spot-groep:hover .vui-spot::before,
+  .vui-spot-groep:hover .vui-spot::after,
+  .vui-spot:hover::before,
+  .vui-spot:hover::after { opacity: 1; }
+}
+
+/* Tegels en kaarten die je kunt aanwijzen: 2 px omhoog, schaduw met een
+   zweem merkkleur (README § 1.5). */
+.vui-tegel { transition: transform var(--t) var(--ease), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease); }
+@media (hover: hover) and (pointer: fine) {
+  .vui-tegel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(20,24,27,.04), 0 14px 32px -16px rgba(var(--merk-rgb), .38) !important;
+  }
+}
+
+/* 3D-kanteling (components/ui/Kantel.tsx zet --rx/--ry in graden). */
+.vui-kantel {
+  transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 500ms var(--ease);
+  will-change: transform;
+}
+.vui-kantel[data-actief='true'] { transition: transform 120ms linear; }
+@media (prefers-reduced-motion: reduce) {
+  .vui-kantel { transform: none !important; }
+}
+
+/* Zwevende illustratie (components/ui/HuisIllustratie.tsx). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-zweef { animation: vui-zweef 6s ease-in-out infinite; }
+  .vui-zweef-schaduw { animation: vui-zweef-schaduw 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .vui-raam-gloed { animation: vui-raam 4.8s ease-in-out infinite; animation-delay: var(--d, 0s); }
+}
+@keyframes vui-zweef { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes vui-zweef-schaduw { 0%, 100% { transform: scale(1); opacity: .9; } 50% { transform: scale(.9); opacity: .6; } }
+@keyframes vui-raam { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+/* Topbar: schaduw verschijnt pas zodra je scrolt. */
+@supports (animation-timeline: scroll()) {
+  .vui-topbar {
+    animation: vui-topbar-schaduw linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 96px;
+  }
+}
+@keyframes vui-topbar-schaduw {
+  from { box-shadow: 0 0 0 rgba(20,24,27,0); }
+  to { box-shadow: 0 10px 30px -18px rgba(20,24,27,.28); background-color: rgba(255,255,255,.82); }
+}
+
+/* Startbanner: lichtstreep die één keer langskomt, en diepte bij het scrollen
+   (raster en foto bewegen trager dan de tekst). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-glans { animation: vui-glans 1600ms var(--ease) 250ms both; }
+  .vui-startbanner-tekst > * { animation: vui-rijs 640ms var(--ease) both; }
+  .vui-startbanner-tekst > :nth-child(1) { animation-delay: 120ms; }
+  .vui-startbanner-tekst > :nth-child(2) { animation-delay: 190ms; }
+  .vui-startbanner-tekst > :nth-child(3) { animation-delay: 260ms; }
+  .vui-startbanner-bol { animation: vui-bol 14s ease-in-out infinite alternate; }
+}
+@keyframes vui-glans {
+  from { transform: translateX(-70%); opacity: 0; }
+  30% { opacity: 1; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes vui-bol {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(-6%, 10%) scale(1.12); }
+}
+.vui-startbanner-bol {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(36px);
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-startbanner-foto img, .vui-startbanner-raster {
+      animation: vui-parallax linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 420px;
+    }
+  }
+}
+@keyframes vui-parallax {
+  from { transform: translateY(0) scale(1.04); }
+  to { transform: translateY(36px) scale(1.04); }
+}
+
+/* Schuivende indicator onder de actieve tab (components/ui/TabBar.tsx). */
+.vui-tabbalk[data-gemeten='true'] > button { border-bottom-color: transparent !important; }
+.vui-tabindicator {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--merk);
+  transition: transform 300ms var(--ease), width 300ms var(--ease);
+  pointer-events: none;
+}
+.vui-tabpaneel { animation: vui-rijs 320ms var(--ease) both; }
+@media (prefers-reduced-motion: reduce) {
+  .vui-tabindicator { transition: none; }
+  .vui-tabpaneel { animation: none; }
+}
+
+/* Paginaovergangen (React <ViewTransition>, zie components/ui/AppPagina.tsx).
+   De topbar staat stil als anker; alleen de inhoud wisselt: oud vervaagt
+   snel, nieuw komt rustig iets omhoog. De actieve navigatiepil glijdt mee. */
+::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+::view-transition-group(app-topbar) { animation: none; z-index: 100; }
+::view-transition-old(app-topbar) { display: none; }
+::view-transition-new(app-topbar) { animation: none; }
+::view-transition-group(nav-actief) { animation-duration: 340ms; animation-timing-function: cubic-bezier(.2,.8,.2,1); z-index: 101; }
+::view-transition-old(.vui-pagina) { animation: 140ms var(--ease-uit) both vui-fade-out; }
+::view-transition-new(.vui-pagina) { animation: 360ms var(--ease) 90ms both vui-pagina-in; }
+@keyframes vui-pagina-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* Focusring in de merkkleur, overal waar een eigen stijl ontbreekt. */
+:where(a, button, [role='tab'], [role='button'], summary):focus-visible {
+  outline: 2px solid var(--merk);
+  outline-offset: 2px;
+}
+
+/* 3D-woning rechts in de startbanner (alleen zonder foto, vanaf 640 px). */
+.vui-startbanner-huis {
+  position: absolute;
+  right: clamp(24px, 6vw, 96px);
+  bottom: 14px;
+  display: none;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 24px rgba(0,0,0,.18));
+}
+@media (min-width: 640px) { .vui-startbanner-huis { display: block; } }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-startbanner-huis { animation: vui-rijs 900ms var(--ease) 200ms both; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-staaf-groei { animation: vui-staaf 900ms var(--ease) backwards; animation-delay: var(--d, 0ms); }
+}
+@keyframes vui-staaf { from { transform: scaleY(0); opacity: 0; } to { transform: scaleY(1); opacity: 1; } }
+
+/* Verkenners: tegelrijen komen gestaffeld binnen, grafiekrasters onthullen
+   bij scrollen — op de gedeelde rasterclasses, zodat elk scherm meedoet. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-marktanalyse-tegels > * { animation: vui-rijs 560ms var(--ease) backwards; }
+  .vui-marktanalyse-tegels > :nth-child(2) { animation-delay: 55ms; }
+  .vui-marktanalyse-tegels > :nth-child(3) { animation-delay: 110ms; }
+  .vui-marktanalyse-tegels > :nth-child(4) { animation-delay: 165ms; }
+  .vui-marktanalyse-tegels > :nth-child(5) { animation-delay: 220ms; }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .vui-marktanalyse-grafieken > *,
+    .vui-concurrentie-matrix-ranglijst > *,
+    .vui-wij-vs-markt > * {
+      animation: vui-onthul linear backwards;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+/* Tabelrijen (components/ui/DataTable.tsx) vloeien na elkaar binnen — bij
+   laden en bij een nieuwe pagina; een rij die blijft staan beweegt niet. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-tabelrij { animation: vui-rij-in 380ms var(--ease) backwards; }
+  .vui-tabelrij:nth-child(2) { animation-delay: 18ms; }
+  .vui-tabelrij:nth-child(3) { animation-delay: 36ms; }
+  .vui-tabelrij:nth-child(4) { animation-delay: 54ms; }
+  .vui-tabelrij:nth-child(5) { animation-delay: 72ms; }
+  .vui-tabelrij:nth-child(6) { animation-delay: 90ms; }
+  .vui-tabelrij:nth-child(7) { animation-delay: 108ms; }
+  .vui-tabelrij:nth-child(8) { animation-delay: 126ms; }
+  .vui-tabelrij:nth-child(9) { animation-delay: 144ms; }
+  .vui-tabelrij:nth-child(n+10) { animation-delay: 160ms; }
+}
+@keyframes vui-rij-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Fasestepper (components/DossierHeader.tsx): klikbare buurfase licht op,
+   de actieve fase heeft een zachte puls in de merkkleur. */
+.vui-fasepil { transition: background var(--t-hover), color var(--t-hover), box-shadow var(--t-hover), transform var(--t-hover) var(--ease); }
+.vui-fasepil:hover:not(:disabled) { background: var(--merk-zacht) !important; color: var(--merk-diep) !important; box-shadow: 0 0 0 1px var(--merk-rand) inset; }
+.vui-fasepil:active:not(:disabled) { transform: scale(.97); }
+.vui-fase-puls {
+  position: relative;
+  width: 7px; height: 7px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--merk);
+  flex: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-fase-puls::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: var(--merk);
+    animation: vui-puls 2.4s var(--ease) infinite;
+  }
+}
+@keyframes vui-puls {
+  0% { transform: scale(1); opacity: .55; }
+  70%, 100% { transform: scale(2.8); opacity: 0; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Landingspagina (components/LandingPageClient.tsx) — bewust
+   VestaAI-groen, buiten de kantooromgeving.
+   ───────────────────────────────────────────────────────── */
+.vl-hero-scene { perspective: 1400px; }
+.vl-hero-kantel { --rx: 3deg; --ry: -7deg; border-radius: 22px; }
+.vl-hero-kantel .vl-hero-kaart { transform: translateZ(0); }
+.vl-chip {
+  position: absolute;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 14px 10px 10px;
+  background: rgba(255,255,255,.92);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border: 1px solid #E4EAE6;
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -18px rgba(14,26,19,.35);
+  font-size: 13px;
+  color: #2A372F;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.vl-chip b { color: #0E1A13; }
+.vl-chip-icoon {
+  width: 26px; height: 26px; border-radius: 8px;
+  display: grid; place-items: center;
+  background: #EAF5EE; color: #1A6B45; font-weight: 800; font-size: 14px;
+}
+.vl-chip-stip { width: 10px; height: 10px; border-radius: 50%; background: #1A6B45; box-shadow: 0 0 0 4px #EAF5EE; margin: 0 4px; }
+.vl-chip-1 { top: 22%; right: -34px; transform: translateZ(70px); }
+.vl-chip-2 { bottom: 4%; left: -48px; transform: translateZ(110px); }
+.vl-chip-3 { bottom: -18px; right: 28px; transform: translateZ(50px); }
+@media (prefers-reduced-motion: no-preference) {
+  .vl-chip-1 { animation: vl-zweef 7s ease-in-out infinite, vui-fade-in 700ms var(--ease) 500ms backwards; }
+  .vl-chip-2 { animation: vl-zweef 8s ease-in-out -2s infinite, vui-fade-in 700ms var(--ease) 650ms backwards; }
+  .vl-chip-3 { animation: vl-zweef 6.5s ease-in-out -4s infinite, vui-fade-in 700ms var(--ease) 800ms backwards; }
+  .vl-hero-gloed { animation: vl-adem 9s ease-in-out infinite alternate; }
+}
+@keyframes vl-zweef { 0%, 100% { translate: 0 0; } 50% { translate: 0 -9px; } }
+@keyframes vl-adem { from { opacity: .7; scale: 1; } to { opacity: 1; scale: 1.06; } }
+@media (max-width: 980px) {
+  .vl-hero-kantel { --rx: 0deg; --ry: 0deg; }
+  .vl-chip { display: none; }
+}
+
+/* Lopende band met bronnen. */
+.vl-band {
+  flex: 1 1 420px;
+  min-width: 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.vl-band-spoor { display: flex; gap: 28px; width: max-content; }
+@media (prefers-reduced-motion: no-preference) {
+  .vl-band-spoor { animation: vl-band 32s linear infinite; }
+  .vl-band:hover .vl-band-spoor { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vl-band-spoor { flex-wrap: wrap; width: auto; }
+  .vl-band-spoor > [aria-hidden='true'] { display: none; }
+}
+@keyframes vl-band { to { transform: translateX(calc(-50% - 14px)); } }
+
+/* Lichtstreep over de primaire knop bij aanwijzen. */
+.vui-knop-glans { position: relative; overflow: hidden; isolation: isolate; }
+.vui-knop-glans::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,.28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-knop-glans:hover::after { transition: transform 700ms var(--ease); transform: translateX(120%); }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Inlogpagina (components/InlogFormulier.tsx): VestaAI-groen op /login,
+   merkkleur op de kantoorlogin (de --merk*-variabelen staan dan op de
+   wrapper).
+   ───────────────────────────────────────────────────────── */
+.vui-login-decor { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.vui-login-vlek { position: absolute; border-radius: 50%; filter: blur(70px); }
+.vui-login-vlek-1 { width: 520px; height: 520px; top: -200px; left: -140px; background: rgba(var(--merk-rgb), .16); }
+.vui-login-vlek-2 { width: 460px; height: 460px; bottom: -220px; right: -120px; background: color-mix(in srgb, var(--merk-licht) 28%, transparent); }
+.vui-login-raster {
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(20,24,27,.10) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 50% 45% at 50% 50%, #000 0%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 45% at 50% 50%, #000 0%, transparent 100%);
+  opacity: .6;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vui-login-vlek-1 { animation: vui-bol 16s ease-in-out infinite alternate; }
+  .vui-login-vlek-2 { animation: vui-bol 19s ease-in-out -6s infinite alternate-reverse; }
+}
+
+/* Modal (components/ui/Modal.tsx): sluier vervaagt in, venster groeit iets
+   op vanaf 96 % (zelfde taal als de popovers). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-modal-sluier { animation: vui-fade-in 200ms var(--ease); }
+  .vui-modal { animation: vui-modal-in 260ms var(--ease); }
+}
+@keyframes vui-modal-in {
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Knoppen: voelbaar indrukken. */
+.vui-btn:active:not(:disabled) { transform: scale(.98); }
+
+/* Profielmenu en mobiel menu in de topbar: groeien uit hun knop. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-menu-uitklap { transform-origin: top right; animation: vui-pop-in 180ms var(--ease); }
+  .vui-mobielmenu { animation: vui-mobiel-in 260ms var(--ease); }
+  .vui-mobielmenu a { animation: vui-rijs 340ms var(--ease) backwards; }
+  .vui-mobielmenu a:nth-child(2) { animation-delay: 30ms; }
+  .vui-mobielmenu a:nth-child(3) { animation-delay: 60ms; }
+  .vui-mobielmenu a:nth-child(4) { animation-delay: 90ms; }
+  .vui-mobielmenu a:nth-child(5) { animation-delay: 120ms; }
+  .vui-mobielmenu a:nth-child(6) { animation-delay: 150ms; }
+}
+@keyframes vui-mobiel-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Navigatiepillen: zachte hover op de grijze balk. */
+.vui-navpil:not([aria-current='page']):hover { background: rgba(255,255,255,.7) !important; color: var(--merk-tekst) !important; }
+
+/* Waarde-hero (components/WaardebepalingPaneel.tsx). */
+.vui-waardehero > :not(.vui-waardehero-deco) { position: relative; z-index: 1; }
+.vui-waardehero-deco { z-index: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-band-vulling { transform-origin: left center; animation: vui-band-groei 900ms var(--ease) 250ms backwards; }
+}
+@keyframes vui-band-groei { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.vui-startbanner-raster.vui-waardehero-deco { animation: none; }
+
+/* Kantoorpagina (app/(app)/kantoor/page.tsx): kaarten in twee kolommen. */
+.vui-kantoor-raster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .vui-kantoor-raster { grid-template-columns: minmax(0, 1fr); } }
+.vui-teamrij { transition: background var(--t-hover); }
+.vui-teamrij:hover { background: var(--merk-zacht); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-staaf-balk { transform-origin: bottom center; animation: vui-staaf 800ms var(--ease) backwards; }
+  .vui-staaf-balk { animation-delay: 120ms; }
+}
+
+/* Segmented control (components/ui/SegmentedToggle.tsx): witte thumb die
+   naar de gekozen optie schuift. */
+.vui-seg[data-gemeten='true'] > button { background: transparent !important; box-shadow: none !important; }
+.vui-seg > button:hover { color: var(--merk-tekst) !important; }
+.vui-seg-thumb {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  border-radius: var(--merk-radius-pill, 9999px);
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(20,24,27,.14), 0 0 0 .5px rgba(20,24,27,.04);
+  transition: transform 260ms var(--ease), width 260ms var(--ease);
+}
+@media (prefers-reduced-motion: reduce) { .vui-seg-thumb { transition: none; } }
+
+/* Typografie: koppen in evenwichtige regels, alinea's zonder weeswoord. */
+:where(h1, h2, h3) { text-wrap: balance; }
+:where(p, li) { text-wrap: pretty; }
+
+/* Voortgangsbalk tijdens contentgeneratie: zachte glans die meeloopt. */
+.vui-voortgang { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-voortgang::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent);
+    animation: vui-skeleton-shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+/* Lijsten die binnenkomen: recent bekeken (startpagina) en zoekresultaten
+   (⌘K-palet) vloeien rij voor rij in. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-recentrij, [aria-label='Zoekresultaten'] [role='option'] { animation: vui-rij-in 360ms var(--ease) backwards; }
+  .vui-recentrij:nth-child(2), [aria-label='Zoekresultaten'] [role='option']:nth-child(2) { animation-delay: 30ms; }
+  .vui-recentrij:nth-child(3), [aria-label='Zoekresultaten'] [role='option']:nth-child(3) { animation-delay: 60ms; }
+  .vui-recentrij:nth-child(4), [aria-label='Zoekresultaten'] [role='option']:nth-child(4) { animation-delay: 90ms; }
+  .vui-recentrij:nth-child(n+5), [aria-label='Zoekresultaten'] [role='option']:nth-child(n+5) { animation-delay: 120ms; }
+  .vui-recentrij { transition: background var(--t-hover); }
+}
+/* In het zoekpalet korter: de lijst wisselt bij elke toetsaanslag. */
+@media (prefers-reduced-motion: no-preference) {
+  [aria-label='Zoekresultaten'] [role='option'] { animation-duration: 200ms; }
+}

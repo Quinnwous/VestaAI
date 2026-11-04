@@ -1,9 +1,13 @@
+/**
+ * Laadstaat buiten de ingelogde omgeving (landing, login, admin): een rustige
+ * pulserende stip in VestaAI-groen in plaats van een draaiende spinner.
+ */
 export default function Loading() {
   return (
-    <main className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-gray-400">Laden...</p>
+    <main style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div aria-busy="true" aria-label="Laden" style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#5C6470', fontSize: 14 }}>
+        <span aria-hidden className="vui-fase-puls" style={{ width: 9, height: 9, margin: 0 }} />
+        Laden…
       </div>
     </main>
   )

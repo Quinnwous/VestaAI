@@ -63,6 +63,18 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   `docs/i4housing/i4housing-team.md` (1 okt, zonder welkomstmail; de
   startwachtwoorden staan alleen lokaal in `backups/`). Teamfoto uit hun eigen
   fotoshoot (mei 2026, origineel 3894 × 4868) als startbanner en sfeerbeeld.
+- **Beweging en beeld** (nov 2026): rustige binnenkomst en scroll-onthulling,
+  een lichtvlek die de muis volgt op elke kerncijfertegel, paginaovergangen
+  waarbij de actieve navigatiepil meeglijdt, een schuivende tabstreep, en
+  isometrische 3D-illustraties in de merkkleuren op lege staten, de startbanner
+  en de dossierkop zonder foto. Alles valt weg onder "beweging beperken".
+  Regels: `docs/ontwerp/principes.md` § Beweging.
+  Verder: segmented controls met schuivende witte thumb, laadstaten als
+  skelet (nergens meer een spinner), een 404 met de 3D-woning, een kantoorpagina
+  in kaartstijl (huisstijl met live kleurstalen, team met initialen), een
+  wachtscherm tijdens de contentgeneratie (geschatte voortgang op basis van de
+  gemeten ± 100 s, nooit 100 % vóór "klaar"), en in de presentatiemodus
+  schuiven de stappen in de leesrichting.
 
 ## 2. Startpagina (`/dashboard`)
 

@@ -61,7 +61,7 @@ export default function VertrouwenPage() {
           <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', color: '#1A6B45', marginBottom: 12 }}>
             Vertrouwen &amp; beveiliging
           </p>
-          <h1 style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 800, letterSpacing: '-.02em', color: '#0E1A13', marginBottom: 16 }}>
+          <h1 className="vui-binnen" style={{ fontSize: 40, lineHeight: 1.1, fontWeight: 800, letterSpacing: '-.02em', color: '#0E1A13', marginBottom: 16 }}>
             Uw gegevens zijn veilig — en blijven van u.
           </h1>
           <p style={{ fontSize: 17, lineHeight: 1.6, color: '#5A6B61' }}>
@@ -80,7 +80,7 @@ export default function VertrouwenPage() {
           }}
         >
           {PIJLERS.map(p => (
-            <div key={p.titel} style={card}>
+            <div key={p.titel} className="vui-onthul vui-tegel" style={card}>
               <div style={{ fontSize: 26, marginBottom: 12 }} aria-hidden>{p.icoon}</div>
               <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13', marginBottom: 6 }}>{p.titel}</h2>
               <p style={{ fontSize: 14, lineHeight: 1.6, color: '#5A6B61' }}>{p.tekst}</p>
@@ -90,7 +90,7 @@ export default function VertrouwenPage() {
 
         {/* Rechten + contact */}
         <div style={{ ...card, marginTop: 40, padding: '28px 30px' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Uw AVG-rechten</h2>
+          <h2 className="vui-onthul" style={{ fontSize: 18, fontWeight: 800, color: '#0E1A13', marginBottom: 10 }}>Uw AVG-rechten</h2>
           <p style={{ fontSize: 14.5, lineHeight: 1.65, color: '#5A6B61', marginBottom: 12 }}>
             U heeft recht op inzage, correctie, verwijdering en overdracht van uw persoonsgegevens. Trekt de
             platform-admin de toegang van uw kantoor in, dan verwijderen we uw gegevens binnen 90 dagen (tenzij

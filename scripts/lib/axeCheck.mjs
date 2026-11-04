@@ -76,6 +76,10 @@ export async function voerAxeScan({ basis, cookie, routes, breedtes = [390, 1280
       const context = await browser.newContext({
         baseURL: basis,
         viewport: { width: breedte, height: breedte <= 480 ? 844 : 1080 },
+        // Eindstaat zonder animaties: scroll-onthulling en binnenkomst
+        // (globals.css § Bewegingssysteem) zouden anders halftransparante
+        // tekst opleveren en dus valse contrastmeldingen.
+        reducedMotion: 'reduce',
       })
       await context.addCookies([cookie])
       const page = await context.newPage()

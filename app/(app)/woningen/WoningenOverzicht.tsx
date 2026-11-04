@@ -8,6 +8,7 @@ import {
   DataTable, type DataTableKolom, type DataTablePaginatie,
   SelectMenu,
   EmptyState,
+  SegmentedToggle,
 } from '@/components/ui'
 import { BasisKaart } from '@/components/kaart'
 import { WoningenKaartLaag, type WoningKaartPunt, type WoningHoverInfo } from '@/components/WoningenKaartLaag'
@@ -250,22 +251,12 @@ export function WoningenOverzicht({
           breedte={150}
         />
 
-        <div style={{ display: 'inline-flex', borderRadius: radius.md, overflow: 'hidden', border: `1px solid ${colors.borderStrong}` }}>
-          {(['tabel', 'kaart'] as Weergave[]).map((w) => (
-            <button
-              key={w}
-              type="button"
-              onClick={() => updateUrl({ weergave: w })}
-              style={{
-                padding: '8px 15px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer',
-                background: weergave === w ? 'var(--merk)' : colors.surface,
-                color: weergave === w ? 'var(--merk-op)' : colors.body,
-              }}
-            >
-              {w === 'tabel' ? 'Tabel' : 'Kaart'}
-            </button>
-          ))}
-        </div>
+        <SegmentedToggle
+          options={[{ value: 'tabel', label: 'Tabel' }, { value: 'kaart', label: 'Kaart' }] as { value: Weergave; label: string }[]}
+          value={weergave}
+          onChange={(w) => updateUrl({ weergave: w })}
+          size="sm"
+        />
       </div>
 
       {/* Zoekbalk */}
@@ -295,6 +286,7 @@ export function WoningenOverzicht({
 
       {totalCount === 0 ? (
         <EmptyState
+          illustratie={geenEnkeleFilterActief ? 'woning' : undefined}
           titel={geenEnkeleFilterActief ? 'Nog geen woningen' : 'Geen woningen gevonden'}
           beschrijving={
             geenEnkeleFilterActief

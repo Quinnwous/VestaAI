@@ -1,4 +1,6 @@
 import { colors } from '@/components/ui/tokens'
+import { Kantel } from '@/components/ui/Kantel'
+import { HuisIllustratie } from '@/components/ui/HuisIllustratie'
 
 /**
  * Welkomstblok bovenaan de startpagina (masterplan fase 1.6, ontwerp uit
@@ -46,13 +48,15 @@ export function StartBanner({
   const voornaam = naam?.trim().split(/\s+/)[0] ?? null
 
   return (
+    // Kantel: een halve graad diepte die de muis volgt, plus een lichtvlek
+    // (`vui-spot-licht`). Puur versiering, zie components/ui/Kantel.tsx.
+    <Kantel sterkte={0.8} style={{ marginBottom: 24, borderRadius: 'var(--merk-radius-card-xl, 20px)' }}>
     <div
-      className="vui-startbanner"
+      className="vui-startbanner vui-spot vui-spot-licht"
       style={{
         position: 'relative',
         overflow: 'hidden',
         borderRadius: 'var(--merk-radius-card-xl, 20px)',
-        marginBottom: 24,
         minHeight: 'clamp(196px, 26vw, 252px)',
         display: 'flex',
         alignItems: 'flex-end',
@@ -65,7 +69,17 @@ export function StartBanner({
       {/* Fijn raster + diagonale glans (prototype .kantoorbanner::before/::after).
           Puur decoratief, dus weg voor schermlezers. */}
       <div aria-hidden className="vui-startbanner-raster" />
+      {/* Twee trage lichtbollen in het merkverloop — geven het vlak diepte
+          zonder een foto nodig te hebben. */}
+      <div aria-hidden className="vui-startbanner-bol" style={{ width: '46%', height: '160%', top: '-70%', right: '-6%', background: 'rgba(255,255,255,.16)' }} />
+      <div aria-hidden className="vui-startbanner-bol" style={{ width: '38%', height: '120%', bottom: '-70%', left: '18%', background: 'color-mix(in srgb, var(--merk-licht) 60%, transparent)', animationDelay: '-7s' }} />
       <div aria-hidden className="vui-startbanner-glans" />
+
+      {!url && (
+        <div aria-hidden className="vui-startbanner-huis">
+          <HuisIllustratie variant="opMerk" breedte={210} />
+        </div>
+      )}
 
       {url && (
         <div className="vui-startbanner-foto">
@@ -93,7 +107,7 @@ export function StartBanner({
         />
       )}
 
-      <div style={{ position: 'relative', padding: 'clamp(20px, 3vw, 30px) clamp(20px, 3vw, 32px)', maxWidth: 640 }}>
+      <div className="vui-startbanner-tekst" style={{ position: 'relative', zIndex: 1, padding: 'clamp(20px, 3vw, 30px) clamp(20px, 3vw, 32px)', maxWidth: 640 }}>
         <p style={{ margin: '0 0 4px', fontSize: 12.5, fontWeight: 700, color: 'rgba(255,255,255,.82)' }}>
           {datum}
         </p>
@@ -110,7 +124,7 @@ export function StartBanner({
       <span
         className="vui-startbanner-merk"
         style={{
-          position: 'absolute', right: 16, bottom: 16,
+          position: 'absolute', right: 16, bottom: 16, zIndex: 1,
           fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,.82)',
           background: 'rgba(255,255,255,.14)',
           padding: '5px 11px', borderRadius: 'var(--merk-radius-pill, 9999px)',
@@ -120,5 +134,6 @@ export function StartBanner({
         {kantoornaam}
       </span>
     </div>
+    </Kantel>
   )
 }

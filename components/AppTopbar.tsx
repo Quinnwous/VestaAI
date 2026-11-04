@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import type { Branding } from '@/lib/branding'
 import { FeedbackSheet, FEEDBACK_TRIGGER_DESKTOP_STYLE, FEEDBACK_TRIGGER_MOBIEL_STYLE } from '@/components/FeedbackKnop'
 import { ZoekPalet, ZoekKnop } from '@/components/ZoekPalet'
+import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
 
 /**
  * Topbar van de ingelogde omgeving.
@@ -77,6 +78,9 @@ export function AppTopbar({
   const [zoekOpen, setZoekOpen] = useState(false)
   const balkRef = useRef<HTMLDivElement>(null)
 
+  // Spotlight op elke tegel (`.vui-spot`), zie hooks/useSpotlightVolger.ts.
+  useSpotlightVolger()
+
   // ⌘K/Ctrl+K opent het zoekpalet — overal in de ingelogde omgeving, ook met
   // focus in een ander invoerveld (zelfde gedrag als Linear/Notion/GitHub).
   useEffect(() => {
@@ -146,6 +150,7 @@ export function AppTopbar({
   const profielMenu = (
     <div
       role="menu"
+      className="vui-menu-uitklap"
       style={{
         position: 'absolute', top: '100%', right: 0, marginTop: 6, minWidth: 220,
         background: '#fff', border: '1px solid #E6E9EC', borderRadius: 'var(--merk-radius-lg, 14px)',
@@ -218,7 +223,11 @@ export function AppTopbar({
 
       <header
         ref={balkRef}
+        // vui-topbar: schaduw verschijnt pas bij scrollen. viewTransitionName:
+        // de balk staat stil als anker tijdens een paginaovergang.
+        className="vui-topbar"
         style={{
+          viewTransitionName: 'app-topbar',
           position: 'sticky', top: 0, zIndex: 50, background: 'rgba(255,255,255,.93)',
           backdropFilter: 'saturate(150%) blur(14px)', borderBottom: '1px solid #E6E9EC',
         }}
@@ -255,10 +264,13 @@ export function AppTopbar({
                     display: 'inline-block', whiteSpace: 'nowrap',
                     padding: '8px 14px', borderRadius: 'var(--merk-radius-pill, 9999px)',
                     fontSize: 13.5, fontWeight: 600, textDecoration: 'none',
-                    color: actief ? 'var(--merk)' : '#41494F',
+                    color: actief ? 'var(--merk-tekst)' : '#41494F',
                     background: actief ? '#fff' : 'transparent',
                     boxShadow: actief ? '0 1px 3px rgba(20,24,27,.12)' : 'none',
                     transition: 'background .15s, color .15s',
+                    // De actieve pil glijdt bij navigeren naar zijn nieuwe plek
+                    // (view transition, globals.css § nav-actief).
+                    viewTransitionName: actief ? 'nav-actief' : undefined,
                   }}
                 >
                   {item.label}
@@ -309,7 +321,7 @@ export function AppTopbar({
         </div>
 
         {mobiel && (
-          <div style={{ borderTop: '1px solid #EBEEF1', padding: '10px var(--app-marge) 16px', background: '#fff' }}>
+          <div className="vui-mobielmenu" style={{ borderTop: '1px solid #EBEEF1', padding: '10px var(--app-marge) 16px', background: '#fff' }}>
             <div style={{ marginBottom: 12 }}>
               {NAV_ITEMS.map(item => {
                 const actief = item.actief(pathname)
@@ -318,7 +330,7 @@ export function AppTopbar({
                     key={item.id}
                     href={item.href}
                     aria-current={actief ? 'page' : undefined}
-                    style={{ display: 'block', fontSize: 14, fontWeight: actief ? 700 : 600, color: actief ? 'var(--merk)' : '#14181B', padding: '7px 0', textDecoration: 'none' }}
+                    style={{ display: 'block', fontSize: 14, fontWeight: actief ? 700 : 600, color: actief ? 'var(--merk-tekst)' : '#14181B', padding: '7px 0', textDecoration: 'none' }}
                   >
                     {item.label}
                   </Link>

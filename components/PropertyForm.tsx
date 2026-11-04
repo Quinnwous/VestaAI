@@ -248,9 +248,10 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             style={{
               flex: '1 0 auto', padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: s.id < stap ? 'pointer' : 'default',
               borderBottom: `3px solid ${s.id === stap ? 'var(--merk)' : s.id < stap ? 'var(--merk-rand)' : '#E6E9EC'}`,
+              transition: 'border-color 300ms cubic-bezier(.2,.8,.2,1)',
             }}
           >
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.id === stap ? 'var(--merk)' : s.id < stap ? '#2C3238' : '#5C6470', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, transition: 'color 300ms', color: s.id === stap ? 'var(--merk-tekst)' : s.id < stap ? '#2C3238' : '#5C6470', whiteSpace: 'nowrap' }}>
               {s.id}. {s.label}
               {'kanLater' in s && s.kanLater && (
                 <span style={{ marginLeft: 5, fontSize: 9.5, fontWeight: 700, color: '#5C6470', textTransform: 'none' }}>
@@ -263,7 +264,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 1 — Adres */}
-      <div style={{ display: stap === 1 ? 'block' : 'none' }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 1 ? 'block' : 'none' }}>
         <label style={labelStyle}>
           {isEn ? 'Address' : 'Adres'} <span style={{ color: '#DC2626' }}>*</span>
         </label>
@@ -303,7 +304,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 2 — Woning */}
-      <div style={{ display: stap === 2 ? 'grid' : 'none', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 2 ? 'grid' : 'none', gap: 24 }}>
       {/* Woningtype + Kamers */}
       <div className="form-grid-2">
         <div>
@@ -447,7 +448,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 3 — Staat & afwerking */}
-      <div style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 3 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
             <label style={labelStyle}>Onderhoud binnen <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
@@ -504,7 +505,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 4 — Ligging & buitenruimte */}
-      <div style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 4 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
         <div className="form-grid-2">
           <div>
             <label style={labelStyle}>Ligging <span style={{ color: '#5C6470', fontWeight: 500 }}>(optioneel)</span></label>
@@ -582,7 +583,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 5 — Verhaal */}
-      <div style={{ display: stap === 5 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 5 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       {/* USP's */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
@@ -672,7 +673,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       </div>
 
       {/* Stap 6 — Commercieel (Verkoopadvies-fase: prijsverwachting + courtagevoorstel, geen vaste vraagprijs) */}
-      <div style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
+      <div className="vui-tabpaneel" style={{ display: stap === 6 ? 'flex' : 'none', flexDirection: 'column', gap: 24 }}>
       <div className="form-grid-2">
         <div>
           <label style={labelStyle}>

@@ -12,6 +12,23 @@
 
 ---
 
+### 3 nov 2026 — visuele polish: beweging en 3D-beeld
+
+Opdracht Quinn: "alles tiptop en professioneel, scrollanimaties, bewegende
+onderdelen, 3D-beelden". Eén sessie, zonder agents (budget), lokaal
+gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
+
+| Onderwerp | Besluit | Door |
+|---|---|---|
+| Animatietechniek | Pure CSS (scroll-driven animations, `@keyframes`, React `<ViewTransition>`), geen animatielibrary: geen extra JavaScript in de eerste lading en niets dat onzichtbaar blijft als de hydratie faalt (les 19 sep). Browsers zonder ondersteuning tonen de eindstaat | Opus |
+| Mate van beweging | Binnen principes § Beweging: één curve, geen bounce, alles uit onder reduced motion. 3D-kanteling alleen op de startbanner (0,8°) en de landingshero; de rest is binnenkomst, onthulling en hover | Opus |
+| 3D-illustraties | Eigen isometrische SVG's (woning, staafgrafiek) in `var(--merk*)` + `color-mix`, dus elk kantoor krijgt ze in zijn eigen kleur. Rood alleen als ring en stokje van de pin (toegestane detailset). Vooral voor i4, dat nu overal lege staten ziet | Opus |
+| Hero-tegel startpagina | De eerste kerncijfertegel ("Verkocht laatste 12 maanden") is nu de hero, zoals `docs/ontwerp/startpagina.html` | Opus |
+| DoD-screenshots | `screenshots.mjs`, axe en Playwright draaien met `reducedMotion: 'reduce'`, anders staat wat onder de vouw onthult half doorzichtig in een fullPage-shot en meldt axe vals contrast | Opus |
+| SegmentedToggle | Naar de kit-vorm (grijze baan, witte schuivende thumb, tekst in `--merk-tekst`) i.p.v. een blauw gevulde knop — README § 1.6. Raakt alle 12 plekken in één keer | Opus |
+| Wachtscherm contentgeneratie | Tijdgebaseerde voortgangsbalk (1 − e^(−t/55 s), plafond 92 %) met "duurt meestal ± 1½ minuut": eerlijk over dat het een schatting is, en hij springt nooit vol vóór de status echt klaar is. `Date.now()` niet meer in de eerste render (hydratievalkuil) | Opus |
+| Kantoorpagina | Van losse Tailwind-blokken naar vier kaarten met kaartkop (zelfde opbouw als de verkenners); kleurstalen tonen de live `--merk*`-waarden | Opus |
+
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 
 Doorlopende ronde direct na de betaalde testronde: de twee items die daaruit

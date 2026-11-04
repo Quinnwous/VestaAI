@@ -118,6 +118,7 @@ export function BuurtDataTab({
   if (!data) {
     return (
       <EmptyState
+        illustratie={fout ? undefined : 'woning'}
         titel={fout ? 'Buurtdata ophalen mislukt' : 'Nog geen buurtdata'}
         beschrijving={fout || 'WOZ-waarde, CBS-buurtcijfers en voorzieningen zijn nog niet opgehaald voor dit adres.'}
         actie={verversKnop}

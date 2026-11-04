@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { StatTile } from '@/components/ui/StatTile'
 
 interface MakelaarStat {
   id: string
@@ -68,23 +69,15 @@ export function StatistiekenPaneel() {
     : `${tijdBespaard} min`
 
   return (
-    <div className="space-y-8 max-w-xl">
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Totaal woningen', waarde: stats.totaalAltijd },
-          { label: 'Gepubliceerd', waarde: stats.gepubliceerd },
-          { label: 'Gem. per maand', waarde: gemiddeld },
-        ].map(({ label, waarde }) => (
-          <div key={label} className="rounded-xl border border-gray-200 bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-gray-900">{waarde}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{label}</p>
-          </div>
-        ))}
+    <div className="space-y-8">
+      <div className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 10 }}>
+        <StatTile label="Totaal woningen" waarde={stats.totaalAltijd} />
+        <StatTile label="Gepubliceerd" waarde={stats.gepubliceerd} />
+        <StatTile label="Gem. per maand" waarde={gemiddeld} />
       </div>
 
       {stats.totaalAltijd > 0 && (
         <div className="rounded-xl border border-[var(--merk-rand)] bg-[var(--merk-zacht)] p-4 flex items-center gap-4">
-          <div className="text-2xl">⏱</div>
           <div>
             <p className="text-sm font-semibold text-[var(--merk-hover)]">
               Geschatte tijdsbesparing: <span className="text-[var(--merk-hover)]">{tijdLabel}</span>
@@ -106,8 +99,8 @@ export function StatistiekenPaneel() {
               <div key={key} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs text-gray-500 tabular-nums">{aantal}</span>
                 <div
-                  className="w-full rounded-t bg-[var(--merk)] transition-all"
-                  style={{ height: `${Math.max(hoogte, 2)}%` }}
+                  className="w-full vui-staaf-balk"
+                  style={{ height: `${Math.max(hoogte, 2)}%`, background: 'linear-gradient(180deg, var(--merk-licht), var(--merk))', borderRadius: 'var(--merk-radius-sm, 8px) var(--merk-radius-sm, 8px) 3px 3px' }}
                 />
                 <span className="text-xs text-gray-500">{MAAND_LABELS[maand] ?? maand}</span>
               </div>

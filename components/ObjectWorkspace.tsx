@@ -236,7 +236,7 @@ export function ObjectWorkspace({
         style={{ margin: '24px 0 26px' }}
       />
 
-      <div style={{ display: active === 'waardering' ? 'block' : 'none' }}>
+      <div className="vui-tabpaneel" style={{ display: active === 'waardering' ? 'block' : 'none' }}>
         {bezochteSecties.has('waardering') && (
           <div style={{ display: 'grid', gap: 16 }}>
             {waarderingSectie}
@@ -244,13 +244,13 @@ export function ObjectWorkspace({
         )}
       </div>
 
-      <div style={{ display: active === 'buurt' ? 'block' : 'none' }}>
+      <div className="vui-tabpaneel" style={{ display: active === 'buurt' ? 'block' : 'none' }}>
         {bezochteSecties.has('buurt') && (
           <BuurtDataTab objectId={objectId} initieel={verrijkingInitieel} wozHandmatig={wozHandmatig} />
         )}
       </div>
 
-      <div style={{ display: active === 'content' ? 'block' : 'none' }}>
+      <div className="vui-tabpaneel" style={{ display: active === 'content' ? 'block' : 'none' }}>
         {bezochteSecties.has('content') && (
           CONTENT_VERGRENDELD ? (
             <InAanbouw
@@ -275,7 +275,7 @@ export function ObjectWorkspace({
               />
 
               {/* Teksten — altijd gemount zodat inline-bewerkingen niet verloren gaan bij wisselen */}
-              <div style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
+              <div className="vui-tabpaneel" style={{ display: contentTab === 'content' ? 'block' : 'none' }}>
                 {bezochteContentTabs.has('content') && (
                   <>
                     <ContentTekstenTab
@@ -294,7 +294,7 @@ export function ObjectWorkspace({
               </div>
 
               {/* Media — virtual staging + bibliotheek als losse kaarten */}
-              <div style={{ display: contentTab === 'media' ? 'block' : 'none' }}>
+              <div className="vui-tabpaneel" style={{ display: contentTab === 'media' ? 'block' : 'none' }}>
                 {bezochteContentTabs.has('media') && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
                     <div style={card}>
@@ -312,12 +312,12 @@ export function ObjectWorkspace({
               </div>
 
               {/* Documenten */}
-              <div style={{ display: contentTab === 'documenten' ? 'block' : 'none' }}>
+              <div className="vui-tabpaneel" style={{ display: contentTab === 'documenten' ? 'block' : 'none' }}>
                 {bezochteContentTabs.has('documenten') && <DocumentenAssistentDynamic objectId={objectId} />}
               </div>
 
               {/* Export & delen */}
-              <div style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
+              <div className="vui-tabpaneel" style={{ display: contentTab === 'export' ? 'block' : 'none' }}>
                 {bezochteContentTabs.has('export') && (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
                     <div style={card}>
