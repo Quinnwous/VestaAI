@@ -79,6 +79,8 @@ export function Kerncijfers({
     <Spotlight className="vui-gestaffeld" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 12, marginBottom: 32 }}>
       {/* Hero-tegel: één merkblauw hoogtepunt per rij, zoals in
           docs/ontwerp/startpagina.html (README § 1 regel b). */}
+      {/* Verkocht → de verkoopkaart met de eigen verkopen. */}
+      <Link href="/marktanalyse/kaart" className="vui-tegellink" aria-label="Verkocht laatste 12 maanden — bekijk de verkoopkaart">
       <StatTile
         hero
         label="Verkocht laatste 12 maanden"
@@ -93,6 +95,7 @@ export function Kerncijfers({
               )
         }
       />
+      </Link>
       <StatTile
         label="Gem. looptijd"
         waarde={gemLooptijdDagen ?? 0}
@@ -109,6 +112,8 @@ export function Kerncijfers({
               )
         }
       />
+      {/* Marktaandeel → de concurrentieanalyse. */}
+      <Link href="/marktanalyse/concurrentie" className="vui-tegellink" aria-label={`${marktaandeelPlaats ? `Marktaandeel ${marktaandeelPlaats}` : 'Marktaandeel'} — bekijk de concurrentieanalyse`}>
       <StatTile
         label={marktaandeelPlaats ? `Marktaandeel ${marktaandeelPlaats}` : 'Marktaandeel'}
         waarde={marktaandeelTeWeinig ? undefined : (marktaandeel.aandeelPct ?? 0)}
@@ -131,6 +136,7 @@ export function Kerncijfers({
               )
         }
       />
+      </Link>
       <StatTile
         label="Prijs t.o.v. vraagprijs"
         waarde={gemPrijsTovVraagprijsPct ?? 0}

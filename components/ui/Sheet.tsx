@@ -71,7 +71,8 @@ export function Sheet({
             </Dialog.Close>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>{children}</div>
+          {/* vui-sheet-inhoud: de inhoud komt na het inschuiven gestaffeld binnen. */}
+          <div className="vui-sheet-inhoud" style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>{children}</div>
 
           {voet && (
             <div style={{ padding: '12px 20px', borderTop: `1px solid ${colors.border}`, background: colors.surfaceAlt }}>{voet}</div>
