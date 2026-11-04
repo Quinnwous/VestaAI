@@ -1052,3 +1052,19 @@ button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
   .vui-zweefkaart { animation: vui-zweefkaart 180ms var(--ease); transform-origin: 50% 100%; }
 }
 @keyframes vui-zweefkaart { from { opacity: 0; scale: .96; } }
+
+/* Contextregel in de startbanner als link: onderstreping die meegroeit,
+   pijl die iets opschuift. */
+.vui-banner-link {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,.55));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size 300ms var(--ease), color var(--t-hover);
+}
+.vui-banner-link:hover, .vui-banner-link:focus-visible { background-size: 100% 1px; color: #fff; }
+.vui-banner-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
+.vui-banner-pijl { display: inline-block; transition: transform var(--t) var(--ease); }
+.vui-banner-link:hover .vui-banner-pijl { transform: translateX(3px); }

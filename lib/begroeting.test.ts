@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { begroetingVoor, datumVoor, uurInNederland, contextregel } from './begroeting'
+import { begroetingVoor, datumVoor, uurInNederland, contextregel, contextLink } from './begroeting'
 
 describe('uurInNederland', () => {
   it('rekent UTC om naar Nederlandse zomertijd (+2)', () => {
@@ -68,5 +68,14 @@ describe('contextregel', () => {
 
   it('zegt eerlijk dat er niets loopt in plaats van een lege regel', () => {
     expect(contextregel({ wachtOpContent: 0, inVerkoop: 0, verkoopadviezen: 0 })).toBe('Nog geen lopende dossiers')
+  })
+})
+
+describe('contextLink', () => {
+  it('volgt dezelfde volgorde als contextregel', () => {
+    expect(contextLink({ wachtOpContent: 2, inVerkoop: 5, verkoopadviezen: 1 })).toBe('/woningen?fase=in_verkoop')
+    expect(contextLink({ wachtOpContent: 0, inVerkoop: 3, verkoopadviezen: 1 })).toBe('/woningen?fase=in_verkoop')
+    expect(contextLink({ wachtOpContent: 0, inVerkoop: 0, verkoopadviezen: 2 })).toBe('/woningen?fase=verkoopadvies')
+    expect(contextLink({ wachtOpContent: 0, inVerkoop: 0, verkoopadviezen: 0 })).toBe('/object/new')
   })
 })
