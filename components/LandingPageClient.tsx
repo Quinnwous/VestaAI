@@ -748,13 +748,16 @@ export function LandingPageClient() {
           {FAQS.map((q, i) => {
             const open = openFaq === i
             return (
-              <div key={i} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 16, overflow: 'hidden' }}>
-                <button onClick={() => setOpenFaq(open ? null : i)} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: '20px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+              <div key={i} className="vui-onthul" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 16, overflow: 'hidden', transition: 'box-shadow 300ms cubic-bezier(.2,.8,.2,1), border-color 300ms', boxShadow: open ? '0 14px 34px -22px rgba(14,26,19,.35)' : 'none', borderColor: open ? '#C7E6D5' : '#E9EFEB' }}>
+                <button aria-expanded={open} onClick={() => setOpenFaq(open ? null : i)} style={{ width: '100%', border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left', padding: '20px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                   <span style={{ fontSize: 16, fontWeight: 700, color: '#0E1A13' }}>{q.v}</span>
                   <span style={{ fontSize: 22, fontWeight: 400, color: '#1A6B45', flexShrink: 0, transition: 'transform .25s', transform: open ? 'rotate(45deg)' : 'none', display: 'inline-block' }}>+</span>
                 </button>
-                <div style={{ overflow: 'hidden', transition: 'max-height .3s ease, opacity .3s ease', maxHeight: open ? '260px' : '0', opacity: open ? 1 : 0 }}>
-                  <p style={{ fontSize: 15, lineHeight: 1.66, color: '#5A6B61', margin: 0, padding: '0 22px 20px' }}>{q.a}</p>
+                {/* grid-rows 0fr → 1fr: klapt open tot precies de eigen hoogte. */}
+                <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows 380ms cubic-bezier(.2,.8,.2,1), opacity 300ms', opacity: open ? 1 : 0 }}>
+                  <div style={{ overflow: 'hidden' }}>
+                    <p style={{ fontSize: 15, lineHeight: 1.66, color: '#5A6B61', margin: 0, padding: '0 22px 20px' }}>{q.a}</p>
+                  </div>
                 </div>
               </div>
             )
@@ -765,7 +768,7 @@ export function LandingPageClient() {
       {/* FINAL CTA */}
       <section style={{ maxWidth: 1180, margin: '0 auto', padding: '0 28px 100px' }}>
         <div style={{ background: '#0E1A13', borderRadius: 28, padding: '72px 48px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)', width: 520, height: 300, background: 'radial-gradient(closest-side, rgba(42,138,92,.32), transparent)', filter: 'blur(8px)' }} />
+          <div className="vl-cta-gloed" style={{ position: 'absolute', top: -80, left: '50%', transform: 'translateX(-50%)', width: 520, height: 300, background: 'radial-gradient(closest-side, rgba(42,138,92,.32), transparent)', filter: 'blur(8px)' }} />
           <div style={{ position: 'relative', zIndex: 1 }}>
             <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(32px,4.6vw,54px)', lineHeight: 1.08, color: '#fff', margin: '0 auto 20px', maxWidth: 680 }}>
               Eén platform voor waardebepaling, marktinzicht <span style={{ fontStyle: 'italic', color: '#7DC4A0' }}>en content.</span>
@@ -774,7 +777,7 @@ export function LandingPageClient() {
               VestaAI is een gesloten platform — wij zetten uw kantoor persoonlijk klaar.
             </p>
             <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap' }}>
-              <Link href="/contact" className="vw" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '16px 30px', borderRadius: 13, textDecoration: 'none', transition: 'background .15s' }}>
+              <Link href="/contact" className="vw vui-knop-glans" style={{ fontSize: 16, fontWeight: 700, color: '#114230', background: '#fff', padding: '16px 30px', borderRadius: 13, textDecoration: 'none', transition: 'background .15s' }}>
                 Contact opnemen →
               </Link>
               <Link href="/login" style={{ fontSize: 16, fontWeight: 600, color: '#EAF5EE', background: 'rgba(255,255,255,.08)', border: '1px solid rgba(255,255,255,.18)', padding: '16px 28px', borderRadius: 13, textDecoration: 'none' }}>
