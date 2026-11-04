@@ -23,7 +23,9 @@ function Rij({ label, waarde }: { label: string; waarde: string }) {
   return (
     <div style={rijStijl}>
       <span style={{ fontSize: 12, color: '#5C6470', whiteSpace: 'nowrap' }}>{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: '#14181B', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+      {/* key = waarde: bij elke wijziging remount, dus de nieuwe waarde licht
+          kort op (.vui-waarde-nieuw) — je ziet wat er net is bijgewerkt. */}
+      <span key={waarde || 'leeg'} className={waarde ? 'vui-waarde-nieuw' : undefined} style={{ fontSize: 13, fontWeight: 600, color: waarde ? '#14181B' : '#5C6470', textAlign: 'right', fontVariantNumeric: 'tabular-nums', borderRadius: 6, padding: '0 4px', margin: '0 -4px' }}>
         {waarde || '—'}
       </span>
     </div>
@@ -82,7 +84,7 @@ export function DezeWoningPaneel({ control, kantoorInstellingen }: Props) {
         <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', textTransform: 'uppercase', letterSpacing: 0.8, margin: '0 0 4px' }}>
           Deze woning
         </p>
-        <p style={{ fontSize: 13.5, fontWeight: 600, color: '#14181B', margin: 0, lineHeight: 1.4 }}>
+        <p key={adres || 'leeg'} className={adres ? 'vui-binnen-zacht' : undefined} style={{ fontSize: 13.5, fontWeight: 600, color: '#14181B', margin: 0, lineHeight: 1.4 }}>
           {adres || 'Nog geen adres ingevuld'}
         </p>
       </div>
@@ -103,6 +105,14 @@ export function DezeWoningPaneel({ control, kantoorInstellingen }: Props) {
       )}
 
       <div style={{ borderTop: '1px solid #E6E9EC', paddingTop: 12 }}>
+        {/* Vier segmenten die zich vullen naarmate de basis compleet is. */}
+        <div aria-hidden style={{ display: 'grid', gridTemplateColumns: `repeat(${STAPPEN_KLAAR.length}, 1fr)`, gap: 4, marginBottom: 8 }}>
+          {STAPPEN_KLAAR.map((klaar, i) => (
+            <span key={i} style={{ height: 4, borderRadius: 9999, background: '#E6E9EC', overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', borderRadius: 9999, background: 'var(--merk)', transformOrigin: 'left center', transform: `scaleX(${klaar ? 1 : 0})`, transition: 'transform 420ms cubic-bezier(.2,.8,.2,1)' }} />
+            </span>
+          ))}
+        </div>
         <p style={{ fontSize: 11.5, fontWeight: 600, color: '#5C6470', margin: 0 }}>
           {aantalKlaar} van de {STAPPEN_KLAAR.length} basisstappen ingevuld
         </p>
