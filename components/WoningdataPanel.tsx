@@ -35,7 +35,7 @@ function Chip({ label, kleur }: { label: string; kleur?: string }) {
 function Rij({ label, waarde }: { label: string; waarde: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-      <span style={{ fontSize: 12, color: '#7A8A80', whiteSpace: 'nowrap' }}>{label}</span>
+      <span style={{ fontSize: 12, color: '#5C6470', whiteSpace: 'nowrap' }}>{label}</span>
       <span style={{ fontSize: 13, color: '#14181B', fontWeight: 600, textAlign: 'right' }}>{waarde}</span>
     </div>
   )
@@ -113,7 +113,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
           <span style={{ fontSize: 13, fontWeight: 700, color: '#14181B' }}>Woningdata</span>
           {bezig && <span style={{ fontSize: 12, color: '#5C6470' }}>Ophalen…</span>}
           {data.gemeente && !bezig && (
-            <span style={{ fontSize: 12, color: '#7A8A80' }}>{data.gemeente}</span>
+            <span style={{ fontSize: 12, color: '#5C6470' }}>{data.gemeente}</span>
           )}
         </div>
         <svg
