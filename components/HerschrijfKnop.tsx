@@ -62,7 +62,7 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-2 bg-[var(--merk-zacht)] border border-[var(--merk-rand)] rounded-lg p-3 text-sm">
+    <div className="flex flex-col gap-2 bg-[var(--merk-zacht)] border border-[var(--merk-rand)] rounded-lg p-3 text-sm vui-binnen-zacht">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-[var(--merk-hover)]">Herschrijfinstructie (optioneel)</span>
         <button
