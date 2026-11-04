@@ -133,8 +133,10 @@ export default async function WoningenPage(
         </div>
         <Link
           href="/object/new"
+          className="vui-btn vui-btn-primary vui-knop-glans"
           style={{ display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 'var(--merk-radius-md, 11px)', background: 'var(--merk)', padding: '11px 20px', fontSize: 14, fontWeight: 700, color: 'var(--merk-op)', textDecoration: 'none', boxShadow: 'var(--merk-shadow-btn, 0 4px 12px rgba(20,24,27,.12))', flexShrink: 0 }}
         >
+          <span aria-hidden style={{ fontSize: 17, lineHeight: 1, marginTop: -1 }}>+</span>
           Woning toevoegen
         </Link>
       </div>

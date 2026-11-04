@@ -297,6 +297,7 @@ export function WoningenOverzicht({
             geenEnkeleFilterActief ? (
               <Link
                 href="/object/new"
+                className="vui-btn vui-btn-primary vui-knop-glans"
                 style={{ display: 'inline-block', borderRadius: radius.md, background: 'var(--merk)', padding: '11px 22px', fontSize: 14, fontWeight: 700, color: 'var(--merk-op)', textDecoration: 'none' }}
               >
                 Nieuwe woning →
