@@ -6,6 +6,7 @@ import { ContentOutputSchema, type ContentOutput } from '@/lib/schemas'
 import { EXTRA_TYPES, type ExtraType } from '@/lib/contentExtra'
 import { Popover, Skeleton } from '@/components/ui'
 import { TabContent } from './TabContent'
+import { useSchuifIndicator } from '@/hooks/useSchuifIndicator'
 import { HerschrijfKnop } from './HerschrijfKnop'
 
 // Kern-tabs (item 8.3, architectuur § 4 Outputset v2) — altijd zichtbaar, komen
@@ -105,6 +106,7 @@ interface ResultTabsProps {
 export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onResetHref }: ResultTabsProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<Tab>(() => tabFromHash())
+  const { ref: tabStreepRef, positie: tabStreepPositie } = useSchuifIndicator(activeTab)
   const [followupVariant, setFollowupVariant] = useState<'positief' | 'negatief'>('positief')
   const [localData, setLocalData] = useState<ContentOutput>(() => metLegacyFallback(data))
   // Weergavetaal is los van bewerken: bewerken/herschrijven werkt altijd op de
@@ -449,13 +451,14 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
       </div>
 
       {/* Tab navigatie */}
-      <div role="tablist" aria-label="Content-types" style={{ display: 'flex', gap: 2, borderBottom: '1px solid #E6E9EC', marginBottom: 24, overflowX: 'auto' }}>
+      <div ref={tabStreepRef} role="tablist" aria-label="Content-types" className="vui-tabbalk" data-gemeten={tabStreepPositie ? 'true' : undefined} style={{ position: 'relative', display: 'flex', gap: 2, borderBottom: '1px solid #E6E9EC', marginBottom: 24, overflowX: 'auto' }}>
         {visibleTabs.map(tab => (
           <button
             key={tab.id}
             role="tab"
             id={`tab-${tab.id}`}
             aria-selected={activeTab === tab.id}
+            data-actief={activeTab === tab.id ? 'true' : undefined}
             aria-controls={`panel-${tab.id}`}
             onClick={() => handleTabChange(tab.id)}
             style={{ padding: '9px 16px', fontSize: 14, fontWeight: activeTab === tab.id ? 700 : 500, whiteSpace: 'nowrap', cursor: 'pointer', background: 'none', border: 'none', borderBottom: activeTab === tab.id ? '2px solid var(--merk)' : '2px solid transparent', color: activeTab === tab.id ? 'var(--merk-tekst)' : '#5C6470', transition: 'all .15s', marginBottom: -1 }}
@@ -463,6 +466,9 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             {tab.label}
           </button>
         ))}
+        {tabStreepPositie && (
+          <span aria-hidden className="vui-tabindicator" style={{ left: 0, width: tabStreepPositie.w, transform: `translateX(${tabStreepPositie.x}px)` }} />
+        )}
       </div>
 
       {/* Tab content */}
