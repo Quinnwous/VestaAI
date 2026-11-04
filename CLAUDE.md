@@ -89,6 +89,12 @@ lettertype via `var(--merk-radius-*)`/`var(--merk-font-*)`; tekst informeel
 checklist: `.claude/skills/kantoorhuisstijl/SKILL.md`. Een hook waarschuwt bij
 overtredingen. Bewust VestaAI-groen blijven: landing, `/login`, `/contact`,
 `/admin`, `LandingPageClient`, `PublicNav` en `components/ui/tokens.ts`.
+Bouw met de primitives (`Button`, `Card`, `Input`, `SelectMenu`, `TabBar`,
+`SegmentedToggle`, `StatTile`, `EmptyState` uit `components/ui/`) en de
+bewegingsclasses uit `app/globals.css` § Bewegingssysteem (`vui-binnen`,
+`vui-gestaffeld`, `vui-onthul`, `vui-tegel`/`vui-spot`), nooit een eigen
+knop/veld/tab met inline-stijl of Tailwind-grijzen — anders ontstaan er weer
+twee looks (zie roadmap § 3 G).
 
 ## Hoofdstructuur
 
