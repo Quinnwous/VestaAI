@@ -105,6 +105,9 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   statusmenu gelijk getrokken met de rest (dialoog-/menurollen, Escape,
   zachte binnenkomst); contrastfixes (lichtgrijze en amber tekst naar AA);
   in admin een live voorbeeld van de huisstijl vóór het opslaan.
+  Op de landing kantelen ook de drie voorbeeldkaarten (BAG, waardering,
+  marktanalyse) licht mee met de muis (`hooks/useKantelVolger.ts`). Wat nog
+  niet in de nieuwe stijl staat: roadmap § 3 G.
 
 ## 2. Startpagina (`/dashboard`)
 

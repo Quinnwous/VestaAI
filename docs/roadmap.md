@@ -38,8 +38,10 @@ gedwongen verzinsels, aanspreekvorm). Eerder die dag 12.1 en rondes R en S.*
   data (§ 1).
 - **Kritiek pad:** exports van Quinn → 5.1 exportanalyse → 5.5 import →
   M1 tussencheck taxateur → demovoorbereiding (12.5, 12.7) → demo.
-- **Volgende ronde:** er is geen bouwbaar item meer zonder input van Quinn
-  (F9 en F10 zijn optioneel). D1 staging wacht op Gemini-billing (§ 2 punt 5).
+- **Volgende ronde:** spoor § 3 **G (één look and feel)** is bouwbaar zonder
+  input — G1-G7 en G9 (G8 is een ontwerpkeuze), daarna 12.8 (polish nalopen op
+  echte data). Verder optioneel F9/F10; D1 staging wacht op Gemini-billing
+  (§ 2 punt 5).
 - **Wacht op Quinn:** § 2 — vooral de exports (blokkeert alles op het kritieke
   pad), het voorbeeld-verkoopadvies en Gemini-billing (staging werkt pas dan).
 - ⚠️ **Demo-realiteit:** i4 Housing heeft 0 transacties én 0 dossiers
@@ -261,6 +263,80 @@ Bouwbaar zonder input, tenzij anders vermeld. (F1, F2, F5, F6, F7 en F8 zijn op
 
 ---
 
+### G. Eén look and feel door de hele site — uit de polishronde van 3-4 nov
+
+Doel: geen scherm meer dat er "van vóór het redesign" uitziet. De norm staat in
+`docs/ontwerp/principes.md` (§ Beweging met het bewegingssysteem) en de
+huisstijlskill; de bouwstenen staan in `components/ui/` en `app/globals.css`
+§ Bewegingssysteem. Inventaris gemaakt op 4 nov met grep (zie per punt);
+bouwbaar zonder input, geen migraties. Werk per punt af, met
+`npm run dod:screens` erna.
+
+- [ ] **G1 Knoppen via `<Button>`** — de primitive wordt in maar 9 bestanden
+  gebruikt; elders staan zelfgebouwde knoppen met eigen inline-stijl (soms met
+  `vui-btn`-classes erop geplakt, soms zonder). Omzetten, grootste eerst:
+  `WaardebepalingPaneel` (14 ruwe `<button>`), `ResultTabs` (11),
+  `PropertyForm` (5), `TabContent` (4), `PrijswijzigingModal` (4),
+  `StijlLerenPaneel`, `NotitieVeld`, `VirtualStaging`, `DocumentenAssistent`,
+  `WaardebepalingPdfButton` (split-knop: eventueel een variant in `Button`),
+  `app/(app)/error.tsx`, `woningen/page.tsx`, `WoningenOverzicht`,
+  `object/new/NewObjectForm`, `object/[id]/not-found`. Eerst `Button` een
+  `asLink`/`href`-variant en een `glans`-optie geven (nu losse `vui-knop-glans`).
+  *Klaar als:* `grep -rn "background: 'var(--merk)'" app/(app) components` geeft
+  alleen nog niet-knoppen (pins, balken, staal).
+- [ ] **G2 Tailwind-look → tokens in de kantooromgeving** — deze bestanden
+  bouwen nog met Tailwind-grijzen/`rounded-xl`/`shadow-sm` i.p.v. `colors`/
+  `radius`/`shadow` uit `components/ui/tokens.ts` (telling 4 nov):
+  `VirtualStaging` (37), `DocumentenAssistent` (35), `kantoor/StatistiekenPaneel`
+  (21, binnenste grafiek en tabel), `PrijswijzigingModal` (17, gedrag is al
+  gelijkgetrokken; liefst ombouwen naar `components/ui/Modal`),
+  `StijlLerenPaneel` (16), `ResultTabs` (10), `object/[id]/StatusToggle` (9;
+  kan op `Popover`/`SelectMenu`), `NotitieVeld` (7), `HerschrijfKnop` (7),
+  `object/[id]/InvoerToggle` (7), `RealworksExportButton` (5),
+  `kantoor/KantoorBanner` (1). Kaarten als `Card` (met kaartkop zoals
+  `/kantoor` en `/account`), velden als `Input`/`SelectMenu`.
+- [ ] **G3 Formuliervelden via de primitives** — `Input` wordt in 3 bestanden
+  gebruikt; `PropertyForm` heeft 35 eigen `<input>`'s met inline focus-
+  handlers, plus eigen `<select>`'s (ook in `VirtualStaging`). Omzetten naar
+  `Input`/`SelectMenu` (dan valt de losse `.intake-layout input:focus`-regel in
+  `globals.css` weg). Let op: `PropertyForm` is groot en kritisch (intake) —
+  per stap omzetten, e2e-intaketest erna.
+- [ ] **G4 Tabbalken: één implementatie** — `TabBar` meet zijn schuivende
+  streep zelf, de contentsuite (`ResultTabs`) gebruikt
+  `hooks/useSchuifIndicator.ts` met een eigen tablist. `TabBar` op de hook
+  laten leunen en `ResultTabs` op `TabBar` (de ids `tab-*`/`panel-*` dan via
+  `idPrefix`).
+- [ ] **G5 Spinners weg** — nog twee kleine draaiende spinners in knoppen:
+  `RealworksExportButton` en de uploadknop in `VirtualStaging`. Vervangen door
+  de rustige puls (`.vui-fase-puls`) of een tekstlabel ("Bezig…"), zoals elders.
+- [ ] **G6 Vaste radiussen** — nog 9 losse `borderRadius: <getal>` in
+  `VirtualStaging` (2), `AppTopbar` (2, de VestaAI-lockup mag blijven),
+  `Checkbox`, `WaardePresentatie`, `WaardebepalingPaneel`,
+  `KwartaalberichtModal`, `DezeWoningPaneel` → `var(--merk-radius-*)`.
+- [ ] **G7 Admin in dezelfde stijl** — alleen de koppen en tegels van `/admin`
+  zijn omgezet; de formulieren en tabellen zijn nog Tailwind:
+  `kantoor/HuisstijlForm` (103), `kantoor/InstellingenForm` (52),
+  `transacties/Importhistorie` (43), `AccountBeheer` (25),
+  `transacties/TransactieImportForm` (21), `admin/page` (20, de tabel
+  "recente registraties"), `AdminBeheer` (18), `transacties/page` (15),
+  `kantoor/VoegTeamlidToe` (14), `LogoUpload` (11), `AchtergrondUpload` (9),
+  `kantoor/[id]/page` (7), `TeamBeheer` (6). VestaAI-groen blijft (admin is
+  geen kantooromgeving), maar dezelfde `Card`/`Button`/`Input`/`DataTable`.
+- [ ] **G8 Paginakoppen** — de vier verkenners (`MarktanalyseExplorer`,
+  `TransactiesZoeken`, `ConcurrentieExplorer`, `VerkoopkaartExplorerV2`)
+  hebben een eigen `<h1>` (26 px, sans, zoals het prototype), de andere
+  schermen `PageHeader` met serifkop en accentwoord. Kiezen: óf de verkenners
+  ook op `PageHeader` (met de databadge als `action`), óf bewust zo laten en dat
+  in principes vastleggen. *Ontwerpkeuze — even met Quinn afstemmen.*
+- [ ] **G9 Kleinigheden** — dubbele tabstop in de woningentabel (rij én
+  adreslink focusbaar sinds de hele rij klikbaar is: adreslink `tabIndex={-1}`
+  of de rij niet focusbaar) · grijze kop-/voettekst in de brochure-pdf
+  (`#98A0A6`) op AA · "Gemini AI" in de staging-wachttekst neutraal ("We
+  richten de ruimte in…").
+- *Klaar als (spoor):* de greps hierboven zijn leeg (op de genoemde
+  uitzonderingen na), `dod:screens` op demo- en i4-kantoor akkoord, en een
+  nieuwe makelaar ziet nergens een scherm dat afwijkt.
+
 ## 4. Risico's
 
 | Risico | Mitigatie |
@@ -295,14 +371,7 @@ vernederlandsen · jaarlijks de nieuwste CBS-jaargang (eerst controleren of
 inkomen gevuld is, zie `docs/databronnen/cbs-buurtdata.md`) · na Supabase Pro:
 een aparte ontwikkeldatabase (nu wijst `.env.local` naar productie).
 
-**Visuele polish, nog open (4 nov):** voorbeeldkaarten op de landing licht
-laten meekantelen zoals de hero (begonnen, teruggedraaid — niet getest) ·
-dubbele tabstop in de woningentabel (rij én adreslink zijn focusbaar sinds
-de hele rij klikbaar is) · oude Tailwind-grijsklassen in VirtualStaging,
-DocumentenAssistent, StatistiekenPaneel en PrijswijzigingModal omzetten naar
-de tokens · `TabBar` laten leunen op `hooks/useSchuifIndicator.ts` (nu twee
-implementaties) · grijze kop-/voettekst in de brochure-pdf (`#98A0A6`) op
-AA-contrast · "Gemini AI" in de staging-wachttekst neutraal maken.
+**Visuele polish:** de open punten staan als spoor § 3 G (één look and feel).
 
 **Performance mobiel:** marktanalyse (80) en dossier (76) blijven onder 85 —
 besluit Quinn 30 sep: voor nu goed, geen derde ronde.
