@@ -22,7 +22,10 @@
 
 ## 📍 Stand van zaken
 
-*Bijgewerkt 1 okt 2026. Laatst gedaan: ronde D4 + D5 (EN-kwartaalbericht in
+*Bijgewerkt 4 nov 2026. Laatst gedaan: visuele polish (3-4 nov, PR #65-#97):
+bewegingssysteem, 3D-illustraties, alle schermen en pdf's nagelopen — zie
+productoverzicht § 1 "Beweging en beeld" en het besluitenlogboek van 3 nov.
+Daarvoor (1 okt): ronde D4 + D5 (EN-kwartaalbericht in
 Engelse notatie, opgeslagen buurtdata bij het genereren); daarvoor de betaalde testronde op 1 okt —
 blinde modelvergelijking (CONTENT blijft Sonnet 4.6), de echte duur van NL + EN
 op Vercel gemeten (± 102 s), EN-content voor het scène 5-dossier, het
@@ -181,6 +184,21 @@ staging · scène 3 (als het verkopend kantoor ontbreekt) · verkoopadvies
     (branch `demo`, 48 uur geen deploys) · generale repetitie met screenshots.
   *Klaar als:* generale repetitie op i4-data zonder haperingen, alle checks
   groen.
+- [ ] **12.8 Visuele polish nalopen op echte data** (uit de polishronde van 3-4
+  nov; alles is gebouwd op lokale voorbeeldpagina's, zonder database):
+  - `npm run dod:screens` draaien (demo- én i4-kantoor) en `screenshots/`
+    beoordelen tegen `docs/ontwerp/principes.md` — vooral dashboard met
+    teamfoto, dossier (waarde-hero met bandbalk, tabs), marktanalyse,
+    concurrentie, verkoopkaart, kantoorpagina en account.
+  - De demo één keer op een laptop met groot scherm doorlopen op
+    beweging: paginaovergangen (React `<ViewTransition>`), kanteling van de
+    startbanner, ambient-achtergrond. Te druk of haperend → in
+    `app/globals.css` § Bewegingssysteem terugschroeven.
+  - Contentsuite-mail (`contentSuiteMail()`) één keer echt versturen naar een
+    eigen adres en in Gmail/Outlook bekijken.
+  - Virtual staging voor/na-schuif testen met een echt resultaat (na
+    Gemini-billing, § 2 punt 5).
+  *Klaar als:* screenshots akkoord, geen haperingen in de repetitie.
 
 ### C. Verkoopadvies (masterplan fase 11) — geblokkeerd op het voorbeeld
 
@@ -276,6 +294,15 @@ verkoop") · 4RENT!-variant van het tekstsjabloon · Supabase-mailonderwerpen
 vernederlandsen · jaarlijks de nieuwste CBS-jaargang (eerst controleren of
 inkomen gevuld is, zie `docs/databronnen/cbs-buurtdata.md`) · na Supabase Pro:
 een aparte ontwikkeldatabase (nu wijst `.env.local` naar productie).
+
+**Visuele polish, nog open (4 nov):** voorbeeldkaarten op de landing licht
+laten meekantelen zoals de hero (begonnen, teruggedraaid — niet getest) ·
+dubbele tabstop in de woningentabel (rij én adreslink zijn focusbaar sinds
+de hele rij klikbaar is) · oude Tailwind-grijsklassen in VirtualStaging,
+DocumentenAssistent, StatistiekenPaneel en PrijswijzigingModal omzetten naar
+de tokens · `TabBar` laten leunen op `hooks/useSchuifIndicator.ts` (nu twee
+implementaties) · grijze kop-/voettekst in de brochure-pdf (`#98A0A6`) op
+AA-contrast · "Gemini AI" in de staging-wachttekst neutraal maken.
 
 **Performance mobiel:** marktanalyse (80) en dossier (76) blijven onder 85 —
 besluit Quinn 30 sep: voor nu goed, geen derde ronde.
