@@ -24,7 +24,7 @@ function Chip({ label, kleur }: { label: string; kleur?: string }) {
       fontSize: 11,
       fontWeight: 700,
       background: kleur ? `${kleur}18` : '#F0F6F2',
-      color: kleur ?? 'var(--merk)',
+      color: kleur ?? 'var(--merk-tekst)',
       letterSpacing: 0.2,
     }}>
       {label}
@@ -85,7 +85,7 @@ export function WoningdataPanel({ data, bezig }: Props) {
   return (
     <div style={{
       borderRadius: 'var(--merk-radius-md, 12px)',
-      border: '1px solid #DCE5DF',
+      border: '1px solid #E1E5E9',
       background: '#F8FBF9',
       overflow: 'hidden',
     }}>

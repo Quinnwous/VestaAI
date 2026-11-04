@@ -40,7 +40,7 @@ export function Checkbox({
     <label
       style={{
         display: 'flex', alignItems: 'center', gap: 10, padding: '6px 6px',
-        borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: vet ? 700 : 400,
+        borderRadius: 'var(--merk-radius-sm, 8px)', cursor: 'pointer', fontSize: 13, fontWeight: vet ? 700 : 400,
         color: colors.bodyStrong, paddingLeft: ingesprongen ? 30 : 6,
       }}
       className="vui-navitem"

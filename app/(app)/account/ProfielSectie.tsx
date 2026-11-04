@@ -37,7 +37,7 @@ export function ProfielSectie({ naam: initieleNaam, email }: { naam: string; ema
         >
           {status === 'saving' ? 'Opslaan…' : 'Opslaan'}
         </Button>
-        {status === 'saved' && <span style={{ fontSize: 13, color: colors.primary }}>✓ Opgeslagen</span>}
+        {status === 'saved' && <span style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Opgeslagen</span>}
         {status === 'error' && <span style={{ fontSize: 13, color: '#B42318' }}>Opslaan mislukt</span>}
       </div>
     </Card>

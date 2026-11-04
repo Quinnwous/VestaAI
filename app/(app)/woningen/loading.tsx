@@ -27,7 +27,7 @@ export default function WoningenLoading() {
 
       <Skeleton width={360} height={38} rounded={11} style={{ marginBottom: 20 }} />
 
-      <div style={{ borderRadius: 18, border: '1px solid #E6E9EC', background: '#fff', padding: 16 }}>
+      <div style={{ borderRadius: 'var(--merk-radius-card-lg, 18px)', border: '1px solid #E6E9EC', background: '#fff', padding: 16 }}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 4px', opacity: 1 - i * 0.08 }}>
             <Skeleton width={`${220 + (i % 3) * 40}px`} height={14} />

@@ -211,7 +211,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
     const n = new Set(huidig); n.delete(veld); return n
   })
   const bagLabel = (veld: string) => uitBag.has(veld)
-    ? <span className="vui-bag-label" style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', background: 'var(--merk-zacht)', padding: '1px 8px', borderRadius: 9999 }}>↗ uit het BAG</span>
+    ? <span className="vui-bag-label" style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', background: 'var(--merk-zacht)', padding: '1px 8px', borderRadius: 'var(--merk-radius-pill, 9999px)' }}>↗ uit het BAG</span>
     : null
 
   const handleAdresSelect = async (suggestie: BagSuggestie) => {
@@ -262,7 +262,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             onClick={() => s.id < stap && setStap(s.id)}
             disabled={s.id > stap}
             style={{
-              flex: '1 0 auto', padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: s.id < stap ? 'pointer' : 'default',
+              flex: '1 0 auto', padding: '6px 4px', borderRadius: 'var(--merk-radius-sm, 8px)', border: 'none', background: 'none', cursor: s.id < stap ? 'pointer' : 'default',
               borderBottom: `3px solid ${s.id === stap ? 'var(--merk)' : s.id < stap ? 'var(--merk-rand)' : '#E6E9EC'}`,
               transition: 'border-color 300ms cubic-bezier(.2,.8,.2,1)',
             }}

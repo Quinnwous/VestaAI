@@ -54,7 +54,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
       <button
         type="button"
         onClick={() => { setOpen(v => !v); setStatus('idle') }}
-        style={{ ...btnBase, background: open ? '#F1F7F3' : '#fff', borderColor: open ? 'var(--merk)' : '#E1E5E9', color: '#14181B' }}
+        style={{ ...btnBase, background: open ? 'var(--merk-zacht)' : '#fff', borderColor: open ? 'var(--merk)' : '#E1E5E9', color: '#14181B' }}
         title="PDF per e-mail versturen"
       >
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
@@ -82,7 +82,7 @@ export function EmailPdfButton({ objectId, userEmail }: Props) {
                 value={email}
                 onChange={e => { setEmail(e.target.value); setStatus('idle') }}
                 placeholder="collega@kantoor.nl"
-                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', border: '1px solid #DCE5DF', padding: '9px 12px', fontSize: 13, color: '#14181B', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
+                style={{ width: '100%', borderRadius: 'var(--merk-radius-sm, 9px)', border: '1px solid #E1E5E9', padding: '9px 12px', fontSize: 13, color: '#14181B', outline: 'none', boxSizing: 'border-box', marginBottom: 8 }}
               />
               {status === 'error' && (
                 <p style={{ fontSize: 12, color: '#DC2626', marginBottom: 6 }}>{errorMsg}</p>

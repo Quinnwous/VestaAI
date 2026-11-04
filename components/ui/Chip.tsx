@@ -22,7 +22,7 @@ export function Chip({
   onClick: () => void
   variant?: 'merk' | 'accent'
 }) {
-  const kleur = variant === 'accent' ? 'var(--merk-accent, #C61E45)' : colors.primary
+  const kleur = variant === 'accent' ? 'var(--merk-accent)' : colors.primary
   return (
     <button
       type="button"

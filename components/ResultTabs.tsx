@@ -336,7 +336,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
             {isEn ? 'Generated content' : 'Gegenereerde content'}
           </h2>
           {dataEn && (
-            <div style={{ display: 'inline-flex', borderRadius: 8, overflow: 'hidden', border: '1px solid #E1E5E9' }}>
+            <div style={{ display: 'inline-flex', borderRadius: 'var(--merk-radius-sm, 8px)', overflow: 'hidden', border: '1px solid #E1E5E9' }}>
               {(['nl', 'en'] as const).map(t => (
                 <button
                   key={t}
@@ -387,12 +387,12 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                       type="button"
                       disabled={bezig}
                       onClick={() => (heeftInhoud ? (setMenuOpen(false), handleTabChange(item.tabId)) : genereerExtra(item.type, item.tabId))}
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontSize: 13.5, textAlign: 'left', color: '#2C3238', background: 'none', border: 'none', borderRadius: 8, padding: '8px 8px', cursor: bezig ? 'not-allowed' : 'pointer' }}
+                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontSize: 13.5, textAlign: 'left', color: '#2C3238', background: 'none', border: 'none', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '8px 8px', cursor: bezig ? 'not-allowed' : 'pointer' }}
                       onMouseEnter={e => { e.currentTarget.style.background = 'var(--merk-zacht)' }}
                       onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
                     >
                       <span>{item.label}</span>
-                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#5C6470' : heeftInhoud ? 'var(--merk)' : '#5C6470' }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, color: bezig ? '#5C6470' : heeftInhoud ? 'var(--merk-tekst)' : '#5C6470' }}>
                         {bezig ? 'Bezig…' : heeftInhoud ? '✓ Bekijk' : 'Genereren'}
                       </span>
                     </button>
@@ -502,7 +502,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                   {downloadingBrochurePdf ? (isEn ? 'Creating PDF…' : 'PDF maken…') : (isEn ? 'Brochure PDF' : 'Brochure-pdf')}
                 </button>
                 {brochurePdfFout && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: 8, padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(0,0,0,.08)' }}>
+                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(0,0,0,.08)' }}>
                     {brochurePdfFout}
                   </div>
                 )}
