@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { SegmentedToggle } from '@/components/ui/SegmentedToggle'
 
 const STIJLEN = [
   { value: 'modern', label: 'Modern' },
@@ -37,7 +38,10 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
   const [verwerken, setVerwerken] = useState(false)
   const [error, setError] = useState('')
   const [actief, setActief] = useState<number | null>(null)
-  const [toonOrigineel, setToonOrigineel] = useState(false)
+  // Weergave van het resultaat: voor/na-vergelijking met schuifregelaar
+  // (standaard), of alleen het origineel / alleen de gestagede foto.
+  const [weergave, setWeergave] = useState<'vergelijk' | 'origineel' | 'gestaged'>('vergelijk')
+  const [splits, setSplits] = useState(50)
   const [bewaardStatus, setBewaardStatus] = useState<Record<number, 'bezig' | 'klaar'>>({})
   const fileRef = useRef<HTMLInputElement>(null)
 
@@ -98,7 +102,8 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
       setActief(nieuw.length - 1)
       return nieuw
     })
-    setToonOrigineel(false)
+    setWeergave('vergelijk')
+    setSplits(50)
     setVerwerken(false)
     if (fileRef.current) fileRef.current.value = ''
   }
@@ -195,7 +200,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
           {resultaten.map((r, i) => (
             <button
               key={i}
-              onClick={() => { setActief(i); setToonOrigineel(false) }}
+              onClick={() => { setActief(i); setWeergave('vergelijk') }}
               className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${i === actief ? 'border-[var(--merk)] shadow-md' : 'border-gray-200 opacity-60 hover:opacity-90'}`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -212,20 +217,16 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
           <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-b border-gray-100">
             <span className="text-sm font-semibold text-gray-700">{huidig.ruimte} · {huidig.stijl}</span>
             <div className="flex items-center gap-2">
-              <div className="flex bg-white border border-gray-200 rounded-lg overflow-hidden text-xs font-semibold">
-                <button
-                  onClick={() => setToonOrigineel(true)}
-                  className={`px-3 py-1.5 transition-colors ${toonOrigineel ? 'bg-gray-800 text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  Origineel
-                </button>
-                <button
-                  onClick={() => setToonOrigineel(false)}
-                  className={`px-3 py-1.5 transition-colors ${!toonOrigineel ? 'bg-[var(--merk)] text-white' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                  Gestaged
-                </button>
-              </div>
+              <SegmentedToggle
+                size="sm"
+                value={weergave}
+                onChange={setWeergave}
+                options={[
+                  { value: 'vergelijk', label: 'Voor / na' },
+                  { value: 'origineel', label: 'Origineel' },
+                  { value: 'gestaged', label: 'Gestaged' },
+                ]}
+              />
               <div className="flex flex-col items-end">
                 <button
                   onClick={() => downloadGestaged(huidig)}
@@ -246,17 +247,44 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
               )}
             </div>
           </div>
-          <div className="relative aspect-video bg-gray-900">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={toonOrigineel ? huidig.origineel : huidig.gestaged}
-              alt={toonOrigineel ? 'Originele kamer' : 'Virtueel gestaged'}
-              className="w-full h-full object-contain"
-            />
-            <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-md bg-black/50 text-white">
-              {toonOrigineel ? 'Origineel' : `Gestaged · ${huidig.stijl}`}
-            </span>
-          </div>
+          {weergave === 'vergelijk' ? (
+            // Voor/na: de gestagede foto ligt onder, het origineel erboven,
+            // afgesneden tot de schuifregelaar. Een gewone range-input doet
+            // het werk (toetsenbord en schermlezer werken vanzelf).
+            <div className="relative aspect-video bg-gray-900 overflow-hidden select-none vui-binnen-zacht">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={huidig.gestaged} alt={`Virtueel gestaged · ${huidig.stijl}`} className="absolute inset-0 w-full h-full object-contain" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={huidig.origineel} alt="Originele kamer" className="absolute inset-0 w-full h-full object-contain" style={{ clipPath: `inset(0 ${100 - splits}% 0 0)` }} />
+              <span aria-hidden className="absolute top-0 bottom-0 pointer-events-none" style={{ left: `${splits}%`, width: 2, marginLeft: -1, background: '#fff', boxShadow: '0 0 0 1px rgba(0,0,0,.15)' }}>
+                <span className="absolute top-1/2 left-1/2 flex items-center justify-center" style={{ width: 34, height: 34, marginLeft: -17, marginTop: -17, borderRadius: 9999, background: '#fff', boxShadow: '0 4px 14px rgba(0,0,0,.3)', fontSize: 13, fontWeight: 800, color: '#14181B' }}>⇆</span>
+              </span>
+              <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-md bg-black/50 text-white pointer-events-none">Origineel</span>
+              <span className="absolute top-2 right-2 text-xs font-bold px-2 py-1 rounded-md bg-black/50 text-white pointer-events-none">Gestaged · {huidig.stijl}</span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={splits}
+                onChange={e => setSplits(Number(e.target.value))}
+                aria-label="Schuif tussen origineel en gestaged"
+                className="vui-vergelijk-schuif absolute inset-0 w-full h-full cursor-ew-resize"
+              />
+            </div>
+          ) : (
+            <div className="relative aspect-video bg-gray-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                key={weergave}
+                src={weergave === 'origineel' ? huidig.origineel : huidig.gestaged}
+                alt={weergave === 'origineel' ? 'Originele kamer' : 'Virtueel gestaged'}
+                className="w-full h-full object-contain vui-binnen-zacht"
+              />
+              <span className="absolute top-2 left-2 text-xs font-bold px-2 py-1 rounded-md bg-black/50 text-white">
+                {weergave === 'origineel' ? 'Origineel' : `Gestaged · ${huidig.stijl}`}
+              </span>
+            </div>
+          )}
         </div>
       )}
 

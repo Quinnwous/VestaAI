@@ -1024,3 +1024,14 @@ button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
 @media (prefers-reduced-motion: no-preference) {
   .vl-cta-gloed { animation: vl-adem 8s ease-in-out infinite alternate; }
 }
+
+/* Fotobibliotheek: foto zoomt zacht in bij aanwijzen. */
+.vui-fotokaart img { transition: scale 600ms var(--ease); }
+.vui-fotokaart:hover img { scale: 1.06; }
+
+/* Voor/na-schuif bij virtual staging: de range-input ligt onzichtbaar over
+   de foto; alleen de focusring blijft zichtbaar voor het toetsenbord. */
+.vui-vergelijk-schuif { -webkit-appearance: none; appearance: none; background: transparent; opacity: 0; margin: 0; }
+.vui-vergelijk-schuif:focus-visible { opacity: 1; outline: 2px solid var(--merk); outline-offset: -4px; }
+.vui-vergelijk-schuif::-webkit-slider-thumb { -webkit-appearance: none; width: 34px; height: 100%; background: transparent; }
+.vui-vergelijk-schuif::-moz-range-thumb { width: 34px; height: 100%; background: transparent; border: none; }
