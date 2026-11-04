@@ -141,8 +141,8 @@ export function Kerncijfers({
             : metDataTotEnMet(`n=${nEigenVerkopenLaatste12Mnd} eigen verkopen, laatste 12 mnd`, dataTotEnMet)
         }
       />
-      <StatTile label="In verkoop" waarde={inVerkoop} />
-      <StatTile label="Lopende verkoopadviezen" waarde={lopendeVerkoopadviezen} />
+      <StatTile label="In verkoop" waarde={inVerkoop} bijschrift={inVerkoop === 1 ? 'dossier in de verkoop' : 'dossiers in de verkoop'} />
+      <StatTile label="Lopende verkoopadviezen" waarde={lopendeVerkoopadviezen} bijschrift={lopendeVerkoopadviezen === 1 ? 'dossier in fase Verkoopadvies' : 'dossiers in fase Verkoopadvies'} />
     </Spotlight>
   )
 }
