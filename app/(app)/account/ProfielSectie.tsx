@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { slaProfielNaamOp } from './actions'
-import { Card, Label, Input, Button } from '@/components/ui'
+import { Label, Input, Button } from '@/components/ui'
 import { colors } from '@/components/ui/tokens'
 
 /** Naam en e-mail — de naam is te wijzigen, e-mail is read-only (zie /admin voor accountbeheer). */
@@ -19,7 +19,7 @@ export function ProfielSectie({ naam: initieleNaam, email }: { naam: string; ema
   }
 
   return (
-    <Card style={{ display: 'grid', gap: 16, maxWidth: 420 }}>
+    <div style={{ display: 'grid', gap: 16, maxWidth: 420 }}>
       <div>
         <Label htmlFor="naam">Naam</Label>
         <Input id="naam" value={naam} onChange={e => setNaam(e.target.value)} maxLength={100} />
@@ -37,9 +37,9 @@ export function ProfielSectie({ naam: initieleNaam, email }: { naam: string; ema
         >
           {status === 'saving' ? 'Opslaan…' : 'Opslaan'}
         </Button>
-        {status === 'saved' && <span style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Opgeslagen</span>}
+        {status === 'saved' && <span className="vui-wissel" style={{ fontSize: 13, color: 'var(--merk-tekst)' }}>✓ Opgeslagen</span>}
         {status === 'error' && <span style={{ fontSize: 13, color: '#B42318' }}>Opslaan mislukt</span>}
       </div>
-    </Card>
+    </div>
   )
 }

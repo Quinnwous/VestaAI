@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase'
 import { ProfielSectie } from './ProfielSectie'
 import { WachtwoordSectie } from './WachtwoordSectie'
-import { AppPagina, PageHeader } from '@/components/ui'
+import { AppPagina, Card, PageHeader, colors } from '@/components/ui'
 
 export const metadata = { title: 'Mijn account' }
 
@@ -27,15 +27,26 @@ export default async function AccountPage() {
   return (
     <AppPagina>
       <PageHeader eyebrow="Beheer" title="Mijn" accent="account" />
-      <div style={{ display: 'grid', gap: 32 }}>
-        <section>
-          <h2 style={{ fontSize: 13, fontWeight: 700, color: '#5C6470', margin: '0 0 12px' }}>Profiel</h2>
-          <ProfielSectie naam={makelaar.name} email={makelaar.email} />
-        </section>
-        <section>
-          <h2 style={{ fontSize: 13, fontWeight: 700, color: '#5C6470', margin: '0 0 12px' }}>Wachtwoord</h2>
-          <WachtwoordSectie />
-        </section>
+      {/* Twee kaarten met kaartkop, zelfde opbouw als de kantoorpagina. */}
+      <div className="vui-kantoor-raster vui-gestaffeld">
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px 14px', borderBottom: `1px solid ${colors.border}` }}>
+            <h2 style={{ fontSize: 15.5, fontWeight: 800, color: colors.text, margin: 0 }}>Profiel</h2>
+            <p style={{ fontSize: 12.5, color: colors.muted, margin: '2px 0 0' }}>je naam zoals collega&apos;s hem zien</p>
+          </div>
+          <div style={{ padding: '18px 22px 22px' }}>
+            <ProfielSectie naam={makelaar.name} email={makelaar.email} />
+          </div>
+        </Card>
+        <Card pad={0} style={{ overflow: 'hidden' }}>
+          <div style={{ padding: '18px 22px 14px', borderBottom: `1px solid ${colors.border}` }}>
+            <h2 style={{ fontSize: 15.5, fontWeight: 800, color: colors.text, margin: 0 }}>Wachtwoord</h2>
+            <p style={{ fontSize: 12.5, color: colors.muted, margin: '2px 0 0' }}>kies een nieuw wachtwoord</p>
+          </div>
+          <div style={{ padding: '18px 22px 22px' }}>
+            <WachtwoordSectie />
+          </div>
+        </Card>
       </div>
     </AppPagina>
   )

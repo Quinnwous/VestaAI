@@ -50,7 +50,7 @@ export function NotitieVeld({ objectId, initieleNotitie }: Props) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <h2 style={{ fontSize: 13.5, fontWeight: 700, color: '#14181B', margin: 0 }}>Interne notitie</h2>
-          {status === 'saved' && <span className="text-xs text-[var(--merk-tekst)]">✓ Opgeslagen</span>}
+          {status === 'saved' && <span className="text-xs text-[var(--merk-tekst)] vui-wissel">✓ Opgeslagen</span>}
         </div>
         {!bewerkModus && (
           <button
