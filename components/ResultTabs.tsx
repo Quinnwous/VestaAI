@@ -502,7 +502,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
                   {downloadingBrochurePdf ? (isEn ? 'Creating PDF…' : 'PDF maken…') : (isEn ? 'Brochure PDF' : 'Brochure-pdf')}
                 </button>
                 {brochurePdfFout && (
-                  <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(0,0,0,.08)' }}>
+                  <div className="vui-menu-uitklap" style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 30, background: '#FFF5F5', border: '1px solid #F3C6C6', color: '#B42318', borderRadius: 'var(--merk-radius-sm, 8px)', padding: '8px 12px', fontSize: 12, whiteSpace: 'nowrap', boxShadow: '0 8px 20px rgba(0,0,0,.08)' }}>
                     {brochurePdfFout}
                   </div>
                 )}
