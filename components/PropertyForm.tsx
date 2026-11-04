@@ -817,6 +817,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             type="button"
             onClick={vorigeStap}
             disabled={disabled}
+            className="vui-btn vui-btn-secondary"
             style={{ borderRadius: 'var(--merk-radius-md, 12px)', background: '#fff', border: '1px solid #E1E5E9', padding: '15px 20px', fontSize: 14.5, fontWeight: 700, color: '#5C6470', cursor: 'pointer' }}
           >
             ← Vorige
@@ -827,7 +828,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             type="button"
             onClick={volgendeStap}
             disabled={disabled}
-            className="vui-btn vui-btn-primary"
+            className="vui-btn vui-btn-primary vui-knop-glans"
             style={{ flex: 1, borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb),.24)' }}
           >
             Volgende →
@@ -837,7 +838,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             <button
               type="submit"
               disabled={disabled}
-              className="vui-btn vui-btn-primary"
+              className="vui-btn vui-btn-primary vui-knop-glans"
               style={{ width: '100%', borderRadius: 'var(--merk-radius-md, 12px)', background: 'var(--merk)', padding: '15px 0', fontSize: 15.5, fontWeight: 700, color: '#fff', border: 'none', cursor: disabled ? 'not-allowed' : 'pointer', opacity: disabled ? .55 : 1, boxShadow: '0 6px 18px rgba(var(--merk-rgb),.24)' }}
             >
               {disabled ? 'Bezig met opslaan...' : 'Woning aanmaken →'}
@@ -845,7 +846,7 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
             {!disabled && (
               <p style={{ marginTop: 10, textAlign: 'center', fontSize: 13, color: '#5C6470' }}>
                 of druk{' '}
-                <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht)', padding: '2px 6px', borderRadius: 5, fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
+                <kbd style={{ fontFamily: 'monospace', background: 'var(--merk-zacht)', padding: '2px 6px', borderRadius: 'var(--merk-radius-sm, 5px)', fontSize: 12, color: '#5C6470', border: '1px solid #E1E5E9' }}>⌘ Enter</kbd>
               </p>
             )}
           </div>
