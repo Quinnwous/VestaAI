@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { StatTile } from '@/components/ui'
 import { Spotlight } from '@/components/ui/Spotlight'
 import { formatDatum } from '@/lib/utils'
@@ -141,8 +142,13 @@ export function Kerncijfers({
             : metDataTotEnMet(`n=${nEigenVerkopenLaatste12Mnd} eigen verkopen, laatste 12 mnd`, dataTotEnMet)
         }
       />
-      <StatTile label="In verkoop" waarde={inVerkoop} bijschrift={inVerkoop === 1 ? 'dossier in de verkoop' : 'dossiers in de verkoop'} />
-      <StatTile label="Lopende verkoopadviezen" waarde={lopendeVerkoopadviezen} bijschrift={lopendeVerkoopadviezen === 1 ? 'dossier in fase Verkoopadvies' : 'dossiers in fase Verkoopadvies'} />
+      {/* De twee dossiertellingen openen de woningenlijst op die fase. */}
+      <Link href="/woningen?fase=in_verkoop" className="vui-tegellink" aria-label={`In verkoop: ${inVerkoop} — bekijk de woningen`}>
+        <StatTile label="In verkoop" waarde={inVerkoop} bijschrift={inVerkoop === 1 ? 'dossier in de verkoop' : 'dossiers in de verkoop'} />
+      </Link>
+      <Link href="/woningen?fase=verkoopadvies" className="vui-tegellink" aria-label={`Lopende verkoopadviezen: ${lopendeVerkoopadviezen} — bekijk de woningen`}>
+        <StatTile label="Lopende verkoopadviezen" waarde={lopendeVerkoopadviezen} bijschrift={lopendeVerkoopadviezen === 1 ? 'dossier in fase Verkoopadvies' : 'dossiers in fase Verkoopadvies'} />
+      </Link>
     </Spotlight>
   )
 }

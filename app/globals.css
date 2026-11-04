@@ -1068,3 +1068,7 @@ button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
 .vui-banner-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; border-radius: 4px; }
 .vui-banner-pijl { display: inline-block; transition: transform var(--t) var(--ease); }
 .vui-banner-link:hover .vui-banner-pijl { transform: translateX(3px); }
+/* Klikbare kerncijfertegel: de hele tegel is de link. */
+.vui-tegellink { display: block; text-decoration: none; color: inherit; border-radius: var(--merk-radius-card-lg, 18px); }
+.vui-tegellink > * { height: 100%; }
+.vui-tegellink:focus-visible { outline: 2px solid var(--merk); outline-offset: 3px; }
