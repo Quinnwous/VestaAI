@@ -161,7 +161,13 @@ export function KwartaalberichtModal({
           <Skeleton height={12} width="60%" style={{ marginTop: 10 }} />
         </div>
       ) : (
+        // key = taal: bij NL ⇄ EN vloeit de nieuwe tekst zacht in. tabIndex: het
+        // vak scrollt, dus het moet met het toetsenbord bereikbaar zijn (axe).
         <div
+          key={taal}
+          className="vui-binnen-zacht"
+          tabIndex={0}
+          aria-label={`Kwartaalbericht (${taal.toUpperCase()})`}
           style={{
             whiteSpace: 'pre-wrap',
             lineHeight: 1.6,
