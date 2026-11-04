@@ -6,6 +6,7 @@ import { Kantel } from '@/components/ui/Kantel'
 import { InBeeld } from '@/components/ui/InBeeld'
 import { WijkIllustratie } from '@/components/ui/HuisIllustratie'
 import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
+import { useKantelVolger } from '@/hooks/useKantelVolger'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
@@ -236,6 +237,8 @@ export function LandingPageClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const [mobileOpen, setMobileOpen] = useState(false)
   useSpotlightVolger()
+  // Voorbeeldkaarten in de secties kantelen licht mee, zoals de hero.
+  useKantelVolger()
   // Correcties in het waarderingsvoorbeeld zijn aan/uit te zetten; de
   // bandbreedte telt rustig mee.
   const [correcties, setCorrecties] = useState(() => new Set(WAARDE_VARIABELEN.filter(v => v.aan).map(v => v.l)))
@@ -525,7 +528,7 @@ export function LandingPageClient() {
           {/* Speelt zich af zodra het in beeld komt: het adres typt zich, de
               drie BAG-velden vullen zich na elkaar, dan het vinkje. */}
           <InBeeld className="vl-bag">
-            <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
+            <div className="vui-kantel vl-kantel" style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Nieuw dossier aanmaken</span>
@@ -635,7 +638,7 @@ export function LandingPageClient() {
             </div>
           </div>
           <div>
-            <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
+            <div className="vui-kantel vl-kantel" style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
               <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
                 <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Waardering · Lijsterbeslaan 14</span>
@@ -708,7 +711,7 @@ export function LandingPageClient() {
               </div>
             </div>
             <div>
-              <div style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
+              <div className="vui-kantel vl-kantel" style={{ background: '#fff', border: '1px solid #E4EAE6', borderRadius: 22, boxShadow: '0 30px 70px -28px rgba(14,26,19,.22)', overflow: 'hidden' }}>
                 <div style={{ padding: '14px 18px', borderBottom: '1px solid #EEF2EF', background: '#FBFDFC', display: 'flex', alignItems: 'center', gap: 9 }}>
                   <span style={{ width: 9, height: 9, borderRadius: 999, background: '#1F6B45' }} />
                   <span style={{ fontSize: 13, fontWeight: 700, color: '#0E1A13' }}>Marktanalyse · voorbeeldregio</span>
