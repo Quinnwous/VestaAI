@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { DataIllustratie } from '@/components/ui/HuisIllustratie'
 
 /**
  * Foutscherm binnen de ingelogde omgeving. Bestaat apart van `app/error.tsx` omdat een
@@ -25,12 +26,11 @@ export default function AppError({
 
   return (
     <main style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 20px' }}>
-      <div style={{ textAlign: 'center', maxWidth: 420 }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#DC2626" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-          </svg>
+      <div className="vui-binnen" style={{ textAlign: 'center', maxWidth: 420 }}>
+        {/* Rustig beeld i.p.v. een rood waarschuwingsicoon: een fout is
+            meestal tijdelijk, en rood is bij i4 de accentkleur. */}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+          <DataIllustratie breedte={150} />
         </div>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: '#14181B', margin: '0 0 8px' }}>Er is iets misgegaan</h2>
         <p style={{ fontSize: 14, color: '#5C6470', lineHeight: 1.6, margin: '0 0 8px' }}>
