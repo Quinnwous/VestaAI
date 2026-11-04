@@ -771,3 +771,13 @@
 }
 @keyframes vui-band-groei { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .vui-startbanner-raster.vui-waardehero-deco { animation: none; }
+
+/* Kantoorpagina (app/(app)/kantoor/page.tsx): kaarten in twee kolommen. */
+.vui-kantoor-raster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .vui-kantoor-raster { grid-template-columns: minmax(0, 1fr); } }
+.vui-teamrij { transition: background var(--t-hover); }
+.vui-teamrij:hover { background: var(--merk-zacht); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-staaf-balk { transform-origin: bottom center; animation: vui-staaf 800ms var(--ease) backwards; }
+  .vui-staaf-balk { animation-delay: 120ms; }
+}
