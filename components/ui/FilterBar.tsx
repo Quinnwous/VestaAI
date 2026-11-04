@@ -53,7 +53,7 @@ export function FilterBar({
             padding: '10px 12px',
             borderTop: `1px solid ${colors.border}`,
             borderRadius: `0 0 ${radius.cardLg} ${radius.cardLg}`,
-            background: 'linear-gradient(90deg, var(--merk-accent-zacht, #FBE9EE), transparent 60%)',
+            background: 'linear-gradient(90deg, var(--merk-accent-zacht), transparent 60%)',
             display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
           }}
         >
