@@ -988,3 +988,13 @@
   .vui-wissel { animation: vui-wissel 260ms var(--ease); }
 }
 @keyframes vui-wissel { from { opacity: 0; transform: translateY(5px); } }
+
+/* Balken in de verkenners (prijsklassen, ranglijst, verdeling): groeien bij
+   het verschijnen van links in en schuiven mee bij een filterwissel. */
+.vui-balk { transform-origin: left center; transition: width 420ms var(--ease); }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-balk { animation: vui-balk-groei 800ms var(--ease) var(--d, 0ms) backwards; }
+}
+@keyframes vui-balk-groei { from { transform: scaleX(0); } }
+.vui-rijhover { transition: background var(--t-hover); }
+.vui-rijhover:hover { background: var(--merk-zacht); }

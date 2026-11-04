@@ -606,7 +606,7 @@ function Ranglijst({ rijen, sort, onKies }: { rijen: RanglijstRij[]; sort: Concu
             {r.kantoor}
           </span>
           <span style={{ height: 8, background: colors.borderSoft, borderRadius: radius.pill, overflow: 'hidden', display: 'block' }}>
-            <span style={{ display: 'block', height: '100%', width: `${(r.aandeelPct / maxAandeel) * 100}%`, background: r.kantoor === ONS ? 'var(--merk)' : colors.bodyStrong, borderRadius: radius.pill }} />
+            <span className="vui-balk" style={{ display: 'block', height: '100%', width: `${(r.aandeelPct / maxAandeel) * 100}%`, background: r.kantoor === ONS ? 'var(--merk)' : colors.bodyStrong, borderRadius: radius.pill }} />
           </span>
           <span style={{ fontSize: 12, fontWeight: 700, color: colors.bodyStrong, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
             {procent(r.aandeelPct, false)} <small style={{ fontWeight: 500, color: colors.muted }}>· n={r.aantal} · {dagen(r.mediaanLooptijd)}</small>
@@ -646,7 +646,7 @@ function ConcurrentDrawerInhoud({ profiel, magSchrappen, onSchrap }: { profiel: 
           <div key={v.woningtypeGroep} style={{ display: 'grid', gridTemplateColumns: '112px 1fr 38px', alignItems: 'center', gap: 8, margin: '6px 0', fontSize: 12 }}>
             <span>{typegroepLabel(v.woningtypeGroep as Typegroep) || v.woningtypeGroep}</span>
             <span style={{ height: 8, background: colors.borderSoft, borderRadius: radius.pill, overflow: 'hidden' }}>
-              <span style={{ display: 'block', height: '100%', width: `${(v.n / totVerdeling) * 100}%`, background: 'var(--merk)', borderRadius: radius.pill }} />
+              <span className="vui-balk" style={{ display: 'block', height: '100%', width: `${(v.n / totVerdeling) * 100}%`, background: 'var(--merk)', borderRadius: radius.pill }} />
             </span>
             <span style={{ textAlign: 'right', fontWeight: 700 }}>{Math.round((v.n / totVerdeling) * 100)}%</span>
           </div>

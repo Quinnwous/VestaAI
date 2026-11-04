@@ -369,6 +369,7 @@ function WoningenKaartWeergave({ rijen }: { rijen: WoningKaartRij[] }) {
                 href={`/object/${p.id}`}
                 onMouseEnter={() => setGehoveredId(p.id)}
                 onMouseLeave={() => setGehoveredId(null)}
+                className="vui-recentrij"
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
                   padding: '9px 10px', borderRadius: radius.md, textDecoration: 'none',

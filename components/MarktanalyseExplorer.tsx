@@ -650,12 +650,13 @@ function PrijsklasseVerdeling({
             onClick={() => onKlik(r.klasse)}
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onKlik(r.klasse) } }}
             title={`${nlNL.format(r.n)} verkopen in de markt, ${nlNL.format(r.nEigen)} van ons`}
-            style={{ display: 'grid', gridTemplateColumns: '112px 1fr 92px', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 6px', borderRadius: 8, opacity: isGedimd ? 0.45 : 1 }}
+            className="vui-rijhover"
+            style={{ display: 'grid', gridTemplateColumns: '112px 1fr 92px', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 6px', borderRadius: 8, opacity: isGedimd ? 0.45 : 1, transition: 'opacity 220ms cubic-bezier(.2,.8,.2,1)' }}
           >
-            <span style={{ fontSize: 13, fontWeight: 600, color: isActief ? colors.primary : colors.bodyStrong }}>{r.label}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: isActief ? 'var(--merk-tekst)' : colors.bodyStrong }}>{r.label}</span>
             <span style={{ height: 20, background: colors.borderSoft, borderRadius: 999, position: 'relative', overflow: 'hidden', boxShadow: isActief ? `0 0 0 2px var(--merk-rand, ${colors.primary}33)` : 'none' }}>
-              <span style={{ position: 'absolute', inset: 0, width: `${(aandeelMarkt / maxAandeel) * 100}%`, background: SERIE.markt, opacity: 0.45, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
-              <span style={{ position: 'absolute', top: 6, bottom: 6, left: 0, width: `${(aandeelWij / maxAandeel) * 100}%`, background: SERIE.wij, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
+              <span className="vui-balk" style={{ position: 'absolute', inset: 0, width: `${(aandeelMarkt / maxAandeel) * 100}%`, background: SERIE.markt, opacity: 0.45, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
+              <span className="vui-balk" style={{ ['--d' as string]: '120ms', position: 'absolute', top: 6, bottom: 6, left: 0, width: `${(aandeelWij / maxAandeel) * 100}%`, background: SERIE.wij, borderRadius: 'var(--merk-radius-pill, 9999px)' }} />
             </span>
             <span style={{ fontSize: 13, fontWeight: 800, textAlign: 'right', whiteSpace: 'nowrap' }}>
               {procent(aandeelWij * 100, false)} <small style={{ color: colors.muted, fontWeight: 600 }}>· {procent(aandeelMarkt * 100, false)}</small>
