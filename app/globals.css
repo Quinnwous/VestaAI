@@ -796,3 +796,7 @@
   transition: transform 260ms var(--ease), width 260ms var(--ease);
 }
 @media (prefers-reduced-motion: reduce) { .vui-seg-thumb { transition: none; } }
+
+/* Typografie: koppen in evenwichtige regels, alinea's zonder weeswoord. */
+:where(h1, h2, h3) { text-wrap: balance; }
+:where(p, li) { text-wrap: pretty; }
