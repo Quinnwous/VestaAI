@@ -474,7 +474,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
       {/* Tab content */}
       <div>
         <div role="tabpanel" id="panel-funda" aria-labelledby="tab-funda" hidden={activeTab !== 'funda'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Funda limit: max 800 words' : 'Funda-limiet: max 800 woorden'}
           </p>
           <TabContent content={weergaveData.funda_tekst} wordCount wordLimit={800} onSave={saveField('funda_tekst')} />
@@ -483,7 +483,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
 
         <div role="tabpanel" id="panel-brochure" aria-labelledby="tab-brochure" hidden={activeTab !== 'brochure'} className="space-y-3 vui-tabpaneel">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-gray-500">
               {isEn ? 'Suitable for both a printed and a digital brochure' : 'Geschikt voor zowel een gedrukte als digitale brochure'}
             </p>
             {objectId && (
@@ -514,7 +514,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-instagram" aria-labelledby="tab-instagram" hidden={activeTab !== 'instagram'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Instagram limit: 2,200 characters' : 'Instagram-limiet: 2.200 tekens'}
           </p>
           <TabContent content={weergaveData.instagram} charLimit={2200} onSave={saveField('instagram')} />
@@ -522,7 +522,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-linkedin" aria-labelledby="tab-linkedin" hidden={activeTab !== 'linkedin'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'LinkedIn limit: 3,000 characters' : 'LinkedIn-limiet: 3.000 tekens'}
           </p>
           <TabContent content={weergaveData.linkedin_kantoor} charLimit={3000} onSave={saveField('linkedin_kantoor')} />
@@ -530,7 +530,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-sneak" aria-labelledby="tab-sneak" hidden={activeTab !== 'sneak'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn
               ? 'Short WhatsApp message — Dutch only, max 600 characters'
               : 'Kort WhatsApp-bericht, max 600 tekens'}
@@ -550,7 +550,7 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-openhuis" aria-labelledby="tab-openhuis" hidden={activeTab !== 'openhuis'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Open house announcement for Instagram/social' : 'Open huis-aankondiging voor Instagram/social'}
           </p>
           {extraPaneel('open_huis', 'openhuis', weergaveData.open_huis)}
@@ -576,21 +576,21 @@ export function ResultTabs({ data, dataEn, objectId, taal = 'nl', onReset, onRes
         </div>
 
         <div role="tabpanel" id="panel-video" aria-labelledby="tab-video" hidden={activeTab !== 'video'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Voice-over script for property video (±60 seconds)' : 'Voice-over script voor woningvideo (±60 seconden)'}
           </p>
           {extraPaneel('video_script', 'video', weergaveData.video_script, { wordCount: true })}
         </div>
 
         <div role="tabpanel" id="panel-kopersvragen" aria-labelledby="tab-kopersvragen" hidden={activeTab !== 'kopersvragen'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Frequently asked questions from buyers — ready to share or export as PDF' : 'Veelgestelde vragen van kopers — klaar om te delen of als PDF te exporteren'}
           </p>
           {extraPaneel('kopersvragen_faq', 'kopersvragen', weergaveData.kopersvragen_faq, { wordCount: true })}
         </div>
 
         <div role="tabpanel" id="panel-energieadvies" aria-labelledby="tab-energieadvies" hidden={activeTab !== 'energieadvies'} className="space-y-3 vui-tabpaneel">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-gray-500">
             {isEn ? 'Energy advice and subsidy overview based on the energy label' : 'Energieadvies en subsidieoverzicht op basis van het energielabel'}
           </p>
           {extraPaneel('energie_advies', 'energieadvies', weergaveData.energie_advies, { wordCount: true })}

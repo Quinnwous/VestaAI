@@ -154,7 +154,7 @@ export function DocumentenAssistent({ objectId }: Props) {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               {doc.bestandsnaam}
-              <span className="text-gray-400">({formatGrootte(doc.grootte_bytes)})</span>
+              <span className="text-gray-500">({formatGrootte(doc.grootte_bytes)})</span>
             </button>
           ))}
         </div>
@@ -186,7 +186,7 @@ export function DocumentenAssistent({ objectId }: Props) {
             <p className="text-xs font-medium text-gray-600">
               Vragen stellen over: <span className="text-gray-900">{geselecteerd.bestandsnaam}</span>
               {!geselecteerd.anthropic_file_id && (
-                <span className="ml-2 text-amber-600">(documentinhoud wordt per vraag meegestuurd)</span>
+                <span className="ml-2 text-amber-700">(documentinhoud wordt per vraag meegestuurd)</span>
               )}
             </p>
           </div>
@@ -221,7 +221,7 @@ export function DocumentenAssistent({ objectId }: Props) {
           )}
 
           {chat.length === 0 && (
-            <div className="px-4 py-6 text-center text-sm text-gray-400">
+            <div className="px-4 py-6 text-center text-sm text-gray-500">
               <p>Stel een vraag over dit document.</p>
               <p className="text-xs mt-1">Bijv. &quot;Zijn er achterstallige VVE-bijdragen?&quot; of &quot;Wat staat er in de erfpachtclausule?&quot;</p>
             </div>
@@ -251,7 +251,7 @@ export function DocumentenAssistent({ objectId }: Props) {
       {documenten.length === 0 && (
         <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 text-center">
           <p className="text-sm text-gray-500">Upload een VVE-notulen, leveringsakte of ander juridisch document om vragen te stellen via AI.</p>
-          <p className="text-xs text-gray-400 mt-1">Ondersteunde formaten: PDF, TXT, Word (.docx) — max 10 MB</p>
+          <p className="text-xs text-gray-500 mt-1">Ondersteunde formaten: PDF, TXT, Word (.docx) — max 10 MB</p>
         </div>
       )}
     </div>
