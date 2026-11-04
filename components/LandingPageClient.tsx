@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Kantel } from '@/components/ui/Kantel'
 import { InBeeld } from '@/components/ui/InBeeld'
+import { WijkIllustratie } from '@/components/ui/HuisIllustratie'
 import { useSpotlightVolger } from '@/hooks/useSpotlightVolger'
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -425,7 +426,9 @@ export function LandingPageClient() {
       </section>
 
       {/* WAT IS VESTA AI */}
-      <section style={{ maxWidth: 980, margin: '0 auto', padding: '96px 28px 72px', textAlign: 'center' }}>
+      <section style={{ maxWidth: 980, margin: '0 auto', padding: '88px 28px 72px', textAlign: 'center' }}>
+        {/* Beeldmoment: een kleine isometrische wijk die rustig zweeft. */}
+        <WijkIllustratie style={{ marginBottom: 28 }} />
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#1F6B45', marginBottom: 18 }}>Wat is Vesta&nbsp;AI</div>
         <h2 className="vui-onthul" style={{ fontFamily: 'var(--font-newsreader), Georgia, serif', fontWeight: 500, fontSize: 'clamp(30px,4vw,46px)', lineHeight: 1.12, letterSpacing: '-.015em', color: '#0E1A13', margin: '0 auto 26px', maxWidth: 780 }}>
           Eén werkplek voor de hele weg van verkoopadvies tot verkocht, op <span style={{ fontStyle: 'italic', color: '#1A6B45' }}>úw eigen data.</span>

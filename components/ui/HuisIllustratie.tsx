@@ -99,8 +99,11 @@ export function HuisIllustratie({
   breedte = 168,
   pin = true,
   variant = 'licht',
+  vertraging = 0,
   style,
 }: {
+  /** Faseverschuiving van de zweefbeweging in seconden (meerdere huizen naast elkaar). */
+  vertraging?: number
   /** `opMerk` voor gebruik op een merkverloop (witte gevels). */
   variant?: keyof typeof PALET
   breedte?: number
@@ -120,9 +123,9 @@ export function HuisIllustratie({
       style={{ display: 'block', overflow: 'visible', ...style }}
     >
       {/* Zachte schaduw op de grond (beweegt tegen de zweefbeweging in). */}
-      <ellipse className="vui-zweef-schaduw" cx={F[0] + 10} cy={F[1] + 14} rx={78} ry={14} fill={kleur.schaduw} />
+      <ellipse className="vui-zweef-schaduw" style={{ animationDelay: `${-vertraging}s` }} cx={F[0] + 10} cy={F[1] + 14} rx={78} ry={14} fill={kleur.schaduw} />
 
-      <g className="vui-zweef">
+      <g className="vui-zweef" style={{ animationDelay: `${-vertraging}s` }}>
         <polygon points={pts(g1, g2, g3, g4)} fill={kleur.grond} stroke={kleur.grondRand} strokeWidth={1} />
 
         {/* Boom achter links */}
@@ -230,5 +233,20 @@ export function DataIllustratie({ breedte = 168, style }: { breedte?: number; st
         </g>
       </g>
     </svg>
+  )
+}
+
+/**
+ * Kleine wijk: drie woningen en een grafiek op verschillende hoogtes, elk
+ * met een eigen zweeffase — voor een beeldmoment op de landingspagina.
+ */
+export function WijkIllustratie({ style }: { style?: CSSProperties }) {
+  return (
+    <div aria-hidden="true" className="vui-wijk" style={{ position: 'relative', width: 'min(560px, 100%)', height: 230, margin: '0 auto', ...style }}>
+      <div style={{ position: 'absolute', left: '2%', bottom: 10, opacity: 0.75 }}><HuisIllustratie breedte={128} pin={false} vertraging={1.5} /></div>
+      <div style={{ position: 'absolute', left: '30%', bottom: 26, zIndex: 1 }}><HuisIllustratie breedte={196} vertraging={0} /></div>
+      <div style={{ position: 'absolute', right: '22%', bottom: 4, opacity: 0.85 }}><HuisIllustratie breedte={118} pin={false} vertraging={3.2} /></div>
+      <div style={{ position: 'absolute', right: '0%', bottom: 18, opacity: 0.9 }}><DataIllustratie breedte={120} /></div>
+    </div>
   )
 }

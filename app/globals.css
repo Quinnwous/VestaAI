@@ -860,10 +860,13 @@
 
 /* Sparklines tekenen zich bij het verschijnen. */
 @media (prefers-reduced-motion: no-preference) {
-  .vui-spark-lijn { stroke-dasharray: 1; animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
+  /* clip-path i.p.v. stroke-dasharray: met vector-effect non-scaling-stroke
+     rekent de browser de streepjes in schermpixels, dan wordt de lijn een
+     stippellijn. */
+  .vui-spark-lijn { animation: vui-spark-teken 1100ms var(--ease) 200ms backwards; }
   .vui-spark-vlak { animation: vui-fade-in 900ms var(--ease) 600ms backwards; }
 }
-@keyframes vui-spark-teken { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes vui-spark-teken { from { clip-path: inset(-4px 100% -4px 0); } to { clip-path: inset(-4px 0 -4px 0); } }
 
 /* Pins in de illustraties: een zachte ring die uitdijt (locatie "leeft"). */
 @media (prefers-reduced-motion: no-preference) {
@@ -948,3 +951,26 @@
 @media (prefers-reduced-motion: no-preference) {
   .maplibregl-marker { animation: vui-fade-in 420ms var(--ease) backwards; }
 }
+
+/* Intake (components/PropertyForm.tsx): velden die uit het BAG kwamen
+   lichten één keer zacht op in de merktint. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-autogevuld { animation: vui-autogevuld 1600ms var(--ease) 200ms backwards; }
+  .vui-bag-label { animation: vui-pop-in 300ms var(--ease) backwards; display: inline-block; }
+}
+@keyframes vui-autogevuld {
+  from { background-color: var(--merk-zacht); box-shadow: 0 0 0 4px rgba(var(--merk-rgb), .14); }
+}
+
+/* Live-stip in databadges (components/ui/Badge.tsx `dot`). */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-badge-stip::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    background: currentColor;
+    animation: vui-puls 2.6s var(--ease) infinite;
+  }
+}
+.vui-wijk { } @media (prefers-reduced-motion: no-preference) { .vui-wijk { animation: vui-onthul linear backwards; } } @supports not (animation-timeline: view()) { .vui-wijk { animation: none; } } @supports (animation-timeline: view()) { .vui-wijk { animation-timeline: view(); animation-range: entry 0% entry 80%; } }
+@media (max-width: 560px) { .vui-wijk { height: 200px; } .vui-wijk > :first-child, .vui-wijk > :last-child { display: none; } .vui-wijk > :nth-child(2) { left: 8% !important; } .vui-wijk > :nth-child(3) { right: 4% !important; } }

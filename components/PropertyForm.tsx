@@ -203,6 +203,17 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [disabled, handleSubmit, onSubmit, stap])
 
+  // Velden die net uit het BAG kwamen: krijgen een "uit het BAG"-label en een
+  // zachte oplichting, tot de makelaar ze zelf aanpast.
+  const [uitBag, setUitBag] = useState<Set<string>>(() => new Set())
+  const nietMeerUitBag = (veld: string) => setUitBag(huidig => {
+    if (!huidig.has(veld)) return huidig
+    const n = new Set(huidig); n.delete(veld); return n
+  })
+  const bagLabel = (veld: string) => uitBag.has(veld)
+    ? <span className="vui-bag-label" style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, color: 'var(--merk-tekst)', background: 'var(--merk-zacht)', padding: '1px 8px', borderRadius: 9999 }}>↗ uit het BAG</span>
+    : null
+
   const handleAdresSelect = async (suggestie: BagSuggestie) => {
     // BAG-data ophalen (bouwjaar, oppervlak, energielabel)
     try {
@@ -212,6 +223,11 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
         if (json.bouwjaar) setValue('bouwjaar', json.bouwjaar, { shouldValidate: true })
         if (json.oppervlak_m2) setValue('oppervlak_m2', json.oppervlak_m2, { shouldValidate: true })
         if (json.energielabel) setValue('energielabel', json.energielabel, { shouldValidate: true })
+        setUitBag(new Set([
+          ...(json.bouwjaar ? ['bouwjaar'] : []),
+          ...(json.oppervlak_m2 ? ['oppervlak_m2'] : []),
+          ...(json.energielabel ? ['energielabel'] : []),
+        ]))
       }
     } catch { /* stilzwijgend */ }
 
@@ -358,10 +374,12 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       <div className="form-grid-2">
         <div>
           <label style={labelStyle}>
-            {isEn ? 'Floor area (m²)' : 'Woonoppervlak (m²)'} <span style={{ color: '#DC2626' }}>*</span>
+            {isEn ? 'Floor area (m²)' : 'Woonoppervlak (m²)'} <span style={{ color: '#DC2626' }}>*</span>{bagLabel('oppervlak_m2')}
           </label>
           <input
             {...register('oppervlak_m2', { valueAsNumber: true })}
+            className={uitBag.has('oppervlak_m2') ? 'vui-autogevuld' : undefined}
+            onInput={() => nietMeerUitBag('oppervlak_m2')}
             type="number" min={1} disabled={disabled} placeholder="85"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
             onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk)')}
@@ -371,10 +389,12 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
         </div>
         <div>
           <label style={labelStyle}>
-            {isEn ? 'Year built' : 'Bouwjaar'} <span style={{ color: '#DC2626' }}>*</span>
+            {isEn ? 'Year built' : 'Bouwjaar'} <span style={{ color: '#DC2626' }}>*</span>{bagLabel('bouwjaar')}
           </label>
           <input
             {...register('bouwjaar', { valueAsNumber: true })}
+            className={uitBag.has('bouwjaar') ? 'vui-autogevuld' : undefined}
+            onInput={() => nietMeerUitBag('bouwjaar')}
             type="number" min={1800} max={2035} disabled={disabled} placeholder="1995"
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
             onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk)')}
@@ -387,9 +407,11 @@ export function PropertyForm({ onSubmit, disabled, kantoorInstellingen }: Proper
       {/* Energielabel + geldig tot */}
       <div className="form-grid-2">
         <div>
-          <label style={labelStyle}>Energielabel <span style={{ color: '#DC2626' }}>*</span></label>
+          <label style={labelStyle}>Energielabel <span style={{ color: '#DC2626' }}>*</span>{bagLabel('energielabel')}</label>
           <select
             {...register('energielabel')}
+            className={uitBag.has('energielabel') ? 'vui-autogevuld' : undefined}
+            onInput={() => nietMeerUitBag('energielabel')}
             disabled={disabled}
             style={{ ...inputStyle, opacity: disabled ? .5 : 1 }}
             onFocus={e => !disabled && (e.target.style.borderColor = 'var(--merk)')}
