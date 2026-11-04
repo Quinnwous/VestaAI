@@ -183,14 +183,17 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
       )}
 
       {verwerken && (
-        <div className="rounded-xl bg-[var(--merk-zacht)] border border-[var(--merk-rand)] p-4">
+        <div className="rounded-xl bg-[var(--merk-zacht)] border border-[var(--merk-rand)] p-4 vui-binnen-zacht">
           <div className="flex items-center gap-3">
-            <span className="w-5 h-5 border-2 border-[var(--merk-rand)] border-t-[var(--merk)] rounded-full animate-spin flex-shrink-0" />
+            {/* Rustige puls i.p.v. een spinner (principes § Data). */}
+            <span aria-hidden className="vui-fase-puls" style={{ margin: 0, flexShrink: 0 }} />
             <div>
               <p className="text-sm font-semibold text-[var(--merk-tekst)]">Gemini AI is aan het werk…</p>
               <p className="text-xs text-[var(--merk-tekst)] mt-0.5">De ruimte wordt virtueel ingericht in {STIJLEN.find(s => s.value === stijl)?.label}-stijl. Dit duurt 30–60 seconden.</p>
             </div>
           </div>
+          {/* Plek waar de foto verschijnt: skelet in dezelfde verhouding. */}
+          <div aria-hidden className="vui-skeleton mt-4 aspect-video rounded-lg" style={{ background: 'rgba(255,255,255,.65)' }} />
         </div>
       )}
 
