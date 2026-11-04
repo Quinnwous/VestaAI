@@ -35,6 +35,8 @@ gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
 | Brochure-paginaopbouw | Ongewijzigd gelaten (de tests leggen het aantal pagina's vast en lange teksten vullen de pagina's); wel een contactkaart in de kantoorkleur op de slotpagina | Opus |
 | react-pdf en rgba-randen | Een `borderTopColor` in rgba kwam als groene lijn uit de contentsuite-pdf; scheidingslijnen in pdf's voortaan als eigen `View` met `backgroundColor` + `opacity` | Opus |
 | Les: nieuw bestand niet mee-gecommit | `git commit -am` neemt geen nieuwe bestanden mee: `hooks/useSchuifIndicator.ts` ontbrak in #71, dus typecheck en Vercel-build op `main` faalden van #71 t/m #75 (productie bleef op #70) tot #76 hem alsnog meenam. Lokaal was alles groen omdat het bestand er wél stond. Voortaan `git add -A` + `git status` schoon vóór de PR, en na de merge de CI-run op `main` controleren | Opus |
+| Snelkoppelingen op de startpagina | Geen nieuwe snelkoppelingenrij (besluit 1.9c blijft: rustige startpagina), wel bestaande elementen klikbaar gemaakt: de contextregel en de twee dossiertegels openen de woningenlijst op de juiste fase | Opus |
+| Voor/na bij virtual staging | Standaardweergave is een vergelijking met schuifregelaar (gewone range-input, dus toetsenbord en schermlezer werken); "Origineel" en "Gestaged" blijven als losse weergave | Opus |
 
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 

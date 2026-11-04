@@ -90,6 +90,14 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   brochure met contactkaart, contentsuite-pdf zonder groene lijn op de
   omslag, OpenGraph-beeld met de 3D-woning, en de contentsuite-mail in de
   huisstijl van het kantoor (informeel, zonder productnaam).
+  Ronde 16-22: virtual staging opent als voor/na-vergelijking met
+  schuifregelaar; fotobibliotheek met hover-zoom; documentenassistent met
+  inschuivende berichten en rustige denk-stippen; account in kaartstijl;
+  zweefkaartjes op kaarten verschijnen zacht; kwartaalbericht vloeit in bij
+  taalwissel. Startpagina: de contextregel in de banner linkt naar wat
+  aandacht vraagt (`contextLink()`), de tegels "In verkoop" en "Lopende
+  verkoopadviezen" openen de woningenlijst op die fase, en in de
+  woningentabel opent de hele rij het dossier.
 
 ## 2. Startpagina (`/dashboard`)
 
