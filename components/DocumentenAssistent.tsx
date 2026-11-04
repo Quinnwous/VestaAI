@@ -195,7 +195,7 @@ export function DocumentenAssistent({ objectId }: Props) {
           {chat.length > 0 && (
             <div className="px-4 py-4 space-y-4 max-h-80 overflow-y-auto">
               {chat.map((b, i) => (
-                <div key={i} className={`flex ${b.rol === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <div key={i} className={`flex vui-bericht ${b.rol === 'user' ? 'justify-end vui-bericht-eigen' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-xl px-4 py-2.5 text-sm leading-relaxed ${
                     b.rol === 'user'
                       ? 'bg-[var(--merk)] text-[var(--merk-op)]'
@@ -206,11 +206,12 @@ export function DocumentenAssistent({ objectId }: Props) {
                 </div>
               ))}
               {beantwoorden && (
-                <div className="flex justify-start">
+                <div className="flex justify-start vui-bericht">
                   <div className="bg-gray-100 rounded-xl px-4 py-2.5">
                     <div className="flex gap-1">
                       {[0, 1, 2].map(i => (
-                        <span key={i} className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }} />
+                        // Rustig "denken": de stippen lichten na elkaar op, zonder te stuiteren.
+                        <span key={i} className="w-1.5 h-1.5 bg-gray-400 rounded-full vui-denk-stip" style={{ animationDelay: `${i * 0.18}s` }} />
                       ))}
                     </div>
                   </div>
