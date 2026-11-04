@@ -822,3 +822,7 @@
   .vui-recentrij:nth-child(n+5), [aria-label='Zoekresultaten'] [role='option']:nth-child(n+5) { animation-delay: 120ms; }
   .vui-recentrij { transition: background var(--t-hover); }
 }
+/* In het zoekpalet korter: de lijst wisselt bij elke toetsaanslag. */
+@media (prefers-reduced-motion: no-preference) {
+  [aria-label='Zoekresultaten'] [role='option'] { animation-duration: 200ms; }
+}
