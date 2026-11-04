@@ -98,6 +98,13 @@ betaalde testrun · ⏸ voorbereid, nog niet zichtbaar.
   aandacht vraagt (`contextLink()`), de tegels "In verkoop" en "Lopende
   verkoopadviezen" openen de woningenlijst op die fase, en in de
   woningentabel opent de hele rij het dossier.
+  Ronde 23-30: alle kerncijfertegels die ergens heen kunnen zijn klikbaar
+  (verkoopkaart, concurrentie, woningen per fase); zijpanelen met
+  gestaffelde inhoud; laadstaten van dossier en nieuwe woning in de vorm van
+  de echte pagina; dossier-404 met de 3D-woning; prijswijziging-modal en
+  statusmenu gelijk getrokken met de rest (dialoog-/menurollen, Escape,
+  zachte binnenkomst); contrastfixes (lichtgrijze en amber tekst naar AA);
+  in admin een live voorbeeld van de huisstijl vóór het opslaan.
 
 ## 2. Startpagina (`/dashboard`)
 

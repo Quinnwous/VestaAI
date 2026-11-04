@@ -85,7 +85,7 @@ export function StijlLerenPaneel() {
                 type="button"
                 onClick={analyseer}
                 disabled={bezig}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60 vui-btn vui-btn-primary vui-knop-glans"
                 style={{ background: 'var(--merk)' }}
               >
                 {bezig ? 'Analyseren…' : `Analyseer ${aantal} bewerking${aantal === 1 ? '' : 'en'}`}
@@ -97,11 +97,11 @@ export function StijlLerenPaneel() {
       )}
 
       {regels && (
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--merk-rand)', background: 'var(--merk-zacht)' }}>
+        <div className="rounded-xl border p-4 vui-binnen" style={{ borderColor: 'var(--merk-rand)', background: 'var(--merk-zacht)' }}>
           <p className="text-sm font-semibold text-gray-900 mb-2">We hebben dit geleerd — kloppen deze regels?</p>
           <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-sans mb-3">{regels}</pre>
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => rondAf(true)} disabled={bezig} className="text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60" style={{ background: 'var(--merk)' }}>
+            <button type="button" onClick={() => rondAf(true)} disabled={bezig} className="text-sm font-semibold text-white rounded-lg px-4 py-2 disabled:opacity-60 vui-btn vui-btn-primary" style={{ background: 'var(--merk)' }}>
               {bezig ? 'Bezig…' : 'Toevoegen aan onze stijl'}
             </button>
             <button type="button" onClick={() => rondAf(false)} disabled={bezig} className="text-sm font-semibold text-gray-600 rounded-lg px-4 py-2 border border-gray-300 hover:bg-gray-50 disabled:opacity-60">
@@ -112,8 +112,8 @@ export function StijlLerenPaneel() {
       )}
 
       {klaar === 'toegepast' && (
-        <div className="rounded-xl border p-4" style={{ borderColor: 'var(--merk-rand)', background: 'var(--merk-zacht)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--merk-hover)' }}>✓ Toegevoegd aan onze stijl</p>
+        <div className="rounded-xl border p-4 vui-binnen" style={{ borderColor: 'var(--merk-rand)', background: 'var(--merk-zacht)' }}>
+          <p className="text-sm font-semibold vui-wissel" style={{ color: 'var(--merk-tekst)' }}>✓ Toegevoegd aan onze stijl</p>
           <p className="text-xs text-gray-600 mt-1">Deze regels worden voortaan toegepast bij het genereren.</p>
         </div>
       )}
