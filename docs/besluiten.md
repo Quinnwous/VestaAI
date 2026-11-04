@@ -30,6 +30,10 @@ gebouwd en gecontroleerd op een lokale voorbeeldpagina in i4-huisstijl.
 | Kantoorpagina | Van losse Tailwind-blokken naar vier kaarten met kaartkop (zelfde opbouw als de verkenners); kleurstalen tonen de live `--merk*`-waarden | Opus |
 | Ronde 3: meer beweging, rustig (4 nov) | Op verzoek van Quinn ("veel bewegende onderdelen maar smooth en rustig"): ambient-achtergrond, scrollvoortgang, Ken Burns op foto's, tekenende sparklines, pinringen, markeerstreep onder accentwoorden, landing-demo's die zich afspelen bij in beeld komen (BAG typt, correcties klikbaar met meetellende waarde, staven groeien), kaartpins die inloopen. Alles langzaam (≥ 400 ms, doorlopend ≥ 20 s) en uit onder reduced motion | Opus |
 | Hero-tegel startpagina blijft | Quinn liet de keuze aan Claude: de blauwe hero-tegel onder de blauwe banner blijft — het prototype doet het ook, en de tegel is het enige getal dat er op dat moment toe doet. De banner heeft bij i4 een foto rechts, dus er staan geen twee gelijke blauwe vlakken | Opus |
+| Merge-ritme 4 nov | Op verzoek van Quinn ("merge alles gelijk naar main") is elke polishronde direct als eigen PR gemerged (#65-#77), steeds na typecheck, lint, tests en build | Quinn + Opus |
+| Contentsuite-mail | Van kale HTML ("Het VestaAI-team", u-vorm, aanhef met de naam van de afzender) naar `contentSuiteMail()` in `lib/email.ts`: huisstijl van het kantoor, informeel, aanhef bij de ontvanger, weergavenaam = kantoornaam (adres blijft noreply@vestaai.nl) | Opus |
+| Brochure-paginaopbouw | Ongewijzigd gelaten (de tests leggen het aantal pagina's vast en lange teksten vullen de pagina's); wel een contactkaart in de kantoorkleur op de slotpagina | Opus |
+| react-pdf en rgba-randen | Een `borderTopColor` in rgba kwam als groene lijn uit de contentsuite-pdf; scheidingslijnen in pdf's voortaan als eigen `View` met `backgroundColor` + `opacity` | Opus |
 
 ### 1 okt 2026 (ronde D4 + D5) — Engelse notatie, opgeslagen buurtdata
 
