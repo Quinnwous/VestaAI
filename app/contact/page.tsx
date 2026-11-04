@@ -24,7 +24,7 @@ export default function ContactPage() {
       <main style={{ maxWidth: 760, margin: '0 auto', padding: '80px 28px 120px' }}>
         <div style={{ marginBottom: 56 }}>
           <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase', color: '#2A8A5C', marginBottom: 16 }}>Contact</div>
-          <h1 style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,54px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 20px' }}>
+          <h1 className="vui-binnen" style={{ ...NR, fontWeight: 500, fontSize: 'clamp(36px,5vw,54px)', lineHeight: 1.08, letterSpacing: '-.02em', color: '#0E1A13', margin: '0 0 20px' }}>
             Laten we kennismaken.
           </h1>
           <p style={{ fontSize: 19, lineHeight: 1.6, color: '#445249', margin: 0, maxWidth: 560 }}>
@@ -35,7 +35,7 @@ export default function ContactPage() {
         {/* Bestaande klant — uitgelicht als eerste, duidelijk onderscheiden van de aanvraag-opties */}
         <div style={{ background: '#0E1A13', borderRadius: 18, padding: '26px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24, flexWrap: 'wrap', marginBottom: 16 }}>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Al klant?</h2>
+            <h2 className="vui-onthul" style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: '0 0 6px' }}>Al klant?</h2>
             <p style={{ fontSize: 14.5, lineHeight: 1.55, color: '#A8BBB0', margin: 0, maxWidth: 440 }}>Log in op uw kantooromgeving.</p>
           </div>
           <Link href="/login" style={{ fontSize: 15, fontWeight: 700, color: '#114230', background: '#fff', padding: '11px 20px', borderRadius: 11, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
@@ -64,7 +64,7 @@ export default function ContactPage() {
               cta: 'Stuur een e-mail →',
             },
           ].map(({ label, desc, href, cta }) => (
-            <div key={label} style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '28px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
+            <div key={label} className="vui-onthul vui-tegel" style={{ background: '#fff', border: '1px solid #E9EFEB', borderRadius: 18, padding: '28px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
               <div>
                 <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0E1A13', margin: '0 0 6px' }}>{label}</h2>
                 <p style={{ fontSize: 14.5, lineHeight: 1.55, color: '#5A6B61', margin: 0, maxWidth: 440 }}>{desc}</p>

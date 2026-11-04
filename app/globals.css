@@ -746,3 +746,19 @@
 
 /* Knoppen: voelbaar indrukken. */
 .vui-btn:active:not(:disabled) { transform: scale(.98); }
+
+/* Profielmenu en mobiel menu in de topbar: groeien uit hun knop. */
+@media (prefers-reduced-motion: no-preference) {
+  .vui-menu-uitklap { transform-origin: top right; animation: vui-pop-in 180ms var(--ease); }
+  .vui-mobielmenu { animation: vui-mobiel-in 260ms var(--ease); }
+  .vui-mobielmenu a { animation: vui-rijs 340ms var(--ease) backwards; }
+  .vui-mobielmenu a:nth-child(2) { animation-delay: 30ms; }
+  .vui-mobielmenu a:nth-child(3) { animation-delay: 60ms; }
+  .vui-mobielmenu a:nth-child(4) { animation-delay: 90ms; }
+  .vui-mobielmenu a:nth-child(5) { animation-delay: 120ms; }
+  .vui-mobielmenu a:nth-child(6) { animation-delay: 150ms; }
+}
+@keyframes vui-mobiel-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+/* Navigatiepillen: zachte hover op de grijze balk. */
+.vui-navpil:not([aria-current='page']):hover { background: rgba(255,255,255,.7) !important; color: var(--merk-tekst) !important; }
