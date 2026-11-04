@@ -330,6 +330,7 @@ export function InlogFormulier({ branding, slug }: Props) {
                       placeholder={tekst.emailPlaceholder}
                       style={inputStyle}
                       onFocus={focusAan}
+                      className="vui-input"
                       onBlur={focusUit}
                     />
                   </div>
@@ -352,6 +353,7 @@ export function InlogFormulier({ branding, slug }: Props) {
                       placeholder="••••••••"
                       style={inputStyle}
                       onFocus={focusAan}
+                      className="vui-input"
                       onBlur={focusUit}
                     />
                   </div>
@@ -398,6 +400,7 @@ export function InlogFormulier({ branding, slug }: Props) {
                         placeholder={tekst.emailPlaceholder}
                         style={inputStyle}
                         onFocus={focusAan}
+                        className="vui-input"
                         onBlur={focusUit}
                       />
                     </div>

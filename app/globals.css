@@ -998,3 +998,29 @@
 @keyframes vui-balk-groei { from { transform: scaleX(0); } }
 .vui-rijhover { transition: background var(--t-hover); }
 .vui-rijhover:hover { background: var(--merk-zacht); }
+
+/* Switch en Checkbox (components/ui): de knop rekt iets uit bij indrukken,
+   het vinkje tekent zich. */
+button:active > .vui-switch-knop { width: 24px !important; }
+button[aria-checked='true']:active > .vui-switch-knop { left: 17px !important; }
+@media (prefers-reduced-motion: no-preference) {
+  .vui-vinkje { stroke-dasharray: 1; animation: vui-vinkje 260ms var(--ease) 40ms backwards; }
+}
+@keyframes vui-vinkje { from { stroke-dashoffset: 1; } }
+/* Schuiverknoppen (Slider/RangeSlider): groeien iets bij aanwijzen en slepen. */
+.vui-sliderknop { transition: transform var(--t-hover) var(--ease), box-shadow var(--t-hover); }
+.vui-sliderknop:hover { transform: scale(1.12); }
+.vui-sliderknop:active { transform: scale(1.18); }
+
+/* Invoervelden: zachte focusgloed in de merkkleur (naast de randkleur die
+   de componenten zelf zetten). */
+.vui-input, .intake-layout input, .intake-layout select, .intake-layout textarea {
+  transition: border-color var(--t-hover), box-shadow var(--t) var(--ease), background var(--t-hover);
+}
+.vui-input:focus, .intake-layout input:focus, .intake-layout select:focus, .intake-layout textarea:focus {
+  box-shadow: 0 0 0 3px rgba(var(--merk-rgb), .13);
+  outline: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .vl-cta-gloed { animation: vl-adem 8s ease-in-out infinite alternate; }
+}
