@@ -6,7 +6,9 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from '@/lib/s
 import { PdfTemplate } from '@/components/PdfTemplate'
 import type { ContentOutput } from '@/lib/schemas'
 import type { Kantoor } from '@/lib/supabase'
-import { bruikbaarLogo } from '@/lib/branding'
+import { bruikbaarLogo, bouwBranding } from '@/lib/branding'
+import { contentSuiteMail } from '@/lib/email'
+import { APP_URL } from '@/lib/appUrl'
 import { meldFout } from '@/lib/fouten'
 import React from 'react'
 
@@ -80,17 +82,27 @@ export async function POST(req: NextRequest, props: { params: Promise<{ id: stri
       fotos,
     }) as React.ReactElement<ReactPDF.DocumentProps>)
 
-    const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-vestaai.pdf`
+    const bestandsnaam = `${object.address.replace(/[^a-z0-9]/gi, '-').toLowerCase()}-contentsuite.pdf`
+    // Mail in de huisstijl van het kantoor, zonder productnaam (lib/email.ts).
+    const branding = bouwBranding(kantoorData)
+    const { data: ontvanger } = await serviceClient.from('makelaars').select('name').eq('id', collega.id).maybeSingle()
+    const mail = contentSuiteMail({
+      kantoorNaam: branding.naam,
+      kleur: branding.merkTekst,
+      ontvangerNaam: (ontvanger?.name as string | null | undefined) ?? null,
+      adres: object.address,
+      dossierUrl: `${APP_URL}/object/${params.id}`,
+    })
 
     const resend = new Resend(resendKey)
     const { error: sendError } = await resend.emails.send({
-      from: 'VestaAI <noreply@vestaai.nl>',
+      // Weergavenaam van het kantoor; het adres blijft noreply@vestaai.nl tot een
+      // kantoordomein in Resend geverifieerd is (zie lib/email.ts).
+      from: `"${branding.naam.replace(/["<>]/g, '')}" <noreply@vestaai.nl>`,
       to: ontvangerEmail,
-      subject: `Content-suite: ${object.address}`,
-      html: `<p>Beste${makelaar.name ? ` ${makelaar.name}` : ''},</p>
-<p>In de bijlage vindt u de gegenereerde content-suite voor <strong>${object.address}</strong>.</p>
-<p>U kunt de content ook altijd online bekijken en bewerken via uw VestaAI-dashboard.</p>
-<p>Met vriendelijke groet,<br/>Het VestaAI-team</p>`,
+      subject: mail.subject,
+      html: mail.html,
+      text: mail.text,
       attachments: [
         {
           filename: bestandsnaam,
