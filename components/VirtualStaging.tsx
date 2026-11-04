@@ -175,7 +175,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             </>
           )}
         </label>
-        <span className="text-xs text-gray-400 ml-3">JPG · PNG · WebP · max 20 MB · ca. 30–60 sec</span>
+        <span className="text-xs text-gray-500 ml-3">JPG · PNG · WebP · max 20 MB · ca. 30–60 sec</span>
       </div>
 
       {error && (
@@ -234,7 +234,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
                 >
                   Download ↓
                 </button>
-                <span className="text-[11px] text-gray-400 px-2 -mt-1">Publiceer dit als impressie</span>
+                <span className="text-[11px] text-gray-500 px-2 -mt-1">Publiceer dit als impressie</span>
               </div>
               {objectId && actief !== null && (
                 <button
@@ -294,7 +294,7 @@ export function VirtualStaging({ objectId, onBewaard }: { objectId?: string; onB
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
           </svg>
           <p className="text-sm font-medium text-gray-500">Upload een foto van een lege of sparse kamer</p>
-          <p className="text-xs text-gray-400 mt-1">Gemini AI richt de ruimte virtueel in de gekozen stijl in — klaar voor Funda.</p>
+          <p className="text-xs text-gray-500 mt-1">Gemini AI richt de ruimte virtueel in de gekozen stijl in — klaar voor Funda.</p>
         </div>
       )}
     </div>

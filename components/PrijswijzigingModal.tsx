@@ -155,7 +155,7 @@ export function PrijswijzigingModal({ objectId, adres, huidigeprijs }: Props) {
             <TabContent content={output[actieveTab]} />
             <button
               onClick={() => { setStatus('idle'); setOutput(null) }}
-              className="text-xs text-gray-400 hover:text-gray-600 underline"
+              className="text-xs text-gray-500 hover:text-gray-600 underline"
             >
               Opnieuw genereren
             </button>

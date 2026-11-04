@@ -67,7 +67,7 @@ export function HerschrijfKnop({ objectId, sleutel, onNieuweTekst }: Props) {
         <span className="text-xs font-medium text-[var(--merk-hover)]">Herschrijfinstructie (optioneel)</span>
         <button
           onClick={() => { setOpen(false); setFout('') }}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-gray-500 hover:text-gray-600"
         >
           ✕
         </button>
